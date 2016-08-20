@@ -7,9 +7,9 @@ class Thing:
         self.short_desc = 'need_short_desc'
         self.long_desc = 'need_long_desc'
         # dictionary mapping verb strings to functions:
-        self.verb_dict = {"look"        : self.look_at,         \
+        self.verb_dict = {"look":           self.look_at,
                           }
-        self.contents = None        # Non - Containers can't contain things
+        self.contents = None        # None - Containers can't contain things
 
     def set_weight(self, grams):
         if (grams < 0):
@@ -34,21 +34,21 @@ class Thing:
 
     def new_verb(self, verb, func):
         self.verb_dict[verb] = func
-        
+
     def heartbeat(self):
         pass
 
-    ## How likely that the user input text refers to this object
-    # 0.0 = No way!
-    # 0.5 = Maybe
-    # 1.0 = Definitely
-    def handle_user_input(self, sV, sDO):
-        if sDO == i.id:
-            return 1.0
-        elif sV in list(self.verb_dict):
-            return 0.5
-        else:
-            return 0
+    # # How likely that the user input text refers to this object
+    # # 0.0 = No way!
+    # # 0.5 = Maybe
+    # # 1.0 = Definitely
+    # def handle_user_input(self, sV, sDO):
+    #     if sDO == i.id:
+    #         return 1.0
+    #     elif sV in list(self.verb_dict):
+    #         return 0.5
+    #     else:
+    #         return 0
 
     def look_at(self, cons, oDO, oIDO):  # print out the long description of the thing
         cons.write(self.long_desc)
@@ -79,7 +79,7 @@ class Container(Thing):
         else:
             cons.write("The weight(%d) and volume(%d) of the %s can't be held by the %s, "
                   "which can only carry %d grams and %d liters (currently "
-                  "holding %d grams and %d liters)" \
+                  "holding %d grams and %d liters)" 
                   % (obj.weight, obj.volume, obj.id, self.id, self.max_weight_carried, self.max_volume_carried, contents_weight, contents_volume))
 
     def set_max_weight_carried(self, max_grams_carried):
@@ -101,8 +101,7 @@ class Container(Thing):
                 break
         assert found != -1
         del self.contents[i]
-            
-            
+
     def look_at(self, cons, oDO, oIDO):
         Thing.look_at(self, cons, oDO, oIDO)
         if bool(len(self.contents)) and self.contents != [cons.user]:
@@ -112,7 +111,8 @@ class Container(Thing):
                     cons.write(item.short_desc)
         else:
             cons.write("It is empty.")
-        
+
+
 class Room(Container):
     def __init__(self, ID):
         Container.__init__(self, ID)
@@ -121,7 +121,6 @@ class Room(Container):
         self.set_max_volume_carried(3e9)
         self.verb_dict["go"]        = self.go_to
         self.verb_dict["walk"]      = self.go_to
-
 
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room
@@ -148,13 +147,14 @@ class Room(Container):
             cons.write("exits are:")
             for w in cons.user.location.exits:
                 cons.write(w)
-            
+
 
 class Creature(Container):
     def __init__(self, ID):
         Container.__init__(self, ID)
         self.hitpoints = 10     # default hitpoints
-        self.health = self.hitpoints # default full health (0 health --> dead)
+        self.health = self.hitpoints  # default full health (0 health --> dead)
+
 
 class Player(Creature):
     def __init__(self,ID):
@@ -170,10 +170,10 @@ class Console:
         self.user.connect_console(self)
         self.user.set_description('joe test', 'our test player named joe')
         self.verbose = False
-        self.alias_map = {'n':'north', \
-                          's':'south', \
-                          'e':'east',  \
-                          'w':'west',  }
+        self.alias_map = {'n':  'north',
+                          's':  'south',
+                          'e':  'east', 
+                          'w':  'west',  }
 
     def debug(self, x):
         if self.verbose:
@@ -187,28 +187,30 @@ class Console:
             stop_going = self.parse()
             if stop_going:
                 break
-    
+
     def parse(self):
-        self.last_text = input('> ') # last_text is most recent thing user typed
+        self.last_text = input('> ')  # store the most recent thing user typed
         if self.last_text == 'quit':
             return True
         if self.last_text == 'verbose':
-            if self.verbose == False:
+            if self.verbose is False:
                 self.verbose = True
                 self.write("Verbose debug output now on.")
-            else:  
+            else:
                 self.verbose = False
                 self.write("Verbose debug output now off.")
             return False
         self.words = self.last_text.split()
-        if len(self.words) == 0: return False
+        if len(self.words) == 0:
+            return False
         if self.words[0] == 'alias':
             if len(self.words) == 3:
                 self.alias_map[self.words[1]] = self.words[2]
                 self.write('new alias - %s is now an alias for %s' % (self.words[1], self.words[2]))
             else:
-                self.write('to create a new alias, type "alias (new alias) (what the new alias should replace).'\
-                      ' please try again')
+                self.write('to create a new alias, type "alias (new alias)"'
+                           '(what the new alias should replace).'
+                           ' please try again')
             return False
         # replace any aliases with their completed version
         for o in range(0, len(self.words)):
@@ -216,7 +218,7 @@ class Console:
             if t in self.alias_map:
                 self.words[o] = self.alias_map[t]
                 self.debug("replacing alias %s with expansion %s" % (t, self.alias_map[t]))
-                   
+
         sV = self.words[0]   # verb as string
         sDO = None           # Direct object as string
         oDO = None           # Direct object as object
