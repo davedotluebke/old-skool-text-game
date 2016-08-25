@@ -49,18 +49,6 @@ class Thing:
     def heartbeat(self):
         pass
 
-    # # How likely that the user input text refers to this object
-    # # 0.0 = No way!
-    # # 0.5 = Maybe
-    # # 1.0 = Definitely
-    # def handle_user_input(self, sV, sDO):
-    #     if sDO == i.id:
-    #         return 1.0
-    #     elif sV in list(self.verb_dict):
-    #         return 0.5
-    #     else:
-    #         return 0
-
     def look_at(self, cons, oDO, oIDO):  # print out the long description of the thing
         cons.write(self.long_desc)
 
