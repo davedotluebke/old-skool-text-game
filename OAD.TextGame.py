@@ -4,10 +4,14 @@ class Thing:
         self.weight = 0.0
         self.volume = 0.0
         self.location = None
+        self.fixed = False
         self.short_desc = 'need_short_desc'
         self.long_desc = 'need_long_desc'
         # dictionary mapping verb strings to functions:
         self.verb_dict = {"look":           self.look_at,
+                          "examine":        self.look_at,
+                          "take":           self.take,
+                          "drop":           self.drop
                           }
         self.contents = None        # None - Containers can't contain things
 
@@ -27,6 +31,13 @@ class Thing:
 
     def set_location(self, containing_object):
         self.location = containing_object
+
+    def fix_in_place(self, error_message):
+        self.fixed = True
+        self.error_message = error_message
+
+    def unfix(self):
+        self.fixed = False
 
     def set_description(self, s_desc, l_desc):
         self.short_desc = s_desc
@@ -54,9 +65,21 @@ class Thing:
         cons.write(self.long_desc)
 
     def move_to(self, cons, oDO, oIDO):
-        if self.location != None:
-            self.location.extract(self)
+        if self.fixed:
+            cons.write(self.error_message)
+        else:
+            if self.location != None:
+                self.location.extract(self)
             oDO.insert(self)
+
+    def take(self, cons, oDO, oIDO):
+        self.move_to(cons, cons.user, oIDO)
+        cons.write("You take the %s." % self.id)
+
+    def drop(self, cons, oDO, oIDO):
+        self.move_to(cons, cons.user.location, oIDO)
+        cons.write("You drop the %s." % self.id)
+
 
 
 class Container(Thing):
@@ -67,13 +90,17 @@ class Container(Thing):
         self.max_volume_carried = 1
 
     def insert(self, obj):
+        cons.debug("in insert")
         # error checking for max weight etc goes here
         contents_weight = 0
         contents_volume = 0
+        cons.debug("going to start looping")
         for w in self.contents:
             contents_weight = contents_weight + w.weight
             contents_volume = contents_volume + w.volume
-        if self.max_weight_carried >= contents_weight and self.max_volume_carried >= contents_volume:
+        cons.debug("done looping - carrying %d weight and %d volume" % (contents_weight, contents_volume))
+        if self.max_weight_carried >= contents_weight+obj.weight and self.max_volume_carried >= contents_volume+obj.volume:
+            cons.debug("can fit %d more weight and %d more volume" % (obj.weight, obj.volumes))
             obj.set_location(self)   # make this container the location of obj
             self.contents.append(obj)
         else:
@@ -160,15 +187,22 @@ class Player(Creature):
     def __init__(self,ID):
         Creature.__init__(self, ID)
         self.cons = None
+        self.new_verb("inventory", self.inventory)
 
     def connect_console(self, c):
         self.cons = c
+    def inventory(self, cons, oDO, oIDO):
+        cons.write("You are carrying:")
+        for i in self.contents:
+            cons.write(i.id)
 
 class Console:
     def __init__(self):
         self.user = Player("testplayer")
         self.user.connect_console(self)
         self.user.set_description('joe test', 'our test player named joe')
+        self.user.set_max_weight_carried(750000)
+        self.user.set_max_volume_carried(2000)
         self.verbose = False
         self.alias_map = {'n':  'north',
                           's':  'south',
@@ -189,7 +223,7 @@ class Console:
                 break
 
     def parse(self):
-        self.last_text = input('> ')  # store the most recent thing user typed
+        self.last_text = input('-> ')  # store the most recent thing user typed
         if self.last_text == 'quit':
             return True
         if self.last_text == 'verbose':
@@ -224,9 +258,21 @@ class Console:
         oDO = None           # Direct object as object
         sIDO = None          # Indirect object as string
         oIDO = None          # Indirect object as object
+
+        num_words = len(self.words)
+        a = 0
+        while a < num_words:
+            self.debug('parser: a is %d, self.words[a] is %s' % (a, self.words[a]))
+            if self.words[a] in ['a', 'an', 'the']:
+                self.debug('parser: %s is an article, so removing' % self.words[a])
+                del self.words[a]
+                num_words = num_words - 1
+            a = a + 1
+
         if (len(self.words) > 1):
             sDO = self.words[1]
         ## TODO: code to remove articles, find prepositions & IDOs, etc
+        
         
         possible_nouns = [self.user.location]           \
                        + [self.user]                    \
@@ -294,6 +340,13 @@ bag.set_weight(100)
 bag.set_volume(10)
 bag.set_max_weight_carried(20000)
 bag.set_max_volume_carried(10)
-    
+woods.insert(bag)
+
+plate = Thing('plate')
+plate.set_description('a dinner plate', 'This is a normal-looking white dinner plate.')
+plate.set_weight(1000)
+plate.set_volume(1.25)
+kitchen.insert(plate)
+
 woods.insert(cons.user)
 cons.loop()
