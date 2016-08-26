@@ -13,7 +13,7 @@ class Thing:
                           "take":           self.take,
                           "drop":           self.drop
                           }
-        self.contents = None        # None - Containers can't contain things
+        self.contents = None        # None - only Containers can contain things
 
     def set_weight(self, grams):
         if (grams < 0):
