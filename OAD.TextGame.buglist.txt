@@ -16,3 +16,6 @@ x 	5. get rid of debug output on parser, or make a command ("verbose") to toggle
 x	10. implement "debug(x)" function that prints x if verbose is set, else passes
 x	11. add exits to kitchen
 	12. fix cons.write
+	13. "drop", "take", etc. break if no direct object (or mispelled DO)
+	14. Consider making a special category for intransitive verbs (verbs that don't need a direct object, like "sneeze", "inventory", "south", etc). Otherwise need to guard every single verb with "if not oDO then: return"
+	15. Consider making a class for "Verb" which has the string (and synonyms?), the function, and flags for things like whether verb can be transitivea  
