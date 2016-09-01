@@ -18,10 +18,10 @@ x	12. fix cons.write
 	13. "drop", "take", etc. break if no direct object (or mispelled DO)
 	14. Consider making a special category for intransitive verbs (verbs that don't need a direct object, like "sneeze", "inventory", "south", etc). Otherwise need to guard every single verb with "if not oDO then: return"
 	15. Consider making a class for "Verb" which has the string (and synonyms?), the function, and flags for things like whether verb can be transitive
-	16. Refactor code to put each class in a separate file
-		16a. Remove dependency on "cons" global Console object. Console is now passed to any function that uses it
-		16b. Move debug printouts to a new simple DebugLog class with no dependencies 
-		16c. Support multiple levels of verbosity in DebugLog class
+x	16. Refactor code to put each class in a separate file
+x		16a. Remove dependency on "cons" global Console object. Console is now passed to any function that uses it
+x		16b. Move debug printouts to a new simple DebugLog class with no dependencies 
+		16c. Fancier DebugLog class: Support multiple levels of verbosity, logging to a file, auto-indentation, auto-labeling module/class/function writing debug, etc.
 	17. typing "go <exit>" doesn't give a failure message if <exit> doesn't exist.	
 	18. when "take <obj>" should fail (e.g. obj is too heavy) it still extracts obj from its container, then fails to insert into the new container (the player), but still prints "you take the <obj>" 
 	19. Add alias system. So player can type e.g. "alias n north" and then just typing "n" is the same as typing "north". Then many default commands can just be implemented as built-in aliases
