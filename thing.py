@@ -1,3 +1,5 @@
+from debug import dbg
+
 class Thing:
     def __init__(self, ID):
         self.id = ID
@@ -11,20 +13,21 @@ class Thing:
         self.verb_dict = {"look":           self.look_at,
                           "examine":        self.look_at,
                           "take":           self.take,
+                          "get":            self.take,
                           "drop":           self.drop
                           }
         self.contents = None        # None - only Containers can contain things
 
     def set_weight(self, grams):
         if (grams < 0):
-            cons.write("Error: weight cannot be negative")
+            dbg.debug("Error: weight cannot be negative")
             raise
         else:
             self.weight = grams
 
     def set_volume(self, liters):
         if (liters < 0):
-            cons.write("Error: volume cannot be negative")
+            dbg.debug("Error: volume cannot be negative")
             raise
         else:
             self.volume = liters

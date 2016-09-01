@@ -3,19 +3,29 @@ Owen Text Game - bug list
 x 	1. print exits when entering room
 x 	2. Typing "look" starts with "You see" but long description doesn't match. Suggest drop "You see"
 x 	3. don't print this player (e.g. "joe test") when looking in a room
-	4. Add support for default commands:
+x	4. Add support for default commands:
 x		4a. exit verbs, e.g. "north" -> "go north"; "n" -> "go north", etc. Standard defaults are n, s, e, w, ne, nw, se, sw, u, d (up and down)
 x		4b. "l" for "look"
-		4c. "look at" or "examine" -> print long description
-x		4d. Add alias system? So player can type e.g. "alias n north" and then just typing "n" is the same as typing "north". Then many default commands can just be implemented as built-in aliases
+x		4c. "look at" or "examine" -> print long description
 x 	5. get rid of debug output on parser, or make a command ("verbose") to toggle debug output on and off
 	6. ignore prepositions and articles
 	7. objects have a list of names and list of adjectives, parser checks these to find a match, if more than one match parser asks "did you mean" and lists short descriptions of both
-	8. When describing a room (as opposed to other containers) don't print "it is empty" if nothing is there (because might contradict long description which may refer to "scenery" objects)
+x	8. When describing a room (as opposed to other containers) don't print "it is empty" if nothing is there (because might contradict long description which may refer to "scenery" objects)
 	9. adjectives and adverbs
 x	10. implement "debug(x)" function that prints x if verbose is set, else passes
 x	11. add exits to kitchen
-	12. fix cons.write
+x	12. fix cons.write
 	13. "drop", "take", etc. break if no direct object (or mispelled DO)
 	14. Consider making a special category for intransitive verbs (verbs that don't need a direct object, like "sneeze", "inventory", "south", etc). Otherwise need to guard every single verb with "if not oDO then: return"
-	15. Consider making a class for "Verb" which has the string (and synonyms?), the function, and flags for things like whether verb can be transitivea  
+	15. Consider making a class for "Verb" which has the string (and synonyms?), the function, and flags for things like whether verb can be transitive
+	16. Refactor code to put each class in a separate file
+		16a. Remove dependency on "cons" global Console object. Console is now passed to any function that uses it
+		16b. Move debug printouts to a new simple DebugLog class with no dependencies 
+		16c. Support multiple levels of verbosity in DebugLog class
+	17. typing "go <exit>" doesn't give a failure message if <exit> doesn't exist.	
+	18. when "take <obj>" should fail (e.g. obj is too heavy) it still extracts obj from its container, then fails to insert into the new container (the player), but still prints "you take the <obj>" 
+	19. Add alias system. So player can type e.g. "alias n north" and then just typing "n" is the same as typing "north". Then many default commands can just be implemented as built-in aliases
+x	    19a. Basic alias system: replace single-word aliases with single-word commands
+x		19b. Print instructions, pretty-print list of aliases if user just types "alias", etc.
+		19c. For extra credit, print list of aliases alphabetized by expansion, not alias (i.e. value not key of the alias_map) 
+		19d. Extend aliases to correctly handle multi-word expansions (e.g. "n" --> "go north"). Currently fails because "go north" appears as one word in Console.words[] list.

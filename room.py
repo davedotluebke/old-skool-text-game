@@ -1,4 +1,5 @@
-from container import *
+from debug import dbg
+from container import Container
 
 class Room(Container):
     def __init__(self, ID):
@@ -13,18 +14,28 @@ class Room(Container):
         self.exits[exit_name] = exit_room
 
     def look_at(self, cons, oDO, oIDO):
-        Container.look_at(self, cons, oDO, oIDO)
-        cons.write('exits are:')
+        """Print long description of room, list items (excluding this player) and exits"""
+        cons.write(self.long_desc)
+        assert(cons.user in self.contents)  # current player should always be in the room 
+        contents_minus_user = [i for i in self.contents if i is not cons.user]  
+        dbg.debug("self.contents = %s" % (self.contents))
+        dbg.debug("contents_minus_user = %s" % (contents_minus_user))
+
+        if len(contents_minus_user) > 0:
+            cons.write("Here you see:")
+            for item in contents_minus_user:
+                cons.write(item.short_desc)
+        cons.write('Exits are:')
         for e in self.exits:
             cons.write(e)
 
     def move_to(self, cons, oDO, oIDO):
-        cons.write('rooms cannot be moved into %s!' % oIDO.id)
+        cons.write('rooms cannot be moved!')
 
     def go_to(self, cons, oDO, oIDO):
         words = cons.words
-        cons.debug("verb function go_to: words == ")
-        cons.debug(words)
+        dbg.debug("verb function go_to: words == ")
+        dbg.debug(words)
         sExit = words[1]
         if sExit in list(self.exits):
             dest = self.exits[sExit]

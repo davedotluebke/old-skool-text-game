@@ -1,117 +1,29 @@
-from thing import *
-from container import *
-from room import *
-from creature import *
-from player import *
+import debug
 
-class Console:
+from thing import Thing
+from container import Container
+from room import Room  
+from creature import Creature 
+from player import Player
+from console import Console
+
+class Game():
+    """The Game class contains a console and associated game state (e.g. player object for the console).
+    
+    Eventually this will grow to include a list of players, associated consoles, etc."""
     def __init__(self):
+        self.cons = Console()
         self.user = Player("testplayer")
-        self.user.connect_console(self)
         self.user.set_description('joe test', 'our test player named joe')
         self.user.set_max_weight_carried(750000)
         self.user.set_max_volume_carried(2000)
-        self.verbose = False
-        self.alias_map = {'n':  'north',
-                          's':  'south',
-                          'e':  'east', 
-                          'w':  'west',  }
+        self.cons.set_user(self.user)
 
-    def debug(self, x):
-        if self.verbose:
-            self.write(x)
-
-    def write(self, text):
-        print(text)
-
-    def loop(self):
-        while True:
-            stop_going = self.parse()
-            if stop_going:
-                break
-
-    def parse(self):
-        self.last_text = input('-> ')  # store the most recent thing user typed
-        if self.last_text == 'quit':
-            return True
-        if self.last_text == 'verbose':
-            if self.verbose is False:
-                self.verbose = True
-                self.write("Verbose debug output now on.")
-            else:
-                self.verbose = False
-                self.write("Verbose debug output now off.")
-            return False
-        self.words = self.last_text.split()
-        if len(self.words) == 0:
-            return False
-        if self.words[0] == 'alias':
-            if len(self.words) == 3:
-                self.alias_map[self.words[1]] = self.words[2]
-                self.write('new alias - %s is now an alias for %s' % (self.words[1], self.words[2]))
-            else:
-                self.write('to create a new alias, type "alias (new alias)"'
-                           '(what the new alias should replace).'
-                           ' please try again')
-            return False
-        # replace any aliases with their completed version
-        for o in range(0, len(self.words)):
-            t = self.words[o]
-            if t in self.alias_map:
-                self.words[o] = self.alias_map[t]
-                self.debug("replacing alias %s with expansion %s" % (t, self.alias_map[t]))
-
-        sV = self.words[0]   # verb as string
-        sDO = None           # Direct object as string
-        oDO = None           # Direct object as object
-        sIDO = None          # Indirect object as string
-        oIDO = None          # Indirect object as object
-
-        num_words = len(self.words)
-        a = 0
-        while a < num_words:
-            self.debug('parser: a is %d, self.words[a] is %s' % (a, self.words[a]))
-            if self.words[a] in ['a', 'an', 'the']:
-                self.debug('parser: %s is an article, so removing' % self.words[a])
-                del self.words[a]
-                num_words = num_words - 1
-            a = a + 1
-
-        if (len(self.words) > 1):
-            sDO = self.words[1]
-        ## TODO: code to remove articles, find prepositions & IDOs, etc
-        
-        
-        possible_nouns = [self.user.location]           \
-                       + [self.user]                    \
-                       + self.user.contents             \
-                       + self.user.location.contents
-
-        for i in possible_nouns:
-            self.debug("parser: possible_nouns includes %s " % (i.id))
-            if i.id == sDO:
-                self.debug("parser: found a match! setting oDO to %s" % (i.id))
-                oDO = i
-                break
-            else:
-                if sV in list(i.verb_dict):
-                    self.debug("parser: doesn't match user-typed DO %s, but supports verb %s" % (sDO,sV))
-                    if oDO == None:
-                        self.debug("parser: setting oDO to %s" % (i.id)) 
-                        oDO = i
-
-        if oDO:
-            verb = oDO.verb_dict[sV]
-            self.debug("%s . verb_dict[%s]= %s" % (oDO.id, sV, verb))
-        else:
-            self.write('Sorry, could not find a noun matching %s for verb %s.' % (sDO, sV))
-            return False
-        
-        # all verb functions take console, direct (or invoking) object, indirect object
-        verb(self, oDO, oIDO)
-        return False
-
-cons = Console()
+## 
+## "game" is a special global variable, an object of class Game that holds
+## the actual game state and must be referenced by all the various objects. 
+## 
+game = Game()
 
 bedroom = Room('bedroom')
 hallway = Room('hallway')
@@ -156,5 +68,5 @@ plate.set_weight(1000)
 plate.set_volume(1.25)
 kitchen.insert(plate)
 
-woods.insert(cons.user)
-cons.loop()
+woods.insert(game.user)
+game.cons.loop(game.user)
