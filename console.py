@@ -30,10 +30,41 @@ class Console:
             if stop_going:
                 break
 
+    def _add_alias(self):
+        instructions = 'To create a new alias, type:\n    alias <a> <text>\n' \
+                        'where <a> is the new alias and <text> is what will replace the alias.'
+        if len(self.words) == 1:
+            # print a list of current aliases & instructions for adding
+            self.write('Current aliases:')
+            sorted = list(self.alias_map)
+            sorted.sort()   # TODO: figure out how to sort on value rather than key
+            for a in sorted:
+                self.write('    %s --> %s' % (a.rjust(8), self.alias_map[a]))
+            self.write(instructions)
+            return 
+        alias = self.words[1]
+        if len(self.words) == 2:
+            # print the particular alias if it exists
+            if (alias in self.alias_map):
+                self.write("'%s' is currently aliased to '%s'" % (alias, self.alias_map[alias]))
+            else:
+                self.write("'%s' is not currently aliased to anything." % alias)
+                self.write(instructions)
+            return 
+        # new alias specified, insert it into the alias_map
+        if (alias in self.alias_map):
+            self.write("'%s' is currently aliased to '%s'; changing." % (alias, self.alias_map[alias]))
+        expansion = self.last_text.split(maxsplit=2)[2]    # split off first two words and keep the rest
+        self.alias_map[alias] = expansion
+        self.write("'%s' is now an alias for '%s'" % (alias, expansion))
+        return
+
     def parse(self, user):
         self.last_text = input('-> ')  # store the most recent thing user typed
+        
         if self.last_text == 'quit':
             return True
+        
         if self.last_text == 'verbose':
             if dbg.verbosity == 0:
                 dbg.verbosity = 1
@@ -42,43 +73,25 @@ class Console:
                 dbg.verbosity = 0
                 self.write("Verbose debug output now off.")
             return False
+        
         self.words = self.last_text.split()
         if len(self.words) == 0:
             return False
+        
         if self.words[0] == 'alias':
-            instructions = 'To create a new alias, type:\n    alias <a> <text>\n' \
-                           'where <a> is the new alias and <text> is what will replace the alias.'
-            if len(self.words) == 1:
-                # print a list of current aliases & instructions for adding
-                self.write('Current aliases:')
-                sorted = list(self.alias_map)
-                sorted.sort()   # TODO: figure out how to sort on value rather than key
-                for a in sorted:
-                    self.write('    %s --> %s' % (a.rjust(8), self.alias_map[a]))
-                self.write(instructions)
-                return False
-            alias = self.words[1]
-            if len(self.words) == 2:
-                # print the particular alias if it exists
-                if (alias in self.alias_map):
-                    self.write("'%s' is currently aliased to '%s'" % (alias, self.alias_map[alias]))
-                else:
-                    self.write("'%s' is not currently aliased to anything." % alias)
-                    self.write(instructions)
-                return False
-            # new alias specified, insert it into the alias_map
-            expansion = self.last_text.split(maxsplit=2)[2]    # split off first two words and keep the rest
-            dbg.debug("aliased_text == %s" % expansion) 
-            self.alias_map[alias] = expansion
-            self.write('new alias - %s is now an alias for %s' % (alias, expansion))         
+            self._add_alias()         
             return False
 
         # replace any aliases with their completed version
-        for o in range(0, len(self.words)):
-            t = self.words[o]
+        self.last_text = ""
+        for t in self.words:
             if t in self.alias_map:
-                self.words[o] = self.alias_map[t]  # TODO: handle multi-word expansions correctly
-                dbg.debug("replacing alias %s with expansion %s" % (t, self.alias_map[t]))
+                self.last_text += self.alias_map[t] + " "
+                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]))
+            else:
+                self.last_text += t + " "
+        dbg.debug("User input with aliases resolved:\n    %s" % (self.last_text))
+        self.words = self.last_text.split()
 
         sV = self.words[0]   # verb as string
         sDO = None           # Direct object as string
