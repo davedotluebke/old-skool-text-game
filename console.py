@@ -36,9 +36,10 @@ class Console:
         if len(self.words) == 1:
             # print a list of current aliases & instructions for adding
             self.write('Current aliases:')
-            sorted = list(self.alias_map)
-            sorted.sort()   # TODO: figure out how to sort on value rather than key
-            for a in sorted:
+            
+##            sorted = list(self.alias_map)
+#3            sorted.sort()   # TODO: figure out how to sort on value rather than key
+            for a in sorted(self.alias_map, key=self.alias_map.get):
                 self.write('%s --> %s' % (a.rjust(12), self.alias_map[a]))
             self.write(instructions)
             return 
