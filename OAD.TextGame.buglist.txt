@@ -24,8 +24,8 @@ x		16b. Move debug printouts to a new simple DebugLog class with no dependencies
 		16c. Fancier DebugLog class: Support multiple levels of verbosity, logging to a file, auto-indentation, auto-labeling module/class/function writing debug, etc.
 	17. typing "go <exit>" doesn't give a failure message if <exit> doesn't exist.	
 	18. when "take <obj>" should fail (e.g. obj is too heavy) it still extracts obj from its container, then fails to insert into the new container (the player), but still prints "you take the <obj>" 
-	19. Add alias system. So player can type e.g. "alias n north" and then just typing "n" is the same as typing "north". Then many default commands can just be implemented as built-in aliases
+x	19. Add alias system. So player can type e.g. "alias n north" and then just typing "n" is the same as typing "north". Then many default commands can just be implemented as built-in aliases
 x	    19a. Basic alias system: replace single-word aliases with single-word commands
 x		19b. Print instructions, pretty-print list of aliases if user just types "alias", etc.
-		19c. For extra credit, print list of aliases alphabetized by expansion, not alias (i.e. value not key of the alias_map) 
+x		19c. For extra credit, print list of aliases alphabetized by expansion, not alias (i.e. value not key of the alias_map) 
 x		19d. Extend aliases to correctly handle multi-word expansions (e.g. "n" --> "go north"). Currently fails because "go north" appears as one word in Console.words[] list.
