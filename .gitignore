@@ -1,2 +1,2 @@
 # tell git which files and directories to ignore
-__pycache__     # ignore any file/directory containing this string (used by python for temporary compiled files)
+__pycache__/     # ignore any file/directory containing this string (used by python for temporary compiled files)
