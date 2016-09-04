@@ -1,4 +1,4 @@
 # tell git which files and directories to ignore
 *.pyc               # ignore temp files created by python
-__pycache__         # ignore the directory where python stores them
+__pycache__/         # ignore the directory where python stores them
 
