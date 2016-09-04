@@ -1,5 +1,3 @@
-Owen Text Game - bug list
-
 x 	1. print exits when entering room
 x 	2. Typing "look" starts with "You see" but long description doesn't match. Suggest drop "You see"
 x 	3. don't print this player (e.g. "joe test") when looking in a room
