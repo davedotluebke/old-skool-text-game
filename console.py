@@ -39,7 +39,7 @@ class Console:
             sorted = list(self.alias_map)
             sorted.sort()   # TODO: figure out how to sort on value rather than key
             for a in sorted:
-                self.write('    %s --> %s' % (a.rjust(8), self.alias_map[a]))
+                self.write('%s --> %s' % (a.rjust(12), self.alias_map[a]))
             self.write(instructions)
             return 
         alias = self.words[1]
