@@ -20,7 +20,7 @@ class Container(Thing):
             contents_volume = contents_volume + w.volume
         dbg.debug("done looping - carrying %d weight and %d volume" % (contents_weight, contents_volume))
         if self.max_weight_carried >= contents_weight+obj.weight and self.max_volume_carried >= contents_volume+obj.volume:
-            dbg.debug("can fit %d more weight and %d more volume" % (obj.weight, obj.volume))
+            dbg.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.weight, obj.volume))
             obj.set_location(self)   # make this container the location of obj
             self.contents.append(obj)
             return False
