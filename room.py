@@ -35,7 +35,7 @@ class Room(Container):
     def go_to(self, cons, oDO, oIDO):
         words = cons.words
         dbg.debug("verb function go_to: words == ")
-        dbg.debug(words)
+        dbg.debug(str(words))
         sExit = words[1]
         if sExit in list(self.exits):
             dest = self.exits[sExit]

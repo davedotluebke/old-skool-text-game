@@ -1,0 +1,72 @@
+in insertgoing to start loopingdone looping - carrying 0 weight and 0 volumebedroom has room for bed's 150000 weight and 6000 volumein insertgoing to start loopingdone looping - carrying 0 weight and 0 volumewoods has room for bag's 100 weight and 10 volumein insertgoing to start loopingdone looping - carrying 0 weight and 0 volumekitchen has room for plate's 1000 weight and 1 volumein insertgoing to start loopingdone looping - carrying 100 weight and 10 volumewoods has room for testplayer's 79 weight and 66 volumeUser input with aliases resolved:
+    look parser: a is 0, self.words[a] is lookparser: possible_nouns includes woods   parser: doesn't match user-typed DO None, but supports verb look    parser: setting oDO to woodsparser: possible_nouns includes testplayer   parser: doesn't match user-typed DO None, but supports verb lookparser: possible_nouns includes bag   parser: doesn't match user-typed DO None, but supports verb lookparser: possible_nouns includes testplayer   parser: doesn't match user-typed DO None, but supports verb lookwoods . verb_dict[look]= <bound method Room.look_at of <room.Room object at 0x03D25DF0>>self.contents = [<container.Container object at 0x03D25E30>, <player.Player object at 0x03ADF5B0>]contents_minus_user = [<container.Container object at 0x03D25E30>]User input with aliases resolved:
+    look parser: a is 0, self.words[a] is lookparser: possible_nouns includes woods   parser: doesn't match user-typed DO None, but supports verb look    parser: setting oDO to woodsparser: possible_nouns includes testplayer   parser: doesn't match user-typed DO None, but supports verb lookparser: possible_nouns includes bag   parser: doesn't match user-typed DO None, but supports verb lookparser: possible_nouns includes testplayer   parser: doesn't match user-typed DO None, but supports verb lookwoods . verb_dict[look]= <bound method Room.look_at of <room.Room object at 0x03D25DF0>>self.contents = [<container.Container object at 0x03D25E30>, <player.Player object at 0x03ADF5B0>]contents_minus_user = [<container.Container object at 0x03D25E30>]User input with aliases resolved:
+    go west parser: a is 0, self.words[a] is goparser: a is 1, self.words[a] is westparser: possible_nouns includes woods   parser: doesn't match user-typed DO west, but supports verb go    parser: setting oDO to woodsparser: possible_nouns includes testplayer parser: possible_nouns includes bag parser: possible_nouns includes testplayer woods . verb_dict[go]= <bound method Room.go_to of <room.Room object at 0x03D25DF0>>verb function go_to: words == ['go', 'west']in insertgoing to start loopingdone looping - carrying 0 weight and 0 volumeentryway has room for testplayer's 79 weight and 66 volume========================================
+New DebugLog session started Mon Sep  5 20:27:56 2016in insertgoing to start loopingdone looping - carrying 0 weight and 0 volumebedroom has room for bed's 150000 weight and 6000 volumein insertgoing to start loopingdone looping - carrying 0 weight and 0 volumewoods has room for bag's 100 weight and 10 volumein insertgoing to start loopingdone looping - carrying 0 weight and 0 volumekitchen has room for plate's 1000 weight and 1 volumein insertgoing to start loopingdone looping - carrying 100 weight and 10 volumewoods has room for testplayer's 79 weight and 66 volumeUser input with aliases resolved:
+    look parser: a is 0, self.words[a] is lookparser: possible_nouns includes woods   parser: doesn't match user-typed DO None, but supports verb look    parser: setting oDO to woodsparser: possible_nouns includes testplayer   parser: doesn't match user-typed DO None, but supports verb lookparser: possible_nouns includes bag   parser: doesn't match user-typed DO None, but supports verb lookparser: possible_nouns includes testplayer   parser: doesn't match user-typed DO None, but supports verb lookwoods . verb_dict[look]= <bound method Room.look_at of <room.Room object at 0x037D5DF0>>self.contents = [<container.Container object at 0x037D5E30>, <player.Player object at 0x0358F1D0>]contents_minus_user = [<container.Container object at 0x037D5E30>]User input with aliases resolved:
+    look parser: a is 0, self.words[a] is lookparser: possible_nouns includes woods   parser: doesn't match user-typed DO None, but supports verb look    parser: setting oDO to woodsparser: possible_nouns includes testplayer   parser: doesn't match user-typed DO None, but supports verb lookparser: possible_nouns includes bag   parser: doesn't match user-typed DO None, but supports verb lookparser: possible_nouns includes testplayer   parser: doesn't match user-typed DO None, but supports verb lookwoods . verb_dict[look]= <bound method Room.look_at of <room.Room object at 0x037D5DF0>>self.contents = [<container.Container object at 0x037D5E30>, <player.Player object at 0x0358F1D0>]contents_minus_user = [<container.Container object at 0x037D5E30>]User input with aliases resolved:
+    go west parser: a is 0, self.words[a] is goparser: a is 1, self.words[a] is westparser: possible_nouns includes woods   parser: doesn't match user-typed DO west, but supports verb go    parser: setting oDO to woodsparser: possible_nouns includes testplayer parser: possible_nouns includes bag parser: possible_nouns includes testplayer woods . verb_dict[go]= <bound method Room.go_to of <room.Room object at 0x037D5DF0>>verb function go_to: words == ['go', 'west']in insertgoing to start loopingdone looping - carrying 0 weight and 0 volumeentryway has room for testplayer's 79 weight and 66 volume========================================
+New DebugLog session started Mon Sep  5 20:28:51 2016in insert
+going to start looping
+done looping - carrying 0 weight and 0 volume
+bedroom has room for bed's 150000 weight and 6000 volume
+in insert
+going to start looping
+done looping - carrying 0 weight and 0 volume
+woods has room for bag's 100 weight and 10 volume
+in insert
+going to start looping
+done looping - carrying 0 weight and 0 volume
+kitchen has room for plate's 1000 weight and 1 volume
+in insert
+going to start looping
+done looping - carrying 100 weight and 10 volume
+woods has room for testplayer's 79 weight and 66 volume
+User input with aliases resolved:
+    look 
+parser: a is 0, self.words[a] is look
+parser: possible_nouns includes woods 
+  parser: doesn't match user-typed DO None, but supports verb look
+    parser: setting oDO to woods
+parser: possible_nouns includes testplayer 
+  parser: doesn't match user-typed DO None, but supports verb look
+parser: possible_nouns includes bag 
+  parser: doesn't match user-typed DO None, but supports verb look
+parser: possible_nouns includes testplayer 
+  parser: doesn't match user-typed DO None, but supports verb look
+woods . verb_dict[look]= <bound method Room.look_at of <room.Room object at 0x03725DD0>>
+self.contents = [<container.Container object at 0x03725E10>, <player.Player object at 0x034DFD10>]
+contents_minus_user = [<container.Container object at 0x03725E10>]
+User input with aliases resolved:
+    go west 
+parser: a is 0, self.words[a] is go
+parser: a is 1, self.words[a] is west
+parser: possible_nouns includes woods 
+  parser: doesn't match user-typed DO west, but supports verb go
+    parser: setting oDO to woods
+parser: possible_nouns includes testplayer 
+parser: possible_nouns includes bag 
+parser: possible_nouns includes testplayer 
+woods . verb_dict[go]= <bound method Room.go_to of <room.Room object at 0x03725DD0>>
+verb function go_to: words == 
+['go', 'west']
+in insert
+going to start looping
+done looping - carrying 0 weight and 0 volume
+entryway has room for testplayer's 79 weight and 66 volume
+User input with aliases resolved:
+    go east 
+parser: a is 0, self.words[a] is go
+parser: a is 1, self.words[a] is east
+parser: possible_nouns includes entryway 
+  parser: doesn't match user-typed DO east, but supports verb go
+    parser: setting oDO to entryway
+parser: possible_nouns includes testplayer 
+parser: possible_nouns includes testplayer 
+entryway . verb_dict[go]= <bound method Room.go_to of <room.Room object at 0x03725D70>>
+verb function go_to: words == 
+['go', 'east']
+in insert
+going to start looping
+done looping - carrying 100 weight and 10 volume
+woods has room for testplayer's 79 weight and 66 volume

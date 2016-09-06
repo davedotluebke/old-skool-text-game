@@ -29,3 +29,4 @@ x	    19a. Basic alias system: replace single-word aliases with single-word comm
 x		19b. Print instructions, pretty-print list of aliases if user just types "alias", etc.
 		19c. For extra credit, print list of aliases alphabetized by expansion, not alias (i.e. value not key of the alias_map) 
 x		19d. Extend aliases to correctly handle multi-word expansions (e.g. "n" --> "go north"). Currently fails because "go north" appears as one word in Console.words[] list.
+x	20. Add file logging capability to DebugLog
