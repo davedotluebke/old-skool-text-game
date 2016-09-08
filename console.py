@@ -28,6 +28,7 @@ class Console:
         while True:
             stop_going = self.parse(user)
             if stop_going:
+                dbg.shut_down()
                 break
 
     def _add_alias(self):
