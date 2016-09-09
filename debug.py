@@ -6,8 +6,11 @@ class DebugLog():
     Currently only supports printing and basic logging to a file."""
     def __init__(self, level=0):
         print("DebugLog __init__() called! This should only happen once.")
-        self.verbosity = int(level)  # current level of verbosity. 0 = no debug comments.  
-        self.filename = input("Please enter the filename of the main game's location: ")
+        self.verbosity = int(level)  # current level of verbosity. 0 = no debug comments.     
+        self.set_logfile()     
+
+    def set_logfile(self, fname="testfile.txt"):
+        self.filename = fname
         try: 
             self.log = open(self.filename, 'a')
             self.log.write("="*40 + "\n")

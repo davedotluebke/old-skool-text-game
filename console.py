@@ -24,8 +24,9 @@ class Console:
     def write(self, text):
         print(text)
 
-    def loop(self, user):
+    def loop(self, user, g):
         while True:
+            g.beat() # TODO: clean this up
             stop_going = self.parse(user)
             if stop_going:
                 dbg.shut_down()

@@ -4,6 +4,7 @@ from thing import Thing
 from container import Container
 from room import Room  
 from creature import Creature 
+from creature import NPC
 from player import Player
 from console import Console
 
@@ -18,6 +19,16 @@ class Game():
         self.user.set_max_weight_carried(750000)
         self.user.set_max_volume_carried(2000)
         self.cons.set_user(self.user)
+        self.heartbeat_users = []
+
+    def register_heartbeat(self, obj):
+        """Add the specified object (obj) to the heartbeat_users list"""
+        self.heartbeat_users.append(obj)
+    
+    def beat(self):
+        """call all of the registered heartbeat functions"""
+        for h in self.heartbeat_users:
+            h.heartbeat()
 
 ## 
 ## "game" is a special global variable, an object of class Game that holds
@@ -68,5 +79,11 @@ plate.set_weight(1000)
 plate.set_volume(1.25)
 kitchen.insert(plate)
 
+bird = NPC('bird', game)
+bird.set_description('a bluebird', 'A nice looking little bluebird.')
+bird.set_weight(200)
+bird.set_volume(0.2)
+woods.insert(bird)
+
 woods.insert(game.user)
-game.cons.loop(game.user)
+game.cons.loop(game.user, game)
