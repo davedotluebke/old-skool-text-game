@@ -52,6 +52,24 @@ class Thing:
     def heartbeat(self):
         pass
 
+    def emit(self, message):
+        """Write a message to be seen by creatures holding this Thing or in the same room"""
+        # pass message to containing object, if it can receive messages
+        holder = self.location
+        if not holder: 
+            return 
+        if hasattr(holder, 'perceive'):
+            # immeidate container can see messages, probably a creature/player
+            dbg.debug("creature holding this object is: " + holder.id)
+            holder.perceive(message)
+        # now get list of recipients (usually creatures) contained by holder (usually a Room)
+        recipients = {x for x in holder.contents if hasattr(x, 'perceive') and (x is not self)}
+        dbg.debug("other creatures in this room include: " + str(recipients))
+        for recipient in recipients:
+            recipient.perceive(message)
+        
+        # dbg.debug("object "+self.id+" emitted message '"+message+" but nobody was around to hear it.")
+
     def look_at(self, cons, oDO, oIDO):  # print out the long description of the thing
         cons.write(self.long_desc)
 
