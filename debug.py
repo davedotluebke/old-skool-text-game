@@ -14,9 +14,9 @@ class DebugLog():
         try: 
             self.log = open(self.filename, 'a')
             self.log.write("="*40 + "\n")
-            self.log.write("New DebugLog session started " + time.asctime())
+            self.log.write("New DebugLog session started " + time.asctime() + "\n")
         except FileNotFoundError:
-            print("could not find a file at %s. Creating a new one." % (self.filename))
+            print("Could not find a file at %s. Creating a new one.\n" % (self.filename))
             self.log = open(self.filename, 'c')
 
     def debug(self, s = "default error msg", level = 1):
