@@ -9,8 +9,8 @@ class DebugLog():
         self.verbosity = int(level)  # current level of verbosity. 0 = no debug comments.     
         self.set_logfile()     
 
-    def set_logfile(self, fname="testfile.txt"):
-        self.filename = fname
+    def set_logfile(self, filename="test_log.txt"):
+        self.filename = filename
         try: 
             self.log = open(self.filename, 'a')
             self.log.write("="*40 + "\n")
