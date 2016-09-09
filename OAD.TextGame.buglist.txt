@@ -39,3 +39,4 @@ x		21a. Move around by picking exits at random
 	 		22a.2 	Chance of hitting depends on skill of attacking creature, modified by weapon accuracy
 			22a.3 	Damage upon hit depends on strength of attacker, modified by weapon damage.
 			22a.4	Frequency of attacks (# of heartbeats between attacks) depends on attacker dexterity, modified by weapon unwieldiness
+x	23. Add "emit" and "perceive" semantics, so an object can print a message that will be seen by any players in the same room (or holding the object). 
