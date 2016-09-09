@@ -15,7 +15,7 @@ class Console:
                           'd':  'go down',
                           'i':  'inventory',
                           }
-        self.user = Player(None)
+#        self.user = Player(None)
 
     def set_user(self, cons_user):
         """Set the Player object associated with this console."""
