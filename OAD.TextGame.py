@@ -83,6 +83,8 @@ bird = NPC('bird', game)
 bird.set_description('a bluebird', 'A nice looking little bluebird.')
 bird.set_weight(200)
 bird.set_volume(0.2)
+bird.add_quote("Tweet!")
+bird.add_quote("Tweet tweet")
 woods.insert(bird)
 
 woods.insert(game.user)

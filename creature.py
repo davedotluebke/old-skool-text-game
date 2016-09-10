@@ -12,22 +12,36 @@ class Creature(Container):
     def perceive(self, message):
         """Receive a message emitted by an object carried by or in vicinity of this creature."""
         dbg.debug("perceived a message "+message+" in Creature.perceive()")
+
+    def say(self, speech):
+        """Emit a message to the room "The <creature> says: <speech>". """
+        self.emit("The %s says: %s" % (self.id, speech))
         
 class NPC(Creature):
     def __init__(self, ID, g):
         Creature.__init__(self, ID)
         self.aggressive = False
-        self.move_soon = 0
-        self.move_frequency = 3
+        self.act_frequency = 3  # how many heartbeats between NPC actions
+        self.act_soon = 0       # how many heartbeats till next action
+        self.actions = ['move_around', 'talk']  # list of action functions
+        self.quotes = []        # list of strings that the NPC might say
+
         g.register_heartbeat(self)
-        
+    
+    def add_quote(self, q):
+        self.quotes.append(q)
+
     def heartbeat(self):
-        self.move_soon += 1
+        self.act_soon += 1
         dbg.debug('beat')
-        if self.move_soon == self.move_frequency:
-            self.move_soon = 0
-            dbg.debug("Moving")
-            self.move_around()
+        if self.act_soon == self.act_frequency:
+            self.act_soon = 0
+            action = random.choice(self.actions)
+            try:
+                action_fn = getattr(self, action)
+                action_fn()
+            except AttributeError:
+                dbg.debug("Object "+self.id+" heartbeat tried to run non-existant action "+action+"!")
             
     def move_around(self):
         exit = random.choice(list(self.location.exits))
@@ -41,3 +55,7 @@ class NPC(Creature):
         new_room.insert(self)
         self.emit("The %s arrives." % self.id)
         dbg.debug("Moved to new room %s" % (new_room.id))
+
+    def talk(self):
+        speech = random.choice(self.quotes)
+        self.emit("The "+self.id+" says: " + speech)

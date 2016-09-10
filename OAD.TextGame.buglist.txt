@@ -20,7 +20,6 @@ x	16. Refactor code to put each class in a separate file
 x		16a. Remove dependency on "cons" global Console object. Console is now passed to any function that uses it
 x		16b. Move debug printouts to a new simple DebugLog class with no dependencies 
 x		16c. Add debug logging to a file
-		16c. Fancier DebugLog class: Support multiple levels of verbosity, logging to a file, auto-indentation, auto-labeling module/class/function writing debug, etc.
 	17. typing "go <exit>" doesn't give a failure message if <exit> doesn't exist.	
 	18. when "take <obj>" should fail (e.g. obj is too heavy) it still extracts obj from its container, then fails to insert into the new container (the player), but still prints "you take the <obj>" 
 x	19. Add alias system. So player can type e.g. "alias n north" and then just typing "n" is the same as typing "north". Then many default commands can just be implemented as built-in aliases
@@ -39,4 +38,14 @@ x		21a. Move around by picking exits at random
 	 		22a.2 	Chance of hitting depends on skill of attacking creature, modified by weapon accuracy
 			22a.3 	Damage upon hit depends on strength of attacker, modified by weapon damage.
 			22a.4	Frequency of attacks (# of heartbeats between attacks) depends on attacker dexterity, modified by weapon unwieldiness
-x	23. Add "emit" and "perceive" semantics, so an object can print a message that will be seen by any players in the same room (or holding the object). 
+	23. Add "emit" and "perceive" semantics
+x		23a. An object can "emit" or print a message that objects (like players) in the same room or holding the object will "perceive".
+		23b. More efficient perceive: objects register with container/contained if they want to perceive emits
+		23c. Recursive emits through containers: containers can set perceive_through flag (e.g. a birdcage vs a sack)
+		23d. Darkness suppresses emits: setting dark flag prevents objects from seeing emit messages from other objects in the container 
+	24. Fancier DebugLog class: 
+		24a. Support multiple levels of verbosity
+		24b. Support auto-indentation, auto-labeling module/class/function writing debug, etc.
+	25. List contents of a room when you enter it (or at least any creatures)
+	
+ 
