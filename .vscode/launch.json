@@ -21,7 +21,7 @@
             "stopOnEntry": false,
             "pythonPath": "${config.python.pythonPath}",
             "program": "${workspaceRoot}/OAD.TextGame.py",
-            "externalConsole": true,
+            "console":"integratedTerminal",
             "debugOptions": [
                 "WaitOnAbnormalExit",
                 "WaitOnNormalExit"
