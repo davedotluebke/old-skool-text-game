@@ -44,7 +44,15 @@ class NPC(Creature):
                 dbg.debug("Object "+self.id+" heartbeat tried to run non-existant action "+action+"!")
             
     def move_around(self):
-        exit = random.choice(list(self.location.exits))
+        """The NPC leaves the room, taking a random exit"""
+        try:
+            exit_list = list(self.location.exits)
+            exit = random.choice(exit_list)
+        except (AttributeError, IndexError):
+            dbg.debug('no exits, returning')
+            return
+
+        exit_list = list(exit_map)
         dbg.debug("Trying to move to the %s exit!" % (exit))
         current_room = self.location
         new_room = self.location.exits[exit]
@@ -55,7 +63,9 @@ class NPC(Creature):
         new_room.insert(self)
         self.emit("The %s arrives." % self.id)
         dbg.debug("Moved to new room %s" % (new_room.id))
+        return
 
     def talk(self):
-        speech = random.choice(self.quotes)
-        self.emit("The "+self.id+" says: " + speech)
+        if self.quotes: 
+            speech = random.choice(self.quotes)
+            self.say(speech)

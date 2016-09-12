@@ -5,7 +5,6 @@ class DebugLog():
     
     Currently only supports printing and basic logging to a file."""
     def __init__(self, level=0):
-        print("DebugLog __init__() called! This should only happen once.")
         self.verbosity = int(level)  # current level of verbosity. 0 = no debug comments.     
         self.set_logfile()     
 

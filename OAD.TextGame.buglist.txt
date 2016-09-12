@@ -33,7 +33,7 @@ x		21a. Move around by picking exits at random
 		21c. Say various things (support both random comments and reading from a script)
 		21d. Fight creatures they encounter, if they are aggressive
 	22. Add combat system. After one or more heartbeat(s) fighters will attack with whatever weapon they wield. 
-		22a. Add some new statistics for creatures and weapons/armer: 
+		22a. Add some new statistics for creatures and weapons/armor: 
 			22a.1	Chance of hitting depends on armor class (AC) of defending creature, modified by armor
 	 		22a.2 	Chance of hitting depends on skill of attacking creature, modified by weapon accuracy
 			22a.3 	Damage upon hit depends on strength of attacker, modified by weapon damage.

@@ -140,7 +140,6 @@ class Console:
                     if oDO == None:
                         dbg.debug("    parser: setting oDO to %s" % (i.id)) 
                         oDO = i
-         
         if oDO:
             verb = oDO.verb_dict[sV]
             dbg.debug("%s . verb_dict[%s]= %s" % (oDO.id, sV, verb))
