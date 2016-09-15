@@ -82,10 +82,12 @@ class Thing:
             oDO.insert(self)
 
     def take(self, cons, oDO, oIDO):
-        self.move_to(cons, cons.user, oIDO)
-        cons.write("You take the %s." % self.id)
+        if not self.fixed and oDO != self:
+            self.move_to(cons, cons.user, oIDO)
+            cons.write("You take the %s." % self.id)
 
     def drop(self, cons, oDO, oIDO):
-        self.move_to(cons, cons.user.location, oIDO)
-        cons.write("You drop the %s." % self.id)
+        if not self.fixed and oDO != self:
+            self.move_to(cons, cons.user.location, oIDO)
+            cons.write("You drop the %s." % self.id)
 

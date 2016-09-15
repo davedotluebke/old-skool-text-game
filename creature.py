@@ -52,7 +52,6 @@ class NPC(Creature):
             dbg.debug('no exits, returning')
             return
 
-        exit_list = list(exit_map)
         dbg.debug("Trying to move to the %s exit!" % (exit))
         current_room = self.location
         new_room = self.location.exits[exit]

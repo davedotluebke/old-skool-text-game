@@ -9,6 +9,9 @@ class Room(Container):
         self.set_max_volume_carried(3e9)
         self.verb_dict["go"]        = self.go_to
         self.verb_dict["walk"]      = self.go_to
+        del self.verb_dict["take"]
+        del self.verb_dict["drop"]
+        self.fixed = True
 
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room

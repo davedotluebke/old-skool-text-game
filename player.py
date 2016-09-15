@@ -15,5 +15,7 @@ class Player(Creature):
 
     def inventory(self, cons, oDO, oIDO):
         cons.write("You are carrying:")
+        if not self.contents:
+            cons.write('nothing')
         for i in self.contents:
             cons.write(i.id)
