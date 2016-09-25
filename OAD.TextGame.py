@@ -85,6 +85,7 @@ bird.set_weight(200)
 bird.set_volume(0.2)
 bird.add_quote("Tweet!")
 bird.add_quote("Tweet tweet")
+bird.add_script(["Testing 1", "testing 2", "testing done!", "Tweety tweet-tweet"])
 woods.insert(bird)
 
 woods.insert(game.user)
