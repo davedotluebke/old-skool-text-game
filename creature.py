@@ -24,23 +24,32 @@ class NPC(Creature):
         self.act_soon = 0       # how many heartbeats till next action
         self.actions = ['move_around', 'talk']  # list of action functions
         self.quotes = []        # list of strings that the NPC might say
+        self.scripts = []
+        self.current_script = None
+        self.current_script_idx = 0
 
         g.register_heartbeat(self)
     
     def add_quote(self, q):
         self.quotes.append(q)
 
+    def add_script(self, s):
+        self.scripts.append(s)
+
     def heartbeat(self):
         self.act_soon += 1
         dbg.debug('beat')
         if self.act_soon == self.act_frequency:
             self.act_soon = 0
-            action = random.choice(self.actions)
-            try:
-                action_fn = getattr(self, action)
-                action_fn()
-            except AttributeError:
-                dbg.debug("Object "+self.id+" heartbeat tried to run non-existant action "+action+"!")
+            if self.current_script:  # if currently reciting, continue
+                self.talk()
+            else:                    # otherwise pick a random action
+                action = random.choice(self.actions)
+                try:
+                    action_fn = getattr(self, action)
+                    action_fn()
+                except AttributeError:
+                    dbg.debug("Object "+self.id+" heartbeat tried to run non-existant action "+action+"!")
             
     def move_around(self):
         """The NPC leaves the room, taking a random exit"""
@@ -64,6 +73,19 @@ class NPC(Creature):
         return
 
     def talk(self):
-        if self.quotes: 
-            speech = random.choice(self.quotes)
-            self.say(speech)
+        if self.quotes or self.scripts:
+            if self.current_script:
+                lines = self.current_script
+                index = self.current_script_idx
+                self.say(lines[index])
+                self.current_script_idx += 1
+                if self.current_script_idx == len(self.current_script):
+                    self.current_script = None
+                    self.current_script_idx = 0
+            else:
+                speech = random.choice(self.quotes + self.scripts)
+                if speech in self.scripts:
+                    self.current_script = speech
+                else:
+                    self.say(speech)
+                
