@@ -67,13 +67,11 @@ class Thing:
         dbg.debug("other creatures in this room include: " + str(recipients))
         for recipient in recipients:
             recipient.perceive(message)
-        
-        # dbg.debug("object "+self.id+" emitted message '"+message+" but nobody was around to hear it.")
 
-    def look_at(self, cons, oDO, oIDO):  # print out the long description of the thing
+    def look_at(self, p, cons, oDO, oIDO):  # print out the long description of the thing
         cons.write(self.long_desc)
 
-    def move_to(self, cons, oDO, oIDO):
+    def move_to(self, p, cons, oDO, oIDO):
         if self.fixed:
             cons.write(self.error_message)
         else:
@@ -81,13 +79,13 @@ class Thing:
                 self.location.extract(self)
             oDO.insert(self)
 
-    def take(self, cons, oDO, oIDO):
-        if not self.fixed and oDO != self:
-            self.move_to(cons, cons.user, oIDO)
+    def take(self, p, cons, oDO, oIDO):
+        if  (oDO == self) and not self.fixed:
+            self.move_to(p, cons, cons.user, oIDO)
             cons.write("You take the %s." % self.id)
 
-    def drop(self, cons, oDO, oIDO):
-        if not self.fixed and oDO != self:
-            self.move_to(cons, cons.user.location, oIDO)
+    def drop(self, p, cons, oDO, oIDO):
+        if (oDO == self) and not self.fixed:
+            self.move_to(p, cons, cons.user.location, oIDO)
             cons.write("You drop the %s." % self.id)
 

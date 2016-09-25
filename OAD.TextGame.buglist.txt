@@ -48,4 +48,65 @@ x		23a. An object can "emit" or print a message that objects (like players) in t
 		24b. Support auto-indentation, auto-labeling module/class/function writing debug, etc.
 	25. List contents of a room when you enter it (or at least any creatures)
 	
- 
+ Parser description: 
+
+First, the parser ignores or removes any articles ("a", "an", "the"). 
+Next, the parser searches for prepositions to categorize the command (like 
+diagramming a sentence). Here DO is "direct object", IDO is "indirect object", 
+and prep is "preposition":
+    1. intransitive-verb ("sneeze", "quit") 
+    2. transitive-verb DO ("take bag", "attack goblin")
+    3. transitive-verb DO prep IDO ("put sword on table", "put potion in bag")
+Note that DO and IDO might consist of multiple words ("take rusty sword"). 
+Eventually we could support more complex sentence structures like lists ("Take the 
+red apple and the sword") or multipart sentences ("Tell the orc to drop the sword").
+
+Once the sentence is parsed into verb, DO, prep, and IDO strings, the parser tries
+to match an object to the DO and and IDO. Every object has a list of names and adjectives.
+The parser loops through the objects in the player's inventory and (if it is not dark)
+the room containing the player. It checks the final word in the DO/IDO string against 
+each name of each object, building a list of possible matching nouns. (QUESTION: this 
+assumes any adjectives always come before the noun. Will this always be the case?). 
+For each noun found, it tries to match the other words to the adjectives supported by 
+the object. If all the words in the DO/IDO string can be accounted for, the parser
+adds the object to the list of possible nouns.
+
+Next the parser tries to match the verb string to the list of nouns. Each noun 
+has a list of transitive and intransitive verbs that it supports. (some verbs 
+can be both transitive and intransitive). If a noun does not support the given verb,
+it is removed from the list of possible DOs or IDOs.  It might make sense to create
+an Action class which has a list of possible synonyms ("attack orc", "kill orc", "fight 
+orc"), transitive/intransitive flags, and the function to call to enact the verb. Note that 
+a verb might be supported by the DO or the IDO ("cook food on stove" where "cook" 
+might be a verb supported by "stove"). (QUESTION: how to handle verbs that are "enabled"
+by a local object but might commonly be used without naming the object, such as "cook
+food" when a stove is present?)
+
+When this process is done, the parser prints an error message if more than one object 
+matches the DO or IDO string: 
+    > swing sword
+    Did you mean the rusty old sword or the gleaming vorpal sword?
+    > 
+IDEA: We might want to be able to "validate" verbs with a function that checks if the 
+verb is applicable to the given noun but doesn't actually enact the action. For instance,
+if the player was carrying the rusty sword and the gleaming sword was in the room, 
+the parser should be smart enough to know that "swing sword" doesn't apply to the gleaming 
+sword. In this case it would call validate() on each Verb object, and remove the noun 
+from the DO/IDO list if validate() does not return True. If there is only one possible noun in 
+the list, the parser should print an error message ("You can't swing the sword unless you
+take it first") returned by validate().  Note that a verb may be valid even if enacting 
+the verb would result in an error ("put sword in bag" is a valid sentence, even if the 
+"put" verb will print "The sword doesn't fit!" when you actually try to enact it). Eventually 
+we would also want to validate the IDO, but that also probably means validating the preposition 
+in the context of the verb and the IDO ("put sword on table" versus "put sword in table"). 
+This seems too complicated for now. 
+
+Once we have a valid verb and (if applicable) an unambigious DO/IDO, the parser calls 
+the verb function in the enabling object, passing as parameters the DO and IDO objects 
+(and strings?) as well as the full text of the user's input (for any special processing).
+The function should return True if the verb successfully "handles" the input (even if the 
+result of the player's intended action was not successful, e.g. the player tried to put the 
+sword in the bag but it was too small) or an error message if the verb was not successfully 
+enacted because the construct did not make sense ("put sword beyond bag"). Eventually the 
+parser could try other interpretations; for now it will just print the returned error 
+message.   

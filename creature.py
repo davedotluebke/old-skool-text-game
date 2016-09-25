@@ -1,6 +1,5 @@
 import random
 from debug import dbg
-
 from container import Container
 
 class Creature(Container):

@@ -13,7 +13,7 @@ class Player(Creature):
         Creature.perceive(self, message)
         self.cons.write(message)        
 
-    def inventory(self, cons, oDO, oIDO):
+    def inventory(self, p, cons, oDO, oIDO):
         cons.write("You are carrying:")
         if not self.contents:
             cons.write('nothing')
