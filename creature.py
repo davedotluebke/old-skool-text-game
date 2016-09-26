@@ -23,16 +23,13 @@ class NPC(Creature):
         self.act_frequency = 3  # how many heartbeats between NPC actions
         self.act_soon = 0       # how many heartbeats till next action
         self.actions = ['move_around', 'talk']  # list of action functions
-        self.quotes = []        # list of strings that the NPC might say
+        # list of strings that the NPC might say
         self.scripts = []
         self.current_script = None
         self.current_script_idx = 0
 
         g.register_heartbeat(self)
     
-    def add_quote(self, q):
-        self.quotes.append(q)
-
     def add_script(self, s):
         self.scripts.append(s)
 
@@ -73,19 +70,16 @@ class NPC(Creature):
         return
 
     def talk(self):
-        if self.quotes or self.scripts:
+        if self.scripts:
             if self.current_script:
-                lines = self.current_script
+                lines = self.current_script.splitlines()
                 index = self.current_script_idx
                 self.say(lines[index])
                 self.current_script_idx += 1
-                if self.current_script_idx == len(self.current_script):
+                if self.current_script_idx == len(lines):
                     self.current_script = None
                     self.current_script_idx = 0
             else:
-                speech = random.choice(self.quotes + self.scripts)
-                if speech in self.scripts:
-                    self.current_script = speech
-                else:
-                    self.say(speech)
+                self.current_script = random.choice(self.scripts)
+                
                 
