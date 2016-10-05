@@ -52,7 +52,7 @@ class Container(Thing):
         del self.contents[i]
 
     def look_at(self, p, cons, oDO, oIDO):
-        Thing.look_at(self, cons, oDO, oIDO)
+        Thing.look_at(self, p, cons, oDO, oIDO)
         if bool(len(self.contents)):
             cons.write("Inside there is:")
             for item in self.contents:
