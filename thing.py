@@ -9,14 +9,18 @@ class Thing:
         self.fixed = False
         self.short_desc = 'need_short_desc'
         self.long_desc = 'need_long_desc'
-        # dictionary mapping verb strings to functions:
-        self.verb_dict = {"look":           self.look_at,
-                          "examine":        self.look_at,
-                          "take":           self.take,
-                          "get":            self.take,
-                          "drop":           self.drop
-                          }
         self.contents = None        # None - only Containers can contain things
+        # dictionary mapping verb strings to functions:
+        self.verb_dict = {}
+        self.add_verb("look", self.look_at)
+        self.add_verb("examine", self.look_at)
+        self.add_verb("take", self.take)
+        self.add_verb("get", self.take)
+        self.add_verb("drop", self.drop)
+
+    def add_verb(self, sVerb, fVerb):
+        """Add the given string sVerb and function fVerb to the object's verb_dict{}."""
+        self.verb_dict[sVerb] = fVerb
 
     def set_weight(self, grams):
         if (grams < 0):

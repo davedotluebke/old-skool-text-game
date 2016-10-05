@@ -41,14 +41,17 @@ hallway = Room('hallway')
 kitchen = Room('kitchen')
 entryway = Room('entryway')
 woods = Room('woods')
+hideout = Room('secret hideout')
 
 bedroom.set_description('a dusty bedroom', 'The bare board walls of this bedroom are dusty. A musty smell fills the air.')
 hallway.set_description('a dusty hallway', 'This hallway has dusty walls made of wood. It is dim.')
 kitchen.set_description('a dusty kitchen with 50-year old apliences and decorations', 'This kitchen looks about 50 years old, and is very dusty but apears still useable.')
 entryway.set_description('a barren entryway', 'The dusty entryway has one chandelier hanging from the celing.')
 woods.set_description('some bright and cheerful woods', 'Theese woods have happy birdsongs and pretty trees. They are bright.')
+hideout.set_description('a secret room in the house', 'This is a secret hideout which is hard to find an entrence to but has magical exit doors.')
 
 woods.add_exit('west', entryway)
+woods.add_exit('down', hideout)
 entryway.add_exit('east', woods)
 entryway.add_exit('southwest', kitchen)
 entryway.add_exit('south', hallway)
@@ -58,6 +61,9 @@ hallway.add_exit('southeast', bedroom)
 bedroom.add_exit('northwest', hallway)
 kitchen.add_exit('northeast', entryway)
 kitchen.add_exit('southeast', hallway)
+hideout.add_exit('south', bedroom)
+hideout.add_exit('west', kitchen)
+hideout.add_exit('up', woods)
 
 bed = Thing('bed')
 bed.set_description('a queen-size bed', 'A plain and simple queen-size bed.')
@@ -86,9 +92,9 @@ bird.set_volume(0.2)
 bird.add_script('''Tweet!''')
 bird.add_script('''Tweet tweet''')
 bird.add_script(
-'''Testing 1
-testing 2
-testing done!
+'''Tweet tweet tweet,
+tweet tweet
+tweet, tweet,
 Tweety tweet-tweet''')
 woods.insert(bird)
 bird.act_frequency = 1
