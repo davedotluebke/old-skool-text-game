@@ -1,4 +1,5 @@
 from debug import dbg
+from action import Action
 
 class Thing:
     def __init__(self, ID):
@@ -17,6 +18,10 @@ class Thing:
         self.add_verb("take", self.take)
         self.add_verb("get", self.take)
         self.add_verb("drop", self.drop)
+        self.actions = []
+        self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
+        self.actions.append(Action(self.take, ["take", "get"], True, False))
+        self.actions.append(Action(self.drop, ["drop"], True, False))
 
     def add_verb(self, sVerb, fVerb):
         """Add the given string sVerb and function fVerb to the object's verb_dict{}."""
@@ -73,6 +78,7 @@ class Thing:
             recipient.perceive(message)
 
     def look_at(self, p, cons, oDO, oIDO):  # print out the long description of the thing
+        dbg.debug("Called Thing.look_at()")
         cons.write(self.long_desc)
 
     def move_to(self, p, cons, oDO, oIDO):

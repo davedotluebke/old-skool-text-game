@@ -1,5 +1,6 @@
 from debug import dbg
 from thing import Thing
+from action import Action
 
 class Container(Thing):
     def __init__(self, ID):
@@ -52,6 +53,7 @@ class Container(Thing):
         del self.contents[i]
 
     def look_at(self, p, cons, oDO, oIDO):
+        dbg.debug("Called Container.look_at()")
         Thing.look_at(self, p, cons, oDO, oIDO)
         if bool(len(self.contents)):
             cons.write("Inside there is:")

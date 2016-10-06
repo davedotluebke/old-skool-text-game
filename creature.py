@@ -22,7 +22,7 @@ class NPC(Creature):
         self.aggressive = False
         self.act_frequency = 3  # how many heartbeats between NPC actions
         self.act_soon = 0       # how many heartbeats till next action
-        self.actions = ['move_around', 'talk']  # list of action functions
+        self.choices = ['move_around', 'talk']  # list of things NPC might do
         # list of strings that the NPC might say
         self.scripts = []
         self.current_script = None
@@ -41,12 +41,12 @@ class NPC(Creature):
             if self.current_script:  # if currently reciting, continue
                 self.talk()
             else:                    # otherwise pick a random action
-                action = random.choice(self.actions)
+                choice = random.choice(self.choices)
                 try:
-                    action_fn = getattr(self, action)
-                    action_fn()
+                    choice_fn = getattr(self, choice)
+                    choice_fn()
                 except AttributeError:
-                    dbg.debug("Object "+self.id+" heartbeat tried to run non-existant action "+action+"!")
+                    dbg.debug("Object "+self.id+" heartbeat tried to run non-existant action choice "+choice+"!")
             
     def move_around(self):
         """The NPC leaves the room, taking a random exit"""
