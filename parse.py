@@ -133,13 +133,12 @@ class Parser:
                 num_words = num_words - 1
             a = a + 1
 
-        sV = self.words[0]   # verb as string
+        sV = None            # verb as string
         sDO = None           # Direct object as string
         oDO = None           # Direct object as object
         sIDO = None          # Indirect object as string
         oIDO = None          # Indirect object as object
         sPrep = None         # Preposition as string
-
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
         possible_nouns = [user.location]           \
@@ -179,7 +178,7 @@ class Parser:
             else:   # this should never happen
                 dbg.debug("Parse error, very confused!")
             return False
-                
+        
         # all verb functions take parser, console, direct (or invoking) object, indirect object
         verb(self, console, oDO, oIDO)
         return False

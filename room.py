@@ -12,15 +12,10 @@ class Room(Container):
         del self.verb_dict["take"]
         del self.verb_dict["drop"]
         self.fixed = True
-        self.hidden_exits = {}
-
 
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room
     
-    def add_secret_exit(self, exit_name, hiding_spot, exit_room):
-        self.hidden_exits['%s %s' % (exit_name, hiding_spot)] = exit_room
-
     def look_at(self, p, cons, oDO, oIDO):
         """Print long description of room, list items (excluding this player) and exits"""
         cons.write(self.long_desc)
@@ -53,14 +48,4 @@ class Room(Container):
             cons.write("exits are:")
             for w in cons.user.location.exits:
                 cons.write(w)
-
-    def reveal_exit(self, hiding_spot, exit_name):
-        revealed_exit = self.hidden_exits['%s %s' % (exit_name, hiding_spot)]
-        self.exits[exit_name] = revealed_exit
-        del self.hidden_exits['%s %s' % (exit_name, hiding_spot)]
-        dbg.debug('exit hidden by %s called %s leading to room %s revealed' % (hiding_spot, exit_name, revealed_exit.id()))
-
-    def hide_exit(self, hiding_spot, exit_name):
-        hiding_exit = self.exits[exit_name]
-        self.hidden_exits['%s %s' % (exit_name, hiding_spot)] = hiding_exit
-        del self.exits[exit_name]
+                

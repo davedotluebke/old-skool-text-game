@@ -7,6 +7,7 @@ from creature import Creature
 from creature import NPC
 from player import Player
 from console import Console
+from bookcase import Bookcase
 
 class Game():
     """The Game class contains a console and associated game state (e.g. player object for the console).
@@ -51,7 +52,6 @@ woods.set_description('some bright and cheerful woods', 'Theese woods have happy
 hideout.set_description('a secret room in the house', 'This is a secret hideout which is hard to find an entrence to but has magical exit doors.')
 
 woods.add_exit('west', entryway)
-woods.add_exit('down', hideout)
 entryway.add_exit('east', woods)
 entryway.add_exit('southwest', kitchen)
 entryway.add_exit('south', hallway)
@@ -70,6 +70,9 @@ bed.set_description('a queen-size bed', 'A plain and simple queen-size bed.')
 bed.set_weight(150000)
 bed.set_volume(6000)
 bedroom.insert(bed)
+
+bookcase = Bookcase('bookcase', hideout)
+entryway.insert(bookcase)
 
 bag = Container('bag')
 bag.set_description('a normal bag', 'A normal-looking brown bag.')

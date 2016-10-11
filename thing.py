@@ -98,4 +98,3 @@ class Thing:
         if (oDO == self) and not self.fixed:
             self.move_to(p, cons, cons.user.location, oIDO)
             cons.write("You drop the %s." % self.id)
-
