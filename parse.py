@@ -182,7 +182,3 @@ class Parser:
         # all verb functions take parser, console, direct (or invoking) object, indirect object
         verb(self, console, oDO, oIDO)
         return False
-
-
-
-
