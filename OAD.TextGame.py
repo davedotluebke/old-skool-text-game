@@ -9,6 +9,7 @@ from player import Player
 from console import Console
 from bookcase import Bookcase
 from scenery import Scenery
+from sink import Sink
 
 class Game():
     """The Game class contains a console and associated game state (e.g. player object for the console).
@@ -133,6 +134,19 @@ beech = Scenery("beech", "An old beech tree full of carvings",
 "This large old beech tree has been scarred with the reminders of many passers-by, who decided to immortalize their visit by carving their initials into the tree.")
 beech.add_response(["carve"], "You think about carving your own initials into the tree, but an uneasy feeling--as if the forest itself is watching--makes you stop.")
 woods.insert(beech)
+
+cabnets = Scenery('cabnets', 'a bunch of cabnets', 'The lightly stained wooden cabnets in this kitchen are slightly dusty.',
+[(['open'], 'They are all empty.')])
+kitchen.insert(cabnets)
+
+sink = Sink('sink')
+kitchen.insert(sink)
+
+bottle = Container('bottle')
+bottle.set_description('a blue bottle', 'This blue bottle looks like a normal plastic bottle. It is unlabled.')
+bottle.set_max_weight_carried(4e9)
+bottle.set_max_volume_carried(3e9)
+kitchen.insert(bottle)
 
 woods.insert(game.user)
 game.cons.loop(game.user, game)

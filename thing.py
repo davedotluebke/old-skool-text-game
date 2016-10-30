@@ -10,6 +10,8 @@ class Thing:
         self.fixed = False
         self.short_desc = 'need_short_desc'
         self.long_desc = 'need_long_desc'
+        self.names = [ID]   
+        self.adjectives = []
         self.contents = None        # None - only Containers can contain things
         # dictionary mapping verb strings to functions:
         self.verb_dict = {}
@@ -22,6 +24,13 @@ class Thing:
         self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
         self.actions.append(Action(self.take, ["take", "get"], True, False))
         self.actions.append(Action(self.drop, ["drop"], True, False))
+
+    def add_name(self, sName):
+        """Add the string sName as a possible noun name for this object"""
+        self.names.append(sName)
+
+    def add_adjective(self, sAdj):
+        self.adjectives.append(sAdj)
 
     def add_verb(self, sVerb, fVerb):
         """Add the given string sVerb and function fVerb to the object's verb_dict{}."""
@@ -87,12 +96,15 @@ class Thing:
         else:
             if self.location != None:
                 self.location.extract(self)
-            oDO.insert(self)
+            if oDO.insert(self):
+                return True
 
     def take(self, p, cons, oDO, oIDO):
         if  (oDO == self) and not self.fixed:
-            self.move_to(p, cons, cons.user, oIDO)
-            cons.write("You take the %s." % self.id)
+            if not self.move_to(p, cons, cons.user, oIDO):
+                cons.write("You take the %s." % self.id)
+            else:
+                cons.write("You cannot take the %s." % self.id)
 
     def drop(self, p, cons, oDO, oIDO):
         if (oDO == self) and not self.fixed:

@@ -13,6 +13,9 @@ class Container(Thing):
         """Put obj into this Container object, returning True if the operation failed"""
         dbg.debug("in insert")
         # error checking for max weight etc goes here
+        if obj.id == self.id:
+            dbg.debug('Trying to insert into self - not allowed!')
+            return True
         contents_weight = 0
         contents_volume = 0
         dbg.debug("going to start looping")
