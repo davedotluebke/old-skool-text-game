@@ -12,6 +12,8 @@ class Sink(Thing):
         filling = '%s' % p.words[1]
         cons.write('Water comes out of the sink, and fills your %s' % filling)
         self.emit('The %s is filled with water at the sink.' % filling)
-        self.water = Scenery('water', 'some normal water', 'This is some normal clear water.',[('drink', 'You take a big drink of the water, and your thirst is quenched.')])
-        exec_string = '%s.insert(self.water)'
+        water = Scenery('water', 'some normal water', 'This is some normal clear water.',[('drink', 'You take a big drink of the water, and your thirst is quenched.')])
+        exec_string = '%s.insert(water)' % filling
         exec(exec_string)
+        if oDO:
+            oDO.insert(water)

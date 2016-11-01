@@ -142,27 +142,24 @@ class Parser:
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
         # begin experimental new parse code - comment out before running
-        '''enabling_obj = None  # object supporting the verb the user typed  
-        verb_func = None     # function enacting the verb the user typed
-        possible_objects = user.contents + [user]
-        if (user.location.dark == False): 
-            possible_objects += user.location.contents
+        # FIRST, search for objects that support the verb the user typed
+            # TODO: only include room contents if room is not dark    
+        possible_objects = user.contents + user.location.contents + [user]
+        possible_verb_objects = []  # (obj,action) tuples supporting the verb
+        for obj in possible_objects:
+            for act in obj.actions:
+                if sV in act.verblist:
+                    if (act.intransitive and not sDO) or (act.transitive and sDO): 
+                        possible_verb_objects.append((obj,act))
+        if (not possible_verb_objects): 
+            console.write("Parse error: can't find any object supporting intransitive verb %s!" % sV)
+            return False
+        dbg.debug("Parser: Possible objects matching sV '%s': "+str(possible_verb_objects))
         
-        if sDO == None:      
-            # intransitive verb; search for objects supporting the verb sV
-            for obj in possible_objects:
-                for act = obj.actions:
-                    if act.intransitive and (sV in act.verblist):
-                        enabling_obj = obj
-                        verb_func = act.func
-                        possible_objects = [] # to terminate the outer loop
-                        break
-            if verb_func == None:
-                console.write("Parse error: can't find any object supporting itransitive verb %s!" % sV)
-                return False     
-        elif sIDO == None: 
-            # transitive verb + direct object: search for DO
-            sNoun = sDO[-1]  # noun is final word in sDO (after adjectives)
+        # NEXT, find objects that match the direct & indirect object strings
+        matched_objects = []
+        if sDO and not sIDO:        # transitive verb + direct object
+            sNoun = sDO.split()[-1]  # noun is final word in sDO (after adjectives)
             sAdjectives_list = sDO.split()[:-1]  # all words preceeding noun 
             for obj in possible_objects:
                 if sNoun in obj.names:
@@ -171,11 +168,10 @@ class Parser:
                             break
                     # name & all adjectives match
                     matched_objects.append(obj)
-
+                
             
-        '''
+        
         # end experimental new parse code 
-
 
         possible_nouns = [user.location]           \
                        + [user]                    \
