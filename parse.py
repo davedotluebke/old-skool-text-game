@@ -141,6 +141,38 @@ class Parser:
         sPrep = None         # Preposition as string
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
+        # begin experimental new parse code - comment out before running
+        # FIRST, search for objects that support the verb the user typed
+            # TODO: only include room contents if room is not dark    
+        possible_objects = user.contents + user.location.contents + [user]
+        possible_verb_objects = []  # (obj,action) tuples supporting the verb
+        for obj in possible_objects:
+            for act in obj.actions:
+                if sV in act.verblist:
+                    if (act.intransitive and not sDO) or (act.transitive and sDO): 
+                        possible_verb_objects.append((obj,act))
+        if (not possible_verb_objects): 
+            console.write("Parse error: can't find any object supporting intransitive verb %s!" % sV)
+            return False
+        dbg.debug("Parser: Possible objects matching sV '%s': "+str(possible_verb_objects))
+        
+        # NEXT, find objects that match the direct & indirect object strings
+        matched_objects = []
+        if sDO and not sIDO:        # transitive verb + direct object
+            sNoun = sDO.split()[-1]  # noun is final word in sDO (after adjectives)
+            sAdjectives_list = sDO.split()[:-1]  # all words preceeding noun 
+            for obj in possible_objects:
+                if sNoun in obj.names:
+                    for adj in sAdjectives_list:
+                        if adj not in obj.adjectives:
+                            break
+                    # name & all adjectives match
+                    matched_objects.append(obj)
+                
+            
+        
+        # end experimental new parse code 
+
         possible_nouns = [user.location]           \
                        + [user]                    \
                        + user.contents             \
@@ -182,7 +214,3 @@ class Parser:
         # all verb functions take parser, console, direct (or invoking) object, indirect object
         verb(self, console, oDO, oIDO)
         return False
-
-
-
-
