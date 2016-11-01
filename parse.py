@@ -64,7 +64,7 @@ class Parser:
             return (sV, None, None, None)
 
         # list of legal prepositions; note the before-and-after spaces
-        prepositions = [' in ', ' on ', ' over ', ' under '] 
+        prepositions = [' in ', ' on ', ' over ', ' under ', 'with', 'at'] 
         text = ' '.join(words[1:])  # all words after the verb
          
         sDO = sPrep = sIDO = None
@@ -128,7 +128,7 @@ class Parser:
         while a < num_words:
             dbg.debug('parser: a is %d, self.words[a] is %s' % (a, self.words[a]))
             if self.words[a] in ['a', 'an', 'the']:
-                dbg.debug('parser: %s is an article, so removing' % self.words[a])
+                dbg.debug('parser: "%s" is an article, so removing' % self.words[a])
                 del self.words[a]
                 num_words = num_words - 1
             a = a + 1
