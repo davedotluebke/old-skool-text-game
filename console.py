@@ -15,11 +15,5 @@ class Console:
         print(text)
 
     def loop(self, user, g):
-        while True:
-            g.beat() # TODO: clean this up
-            cmd = input('-> ')
-            stop_going = self.parser.parse(user, self, cmd)
-            if stop_going:
-                dbg.shut_down()
-                break
+        print('')
 
