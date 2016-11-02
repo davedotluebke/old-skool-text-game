@@ -141,6 +141,7 @@ class Parser:
         sPrep = None         # Preposition as string
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
+        ''' 
         # begin experimental new parse code - comment out before running
         # FIRST, search for objects that support the verb the user typed
             # TODO: only include room contents if room is not dark    
@@ -171,7 +172,8 @@ class Parser:
                 
             
         
-        # end experimental new parse code 
+        # end experimental new parse code
+        '''
 
         possible_nouns = [user.location]           \
                        + [user]                    \

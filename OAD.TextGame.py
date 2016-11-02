@@ -33,6 +33,15 @@ class Game():
         for h in self.heartbeat_users:
             h.heartbeat()
 
+    def loop(self):
+        while True:
+            self.beat()
+            cmd = input('-> ')
+            stop_going = self.cons.parser.parse(self.user, self.cons, cmd)
+            if stop_going:
+                dbg.shut_down()
+                break
+
 ## 
 ## "game" is a special global variable, an object of class Game that holds
 ## the actual game state and must be referenced by all the various objects. 
@@ -142,6 +151,12 @@ kitchen.insert(cabnets)
 sink = Sink('sink')
 kitchen.insert(sink)
 
+scarf = Thing('scarf')
+scarf.set_description('a bright pink scarf', 'This bright pink scarf is very clean and soft.')
+scarf.set_weight(200)
+scarf.set_volume(0.1)
+forest_one.insert(scarf)
+
 bottle = Container('bottle')
 bottle.set_description('a blue bottle', 'This blue bottle looks like a normal plastic bottle. It is unlabled.')
 bottle.set_max_weight_carried(4e9)
@@ -149,4 +164,4 @@ bottle.set_max_volume_carried(3e9)
 kitchen.insert(bottle)
 
 woods.insert(game.user)
-game.cons.loop(game.user, game)
+game.loop()
