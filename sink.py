@@ -10,12 +10,16 @@ class Sink(Thing):
         self.fix_in_place("You can't take the sink!")
         self.actions.append(Action(self.fill_container, ["fill"], True, False))
     
-    def fill_container(self, p, cons, oDO, oIDO):
-        filling = '%s' % p.words[1]
+    def fill_container(self, p, cons, oDO, oIDO, validate):
+        msg = True
+        if oDO == None:     msg = "What do you intend to fill from the sink?"
+        if validate:        return msg
+        if msg != True:     
+            cons.write(msg)
+            return
+        
+        filling = oDO.names[0]
         cons.write('Water comes out of the sink, and fills your %s' % filling)
         self.emit('The %s is filled with water at the sink.' % filling)
         water = Scenery('water', 'some normal water', 'This is some normal clear water.',[('drink', 'You take a big drink of the water, and your thirst is quenched.')])
-        exec_string = '%s.insert(water)' % filling
-        exec(exec_string)
-        #if oDO:
-        #    oDO.insert(water)
+        oDO.insert(water)

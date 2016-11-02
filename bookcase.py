@@ -11,10 +11,18 @@ class Bookcase(Thing):
         self.actions.append(Action(self.handle_book, ["take", "get", "pull"], True, False))
         self.hidden_room = hidden_room
 
-    def handle_book(self, p, cons, oDO, oIDO):
+    def handle_book(self, p, cons, oDO, oIDO, validate):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sDO in ['book', 'old book', 'new book']:
+            if (validate): 
+                return True
             cons.write('You pull on a book. ')
             self.emit('The bookcase shakes, and swings open, revealing a secret staircase leading down.')
             self.location.add_exit('down', self.hidden_room)
             self.set_description('a bookcase door wide open to a secret staircase', 'This door is cleverly disguised as a bookcase. It is open, revealing a secret staircase leading down.')
+        else:
+            msg = "Did you mean to get a particular book?"
+            if (validate):
+                return msg
+            else:
+                cons.write(msg)

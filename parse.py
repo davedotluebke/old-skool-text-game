@@ -159,7 +159,7 @@ class Parser:
         if not sDO:                 # intransitive verb, no direct object
             verb = possible_verb_actions[0].func
             # all verb functions take parser, console, direct (or invoking) object, indirect object
-            verb(self, console, oDO, oIDO)
+            verb(self, console, oDO, oIDO, False)
             return False
 
         # NEXT, find objects that match the direct & indirect object strings
@@ -180,15 +180,30 @@ class Parser:
                 if match:   # name & all adjectives match
                     matched_objects.append(obj)
         dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects))        
-        if not matched_objects:
-            console.write("I'm not sure what you mean by "+sDO+".")
-            return False 
-        elif len(matched_objects) > 1:
+        if len(matched_objects) > 1:
             list = ", or ".join(o.short_desc for o in matched_objects)
             console.write("By '%s', do you mean %s?" % (sDO, list))
             return False
+        elif len(matched_objects) == 0:
+            # user typed a direct object that doesn't match any objects. Could be 
+            # an error, could be e.g. "go north". Validate all supporting objects.
+            oDO = None
         else:   # exactly one object in matched_objects 
             oDO = matched_objects[0]
+        
+        # Use verb validate mode to eliminate invalid object/action pairs 
+        for obj in possible_verb_objects:
+            i = possible_verb_objects.index(obj)
+            act = possible_verb_actions[i] 
+            result = act.func(self, console, oDO, oIDO, validate=True)
+            if result != True:
+                # remove this object/action pair
+                del possible_verb_actions[i]
+                del possible_verb_objects[i]
+        # if no objects left, print the error message from validation
+        if len(possible_verb_objects) == 0:
+            console.write(result)
+            return False
         
         # if direct object supports the verb, use it
         if oDO in possible_verb_objects:
@@ -198,5 +213,5 @@ class Parser:
         verb = act.func
 
         # all verb functions take parser, console, direct (or invoking) object, indirect object
-        verb(self, console, oDO, oIDO)
+        verb(self, console, oDO, oIDO, False)
         return False

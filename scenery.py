@@ -19,8 +19,14 @@ class Scenery(Thing):
         self.responses.append((verbs, result))
         self.actions.append(Action(self.handle_scenery_verb, verbs, True, False))
 
-    def handle_scenery_verb(self, p, cons, oDO, oIDO):
+    # TODO: extend scenery to support intransitive verbs (e.g. "sleep", "drink") 
+    def handle_scenery_verb(self, p, cons, oDO, oIDO, validate):
         verb = p.words[0]
+        if (validate): 
+            if (oDO == self): 
+                return True
+            else:
+                return "What are you trying to %s?" % verb
         for i in self.responses:
             if verb in i[0]:
                 cons.write(i[1])

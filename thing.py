@@ -81,27 +81,61 @@ class Thing:
         for recipient in recipients:
             recipient.perceive(message)
 
-    def look_at(self, p, cons, oDO, oIDO):  # print out the long description of the thing
+    def move_to(self, dest):
+        """Extract this object from its current location and insert into dest. 
+        Returns True if the move succeds. If the insertion fails, attempts to 
+        re-insert into the original location and returns False."""
+        origin = self.location
+        if origin:
+            origin.extract(self)
+        # if cannot insert into destination, return to where it came from
+        if not dest.insert(self):  # dest.insert returns True if insertion fails
+            return True
+        else:
+            if (origin):
+                origin.insert(self)
+            return False
+
+    # TODO: plumb validation protocol down to move_to(), insert(), extract()
+    def take(self, p, cons, oDO, oIDO, validate):
+        msg = True
+        if oDO != self:
+            msg = "You can't take that!"
+        elif self.fixed:
+            msg = self.error_message 
+        if validate:
+            return msg
+        if msg != True: 
+            cons.write(msg)
+            return 
+        if self.move_to(cons.user):
+            cons.write("You take the %s." % self.id)
+        else:
+            cons.write("You cannot take the %s." % self.id)
+
+    def drop(self, p, cons, oDO, oIDO, validate):
+        msg = True
+        if oDO != self:
+            msg = "You can't take that!"
+        elif self.fixed:
+            msg = self.error_message 
+        if validate:
+            return msg
+        if msg != True: 
+            cons.write(msg)
+            return
+        if self.move_to(cons.user.location):
+            cons.write("You drop the %s." % self.id)
+        else:
+            cons.write("You cannot drop the %s" % self.id)
+
+    def look_at(self, p, cons, oDO, oIDO, validate):  
+        '''Print out the long description of the thing.'''
         dbg.debug("Called Thing.look_at()")
+        if (validate): 
+            if oDO == self:
+                return True
+            else: 
+                return "Not sure what you are trying to look at!"
         cons.write(self.long_desc)
 
-    def move_to(self, p, cons, oDO, oIDO):
-        if self.fixed:
-            cons.write(self.error_message)
-        else:
-            if self.location != None:
-                self.location.extract(self)
-            if oDO.insert(self):
-                return True
-
-    def take(self, p, cons, oDO, oIDO):
-        if  (oDO == self) and not self.fixed:
-            if not self.move_to(p, cons, cons.user, oIDO):
-                cons.write("You take the %s." % self.id)
-            else:
-                cons.write("You cannot take the %s." % self.id)
-
-    def drop(self, p, cons, oDO, oIDO):
-        if (oDO == self) and not self.fixed:
-            self.move_to(p, cons, cons.user.location, oIDO)
-            cons.write("You drop the %s." % self.id)
