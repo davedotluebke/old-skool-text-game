@@ -144,6 +144,7 @@ class Parser:
         # begin experimental new parse code - comment out before running
         # FIRST, search for objects that support the verb the user typed
             # TODO: only include room contents if room is not dark    
+            # TODO: recursively include contents of containers if see_inside set
         possible_objects = user.contents + user.location.contents + [user]
         possible_verb_objects = []  # (obj,action) tuples supporting the verb
         for obj in possible_objects:
@@ -151,8 +152,8 @@ class Parser:
                 if sV in act.verblist:
                     if (act.intransitive and not sDO) or (act.transitive and sDO): 
                         possible_verb_objects.append((obj,act))
-        if (not possible_verb_objects): 
-            console.write("Parse error: can't find any object supporting intransitive verb %s!" % sV)
+        if not possible_verb_objects: 
+            console.write("Parse error: can't find any object supporting verb %s!" % sV)
             return False
         dbg.debug("Parser: Possible objects matching sV '%s': "+str(possible_verb_objects))
         

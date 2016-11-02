@@ -127,11 +127,18 @@ field.insert(butterfly)
 
 elm = Scenery("elm", "a massive old elm tree", "This huge elm tree must be over a hundred years old. You are tempted to hug it.", 
 [(["hug", "hold"], "You give the old elm tree a long hug, and feel deeply satisfied.")])
+elm.add_name("tree")
+elm.add_adjective("big")
+elm.add_adjective("elm")
 elm.add_response(["climb"], "The trunk is too broad to wrap your arms around, and the lowest branches are far too high to reach.")
 woods.insert(elm)
 
 beech = Scenery("beech", "An old beech tree full of carvings", 
 "This large old beech tree has been scarred with the reminders of many passers-by, who decided to immortalize their visit by carving their initials into the tree.")
+beech.add_name("tree")
+beech.add_adjective("old")
+beech.add_adjective("carved")
+beech.add_adjective("beech")
 beech.add_response(["carve"], "You think about carving your own initials into the tree, but an uneasy feeling--as if the forest itself is watching--makes you stop.")
 woods.insert(beech)
 
