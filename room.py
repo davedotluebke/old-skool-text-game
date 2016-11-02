@@ -1,5 +1,6 @@
 from debug import dbg
 from container import Container
+from action import Action
 
 class Room(Container):
     def __init__(self, ID):
@@ -7,10 +8,7 @@ class Room(Container):
         self.exits = {}
         self.set_max_weight_carried(4e9)
         self.set_max_volume_carried(3e9)
-        self.verb_dict["go"]        = self.go_to
-        self.verb_dict["walk"]      = self.go_to
-        del self.verb_dict["take"]
-        del self.verb_dict["drop"]
+        self.actions.append(Action(self.go_to, ["go", "walk"], True, False))
         self.fixed = True
 
     def add_exit(self, exit_name, exit_room):

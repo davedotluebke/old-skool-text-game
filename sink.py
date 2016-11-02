@@ -1,12 +1,14 @@
+from debug import dbg
 from thing import Thing
 from scenery import Scenery
-from debug import dbg
+from action import Action
+
 class Sink(Thing):
     def __init__(self, ID):
         Thing.__init__(self, ID)
         self.set_description('a metal sink', 'This is an old metal sink, probably from the 1960s and nothing seems wrong with it.')
         self.fix_in_place("You can't take the sink!")
-        self.add_verb('fill', self.fill_container)
+        self.actions.append(Action(self.fill_container, ["fill"], True, False))
     
     def fill_container(self, p, cons, oDO, oIDO):
         filling = '%s' % p.words[1]

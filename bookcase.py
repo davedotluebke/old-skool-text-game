@@ -8,9 +8,6 @@ class Bookcase(Thing):
         self.set_description('a bookcase full of books', \
         'This bookcase is a hodge-podge of books, some are newer, but a lot of old ones are scattered around them.')
         self.fixed = True
-        self.add_verb('take', self.handle_book)
-        self.add_verb('get', self.handle_book)
-        self.add_verb('pull', self.handle_book)
         self.actions.append(Action(self.handle_book, ["take", "get", "pull"], True, False))
         self.hidden_room = hidden_room
 

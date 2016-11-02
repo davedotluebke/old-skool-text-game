@@ -14,24 +14,19 @@ class Thing:
         self.adjectives = []
         self.contents = None        # None - only Containers can contain things
         # dictionary mapping verb strings to functions:
-        self.verb_dict = {}
-        self.add_verb("look", self.look_at)
-        self.add_verb("examine", self.look_at)
-        self.add_verb("take", self.take)
-        self.add_verb("get", self.take)
-        self.add_verb("drop", self.drop)
         self.actions = []
         self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
         self.actions.append(Action(self.take, ["take", "get"], True, False))
         self.actions.append(Action(self.drop, ["drop"], True, False))
 
-    def add_name(self, sName):
-        """Add the string sName as a possible noun name for this object"""
-        self.names.append(sName)
+    def add_names(self, *sNames):
+        """Add one or more strings as possible noun names for this object, each as a separate argument"""
+        self.names += list(sNames)
 
-    def add_adjective(self, sAdj):
-        self.adjectives.append(sAdj)
-
+    def add_adjectives(self, *sAdjs):
+        """Add one or more adjective strings, each as a separate argument"""
+        self.adjectives += list(sAdjs)
+    
     def add_verb(self, sVerb, fVerb):
         """Add the given string sVerb and function fVerb to the object's verb_dict{}."""
         self.verb_dict[sVerb] = fVerb

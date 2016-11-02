@@ -11,15 +11,13 @@ class Scenery(Thing):
         self.fix_in_place("You can't move the %s!" % (ID))
         self.set_description(short_desc, long_desc)
         for item in response_list:
-            for verb in item[0]:
-                self.add_verb(verb, self.handle_scenery_verb)
+            self.actions.append(Action(self.handle_scenery_verb, item[0], True, False))
         self.responses = response_list
     
     def add_response(self, verbs, result):
         """If the player types one of the verbs in <verbs>, the game will print <result>"""
         self.responses.append((verbs, result))
-        for verb in verbs:
-            self.add_verb(verb, self.handle_scenery_verb)
+        self.actions.append(Action(self.handle_scenery_verb, verbs, True, False))
 
     def handle_scenery_verb(self, p, cons, oDO, oIDO):
         verb = p.words[0]
