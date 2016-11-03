@@ -8,7 +8,6 @@ class Player(Creature):
         self.cons = console
         self.set_weight(175/2.2)
         self.set_volume(66)
-        self.new_verb("inventory", self.inventory)
         inv = Action(self.inventory, "inventory", False, True)
         self.actions.append(inv)
 
@@ -16,7 +15,9 @@ class Player(Creature):
         Creature.perceive(self, message)
         self.cons.write(message)        
 
-    def inventory(self, p, cons, oDO, oIDO):
+    def inventory(self, p, cons, oDO, oIDO, validate):
+        if (validate): 
+            return True
         cons.write("You are carrying:")
         if not self.contents:
             cons.write('nothing')

@@ -141,79 +141,78 @@ class Parser:
         sPrep = None         # Preposition as string
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
-        ''' 
-        # begin experimental new parse code - comment out before running
         # FIRST, search for objects that support the verb the user typed
             # TODO: only include room contents if room is not dark    
             # TODO: recursively include contents of containers if see_inside set
-        possible_objects = user.contents + user.location.contents + [user]
-        possible_verb_objects = []  # (obj,action) tuples supporting the verb
+        possible_objects = [user.location] + user.contents + user.location.contents + [user]
+        possible_verb_objects = []  # list of objects supporting the verb
+        possible_verb_actions = []  # corresponding list of actions 
         for obj in possible_objects:
             for act in obj.actions:
                 if sV in act.verblist:
                     if (act.intransitive and not sDO) or (act.transitive and sDO): 
-                        possible_verb_objects.append((obj,act))
-        if not possible_verb_objects: 
+                        possible_verb_objects.append(obj)
+                        possible_verb_actions.append(act)
+        if (not possible_verb_objects): 
             console.write("Parse error: can't find any object supporting verb %s!" % sV)
             return False
-        dbg.debug("Parser: Possible objects matching sV '%s': "+str(possible_verb_objects))
-        
+        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects))
+        if not sDO:                 # intransitive verb, no direct object
+            verb = possible_verb_actions[0].func
+            # all verb functions take parser, console, direct (or invoking) object, indirect object
+            verb(self, console, oDO, oIDO, False)
+            return False
+
         # NEXT, find objects that match the direct & indirect object strings
         matched_objects = []
-        if sDO and not sIDO:        # transitive verb + direct object
+        if sDO and not sIDO:         # transitive verb + direct object
             sNoun = sDO.split()[-1]  # noun is final word in sDO (after adjectives)
             sAdjectives_list = sDO.split()[:-1]  # all words preceeding noun 
             for obj in possible_objects:
+                match = True
                 if sNoun in obj.names:
                     for adj in sAdjectives_list:
                         if adj not in obj.adjectives:
+                            match = False
                             break
-                    # name & all adjectives match
+                else:               # sNoun doesn't match any obj.names
+                    match = False
+
+                if match:   # name & all adjectives match
                     matched_objects.append(obj)
-                
-            
+        dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects))        
+        if len(matched_objects) > 1:
+            list = ", or ".join(o.short_desc for o in matched_objects)
+            console.write("By '%s', do you mean %s?" % (sDO, list))
+            return False
+        elif len(matched_objects) == 0:
+            # user typed a direct object that doesn't match any objects. Could be 
+            # an error, could be e.g. "go north". Validate all supporting objects.
+            oDO = None
+        else:   # exactly one object in matched_objects 
+            oDO = matched_objects[0]
         
-        # end experimental new parse code
-        '''
-
-        possible_nouns = [user.location]           \
-                       + [user]                    \
-                       + user.contents             \
-                       + user.location.contents
-
-        found_matching_noun = False
-        found_matching_verb = False
-        for i in possible_nouns:
-            dbg.debug("parser: possible_nouns includes %s " % (i.id))
-            if i.id == sDO:
-                dbg.debug("  parser: found a match! Checking whether %s supports verb '%s'" % (i.id, sV))
-                found_matching_noun = True
-                if sV in i.verb_dict:
-                    dbg.debug("    parser: it does! Setting oDO to %s" % (i.id))
-                    found_matching_verb = True
-                    oDO = i
-                    break 
-                else:
-                    dbg.debug("    parser: it does not! %s probably not the intended direct object." % (i.id))
-            else:
-                if sV in list(i.verb_dict):
-                    dbg.debug("  parser: doesn't match user-typed DO %s, but supports verb %s" % (sDO,sV))
-                    found_matching_verb = True
-                    if oDO == None:
-                        dbg.debug("    parser: setting oDO to %s" % (i.id)) 
-                        oDO = i
-        if oDO:
-            verb = oDO.verb_dict[sV]
-            dbg.debug("%s . verb_dict[%s]= %s" % (oDO.id, sV, verb))
-        else:   # couldn't determine what the verb means
-            if (found_matching_noun is True) and (found_matching_verb is False):
-                console.write("Sorry, I don't know what that means! (noun '%s' doesn't support verb '%s')" % (sDO,sV))
-            elif (found_matching_noun is False) and (found_matching_verb is False): 
-                console.write("Sorry, could not find a noun matching '%s' for verb '%s'." % (sDO, sV))
-            else:   # this should never happen
-                dbg.debug("Parse error, very confused!")
+        # Use verb validate mode to eliminate invalid object/action pairs 
+        for obj in possible_verb_objects:
+            i = possible_verb_objects.index(obj)
+            act = possible_verb_actions[i] 
+            result = act.func(self, console, oDO, oIDO, validate=True)
+            if result != True:
+                # remove this object/action pair
+                del possible_verb_actions[i]
+                del possible_verb_objects[i]
+        # if no objects left, print the error message from validation
+        if len(possible_verb_objects) == 0:
+            console.write(result)
             return False
         
+        # if direct object supports the verb, use it
+        if oDO in possible_verb_objects:
+            act = possible_verb_actions[possible_verb_objects.index(oDO)]
+        else:   # otherwise use the first object found to support the verb
+            act = possible_verb_actions[0]   
+        verb = act.func
+
         # all verb functions take parser, console, direct (or invoking) object, indirect object
-        verb(self, console, oDO, oIDO)
+        verb(self, console, oDO, oIDO, False)
         return False
