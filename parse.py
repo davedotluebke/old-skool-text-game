@@ -108,22 +108,22 @@ class Parser:
             return (sV, sDO, sPrep, sIDO)
                     
     def parse(self, user, console, command):
-        """Parse and enact the user's command. Return True to quit game."""     
+        """Parse and enact the user's command. Return False to quit game."""     
         command = command.lower()   # convert whole string to lowercase
         if command == 'quit': 
-            return True
+            return False
         
         if command == 'verbose':
             _toggle_verbosity()
-            return False
+            return True
         
         self.words = command.split()
         if len(self.words) == 0:
-            return False
+            return True
         
         if self.words[0] == 'alias':
             self._add_alias(console, command)         
-            return False
+            return True
 
         # replace any aliases with their completed version
         command = self._replace_aliases()
@@ -153,15 +153,19 @@ class Parser:
                         possible_verb_objects.append(obj)
                         possible_verb_actions.append(act)
         if (not possible_verb_objects): 
-            console.write("Parse error: can't find any object supporting verb %s!" % sV)
-            return False
+            if sDO == None:
+                console.write("Parse error: can't find any object supporting intransitive verb %s!" % sV)
+            else:
+                console.write("Parse error: can't find any object supporting transitive verb %s!" % sV)
+            # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
+            return True
         dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects))
         
         if not sDO:                 # intransitive verb, no direct object
             verb = possible_verb_actions[0].func
             # all verb functions take parser, console, direct (or invoking) object, indirect object
-            verb(self, console, oDO, oIDO, False)
-            return False
+            verb(self, console, oDO, oIDO)
+            return True
 
         # NEXT, find objects that match the direct & indirect object strings
         matched_objects = []
@@ -184,7 +188,7 @@ class Parser:
         if len(matched_objects) > 1:
             list = ", or ".join(o.short_desc for o in matched_objects)
             console.write("By '%s', do you mean %s?" % (sDO, list))
-            return False
+            return True
         elif len(matched_objects) == 0:
             # user typed a direct object that doesn't match any objects. Could be 
             # an error, could be e.g. "go north". Validate all supporting objects.
@@ -192,27 +196,30 @@ class Parser:
         else:   # exactly one object in matched_objects 
             oDO = matched_objects[0]
         
-        # Use verb validate mode to eliminate invalid object/action pairs 
-        for obj in possible_verb_objects:
-            i = possible_verb_objects.index(obj)
-            act = possible_verb_actions[i] 
-            result = act.func(self, console, oDO, oIDO, validate=True)
-            if result != True:
-                # remove this object/action pair
-                del possible_verb_actions[i]
-                del possible_verb_objects[i]
-        # if no objects left, print the error message from validation
-        if len(possible_verb_objects) == 0:
-            console.write(result)
-            return False
-        
-        # if direct object supports the verb, use it
+        # If direct object supports the verb, try it first
         if oDO in possible_verb_objects:
-            act = possible_verb_actions[possible_verb_objects.index(oDO)]
-        else:   # otherwise use the first object found to support the verb
-            act = possible_verb_actions[0]   
-        verb = act.func
+            idx = possible_verb_objects.index(oDO)
+            act = possible_verb_actions[idx]            
+            possible_verb_actions.insert(0, act)
 
-        # all verb functions take parser, console, direct (or invoking) object, indirect object
-        verb(self, console, oDO, oIDO, False)
-        return False
+        # Try the "verb functions" associated with each object/action pair.
+        # If a valid usage of this verb function, it will return True and 
+        # the command has been handled; otherwise it returns an error message. 
+        # In this case keep trying other actions. If no valid verb function is 
+        # found, print the error message from the first invalid verb tried.   
+        result = False
+        err_msg = None
+        for act in possible_verb_actions:
+            result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
+            if result == True:
+                break               # verb has been enacted, all done!
+            if err_msg == None: 
+                err_msg = result    # save the first error encountered
+
+        if result == True:
+            return True
+
+        # no objects handled the verb; print the first error message 
+        console.write(err_msg)
+        return True
+        

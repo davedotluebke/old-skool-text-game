@@ -7,7 +7,7 @@ class Thing:
         self.weight = 0.0
         self.volume = 0.0
         self.location = None
-        self.fixed = False
+        self.fixed = False          # False if unfixed, error message if fixed 
         self.short_desc = 'need_short_desc'
         self.long_desc = 'need_long_desc'
         self.names = [ID]   
@@ -49,8 +49,7 @@ class Thing:
         self.location = containing_object
 
     def fix_in_place(self, error_message):
-        self.fixed = True
-        self.error_message = error_message
+        self.fixed = error_message
 
     def unfix(self):
         self.fixed = False
@@ -97,45 +96,29 @@ class Thing:
             return False
 
     # TODO: plumb validation protocol down to move_to(), insert(), extract()
-    def take(self, p, cons, oDO, oIDO, validate):
-        msg = True
-        if oDO != self:
-            msg = "You can't take that!"
-        elif self.fixed:
-            msg = self.error_message 
-        if validate:
-            return msg
-        if msg != True: 
-            cons.write(msg)
-            return 
+    def take(self, p, cons, oDO, oIDO):
+        if oDO != self: return "You can't take that!"
+        if self.fixed:  return self.fixed 
         if self.move_to(cons.user):
             cons.write("You take the %s." % self.id)
         else:
             cons.write("You cannot take the %s." % self.id)
+        return True
 
-    def drop(self, p, cons, oDO, oIDO, validate):
-        msg = True
-        if oDO != self:
-            msg = "You can't take that!"
-        elif self.fixed:
-            msg = self.error_message 
-        if validate:
-            return msg
-        if msg != True: 
-            cons.write(msg)
-            return
+    def drop(self, p, cons, oDO, oIDO):
+        if oDO != self:     return "You can't drop that!"
+        if self.fixed:      return self.fixed
         if self.move_to(cons.user.location):
             cons.write("You drop the %s." % self.id)
         else:
             cons.write("You cannot drop the %s" % self.id)
+        return True
 
-    def look_at(self, p, cons, oDO, oIDO, validate):  
+    def look_at(self, p, cons, oDO, oIDO):  
         '''Print out the long description of the thing.'''
         dbg.debug("Called Thing.look_at()")
-        if (validate): 
-            if oDO == self:
-                return True
-            else: 
-                return "Not sure what you are trying to look at!"
+        if oDO != self: 
+            return "Not sure what you are trying to look at!"
         cons.write(self.long_desc)
+        return True
 

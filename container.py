@@ -55,14 +55,13 @@ class Container(Thing):
         assert found != -1
         del self.contents[i]
 
-    def look_at(self, p, cons, oDO, oIDO, validate):
+    def look_at(self, p, cons, oDO, oIDO):
         dbg.debug("Called Container.look_at()")
-        if (validate): 
-            return True
-        Thing.look_at(self, p, cons, oDO, oIDO, validate)
+        Thing.look_at(self, p, cons, oDO, oIDO)
         if bool(len(self.contents)):   # TODO: lose bool and len functions?
             cons.write("Inside there is:")
             for item in self.contents:
                 cons.write(item.short_desc)
         else:
             cons.write("It is empty.")
+        return True

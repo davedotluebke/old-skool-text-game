@@ -37,8 +37,8 @@ class Game():
         while True:
             self.beat()
             cmd = input('-> ')
-            stop_going = self.cons.parser.parse(self.user, self.cons, cmd)
-            if stop_going:
+            keep_going = self.cons.parser.parse(self.user, self.cons, cmd)
+            if not keep_going:
                 dbg.shut_down()
                 break
 

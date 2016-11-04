@@ -15,11 +15,10 @@ class Player(Creature):
         Creature.perceive(self, message)
         self.cons.write(message)        
 
-    def inventory(self, p, cons, oDO, oIDO, validate):
-        if (validate): 
-            return True
+    def inventory(self, p, cons, oDO, oIDO):
         cons.write("You are carrying:")
         if not self.contents:
             cons.write('nothing')
         for i in self.contents:
             cons.write(i.id)
+        return True
