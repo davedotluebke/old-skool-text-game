@@ -44,6 +44,25 @@ class Parser:
         cons.write("'%s' is now an alias for '%s'" % (alias, expansion))
         return
 
+    def _replace_aliases(self):
+        cmd = ""
+        for t in self.words:
+            if t in self.alias_map:
+                cmd += self.alias_map[t] + " "
+                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]))
+            else:
+                cmd += t + " "
+        dbg.debug("User input with aliases resolved:\n    %s" % (cmd))
+        return cmd
+
+    def _toggle_verbosity(self):
+        if dbg.verbosity == 0:
+            dbg.verbosity = 1
+            console.write("Verbose debug output now on.")
+        else:
+            dbg.verbosity = 0
+            console.write("Verbose debug output now off.")
+
     def diagram_sentence(self, words):
         """Categorize sentence type and set verb, direct/indirect object strings.
         
@@ -90,16 +109,12 @@ class Parser:
                     
     def parse(self, user, console, command):
         """Parse and enact the user's command. Return True to quit game."""     
-        if command == 'quit':
+        command = command.lower()   # convert whole string to lowercase
+        if command == 'quit': 
             return True
         
         if command == 'verbose':
-            if dbg.verbosity == 0:
-                dbg.verbosity = 1
-                console.write("Verbose debug output now on.")
-            else:
-                dbg.verbosity = 0
-                console.write("Verbose debug output now off.")
+            _toggle_verbosity()
             return False
         
         self.words = command.split()
@@ -111,27 +126,11 @@ class Parser:
             return False
 
         # replace any aliases with their completed version
-        command = ""
-        for t in self.words:
-            if t in self.alias_map:
-                command += self.alias_map[t] + " "
-                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]))
-            else:
-                command += t + " "
-        dbg.debug("User input with aliases resolved:\n    %s" % (command))
-
+        command = self._replace_aliases()
         self.words = command.split()
 
         # remove articles:
-        num_words = len(self.words)
-        a = 0
-        while a < num_words:
-            dbg.debug('parser: a is %d, self.words[a] is %s' % (a, self.words[a]))
-            if self.words[a] in ['a', 'an', 'the']:
-                dbg.debug('parser: "%s" is an article, so removing' % self.words[a])
-                del self.words[a]
-                num_words = num_words - 1
-            a = a + 1
+        words = [w for w in self.words if w not in ['a', 'an', 'the']]
 
         sV = None            # verb as string
         sDO = None           # Direct object as string
@@ -157,6 +156,7 @@ class Parser:
             console.write("Parse error: can't find any object supporting verb %s!" % sV)
             return False
         dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects))
+        
         if not sDO:                 # intransitive verb, no direct object
             verb = possible_verb_actions[0].func
             # all verb functions take parser, console, direct (or invoking) object, indirect object
