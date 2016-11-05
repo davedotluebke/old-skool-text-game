@@ -22,3 +22,4 @@ class Player(Creature):
         for i in self.contents:
             cons.write(i.id)
         return True
+
