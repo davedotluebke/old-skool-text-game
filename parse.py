@@ -222,4 +222,4 @@ class Parser:
         # no objects handled the verb; print the first error message 
         console.write(err_msg)
         return True
-        
+
