@@ -65,3 +65,4 @@ class Container(Thing):
         else:
             cons.write("It is empty.")
         return True
+
