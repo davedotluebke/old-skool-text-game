@@ -118,8 +118,14 @@ plate.add_adjectives('dinner','white')
 kitchen.insert(plate)
 #plate.set_location(kitchen)
 
-table = Thing('table')
-# table.set_description
+table = Container('table')
+table.set_description("kitchen table", "This dated-looking kitchen table has chrome edging and a formica top.")
+table.fix_in_place("The table is too heavy and awkward to move.")
+table.add_adjectives("kitchen", "dated", "formica")
+table.set_prepositions("on", "onto")
+table.set_max_volume_carried(5000)
+table.set_max_weight_carried(150000)
+kitchen.insert(table)
 
 bird = NPC('bird', game)
 bird.set_description('bluebird', 'A nice looking little bluebird.')

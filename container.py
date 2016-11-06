@@ -18,7 +18,7 @@ class Container(Thing):
         self.actions.append(Action(self.open, ["open"], True, False))
         self.actions.append(Action(self.close, ["close"], True, False))
 
-    def set_prepositions(*preps):
+    def set_prepositions(self, *preps):
         """Set one or more appropriate prepositions for inserting an object
         into this container, each as a separate argument.
         
@@ -81,7 +81,8 @@ class Container(Thing):
             return result
         if self.see_inside:
             if self.contents:
-                cons.write("Inside there is:")
+                preamble = "%s the %s there is:" % (self.insert_prepositions[0], self.names[0])
+                cons.write(preamble.capitalize())
                 for item in self.contents:
                     cons.write("a " + item.short_desc)
             else:
@@ -135,7 +136,7 @@ class Container(Thing):
             return "Did you mean to 'put' something %s the %s?" % (sPrep, self.short_desc)
         if oDO.fixed: return oDO.fixed
         if sPrep not in self.insert_prepositions:
-            return "You can't put the %s %s the %s, but you can put it %s the %s" % (oDO.id, sPrep, self.id, self.insert_prepositions[0], self.id)
+            return "You can't put the %s %s the %s, but you can put it %s the %s." % (oDO.id, sPrep, self.id, self.insert_prepositions[0], self.id)
         if self.closed:
             cons.write(self.closed_err if self.closed_err else "The %s is closed; you can't put anything %s it." % (self.short_desc, self.insert_prepositions[0]))
             return True
