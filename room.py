@@ -9,6 +9,7 @@ class Room(Container):
         self.set_max_weight_carried(4e9)
         self.set_max_volume_carried(3e9)
         self.actions.append(Action(self.go_to, ["go", "walk"], True, False))
+        self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
         self.fix_in_place("You can't move that!")
 
     def add_exit(self, exit_name, exit_room):
@@ -16,6 +17,11 @@ class Room(Container):
     
     def look_at(self, p, cons, oDO, oIDO):
         """Print long description of room, list items (excluding this player) and exits"""
+        dbg.debug("Called Room.look_at()")
+        # if verb is transitive, verify that the room is the direct object
+        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
+        if sDO and (oDO is None): 
+            return "I'm not sure what you are trying to look at!"
         cons.write(self.long_desc)
         assert(cons.user in self.contents)  # current player should always be in the room 
         contents_minus_user = [i for i in self.contents if i is not cons.user]  
@@ -25,7 +31,7 @@ class Room(Container):
         if len(contents_minus_user) > 0:
             cons.write("Here you see:")
             for item in contents_minus_user:
-                cons.write(item.short_desc)
+                cons.write("a " + item.short_desc)
         cons.write('Exits are:')
         for e in self.exits:
             cons.write(e)

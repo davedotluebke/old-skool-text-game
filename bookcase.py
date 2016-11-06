@@ -5,7 +5,7 @@ from action import Action
 class Bookcase(Thing):
     def __init__(self, ID, hidden_room):
         Thing.__init__(self, ID)
-        self.set_description('a bookcase full of books', \
+        self.set_description('bookcase full of books', \
         'This bookcase is a hodge-podge of books, some are newer, but a lot of old ones are scattered around them.')
         # we want this to trigger if they type, for example, "take old book"
         self.add_names("book")
@@ -24,3 +24,4 @@ class Bookcase(Thing):
             return True
         else:
             return "Did you mean to get a particular book?"
+

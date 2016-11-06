@@ -20,5 +20,6 @@ class Player(Creature):
         if not self.contents:
             cons.write('nothing')
         for i in self.contents:
-            cons.write(i.id)
+            cons.write("a " + i.short_desc)
         return True
+
