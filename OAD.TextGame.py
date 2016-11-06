@@ -118,6 +118,9 @@ plate.add_adjectives('dinner','white')
 kitchen.insert(plate)
 #plate.set_location(kitchen)
 
+table = Thing('table')
+# table.set_description
+
 bird = NPC('bird', game)
 bird.set_description('bluebird', 'A nice looking little bluebird.')
 bird.set_weight(200)

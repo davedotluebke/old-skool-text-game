@@ -100,7 +100,7 @@ class Container(Thing):
             cons.write("The %s is already closed!" % self.short_desc)
         else:
             cons.write("You close the %s." % self.short_desc)
-            self.emit("%s closes the %s." % (cons.user.short_desc, self.short_desc))
+            self.emit("%s closes the %s." % (cons.user.short_desc, self.short_desc), [cons.user])
             self.closed = True
             self.see_inside = False
             if "closed" not in self.short_desc:
@@ -115,7 +115,7 @@ class Container(Thing):
             return "The %s can't be opened!" % self.short_desc
         if self.closed:
             cons.write("You open the %s." % self.short_desc)
-            self.emit("%s opens the %s." % (cons.user.short_desc, self.short_desc))
+            self.emit("%s opens the %s." % (cons.user.short_desc, self.short_desc), [cons.user])
             self.closed = False
             self.see_inside = True
             if "closed" in self.short_desc:
@@ -136,9 +136,12 @@ class Container(Thing):
         if oDO.fixed: return oDO.fixed
         if sPrep not in self.insert_prepositions:
             return "You can't put the %s %s the %s, but you can put it %s the %s" % (oDO.id, sPrep, self.id, self.insert_prepositions[0], self.id)
+        if self.closed:
+            cons.write(self.closed_err if self.closed_err else "The %s is closed; you can't put anything %s it." % (self.short_desc, self.insert_prepositions[0]))
+            return True
         if oDO.move_to(self): 
             cons.write("You put the %s %s the %s." % (oDO.short_desc, sPrep, self.short_desc))
-            self.emit("%s puts a %s %s a %s." % (cons.user.short_desc, oDO.short_desc, sPrep, self.short_desc))
+            cons.user.emit("%s puts a %s %s a %s." % (cons.user.short_desc, oDO.short_desc, sPrep, self.short_desc))
         else:
             cons.write("You cannot put the %s %s the %s.", (oDO.short_desc, sPrep, self.short_desc))
         return True            
@@ -171,7 +174,7 @@ class Container(Thing):
             cons.write(self.closed_err if self.closed_err else "The %s is closed; you can't remove the %s." % (self.short_desc, oDO.short_desc))
         if oDO.move_to(cons.user): 
             cons.write("You remove the %s from the %s." % (oDO.short_desc, self.short_desc))
-            self.emit("%s removes a %s from a %s" % (cons.user.short_desc, oDO.short_desc, self.short_desc))
+            cons.user.emit("%s removes a %s from a %s" % (cons.user.short_desc, oDO.short_desc, self.short_desc))
         else:
             cons.write("You cannot remove the %s from the %s" % (oDO.short_desc, self.short_desc))
         return True

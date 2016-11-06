@@ -64,18 +64,18 @@ class Thing:
     def heartbeat(self):
         pass
 
-    def emit(self, message):
-        """Write a message to be seen by creatures holding this Thing or in the same room"""
+    def emit(self, message, ignore = []):
+        """Write a message to be seen by creatures holding this Thing or in the same room, skipping creatures in the list <ignore>"""
         # pass message to containing object, if it can receive messages
         holder = self.location
         if not holder: 
             return 
-        if hasattr(holder, 'perceive'):
+        if holder not in ignore and hasattr(holder, 'perceive'):
             # immeidate container can see messages, probably a creature/player
             dbg.debug("creature holding this object is: " + holder.id)
             holder.perceive(message)
         # now get list of recipients (usually creatures) contained by holder (usually a Room)
-        recipients = {x for x in holder.contents if hasattr(x, 'perceive') and (x is not self)}
+        recipients = [x for x in holder.contents if hasattr(x, 'perceive') and (x is not self) and (x not in ignore)]
         dbg.debug("other creatures in this room include: " + str(recipients))
         for recipient in recipients:
             recipient.perceive(message)
@@ -97,8 +97,10 @@ class Thing:
 
     # TODO: plumb validation protocol down to move_to(), insert(), extract()
     def take(self, p, cons, oDO, oIDO):
-        if oDO != self: return "You can't take that!"
+        if oDO == None: return "I don't know what you're trying to take!"
+        if oDO != self: return "You can't take the %s!" % oDO.short_desc
         if self.fixed:  return self.fixed 
+        if self.location == cons.user: return "You are already holding the %s!" % self.short_desc
         if self.move_to(cons.user):
             cons.write("You take the %s." % self.id)
         else:
@@ -108,6 +110,7 @@ class Thing:
     def drop(self, p, cons, oDO, oIDO):
         if oDO != self:     return "You can't drop that!"
         if self.fixed:      return self.fixed
+        if self.location != cons.user: return "You aren't holding the %s!" % self.short_desc
         if self.move_to(cons.user.location):
             cons.write("You drop the %s." % self.id)
         else:
