@@ -109,12 +109,13 @@ bag.set_max_weight_carried(20000)
 bag.set_max_volume_carried(10)
 woods.insert(bag)
 
+# TODO: Figure out problem with plate
 plate = Thing('plate')
 plate.set_description('a dinner plate', 'This is a normal-looking white dinner plate.')
 plate.set_weight(1000)
 plate.set_volume(1.25)
 plate.add_adjectives('dinner','white')
-kitchen.insert(plate)
+plate.set_location(kitchen)
 
 bird = NPC('bird', game)
 bird.set_description('a bluebird', 'A nice looking little bluebird.')
@@ -149,8 +150,13 @@ beech.add_adjectives("old", "beech", "carved")
 beech.add_response(["carve"], "You think about carving your own initials into the tree, but an uneasy feeling--as if the forest itself is watching--makes you stop.")
 woods.insert(beech)
 
-cabnets = Scenery('cabnets', 'a bunch of cabnets', 'The lightly stained wooden cabnets in this kitchen are slightly dusty.',
-[(['open'], 'They are all empty.')])
+cabnets = Container('cabinets')
+cabnets.set_description('a bunch of cabinets', 'The lightly stained wooden cabinets in this kitchen are slightly dusty.')
+cabnets.fix_in_place('How do you think you can take cabinets! You can\'t')
+cabnets.add_names('cabinet')
+cabnets.add_adjectives('wood', 'lightly stained','stained','old','1960s')
+cabnets.set_max_volume_carried(5000)
+cabnets.set_max_weight_carried(100000)
 kitchen.insert(cabnets)
 
 sink = Sink('sink')
