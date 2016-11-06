@@ -6,8 +6,22 @@ class Container(Thing):
     def __init__(self, ID):
         Thing.__init__(self, ID)
         self.contents = []
+        self.see_inside = True      # can contents of container be seen? 
         self.max_weight_carried = 1
         self.max_volume_carried = 1
+        self.insert_prepositions = ["in", "into", "inside"]
+        self.actions.append(Action(self.put, ["put", "insert"], True, False))
+        self.actions.append(Action(self.remove, ["remove"], True, False))
+
+    def set_prepositions(*preps):
+        """Set one or more appropriate prepositions for inserting an object
+        into this container, each as a separate argument.
+        
+        For example, you put items IN or INTO a bag, but ON a table. Calling
+        this function overwrites the default prepositions, which are 
+        [in, into, inside]. The first preposition given will be used in messages
+        and should be the most common. """
+        self.insert_prepositions = list(preps)
 
     def insert(self, obj):
         """Put obj into this Container object, returning True if the operation failed"""
@@ -63,8 +77,55 @@ class Container(Thing):
         if bool(len(self.contents)):   # TODO: lose bool and len functions?
             cons.write("Inside there is:")
             for item in self.contents:
-                cons.write(item.short_desc)
+                cons.write("a " + item.short_desc)
         else:
             cons.write("It is empty.")
         return True
 
+    def put(self, p, cons, oDO, oIDO):
+        """Put an object <oDO> into this container <oIDO>.  Returns an error 
+        message if oIDO (the indirect object) is not this Container."""
+        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
+        if oDO == None or oIDO == None:
+            return "What are you trying to put %s what? " % sPrep
+        if oIDO != self:
+            return "Did you mean to 'put' something %s the %s?" % (sPrep, self.short_desc)
+        if oDO.fixed: return oDO.fixed
+        if oDO.move_to(self): 
+            cons.write("You put the %s %s the %s." % (oDO.short_desc, sPrep, self.short_desc))
+            self.emit("%s puts a %s %s a %s." % (cons.user.short_desc, oDO.short_desc, sPrep, self.short_desc))
+        else:
+            cons.write("You cannot put the %s %s the %s.", (oDO.short_desc, sPrep, self.short_desc))
+        return True            
+
+    def remove(self, p, cons, oDO, oIDO):
+        """Remove an object <oDO> from this container <oIDO>. Returns an error 
+        message if oDO is not in this container."""
+        # TODO: support "closed" containers from which things cannot be removed? 
+        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
+        if oDO == None:
+            return "What are you trying to remove from the %s?" % self.short_desc
+        if oIDO and oIDO is not self:
+            return "Sounds like you want to remove from %s, not %s." % (oIDO.short_desc, self.short_desc)
+        if oIDO and sPrep != "from":
+            return "Did you mean to remove the %s FROM the %s?" % (oDO.short_desc, self.short_desc)
+        if oDO not in self.contents:
+            # user specified a direct object, and it's not in this container
+            if oIDO == self:
+                # user clearly specified remove the DO from THIS container 
+                cons.write("The %s is not %s the %s!" % (oDO.short_desc, self.insert_prepositions[0], self.short_desc))
+                return True
+            else:
+                # user didn't specify an IDO, or specified something else as IDO'
+                return "The %s is not %s the %s!" % (oDO.short_desc, self.insert_prepositions[0], self.short_desc)  
+        if oDO.fixed: 
+            return oDO.fixed
+        if oDO in cons.user.contents:
+            cons.write("If you want to remove something from your own inventory, drop it.")
+            return True
+        if oDO.move_to(cons.user): 
+            cons.write("You remove the %s from the %s." % (oDO.short_desc, self.short_desc))
+            self.emit("%s removes a %s from a %s" % (cons.user.short_desc, oDO.short_desc, self.short_desc))
+        else:
+            cons.write("You cannot remove the %s from the %s" % (oDO.short_desc, self.short_desc))
+        return True

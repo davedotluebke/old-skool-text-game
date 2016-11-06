@@ -6,7 +6,7 @@ from action import Action
 class Sink(Thing):
     def __init__(self, ID):
         Thing.__init__(self, ID)
-        self.set_description('a metal sink', 'This is an old metal sink, probably from the 1960s and nothing seems wrong with it.')
+        self.set_description('metal sink', 'This is an old metal sink, probably from the 1960s and nothing seems wrong with it.')
         self.fix_in_place("You can't take the sink!")
         self.actions.append(Action(self.fill_container, ["fill"], True, False))
     

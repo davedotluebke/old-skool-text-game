@@ -1,4 +1,5 @@
 from debug import dbg
+from container import Container
 from player import Player
 
 class Parser:
@@ -83,7 +84,7 @@ class Parser:
             return (sV, None, None, None)
 
         # list of legal prepositions; note the before-and-after spaces
-        prepositions = [' in ', ' on ', ' over ', ' under ', ' with ', ' at '] 
+        prepositions = [' in ', ' on ', ' over ', ' under ', ' with ', ' at ', ' from '] 
         text = ' '.join(words[1:])  # all words after the verb
          
         sDO = sPrep = sIDO = None
@@ -106,7 +107,41 @@ class Parser:
             dbg.debug("Ending a sentence in a preposition is something up with which I will not put.")
             sPrep = sIDO = None
             return (sV, sDO, sPrep, sIDO)
-                    
+
+    def _find_matching_objects(self, sObj, objs, cons):
+        """Find an object in the list <objs> matching the given string <sObj>.
+        Tests the name(s) and any adjectives for each object in <objs> against the words in sObj. 
+        
+        Returns the matching object or None if 1 or 0 objects match sObj.
+
+        Returns False after writing an error message to Console <cons> if more than 1 object matches. """
+        matched_objects = []
+        sNoun = sObj.split()[-1]  # noun is final word in sObj (after adjectives)
+        sAdjectives_list = sObj.split()[:-1]  # all words preceeding noun 
+        for obj in objs:
+            match = True
+            if sNoun in obj.names:
+                for adj in sAdjectives_list:
+                    if adj not in obj.adjectives:
+                        match = False
+                        break
+            else:               # sNoun doesn't match any obj.names
+                match = False
+
+            if match:   # name & all adjectives match
+                matched_objects.append(obj)
+        dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects))        
+        if len(matched_objects) > 1:
+            candidates = ", or ".join(o.short_desc for o in matched_objects)
+            cons.write("By '%s', do you mean %s?" % (sObj, candidates))
+            return False
+        elif len(matched_objects) == 0:
+            # user typed a direct object that doesn't match any objects. Could be 
+            # an error, could be e.g. "go north". Validate all supporting objects.
+            return None
+        else:   # exactly one object in matched_objects 
+            return matched_objects[0]
+
     def parse(self, user, console, command):
         """Parse and enact the user's command. Return False to quit game."""     
         command = command.lower()   # convert whole string to lowercase
@@ -142,8 +177,12 @@ class Parser:
 
         # FIRST, search for objects that support the verb the user typed
             # TODO: only include room contents if room is not dark (but always include user)
-            # TODO: recursively include contents of containers if see_inside set
-        possible_objects = [user.location] + user.contents + user.location.contents
+        possible_objects = [user.location] 
+        for obj in user.contents + user.location.contents:
+            possible_objects += [obj]
+            if isinstance(obj, Container) and obj.see_inside and obj is not console.user:
+                possible_objects += obj.contents
+        
         possible_verb_objects = []  # list of objects supporting the verb
         possible_verb_actions = []  # corresponding list of actions 
         for obj in possible_objects:
@@ -168,40 +207,20 @@ class Parser:
             return True
 
         # NEXT, find objects that match the direct & indirect object strings
-        matched_objects = []
-        if sDO and not sIDO:         # transitive verb + direct object
-            sNoun = sDO.split()[-1]  # noun is final word in sDO (after adjectives)
-            sAdjectives_list = sDO.split()[:-1]  # all words preceeding noun 
-            for obj in possible_objects:
-                match = True
-                if sNoun in obj.names:
-                    for adj in sAdjectives_list:
-                        if adj not in obj.adjectives:
-                            match = False
-                            break
-                else:               # sNoun doesn't match any obj.names
-                    match = False
-
-                if match:   # name & all adjectives match
-                    matched_objects.append(obj)
-        dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects))        
-        if len(matched_objects) > 1:
-            list = ", or ".join(o.short_desc for o in matched_objects)
-            console.write("By '%s', do you mean %s?" % (sDO, list))
-            return True
-        elif len(matched_objects) == 0:
-            # user typed a direct object that doesn't match any objects. Could be 
-            # an error, could be e.g. "go north". Validate all supporting objects.
-            oDO = None
-        else:   # exactly one object in matched_objects 
-            oDO = matched_objects[0]
-        
-        # If direct object supports the verb, try it first
-        if oDO in possible_verb_objects:
-            idx = possible_verb_objects.index(oDO)
-            act = possible_verb_actions[idx]            
-            possible_verb_actions.insert(0, act)
-
+        oDO = self._find_matching_objects(sDO, possible_objects, console)
+        if sIDO: 
+            oIDO = self._find_matching_objects(sIDO, possible_objects, console)
+        if oDO == False or oIDO == False: 
+            return True     # ambiguous user input; >1 object matched 
+         
+        # If direct or indirect object supports the verb, try first in that order
+        initial_actions = []
+        for o in (oDO, oIDO):
+            if o in possible_verb_objects:
+                idx = possible_verb_objects.index(o)
+                initial_actions.append(possible_verb_actions[idx])
+        possible_verb_actions = initial_actions + possible_verb_actions
+                
         # Try the "verb functions" associated with each object/action pair.
         # If a valid usage of this verb function, it will return True and 
         # the command has been handled; otherwise it returns an error message. 

@@ -31,7 +31,7 @@ class Room(Container):
         if len(contents_minus_user) > 0:
             cons.write("Here you see:")
             for item in contents_minus_user:
-                cons.write(item.short_desc)
+                cons.write("a " + item.short_desc)
         cons.write('Exits are:')
         for e in self.exits:
             cons.write(e)

@@ -93,7 +93,7 @@ field.add_exit('in', shack)
 shack.add_exit('out', field)
 
 bed = Thing('bed')
-bed.set_description('a queen-size bed', 'A plain and simple queen-size bed.')
+bed.set_description('queen-size bed', 'A plain and simple queen-size bed.')
 bed.set_weight(150000)
 bed.set_volume(6000)
 bedroom.insert(bed)
@@ -102,7 +102,7 @@ bookcase = Bookcase('bookcase', hideout)
 entryway.insert(bookcase)
 
 bag = Container('bag')
-bag.set_description('a normal bag', 'A normal-looking brown bag.')
+bag.set_description('normal bag', 'A normal-looking brown bag.')
 bag.set_weight(100)
 bag.set_volume(10)
 bag.set_max_weight_carried(20000)
@@ -110,14 +110,14 @@ bag.set_max_volume_carried(10)
 woods.insert(bag)
 
 plate = Thing('plate')
-plate.set_description('a dinner plate', 'This is a normal-looking white dinner plate.')
+plate.set_description('dinner plate', 'This is a normal-looking white dinner plate.')
 plate.set_weight(1000)
 plate.set_volume(1.25)
 plate.add_adjectives('dinner','white')
 kitchen.insert(plate)
 
 bird = NPC('bird', game)
-bird.set_description('a bluebird', 'A nice looking little bluebird.')
+bird.set_description('bluebird', 'A nice looking little bluebird.')
 bird.set_weight(200)
 bird.set_volume(0.2)
 bird.add_script('''Tweet!''')
@@ -131,25 +131,25 @@ woods.insert(bird)
 bird.act_frequency = 1
 
 butterfly = NPC('butterfly', game)
-butterfly.set_description('a butterfly', 'A pretty monarch butterfly')
+butterfly.set_description('butterfly', 'A pretty monarch butterfly')
 butterfly.add_script('''wh''')
 field.insert(butterfly)
 
-elm = Scenery("elm", "a massive old elm tree", "This huge elm tree must be over a hundred years old. You are tempted to hug it.", 
+elm = Scenery("elm", "massive old elm tree", "This huge elm tree must be over a hundred years old. You are tempted to hug it.", 
 [(["hug", "hold"], "You give the old elm tree a long hug, and feel deeply satisfied.")])
 elm.add_names("tree")
 elm.add_adjectives("big", "massive", "old", "elm")
 elm.add_response(["climb"], "The trunk is too broad to wrap your arms around, and the lowest branches are far too high to reach.")
 woods.insert(elm)
 
-beech = Scenery("beech", "an old beech tree full of carvings", 
+beech = Scenery("beech", "old beech tree full of carvings", 
 "This large old beech tree has been scarred with the reminders of many passers-by, who decided to immortalize their visit by carving their initials into the tree.")
 beech.add_names("tree")
 beech.add_adjectives("old", "beech", "carved")
 beech.add_response(["carve"], "You think about carving your own initials into the tree, but an uneasy feeling--as if the forest itself is watching--makes you stop.")
 woods.insert(beech)
 
-cabnets = Scenery('cabnets', 'a bunch of cabnets', 'The lightly stained wooden cabnets in this kitchen are slightly dusty.',
+cabnets = Scenery('cabnets', 'bunch of cabnets', 'The lightly stained wooden cabnets in this kitchen are slightly dusty.',
 [(['open'], 'They are all empty.')])
 kitchen.insert(cabnets)
 
@@ -157,13 +157,13 @@ sink = Sink('sink')
 kitchen.insert(sink)
 
 scarf = Thing('scarf')
-scarf.set_description('a bright pink scarf', 'This bright pink scarf is very clean and soft.')
+scarf.set_description('bright pink scarf', 'This bright pink scarf is very clean and soft.')
 scarf.set_weight(200)
 scarf.set_volume(0.1)
 forest_one.insert(scarf)
 
 bottle = Container('bottle')
-bottle.set_description('a blue bottle', 'This blue bottle looks like a normal plastic bottle. It is unlabled.')
+bottle.set_description('blue bottle', 'This blue bottle looks like a normal plastic bottle. It is unlabled.')
 bottle.set_max_weight_carried(4e9)
 bottle.set_max_volume_carried(3e9)
 kitchen.insert(bottle)
