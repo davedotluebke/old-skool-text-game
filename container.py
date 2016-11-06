@@ -57,7 +57,9 @@ class Container(Thing):
 
     def look_at(self, p, cons, oDO, oIDO):
         dbg.debug("Called Container.look_at()")
-        Thing.look_at(self, p, cons, oDO, oIDO)
+        result = Thing.look_at(self, p, cons, oDO, oIDO)
+        if result != True:
+            return result
         if bool(len(self.contents)):   # TODO: lose bool and len functions?
             cons.write("Inside there is:")
             for item in self.contents:

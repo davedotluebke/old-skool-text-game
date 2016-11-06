@@ -55,13 +55,13 @@ class Parser:
         dbg.debug("User input with aliases resolved:\n    %s" % (cmd))
         return cmd
 
-    def _toggle_verbosity(self):
+    def _toggle_verbosity(self, cons):
         if dbg.verbosity == 0:
             dbg.verbosity = 1
-            console.write("Verbose debug output now on.")
+            cons.write("Verbose debug output now on.")
         else:
             dbg.verbosity = 0
-            console.write("Verbose debug output now off.")
+            cons.write("Verbose debug output now off.")
 
     def diagram_sentence(self, words):
         """Categorize sentence type and set verb, direct/indirect object strings.
@@ -83,7 +83,7 @@ class Parser:
             return (sV, None, None, None)
 
         # list of legal prepositions; note the before-and-after spaces
-        prepositions = [' in ', ' on ', ' over ', ' under ', 'with', 'at'] 
+        prepositions = [' in ', ' on ', ' over ', ' under ', ' with ', ' at '] 
         text = ' '.join(words[1:])  # all words after the verb
          
         sDO = sPrep = sIDO = None
@@ -114,7 +114,7 @@ class Parser:
             return False
         
         if command == 'verbose':
-            _toggle_verbosity()
+            self._toggle_verbosity(console)
             return True
         
         self.words = command.split()
@@ -130,7 +130,7 @@ class Parser:
         self.words = command.split()
 
         # remove articles:
-        words = [w for w in self.words if w not in ['a', 'an', 'the']]
+        self.words = [w for w in self.words if w not in ['a', 'an', 'the']]
 
         sV = None            # verb as string
         sDO = None           # Direct object as string
@@ -141,9 +141,9 @@ class Parser:
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
         # FIRST, search for objects that support the verb the user typed
-            # TODO: only include room contents if room is not dark    
+            # TODO: only include room contents if room is not dark (but always include user)
             # TODO: recursively include contents of containers if see_inside set
-        possible_objects = [user.location] + user.contents + user.location.contents + [user]
+        possible_objects = [user.location] + user.contents + user.location.contents
         possible_verb_objects = []  # list of objects supporting the verb
         possible_verb_actions = []  # corresponding list of actions 
         for obj in possible_objects:
