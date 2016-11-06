@@ -107,15 +107,16 @@ bag.set_weight(100)
 bag.set_volume(10)
 bag.set_max_weight_carried(20000)
 bag.set_max_volume_carried(10)
+bag.closable = True
 woods.insert(bag)
 
-# TODO: Figure out problem with plate
 plate = Thing('plate')
 plate.set_description('dinner plate', 'This is a normal-looking white dinner plate.')
 plate.set_weight(1000)
 plate.set_volume(1.25)
 plate.add_adjectives('dinner','white')
-plate.set_location(kitchen)
+kitchen.insert(plate)
+#plate.set_location(kitchen)
 
 bird = NPC('bird', game)
 bird.set_description('bluebird', 'A nice looking little bluebird.')

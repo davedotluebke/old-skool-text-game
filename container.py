@@ -7,11 +7,16 @@ class Container(Thing):
         Thing.__init__(self, ID)
         self.contents = []
         self.see_inside = True      # can contents of container be seen? 
+        self.closed = False         # can't remove items from closed container
+        self.closed_err = ""        # custom "container is closed" error msg
+        self.closable = False       # can this container be opened and closed?
         self.max_weight_carried = 1
         self.max_volume_carried = 1
         self.insert_prepositions = ["in", "into", "inside"]
         self.actions.append(Action(self.put, ["put", "insert"], True, False))
         self.actions.append(Action(self.remove, ["remove"], True, False))
+        self.actions.append(Action(self.open, ["open"], True, False))
+        self.actions.append(Action(self.close, ["close"], True, False))
 
     def set_prepositions(*preps):
         """Set one or more appropriate prepositions for inserting an object
@@ -74,12 +79,50 @@ class Container(Thing):
         result = Thing.look_at(self, p, cons, oDO, oIDO)
         if result != True:
             return result
-        if bool(len(self.contents)):   # TODO: lose bool and len functions?
-            cons.write("Inside there is:")
-            for item in self.contents:
-                cons.write("a " + item.short_desc)
+        if self.see_inside:
+            if self.contents:
+                cons.write("Inside there is:")
+                for item in self.contents:
+                    cons.write("a " + item.short_desc)
+            else:
+                cons.write("It is empty. ")
+        if self.closed:
+            cons.write("It is closed. ")
+        return True
+    
+    def close(self, p, cons, oDO, oIDO):
+        """Close this container, hiding the contents from view."""
+        if oDO != self:
+            return "Did you mean to close the %s?" % self.short_desc 
+        if not self.closable:
+            return "The %s can't be closed!" % self.short_desc
+        if self.closed:
+            cons.write("The %s is already closed!" % self.short_desc)
         else:
-            cons.write("It is empty.")
+            cons.write("You close the %s." % self.short_desc)
+            self.emit("%s closes the %s." % (cons.user.short_desc, self.short_desc))
+            self.closed = True
+            self.see_inside = False
+            if "closed" not in self.short_desc:
+                self.short_desc = "closed " + self.short_desc
+        return True
+    
+    def open(self, p, cons, oDO, oIDO):
+        """Open this container, revealing the contents."""
+        if oDO != self:
+            return "Did you mean to open the %s?" % self.short_desc
+        if not self.closable: 
+            return "The %s can't be opened!" % self.short_desc
+        if self.closed:
+            cons.write("You open the %s." % self.short_desc)
+            self.emit("%s opens the %s." % (cons.user.short_desc, self.short_desc))
+            self.closed = False
+            self.see_inside = True
+            if "closed" in self.short_desc:
+                (head, sep, tail) = self.short_desc.partition("closed ")
+                self.short_desc = head + tail
+        else: 
+            cons.write("The %s is already open!" % self.short_desc)
         return True
 
     def put(self, p, cons, oDO, oIDO):
@@ -91,6 +134,8 @@ class Container(Thing):
         if oIDO != self:
             return "Did you mean to 'put' something %s the %s?" % (sPrep, self.short_desc)
         if oDO.fixed: return oDO.fixed
+        if sPrep not in self.insert_prepositions:
+            return "You can't put the %s %s the %s, but you can put it %s the %s" % (oDO.id, sPrep, self.id, self.insert_prepositions[0], self.id)
         if oDO.move_to(self): 
             cons.write("You put the %s %s the %s." % (oDO.short_desc, sPrep, self.short_desc))
             self.emit("%s puts a %s %s a %s." % (cons.user.short_desc, oDO.short_desc, sPrep, self.short_desc))
@@ -101,7 +146,6 @@ class Container(Thing):
     def remove(self, p, cons, oDO, oIDO):
         """Remove an object <oDO> from this container <oIDO>. Returns an error 
         message if oDO is not in this container."""
-        # TODO: support "closed" containers from which things cannot be removed? 
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if oDO == None:
             return "What are you trying to remove from the %s?" % self.short_desc
@@ -123,6 +167,8 @@ class Container(Thing):
         if oDO in cons.user.contents:
             cons.write("If you want to remove something from your own inventory, drop it.")
             return True
+        if self.closed: 
+            cons.write(self.closed_err if self.closed_err else "The %s is closed; you can't remove the %s." % (self.short_desc, oDO.short_desc))
         if oDO.move_to(cons.user): 
             cons.write("You remove the %s from the %s." % (oDO.short_desc, self.short_desc))
             self.emit("%s removes a %s from a %s" % (cons.user.short_desc, oDO.short_desc, self.short_desc))
