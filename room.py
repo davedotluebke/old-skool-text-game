@@ -11,6 +11,7 @@ class Room(Container):
         self.actions.append(Action(self.go_to, ["go", "walk"], True, False))
         self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
         self.fix_in_place("You can't move that!")
+        self.closable = False
 
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room
@@ -49,7 +50,7 @@ class Room(Container):
             dest = self.exits[sExit]
             cons.write("You %s to the %s into the %s." % (words[0], sExit, dest.id))
             if cons.user.move_to(dest):
-                cons.write("You enter %s." % cons.user.location.short_desc)
+                cons.write("You enter a %s." % cons.user.location.short_desc)
                 cons.write("exits are:")
                 for w in cons.user.location.exits:
                     cons.write(w)

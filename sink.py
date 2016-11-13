@@ -17,6 +17,7 @@ class Sink(Thing):
         filling = oDO.names[0]
         cons.write('Water comes out of the sink, and fills your %s' % filling)
         self.emit('The %s is filled with water at the sink.' % filling)
-        water = Scenery('water', 'some normal water', 'This is some normal clear water.',[('drink', 'You take a big drink of the water, and your thirst is quenched.')])
+        water = Scenery('water', 'some normal water', 'This is some normal clear water.')
+        water.add_response(['drink'], 'You take a big drink of the water, and your thirst is quenched.')
         oDO.insert(water)
         return True

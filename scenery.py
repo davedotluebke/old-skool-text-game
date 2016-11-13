@@ -3,30 +3,29 @@ from thing import Thing
 from action import Action
 
 class Scenery(Thing):
-    def __init__(self, ID, short_desc, long_desc, response_list=[]):
-        """<response_list> is a list of tuples, each consisting of a 
-        list of verbs and a result to be printed if the player uses one
-        of the verbs on this object."""
+    def __init__(self, ID, short_desc, long_desc):
         Thing.__init__(self, ID)
         self.fix_in_place("You can't move the %s!" % (ID))
         self.set_description(short_desc, long_desc)
-        for item in response_list:
-            self.actions.append(Action(self.handle_scenery_verb, item[0], True, False))
-        self.responses = response_list
+        # response tuple is (verblist, result_str, transitive, intransitive)
+        self.responses = []     # list of response tuples
     
-    def add_response(self, verbs, result):
-        """If the player types one of the verbs in <verbs>, the game will print <result>"""
-        self.responses.append((verbs, result))
-        self.actions.append(Action(self.handle_scenery_verb, verbs, True, False))
-
-    # TODO: extend scenery to support intransitive verbs (e.g. "sleep", "drink") 
-    def handle_scenery_verb(self, p, cons, oDO, oIDO):
+    def add_response(self, verbs, result, trans=True, intrans=False):
+        """Specify a list of <verbs> that, when used, will print <result>. 
+        
+        Set <trans> flag for transitive verbs to be used on this object.
+        Set <intrans> flag for intransitive verbs that can be used alone."""
+        
+        self.responses.append((verbs, result, trans, intrans))
+        self.actions.append(Action(self.handle_verb, verbs, trans, intrans))
+        
+    def handle_verb(self, p, cons, oDO, oIDO):
         verb = p.words[0]
-        if oDO != self:
-            return "I'm not sure what you mean by " + verb + " in this context."
-        for i in self.responses:
-            if verb in i[0]:
-                cons.write(i[1])
-                return True
-        raise       # this should never happen
-    
+        for response in self.responses:
+            verbs, result, transitive, intransitive = response
+            if verb in verbs:        
+                if (intransitive and not oDO) or (transitive and oDO == self):
+                    cons.write(result)
+                    return True
+        return "I'm not sure what you mean by " + verb + " in this context."
+        

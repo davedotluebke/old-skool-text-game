@@ -22,7 +22,7 @@ class DebugLog():
         """Print the string s if level is <= current verbosity level."""
         if level <= self.verbosity:
             print(s)
-        self.log.write(s + "\n")
+        self.log.write("%s\n" % s)
 
     def shut_down(self):
         """The function that closes down the DebugLog class and file."""

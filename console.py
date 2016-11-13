@@ -17,3 +17,6 @@ class Console:
     def loop(self, user, g):
         print('')
 
+    def take_input(self, prompt):
+        return input(prompt)
+
