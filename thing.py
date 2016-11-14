@@ -1,16 +1,23 @@
 from debug import dbg
 from action import Action
+import random
 
 class Thing:
-    def __init__(self, ID):
-        self.id = ID
+    ID_dict = {}
+
+    def __init__(self, default_name):
+        self.names = [default_name]
+        self.id = default_name
+        while self.id in Thing.ID_dict:     # unique-ify self.id if necessary
+            self.id = self.id + str(random.randint(0, 9))
+        Thing.ID_dict[self.id] = self
+    
         self.weight = 0.0
         self.volume = 0.0
         self.location = None
         self.fixed = False          # False if unfixed, error message if fixed 
         self.short_desc = 'need_short_desc'
         self.long_desc = 'need_long_desc'
-        self.names = [ID]   
         self.adjectives = []
         self.contents = None        # None - only Containers can contain things
         # dictionary mapping verb strings to functions:
@@ -102,9 +109,9 @@ class Thing:
         if self.fixed:  return self.fixed 
         if self.location == cons.user: return "You are already holding the %s!" % self.short_desc
         if self.move_to(cons.user):
-            cons.write("You take the %s." % self.id)
+            cons.write("You take the %s." % self.names[0])
         else:
-            cons.write("You cannot take the %s." % self.id)
+            cons.write("You cannot take the %s." % self.names[0])
         return True
 
     def drop(self, p, cons, oDO, oIDO):
@@ -112,9 +119,9 @@ class Thing:
         if self.fixed:      return self.fixed
         if self.location != cons.user: return "You aren't holding the %s!" % self.short_desc
         if self.move_to(cons.user.location):
-            cons.write("You drop the %s." % self.id)
+            cons.write("You drop the %s." % self.names[0])
         else:
-            cons.write("You cannot drop the %s" % self.id)
+            cons.write("You cannot drop the %s" % self.names[0])
         return True
 
     def look_at(self, p, cons, oDO, oIDO):  

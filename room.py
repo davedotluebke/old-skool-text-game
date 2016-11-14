@@ -48,7 +48,7 @@ class Room(Container):
         sExit = words[1]
         if sExit in list(self.exits):
             dest = self.exits[sExit]
-            cons.write("You %s to the %s into the %s." % (words[0], sExit, dest.id))
+            cons.write("You %s to the %s into the %s." % (words[0], sExit, dest.names[0]))
             if cons.user.move_to(dest):
                 cons.write("You enter a %s." % cons.user.location.short_desc)
                 cons.write("exits are:")

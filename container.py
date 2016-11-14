@@ -32,7 +32,7 @@ class Container(Thing):
         """Put obj into this Container object, returning True if the operation failed"""
         dbg.debug("in insert")
         # error checking for max weight etc goes here
-        if obj.id == self.id:
+        if obj == self:
             dbg.debug('Trying to insert into self - not allowed!')
             return True
         contents_weight = 0
@@ -136,7 +136,7 @@ class Container(Thing):
             return "Did you mean to 'put' something %s the %s?" % (sPrep, self.short_desc)
         if oDO.fixed: return oDO.fixed
         if sPrep not in self.insert_prepositions:
-            return "You can't put the %s %s the %s, but you can put it %s the %s." % (oDO.id, sPrep, self.id, self.insert_prepositions[0], self.id)
+            return "You can't put the %s %s the %s, but you can put it %s the %s." % (oDO.names[0], sPrep, self.names[0], self.insert_prepositions[0], self.names[0])
         if self.closed:
             cons.write(self.closed_err if self.closed_err else "The %s is closed; you can't put anything %s it." % (self.short_desc, self.insert_prepositions[0]))
             return True

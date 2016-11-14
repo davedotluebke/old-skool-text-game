@@ -21,7 +21,7 @@ class CaveEntry(Room):
             elif cons == self.last_cons:
                 self.last_cons = cons
                 cons.write('You convince yourself to enter the scarry cave.')
-                cons.user.emit('%s slowly enters the cave, visibly shaking.' % cons.user.id)
+                cons.user.emit('%s slowly enters the cave, visibly shaking.' % cons.user.names[0])
                 Room.go_to(self, p, cons, oDO, oIDO)
                 dbg.debug('%s slowly enters the cave, visibly shaking. The DebugLog says that the cave is scarry, because it was ment to be.' % cons.user.id)
             else:
@@ -30,6 +30,7 @@ class CaveEntry(Room):
         except AttributeError:
             cons.write('Entering the cave is very scary, and you have a hard time convincing yourself to go in.')
             self.last_cons = cons
+   
     def heartbeat(self):
         try:
             test_var = self.contents[0].id
