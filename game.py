@@ -38,5 +38,4 @@ class Game():
 ## "game" is a special global variable, an object of class Game that holds
 ## the actual game state and must be referenced by all the various objects. 
 ## 
-## New Git test
 game = Game()

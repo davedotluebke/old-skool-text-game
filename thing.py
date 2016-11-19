@@ -14,6 +14,7 @@ class Thing:
     
         self.weight = 0.0
         self.volume = 0.0
+        self.emits_light = False
         self.location = None
         self.fixed = False          # False if unfixed, error message if fixed 
         self.short_desc = 'need_short_desc'

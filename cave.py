@@ -6,24 +6,25 @@ from room import Room
 from action import Action
 
 class CaveEntry(Room):
-    def __init__(self, ID, forest_three, g):
+    def __init__(self, ID, escape_room, g):
         Room.__init__(self, ID)
-        self.set_description('terrifying dark cave mouth', 'This is one of the most scarry caves you have ever been seen. You are aniousley looking around to see if there are any monsters.')
-        self.add_adjectives('scarry', 'dark', 'terrifying')
+        self.set_description('terrifying dark cave mouth', 'This is one of the most scary caves you have ever been seen. You are anxiously looking around to see if there are any monsters.')
+        self.add_adjectives('scary', 'dark', 'terrifying')
         self.in_entry_user = 0
-        self.forest_three = forest_three
+        self.escape_room = escape_room
         g.register_heartbeat(self)
         self.game_redirect = g
+   
     def go_to(self, p, cons, oDO, oIDO):
         try:
             if p.words[1] == 'east':
                 Room.go_to(self, p, cons, oDO, oIDO)
             elif cons == self.last_cons:
                 self.last_cons = cons
-                cons.write('You convince yourself to enter the scarry cave.')
+                cons.write('You convince yourself to enter the scary cave.')
                 cons.user.emit('%s slowly enters the cave, visibly shaking.' % cons.user.names[0])
                 Room.go_to(self, p, cons, oDO, oIDO)
-                dbg.debug('%s slowly enters the cave, visibly shaking. The DebugLog says that the cave is scarry, because it was ment to be.' % cons.user.id)
+                dbg.debug('%s slowly enters the cave, visibly shaking. The DebugLog says that the cave is scary, because it was meant to be.' % cons.user.id)
             else:
                 cons.write('Entering the cave is very scary, and you have a hard time convincing yourself to go in.')
                 self.last_cons = cons
@@ -49,7 +50,7 @@ class CaveEntry(Room):
                     self.game_redirect.cons.write('You step back from the cave mouth into the gloomy forest.')
                 dbg.debug('extracting %s!' % i)
                 self.extract(i)
-                self.forest_three.insert(i)
+                self.escape_room.insert(i)
             self.in_entry_user = 0
             self.last_cons = None
                 

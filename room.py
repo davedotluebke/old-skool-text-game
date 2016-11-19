@@ -3,8 +3,9 @@ from container import Container
 from action import Action
 
 class Room(Container):
-    def __init__(self, ID):
-        Container.__init__(self, ID)
+    def __init__(self, default_name, light=1):
+        """Initialize the room. Set <light> level to 0 for a dark room."""
+        Container.__init__(self, default_name)
         self.exits = {}
         self.set_max_weight_carried(4e9)
         self.set_max_volume_carried(3e9)
@@ -12,10 +13,38 @@ class Room(Container):
         self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
         self.fix_in_place("You can't move that!")
         self.closable = False
+        self.light = light  # Can see and perceive emits when light level > 0
 
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room
-    
+         
+    def is_dark(self):
+        return False if self.light > 0 else True
+        
+    def insert(self, obj):
+        if Container.insert(self, obj):
+            return True  # insert returns True if operation failed
+        
+        # insert succeeded; see if obj is or contains a light source
+        possible_lights = [obj]
+        for i in possible_lights:
+            self.light += i.emits_light  # i.emits_light is positive if object emits light, else 0
+            if hasattr(i, "see_inside") and i.see_inside: 
+                possible_lights += i.contents # recurse on i.contents
+        return False
+        
+    def extract(self, obj):
+        if Container.extract(self, obj): 
+            return True  # extract returns True if the operation failed
+        
+        # extract succeeded; see if obj is or contains a light source
+        possible_lights = [obj]
+        for i in possible_lights:
+            self.light -= i.emits_light  # i.emits_light is positive if object emits light, else 0
+            if hasattr(i, "see_inside") and i.see_inside:
+                possible_lights += i.contents
+        return False
+
     def look_at(self, p, cons, oDO, oIDO):
         """Print long description of room, list items (excluding this player) and exits"""
         dbg.debug("Called Room.look_at()")
@@ -23,6 +52,9 @@ class Room(Container):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sDO and (oDO is None): 
             return "I'm not sure what you are trying to look at!"
+        if self.is_dark():
+            cons.write("It's too dark to see anything here.")
+            return True
         cons.write(self.long_desc)
         assert(cons.user in self.contents)  # current player should always be in the room 
         contents_minus_user = [i for i in self.contents if i is not cons.user]  

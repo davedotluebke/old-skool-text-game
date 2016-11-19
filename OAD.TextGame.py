@@ -12,6 +12,7 @@ from bookcase import Bookcase
 from scenery import Scenery
 from sink import Sink
 from cave import CaveEntry
+from flashlight import Flashlight
 
 
 
@@ -26,7 +27,7 @@ forest_two = Room('forest')
 forest_three = Room('forest')
 field = Room('field')
 shack = Room('shack')
-cave = Room('cave')
+cave = Room('cave', light=0)
 cave_entrance = CaveEntry('cave_mouth', forest_three, game)
 
 bedroom.set_description('dusty bedroom', 'The bare board walls of this bedroom are dusty. A musty smell fills the air.')
@@ -45,6 +46,7 @@ cave.add_adjectives('scarry', 'dark', 'terrifying')
 
 woods.add_exit('west', entryway)
 woods.add_exit('north', forest_one)
+woods.add_exit('south', cave)
 entryway.add_exit('east', woods)
 entryway.add_exit('southwest', kitchen)
 entryway.add_exit('south', hallway)
@@ -89,6 +91,10 @@ bag.set_max_weight_carried(20000)
 bag.set_max_volume_carried(10)
 bag.closable = True
 woods.insert(bag)
+
+flashlight = Flashlight('flashlight')
+flashlight.set_description('old flashlight', 'An old metal flashlight.')
+woods.insert(flashlight)
 
 bed = Scenery('bed','decrepit old bed', 'This decrepit bed supports a bare stained mattress and is covered with a thick layer of dust.')
 bed.add_adjectives('old', 'decrepit')

@@ -83,14 +83,19 @@ class Parser:
             # sentence type 1, <intransitive verb>
             return (sV, None, None, None)
 
-        # list of legal prepositions; note the before-and-after spaces
-        prepositions = [' in ', ' on ', ' over ', ' under ', ' with ', ' at ', ' from '] 
-        text = ' '.join(words[1:])  # all words after the verb
-         
+        # list of legal prepositions
+        prepositions = ['in', 'on', 'over', 'under', 'with', 'at', 'from', 'off'] 
+        textwords = words[1:]  # all words after the verb
+        text = ' '.join(textwords)  
+        
         sDO = sPrep = sIDO = None
         for p in prepositions:
-            if p in text:
-                (sDO, sPrep, sIDO) = text.partition(p) 
+            if p in textwords:
+                idxPrep = textwords.index(p)
+                sPrep = textwords[idxPrep]
+                sDO = ' '.join(textwords[:idxPrep])
+                sIDO = ' '.join(textwords[idxPrep+1:])
+                # old style: (sDO, sPrep, sIDO) = text.partition(p) 
                 # break after finding 1st preposition (simple sentences only)
                 break  
         if sPrep == None: 
@@ -98,12 +103,13 @@ class Parser:
             assert(sDO == sIDO == None)  # sDO and sIDO should still be None  
             sDO = text
             return (sV, sDO, sPrep, sIDO)
-        # has a preposition: Sentence type 3
-        if sDO and sIDO:
-            sPrep = sPrep[1:-1]  # strip enclosing spaces
+        # has a preposition: Sentence type 3 or 4
+        if sDO == "": sDO = None
+        if sIDO == "": sIDO = None
+        if sIDO: 
             return (sV, sDO, sPrep, sIDO)
         else:
-            dbg.debug("Malformed input: found preposition %s but missing direct object and/or indirect object." % sPrep)
+            dbg.debug("Malformed input: found preposition %s but missing indirect object." % sPrep)
             dbg.debug("Ending a sentence in a preposition is something up with which I will not put.")
             sPrep = sIDO = None
             return (sV, sDO, sPrep, sIDO)
@@ -199,19 +205,20 @@ class Parser:
             # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
             return True
         dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects))
-        
+
+        # NEXT, find objects that match the direct & indirect object strings    
+        if sDO: 
+            oDO = self._find_matching_objects(sDO, possible_objects, console)
+        if sIDO: 
+            oIDO = self._find_matching_objects(sIDO, possible_objects, console)
+        if oDO == False or oIDO == False: 
+            return True     # ambiguous user input; >1 object matched 
+
         if not sDO:                 # intransitive verb, no direct object
             verb = possible_verb_actions[0].func
             # all verb functions take parser, console, direct (or invoking) object, indirect object
             verb(self, console, oDO, oIDO)
             return True
-
-        # NEXT, find objects that match the direct & indirect object strings
-        oDO = self._find_matching_objects(sDO, possible_objects, console)
-        if sIDO: 
-            oIDO = self._find_matching_objects(sIDO, possible_objects, console)
-        if oDO == False or oIDO == False: 
-            return True     # ambiguous user input; >1 object matched 
          
         # If direct or indirect object supports the verb, try first in that order
         initial_actions = []
