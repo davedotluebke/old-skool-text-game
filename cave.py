@@ -14,25 +14,32 @@ class CaveEntry(Room):
         self.escape_room = escape_room
         g.register_heartbeat(self)
         self.game_redirect = g
+        self.last_cons = None
    
     def go_to(self, p, cons, oDO, oIDO):
         try:
             if p.words[1] == 'east':
                 Room.go_to(self, p, cons, oDO, oIDO)
             elif cons == self.last_cons:
-                self.last_cons = cons
+                if cons != None:
+                    self.last_cons = cons
                 cons.write('You convince yourself to enter the scary cave.')
                 cons.user.emit('%s slowly enters the cave, visibly shaking.' % cons.user.names[0])
                 Room.go_to(self, p, cons, oDO, oIDO)
                 dbg.debug('%s slowly enters the cave, visibly shaking. The DebugLog says that the cave is scary, because it was meant to be.' % cons.user.id)
             else:
                 cons.write('Entering the cave is very scary, and you have a hard time convincing yourself to go in.')
-                self.last_cons = cons
+                if cons != None:
+                    self.last_cons = cons
+                    dbg.debug('self.last_cons was just set to %s, %s' % (self.last_cons, cons))
         except AttributeError:
             cons.write('Entering the cave is very scary, and you have a hard time convincing yourself to go in.')
-            self.last_cons = cons
+            if cons != None:
+                self.last_cons = cons
+                dbg.debug('self.last_cons was just set to %s, %s' % (self.last_cons, cons))
    
     def heartbeat(self):
+        dbg.debug('self.last_cons is %s' % self.last_cons)
         try:
             test_var = self.contents[0].id
             dbg.debug(test_var)
@@ -51,6 +58,4 @@ class CaveEntry(Room):
                 dbg.debug('extracting %s!' % i)
                 self.extract(i)
                 self.escape_room.insert(i)
-            self.in_entry_user = 0
-            self.last_cons = None
-                
+            self.in_entry_user = 0                

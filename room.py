@@ -82,6 +82,9 @@ class Room(Container):
             dest = self.exits[sExit]
             cons.write("You %s to the %s into the %s." % (words[0], sExit, dest.names[0]))
             if cons.user.move_to(dest):
+                if dest.is_dark():
+                    cons.write("It's too dark to see anything here.")
+                    return True
                 cons.write("You enter a %s." % cons.user.location.short_desc)
                 cons.write("exits are:")
                 for w in cons.user.location.exits:

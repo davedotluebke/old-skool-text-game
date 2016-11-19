@@ -15,8 +15,10 @@ class Console:
         print(text)
 
     def loop(self, user, g):
-        print('')
+        print('\n')
+        dbg.debug('This is not a valid function anymore.')
 
     def take_input(self, prompt):
         return input(prompt)
+        dbg.debug(self)
 
