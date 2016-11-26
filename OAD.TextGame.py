@@ -14,8 +14,6 @@ from sink import Sink
 from cave import CaveEntry
 from flashlight import Flashlight
 
-
-
 bedroom = Room('bedroom')
 hallway = Room('hallway')
 kitchen = Room('kitchen')
@@ -28,7 +26,7 @@ forest_three = Room('forest')
 field = Room('field')
 shack = Room('shack')
 cave = Room('cave', light=0)
-cave_entrance = CaveEntry('cave_mouth', forest_three, game)
+cave_entrance = CaveEntry('cave mouth', forest_three, game)
 
 bedroom.set_description('dusty bedroom', 'The bare board walls of this bedroom are dusty. A musty smell fills the air.')
 hallway.set_description('dusty hallway', 'This hallway has dusty walls made of wood. It is dim.')
@@ -41,12 +39,11 @@ forest_two.set_description('nice forest', 'This is an ancient forest with toweri
 forest_three.set_description('ancient forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least. The trees seem gloomy here. There is a small dark cave to the west.')
 field.set_description('field with a small shack on the west side', 'This field is on the outskirts of Firlefile sorcery school and has a small shack on the west side.')
 shack.set_description('empty shack', 'This shack appears to be abandoned and has nothing but cobwebs and walls.')
-cave.set_description('a terrifying dark cave', 'This is one of the most scarry caves you have ever been been in. You are aniousley looking around to see if there are any monsters.')
-cave.add_adjectives('scarry', 'dark', 'terrifying')
+cave.set_description('terrifying dark cave', 'This is one of the most scary caves you have ever been in. You are aniousley looking around to see if there are any monsters.')
+cave.add_adjectives('scary', 'dark', 'terrifying')
 
 woods.add_exit('west', entryway)
 woods.add_exit('north', forest_one)
-woods.add_exit('south', cave)
 entryway.add_exit('east', woods)
 entryway.add_exit('southwest', kitchen)
 entryway.add_exit('south', hallway)
@@ -96,6 +93,12 @@ flashlight = Flashlight('flashlight')
 flashlight.set_description('old flashlight', 'An old metal flashlight.')
 woods.insert(flashlight)
 
+rake = Scenery("rake","broken rake", "This rake looks like it broke a long time ago.")
+rake.add_adjectives("broken")
+rake.add_response(["get","take"], "When you lean down to take it one of the tines pokes you in the eye. Ow! ")
+rake.add_response(["rake", "use"],"You can not reach the handle.")
+shack.insert(rake)
+
 bed = Scenery('bed','decrepit old bed', 'This decrepit bed supports a bare stained mattress and is covered with a thick layer of dust.')
 bed.add_adjectives('old', 'decrepit')
 bed.add_response(['sleep'], 'You briefly consider sleeping on the dusty soiled mattress, and quickly think better of it.', True, True)
@@ -106,11 +109,11 @@ oak = Scenery('oak', 'menacing old oak', 'This is an old oak that is leaning ove
 oak.add_adjectives('menacing', 'old', 'oak')
 oak.add_names('tree')
 oak.add_response(['climb'], "The towering oak looks climbable, but it is a menacing old tree, the most so you have ever seen, so you decide to look around for other trees.")
-oak.add_response(['grab', 'hold', 'touch', 'hug'], "To touch the scary old tree for no reson seems silly, and slightly scarry, so you decide not to. You think that if you saw a nice tree you would hug it.")
+oak.add_response(['grab', 'hold', 'touch', 'hug'], "To touch the scary old tree for no reson seems silly, and slightly scary, so you decide not to. You think that if you saw a nice tree you would hug it.")
 forest_three.insert(oak)
 
 willow = Scenery('willow', 'sad weeping willow', 'This is the most mournful weeping willow you have ever seen. You almost cry from looking at it.')
-willow.add_adjectives('weeping','sad','mournfull','willow')
+willow.add_adjectives('weeping','sad','mournful','willow')
 willow.add_names('tree')
 willow.add_response(['climb'], 'You cannot hold onto the branches, and they are over a small river.',)
 willow.add_response(['cry', 'weep'], 'You cry as you look at the willow, but then you see the meancing old oak tree across the path, and you eventually stop.', False, True)
@@ -203,6 +206,9 @@ cabinets.add_names('cabinet')
 cabinets.add_adjectives('wood', 'lightly stained','stained','old','1960s',"60's")
 cabinets.set_max_volume_carried(5000)
 cabinets.set_max_weight_carried(100000)
+cabinets.plural = True
+cabinets.closable = True
+cabinets.close()
 kitchen.insert(cabinets)
 
 sink = Sink('sink')
