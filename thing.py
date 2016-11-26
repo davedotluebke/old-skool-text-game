@@ -11,7 +11,8 @@ class Thing:
         while self.id in Thing.ID_dict:     # unique-ify self.id if necessary
             self.id = self.id + str(random.randint(0, 9))
         Thing.ID_dict[self.id] = self
-    
+
+        self.plural = False         # should this thing be treated as plural?
         self.weight = 0.0
         self.volume = 0.0
         self.emits_light = False
@@ -68,6 +69,11 @@ class Thing:
 
     def new_verb(self, verb, func):
         self.verb_dict[verb] = func
+    
+#    def conjugate(self, verb_infinitive, cons):
+#        for i in self.conjugations:
+#            if hasattr(i, 'cons'):
+#                pass
 
     def heartbeat(self):
         pass

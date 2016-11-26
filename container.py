@@ -16,7 +16,7 @@ class Container(Thing):
         self.actions.append(Action(self.put, ["put", "insert"], True, False))
         self.actions.append(Action(self.remove, ["remove"], True, False))
         self.actions.append(Action(self.open, ["open"], True, False))
-        self.actions.append(Action(self.close, ["close"], True, False))
+        self.actions.append(Action(self.close_action, ["close"], True, False))
 
     def set_prepositions(self, *preps):
         """Set one or more appropriate prepositions for inserting an object
@@ -81,17 +81,25 @@ class Container(Thing):
             return result
         if self.see_inside:
             if self.contents:
+                if self.plural:
+                    pass
                 preamble = "%s the %s there is:" % (self.insert_prepositions[0], self.names[0])
                 cons.write(preamble.capitalize())
                 for item in self.contents:
                     cons.write("a " + item.short_desc)
             else:
-                cons.write("It is empty. ")
+                if self.plural:
+                    cons.write('They are empty. ')
+                else:
+                    cons.write("It is empty. ")
         if self.closed:
-            cons.write("It is closed. ")
+            if self.plural:
+                cons.write('They are closed. ')
+            else:
+                cons.write("It is closed. ")
         return True
     
-    def close(self, p, cons, oDO, oIDO):
+    def close_action(self, p, cons, oDO, oIDO):
         """Close this container, hiding the contents from view."""
         if oDO != self:
             return "Did you mean to close the %s?" % self.short_desc 
@@ -102,11 +110,15 @@ class Container(Thing):
         else:
             cons.write("You close the %s." % self.short_desc)
             self.emit("%s closes the %s." % (cons.user.short_desc, self.short_desc), [cons.user])
+            self.close()
+        return True
+    
+    def close(self):
             self.closed = True
             self.see_inside = False
             if "closed" not in self.short_desc:
                 self.short_desc = "closed " + self.short_desc
-        return True
+
     
     def open(self, p, cons, oDO, oIDO):
         """Open this container, revealing the contents."""
@@ -115,13 +127,13 @@ class Container(Thing):
         if not self.closable: 
             return "The %s can't be opened!" % self.short_desc
         if self.closed:
+            if "closed" in self.short_desc:
+                (head, sep, tail) = self.short_desc.partition("closed ")
+                self.short_desc = head + tail
             cons.write("You open the %s." % self.short_desc)
             self.emit("%s opens the %s." % (cons.user.short_desc, self.short_desc), [cons.user])
             self.closed = False
             self.see_inside = True
-            if "closed" in self.short_desc:
-                (head, sep, tail) = self.short_desc.partition("closed ")
-                self.short_desc = head + tail
         else: 
             cons.write("The %s is already open!" % self.short_desc)
         return True

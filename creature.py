@@ -17,12 +17,15 @@ class Creature(Container):
         self.emit("The %s says: %s" % (self.names[0], speech))
         
 class NPC(Creature):
-    def __init__(self, ID, g):
+    def __init__(self, ID, g, aggressive=0):
         Creature.__init__(self, ID)
-        self.aggressive = False
+        self.aggressive = aggressive
         self.act_frequency = 3  # how many heartbeats between NPC actions
         self.act_soon = 0       # how many heartbeats till next action
         self.choices = ['move_around', 'talk']  # list of things NPC might do
+        self.enimies = []
+        if self.aggressive:     # aggressive: 0 = will never attack anyone, even if attacked by them. Will flee. 1 = only attacks enimies. 2 = attacks anyone. highly aggressive.
+            self.choices.append('attack')
         # list of strings that the NPC might say
         self.scripts = []
         self.current_script = None
@@ -36,10 +39,15 @@ class NPC(Creature):
     def heartbeat(self):
         self.act_soon += 1
         dbg.debug('beat')
-        if self.act_soon == self.act_frequency:
+        if self.act_soon == self.act_frequency or self.enimies in self.location.contents:
             self.act_soon = 0
             if self.current_script:  # if currently reciting, continue
                 self.talk()
+            for i in self.location.contents: # if an enimy is in room, attack
+                if i in self.enimies and self.aggressive:
+                    attack()
+                elif i in self.enimies and not self.aggressive:  #can't attack (e.g. bluebird)? Run away.
+                    self.move_around()
             else:                    # otherwise pick a random action
                 choice = random.choice(self.choices)
                 try:
@@ -81,5 +89,14 @@ class NPC(Creature):
                     self.current_script_idx = 0
             else:
                 self.current_script = random.choice(self.scripts)
-                
-                
+    def attack(self):
+        """Attack any enimies, if possible, or if highley aggressive, attack anyone in the room"""
+        attacking = None
+        for i in self.enimies:
+            if i in self.location.contents:
+                attacking = i
+                continue
+        if self.aggressive == 2 and not attacking:
+            attacking = random.choice(hasattr(self.location.contents, hitpoints))
+            self.enimies.append(attacking)
+        dbg.debug(attacking.id)

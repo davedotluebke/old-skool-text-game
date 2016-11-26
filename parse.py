@@ -91,13 +91,12 @@ class Parser:
         sDO = sPrep = sIDO = None
         for p in prepositions:
             if p in textwords:
-                if sV == 'go' and p == 'in':
+                if sV == 'go' and p == 'in':  # what is this doing? 
                     continue
                 idxPrep = textwords.index(p)
                 sPrep = textwords[idxPrep]
                 sDO = ' '.join(textwords[:idxPrep])
                 sIDO = ' '.join(textwords[idxPrep+1:])
-                # old style: (sDO, sPrep, sIDO) = text.partition(p) 
                 # break after finding 1st preposition (simple sentences only)
                 break  
         if sPrep == None: 

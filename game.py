@@ -9,8 +9,8 @@ class Game():
     Eventually this will grow to include a list of players, associated consoles, etc."""
     def __init__(self):
         self.cons = Console()
-        self.user = Player("testplayer", self.cons)
-        self.user.set_description('joe test', 'our test player named joe')
+        self.user = Player("Joe Test", self.cons)
+        self.user.set_description('Joe Test', 'Our test player named Joe')
         self.user.set_max_weight_carried(750000)
         self.user.set_max_volume_carried(2000)
         self.cons.set_user(self.user)
