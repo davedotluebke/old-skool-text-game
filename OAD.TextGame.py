@@ -1,6 +1,7 @@
 from debug import dbg
 from game import game
 
+from action import Action
 from thing import Thing
 from container import Container
 from room import Room  
@@ -180,7 +181,7 @@ sunflower.set_description("giant sunflower" , "By looking at this giant sunflowe
 sunflower.set_volume(3)
 sunflower.set_weight(200)
 sunflower.add_adjectives('happiness','giant')
-sunflower.add_verb('pick', self.take)
+sunflower.actions.append(Action(sunflower.take, ['pick'], True, False))
 garden.insert(sunflower)
 
 poppy = Thing("POPPY!!!!!!!!!")
@@ -230,6 +231,9 @@ sink.add_adjectives('metal', "60's")
 kitchen.insert(sink)
 
 woods.insert(game.user)
+game.user.cons.write("\nWelcome to Sorcery School!\n\nType 'inventory' to see "
+"what you are carrying, 'look' to examine your surroundings or an object, "
+"'quit' to end the game, and 'help' for more useful commands.")
 game.loop()
 
 

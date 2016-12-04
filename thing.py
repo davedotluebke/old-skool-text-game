@@ -36,10 +36,6 @@ class Thing:
         """Add one or more adjective strings, each as a separate argument"""
         self.adjectives += list(sAdjs)
     
-    def add_verb(self, sVerb, fVerb):
-        """Add the given string sVerb and function fVerb to the object's verb_dict{}."""
-        self.verb_dict[sVerb] = fVerb
-
     def set_weight(self, grams):
         if (grams < 0):
             dbg.debug("Error: weight cannot be negative")

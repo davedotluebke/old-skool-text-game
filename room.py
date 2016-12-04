@@ -64,10 +64,10 @@ class Room(Container):
         if len(contents_minus_user) > 0:
             cons.write("Here you see:")
             for item in contents_minus_user:
-                cons.write("a " + item.short_desc)
+                cons.write("\ta " + item.short_desc)
         cons.write('Exits are:')
         for e in self.exits:
-            cons.write(e)
+            cons.write('\t' + e)
         return True
 
     def move_to(self, p, cons, oDO, oIDO):

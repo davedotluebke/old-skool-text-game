@@ -3,59 +3,6 @@ from container import Container
 from player import Player
 
 class Parser:
-    def __init__(self):
-        self.alias_map = {'n':  'go north',
-                          's':  'go south',
-                          'e':  'go east', 
-                          'w':  'go west', 
-                          'nw': 'go northwest',
-                          'sw': 'go southwest',
-                          'ne': 'go northeast',
-                          'se': 'go southeast',
-                          'u':  'go up',
-                          'd':  'go down',
-                          'i':  'inventory',
-                          'l':  'look',
-                          }
-    
-    def _add_alias(self, cons, cmd):
-        instructions = 'To create a new alias, type:\n    alias <a> <text>\n' \
-                        'where <a> is the new alias and <text> is what will replace the alias.'
-        if len(self.words) == 1:
-            # print a list of current aliases & instructions for adding
-            cons.write('Current aliases:')
-            for a in sorted(self.alias_map, key=self.alias_map.get):
-                cons.write('%s --> %s' % (a.rjust(12), self.alias_map[a]))
-            cons.write(instructions)
-            return 
-        alias = self.words[1]
-        if len(self.words) == 2:
-            # print the particular alias if it exists
-            if (alias in self.alias_map):
-                cons.write("'%s' is currently aliased to '%s'" % (alias, self.alias_map[alias]))
-            else:
-                cons.write("'%s' is not currently aliased to anything." % alias)
-                cons.write(instructions)
-            return 
-        # new alias specified, insert it into the alias_map
-        if (alias in self.alias_map):
-            cons.write("'%s' is currently aliased to '%s'; changing." % (alias, self.alias_map[alias]))
-        expansion = cmd.split(maxsplit=2)[2]    # split off first two words and keep the rest
-        self.alias_map[alias] = expansion
-        cons.write("'%s' is now an alias for '%s'" % (alias, expansion))
-        return
-
-    def _replace_aliases(self):
-        cmd = ""
-        for t in self.words:
-            if t in self.alias_map:
-                cmd += self.alias_map[t] + " "
-                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]))
-            else:
-                cmd += t + " "
-        dbg.debug("User input with aliases resolved:\n    %s" % (cmd))
-        return cmd
-
     def _toggle_verbosity(self, cons):
         if dbg.verbosity == 0:
             dbg.verbosity = 1
@@ -163,12 +110,6 @@ class Parser:
         if len(self.words) == 0:
             return True
         
-        if self.words[0] == 'alias':
-            self._add_alias(console, command)         
-            return True
-
-        # replace any aliases with their completed version
-        command = self._replace_aliases()
         self.words = command.split()
 
         # remove articles:

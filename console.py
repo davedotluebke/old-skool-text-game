@@ -1,24 +1,115 @@
+from textwrap import TextWrapper
+
 from debug import dbg
-from player import Player
 from parse import Parser
 
 
 class Console:
+    default_width = 75
+
     def __init__(self):
         self.parser = Parser()
- 
-    def set_user(self, cons_user):
+        self.width = Console.default_width
+        self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = False, tabsize = 4) 
+        self.alias_map = {'n':  'go north',
+                          's':  'go south',
+                          'e':  'go east', 
+                          'w':  'go west', 
+                          'nw': 'go northwest',
+                          'sw': 'go southwest',
+                          'ne': 'go northeast',
+                          'se': 'go southeast',
+                          'u':  'go up',
+                          'd':  'go down',
+                          'i':  'inventory',
+                          'l':  'look',
+                          }
+    
+    def set_user(self, self_user):
         """Set the Player object associated with this console."""
-        self.user = cons_user
-        
-    def write(self, text):
-        print(text)
+        self.user = self_user
 
-    def loop(self, user, g):
-        print('\n')
-        dbg.debug('This is not a valid function anymore.')
+    def set_width(self, w):
+        self.width = w
+        self.tw.width = w
+    
+    def get_width(self):
+        return self.width
+    
+    def _add_alias(self, cmd):
+        instructions = 'To create a new alias, type:\n    alias <a> <text>\n' \
+                        'where <a> is the new alias and <text> is what will replace the alias.'
+         
+        if len(self.words) == 1:
+            # print a list of current aliases & instructions for adding
+            self.write('Current aliases:')
+            for a in sorted(self.alias_map, key=self.alias_map.get):
+                self.write('%s --> %s' % (a.rjust(12), self.alias_map[a]))
+            self.write(instructions)
+            return 
+        alias = self.words[1]
+        if len(self.words) == 2:
+            # print the particular alias if it exists
+            if (alias in self.alias_map):
+                self.write("'%s' is currently aliased to '%s'" % (alias, self.alias_map[alias]))
+            else:
+                self.write("'%s' is not currently aliased to anything." % alias)
+                self.write(instructions)
+            return 
+        # new alias specified, insert it into the alias_map
+        if (alias in self.alias_map):
+            self.write("'%s' is currently aliased to '%s'; changing." % (alias, self.alias_map[alias]))
+        expansion = cmd.split(maxsplit=2)[2]    # split off first two words and keep the rest
+        self.alias_map[alias] = expansion
+        self.write("'%s' is now an alias for '%s'" % (alias, expansion))
+        return
+
+    def _replace_aliases(self):
+        cmd = ""
+        for t in self.words:
+            if t in self.alias_map:
+                cmd += self.alias_map[t] + " "
+                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]))
+            else:
+                cmd += t + " "
+        cmd = cmd[:-1]   # strip trailing space added above
+        dbg.debug("User input with aliases resolved:\n    %s" % (cmd))
+        return cmd
+    
+    def _handle_console_commands(self):
+        """Handle any commands internal to the console, returning True if the command string was handled."""
+        if len(self.words) > 0:
+            if self.words[0] == 'alias':
+                self._add_alias(self.command)
+                return True
+            
+            if self.words[0] == 'width': 
+                if len(self.words) == 2 :
+                    try: 
+                        self.width = int(self.words[1])
+                        self.write("Changing console width to %d" % self.width)
+                    except ValueError:
+                        self.write("Syntax error, changing console width to default %d." % self.default_width)
+                        self.width = self.default_width
+                    self.tw.width = self.width
+                else:
+                    self.write("The console width is currently %d. Type 'console <width>' to change it." % self.width)
+                return True
+        return False
+
+    def write(self, text):
+        lines = text.splitlines()
+        for l in lines:
+            print(self.tw.fill(l))
 
     def take_input(self, prompt):
-        return input(prompt)
-        dbg.debug(self)
+        self.command = input(prompt)
+        self.words = self.command.split()
+        # if user types a console command, handle it and start over
+        while (self._handle_console_commands() == True):
+            self.command = input(prompt)
+            self.words = self.command.split()
+        # replace any aliases with their completed version
+        self.final_command = self._replace_aliases()
+        return self.final_command
 
