@@ -5,6 +5,9 @@ import random
 class Thing:
     ID_dict = {}
 
+    def __str__(self): 
+        return self.names[0]
+
     def __init__(self, default_name):
         self.names = [default_name]
         self.id = default_name
@@ -112,7 +115,7 @@ class Thing:
         if self.fixed:  return self.fixed 
         if self.location == cons.user: return "You are already holding the %s!" % self.short_desc
         if self.move_to(cons.user):
-            cons.write("You take the %s." % self.names[0])
+            cons.write("You take the %s." % self)
         else:
             cons.write("You cannot take the %s." % self.names[0])
         return True
