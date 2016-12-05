@@ -31,7 +31,7 @@ class Parser:
             return (sV, None, None, None)
 
         # list of legal prepositions
-        prepositions = ['in', 'on', 'over', 'under', 'with', 'at', 'from', 'off'] 
+        prepositions = ['in', 'on', 'over', 'under', 'with', 'at', 'from', 'off', 'out', 'into'] 
         textwords = words[1:]  # all words after the verb
         text = ' '.join(textwords)  
         
@@ -54,13 +54,10 @@ class Parser:
         # has a preposition: Sentence type 3 or 4
         if sDO == "": sDO = None
         if sIDO == "": sIDO = None
-        if sIDO: 
-            return (sV, sDO, sPrep, sIDO)
-        else:
-            dbg.debug("Malformed input: found preposition %s but missing indirect object." % sPrep)
+        if not sIDO: 
+            dbg.debug("Possibly malformed input: found preposition %s but missing indirect object." % sPrep)
             dbg.debug("Ending a sentence in a preposition is something up with which I will not put.")
-            sPrep = sIDO = None
-            return (sV, sDO, sPrep, sIDO)
+        return (sV, sDO, sPrep, sIDO)
 
     def _find_matching_objects(self, sObj, objs, cons):
         """Find an object in the list <objs> matching the given string <sObj>.
@@ -136,7 +133,7 @@ class Parser:
         for obj in possible_objects:
             for act in obj.actions:
                 if sV in act.verblist:
-                    if (act.intransitive and not sDO) or (act.transitive and sDO): 
+                    if (act.intransitive and not sDO) or (act.transitive): 
                         possible_verb_objects.append(obj)
                         possible_verb_actions.append(act)
         if (not possible_verb_objects): 

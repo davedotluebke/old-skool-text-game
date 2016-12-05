@@ -10,6 +10,7 @@ class Container(Thing):
         self.closed = False         # can't remove items from closed container
         self.closed_err = ""        # custom "container is closed" error msg
         self.closable = False       # can this container be opened and closed?
+        self.liquid = False         # can this container carry liquid? 
         self.max_weight_carried = 1
         self.max_volume_carried = 1
         self.insert_prepositions = ["in", "into", "inside"]

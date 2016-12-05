@@ -9,8 +9,10 @@ from creature import Creature
 from creature import NPC
 from player import Player
 from console import Console
-from bookcase import Bookcase
 from scenery import Scenery
+from liquid import Liquid
+
+from bookcase import Bookcase
 from sink import Sink
 from cave import CaveEntry
 from flashlight import Flashlight
@@ -34,15 +36,15 @@ bedroom.set_description('dusty bedroom', 'The bare board walls of this bedroom a
 hallway.set_description('dusty hallway', 'This hallway has dusty walls made of wood. It is dim.')
 kitchen.set_description('dusty kitchen with 50-year old apliences and decorations', 'This kitchen looks about 50 years old, and is very dusty but apears still useable.')
 entryway.set_description('barren entryway', 'The dusty entryway has one chandelier hanging from the celing.')
-woods.set_description('some bright and cheerful woods', 'Theese woods have happy birdsongs and pretty trees. They are bright.')
+woods.set_description('bright and cheerful woods', 'Theese woods have happy birdsongs and pretty trees. They are bright.')
 hideout.set_description('secret room in the house', 'This is a secret hideout which is hard to find an entrence to but has magical exit doors.')
 forest_one.set_description('nice forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least.')
 forest_two.set_description('nice forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least.')
 forest_three.set_description('ancient forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least. The trees seem gloomy here. There is a small dark cave to the west.')
 field.set_description('field with a small shack on the west side', 'This field is on the outskirts of Firlefile sorcery school and has a small shack on the west side.')
 shack.set_description('empty shack', 'This shack appears to be abandoned and has nothing but cobwebs and walls.')
-cave.set_description('terrifying dark cave', 'This is one of the most scary caves you have ever been in. You are aniousley looking around to see if there are any monsters.')
-garden.set_description("beutiful garden","This is a very beutiful garden in the northwest corner of Firlefile sorcery school, and has many useful plants growing in it.")
+cave.set_description('terrifying dark cave', 'This is one of the most scary caves you have ever been in. You are anxiousley looking around to see if there are any monsters.')
+garden.set_description("beutiful garden","This is a very beautiful garden in the northwest corner of Firlefile Sorcery School, and has many useful plants growing in it.")
 
 woods.add_exit('west', entryway)
 woods.add_exit('north', forest_one)
@@ -158,13 +160,13 @@ beech.add_adjectives("old", "beech", "carved")
 beech.add_response(["carve"], "You think about carving your own initials into the tree, but an uneasy feeling--as if the forest itself is watching--makes you stop.")
 woods.insert(beech)
 
-pine_one = Scenery('pine_one', 'old sturdy pine tree','This pine tree has clearly been here for quite a while. It seems strong and has some low branches you think you can reach.')
+pine_one = Scenery('pine', 'old sturdy pine tree','This pine tree has clearly been here for quite a while. It seems strong and has some low branches you think you can reach.')
 pine_one.add_names('pine','tree')
 pine_one.add_adjectives('old','sturdy','pine')
 pine_one.add_response(['climb'], "Unfortunatley, the lower branches are not as strong as the sturdy trunk, and you can't seem to get a hold of the higher ones.")
 forest_one.insert(pine_one)
 
-pine_two = Scenery('pine_two', 'old sturdy pine tree','This pine tree has clearly been here for quite a while. It seems strong and has some low branches you think you can reach.')
+pine_two = Scenery('pine', 'old sturdy pine tree','This pine tree has clearly been here for quite a while. It seems strong and has some low branches you think you can reach.')
 pine_two.add_names('pine','tree')
 pine_two.add_adjectives('old','sturdy',)
 pine_two.add_response(['climb'], "Unfortunatley, the lower branches are not as strong as the sturdy trunk, and you can't seem to get a hold of the higher ones.")
@@ -184,7 +186,7 @@ sunflower.add_adjectives('happiness','giant')
 sunflower.actions.append(Action(sunflower.take, ['pick'], True, False))
 garden.insert(sunflower)
 
-poppy = Thing("POPPY!!!!!!!!!")
+poppy = Thing("poppy")
 poppy.set_description("red poppy","This poppy is VERY pretty!")
 
 table = Container('table')
@@ -205,8 +207,10 @@ table.insert(plate)
 
 bottle = Container('bottle')
 bottle.set_description('blue bottle', 'This blue bottle looks like a normal plastic bottle. It is unlabled.')
+bottle.add_adjectives('blue', 'plastic', 'unlabled')
 bottle.set_max_weight_carried(4e9)
 bottle.set_max_volume_carried(3e9)
+bottle.liquid = True
 table.insert(bottle)
 
 gold = Thing('gold')
@@ -226,14 +230,34 @@ cabinets.closable = True
 cabinets.close()
 kitchen.insert(cabinets)
 
+flask = Container('flask')
+flask.set_description('small flask', 'This is a small flask of clear glass. ')
+flask.add_adjectives('small', 'clear', 'glass')
+flask.set_max_volume_carried(0.050)
+flask.set_max_weight_carried(200)
+flask.liquid = True
+
+molasses = Liquid('molasses')
+molasses.set_description('thick brown molasses', 'This brownish liquid is sweet and thick. Not surprisingly, it is used in recipes as a sweetener and a thickener.')
+molasses.add_adjectives('thick', 'brown', 'brown', 'brownish')
+molasses.set_volume(0.040)
+molasses.set_weight(40)
+
+flask.insert(molasses)
+cabinets.insert(flask)
+
+glass_bottle = Container('bottle')
+glass_bottle.set_description("normal glass bottle","This is a normal glass bottle It looks quite usable.")
+
 sink = Sink('sink')
 sink.add_adjectives('metal', "60's")
 kitchen.insert(sink)
 
 woods.insert(game.user)
-game.user.cons.write("\nWelcome to Sorcery School!\n\nType 'inventory' to see "
-"what you are carrying, 'look' to examine your surroundings or an object, "
-"'quit' to end the game, and 'help' for more useful commands.")
+game.user.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
+"Type 'look' to examine your surroundings or an object, "
+"'inventory' to see what you are carrying, " 
+"'quit' to end the game, and 'help' for more information.")
 game.loop()
 
 
