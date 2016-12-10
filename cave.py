@@ -24,7 +24,7 @@ class CaveEntry(Room):
                 if cons != None:
                     self.last_cons = cons
                 cons.write('You convince yourself to enter the scary cave.')
-                cons.user.emit('%s slowly enters the cave, visibly shaking.' % cons.user.names[0])
+                cons.user.emit('%s slowly enters the cave, visibly shaking.' % cons.user)
                 Room.go_to(self, p, cons, oDO, oIDO)
                 dbg.debug('%s slowly enters the cave, visibly shaking. The DebugLog says that the cave is scary, because it was meant to be.' % cons.user.id)
             else:

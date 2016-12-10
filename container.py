@@ -84,7 +84,7 @@ class Container(Thing):
             if self.contents:
                 if self.plural:
                     pass
-                preamble = "%s the %s there is:" % (self.insert_prepositions[0], self.names[0])
+                preamble = "%s the %s there is:" % (self.insert_prepositions[0], self)
                 cons.write(preamble.capitalize())
                 for item in self.contents:
                     cons.write("a " + item.short_desc)
@@ -149,7 +149,7 @@ class Container(Thing):
             return "Did you mean to 'put' something %s the %s?" % (sPrep, self.short_desc)
         if oDO.fixed: return oDO.fixed
         if sPrep not in self.insert_prepositions:
-            return "You can't put the %s %s the %s, but you can put it %s the %s." % (oDO.names[0], sPrep, self.names[0], self.insert_prepositions[0], self.names[0])
+            return "You can't put the %s %s the %s, but you can put it %s the %s." % (oDO, sPrep, self, self.insert_prepositions[0], self)
         if self.closed:
             cons.write(self.closed_err if self.closed_err else "The %s is closed; you can't put anything %s it." % (self.short_desc, self.insert_prepositions[0]))
             return True

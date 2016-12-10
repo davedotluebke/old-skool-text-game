@@ -117,7 +117,7 @@ class Thing:
         if self.move_to(cons.user):
             cons.write("You take the %s." % self)
         else:
-            cons.write("You cannot take the %s." % self.names[0])
+            cons.write("You cannot take the %s." % self)
         return True
 
     def drop(self, p, cons, oDO, oIDO):
@@ -125,9 +125,9 @@ class Thing:
         if self.fixed:      return self.fixed
         if self.location != cons.user: return "You aren't holding the %s!" % self.short_desc
         if self.move_to(cons.user.location):
-            cons.write("You drop the %s." % self.names[0])
+            cons.write("You drop the %s." % self)
         else:
-            cons.write("You cannot drop the %s" % self.names[0])
+            cons.write("You cannot drop the %s" % self)
         return True
 
     def look_at(self, p, cons, oDO, oIDO):  

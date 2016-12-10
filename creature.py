@@ -14,7 +14,7 @@ class Creature(Container):
 
     def say(self, speech):
         """Emit a message to the room "The <creature> says: <speech>". """
-        self.emit("The %s says: %s" % (self.names[0], speech))
+        self.emit("The %s says: %s" % (self, speech))
         
 class NPC(Creature):
     def __init__(self, ID, g, aggressive=0):
@@ -69,12 +69,12 @@ class NPC(Creature):
         current_room = self.location
         new_room = self.location.exits[exit]
  
-        self.emit("The %s goes %s." % (self.names[0], exit))
+        self.emit("The %s goes %s." % (self, exit))
         current_room.extract(self)
  
         new_room.insert(self)
-        self.emit("The %s arrives." % self.names[0])
-        dbg.debug("Moved to new room %s" % (new_room.names[0]))
+        self.emit("The %s arrives." % self)
+        dbg.debug("Moved to new room %s" % (new_room))
         return
 
     def talk(self):

@@ -15,7 +15,7 @@ class Sink(Thing):
         if oDO == None: 
             return "What do you intend to fill from the sink?"
         
-        filling = oDO.names[0]
+        filling = oDO
         cons.write('Water comes out of the sink, and fills your %s' % filling)
         self.emit('The %s is filled with water at the sink.' % filling)
         water = Liquid('water', 'some normal water', 'This is some normal clear water.')
