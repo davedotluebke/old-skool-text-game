@@ -152,12 +152,6 @@ class Parser:
             oIDO = self._find_matching_objects(sIDO, possible_objects, console)
         if oDO == False or oIDO == False: 
             return True     # ambiguous user input; >1 object matched 
-
-        if not sDO:                 # intransitive verb, no direct object
-            verb = possible_verb_actions[0].func
-            # all verb functions take parser, console, direct (or invoking) object, indirect object
-            verb(self, console, oDO, oIDO)
-            return True
          
         # If direct or indirect object supports the verb, try first in that order
         initial_actions = []

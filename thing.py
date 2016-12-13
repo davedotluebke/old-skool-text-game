@@ -133,8 +133,9 @@ class Thing:
     def look_at(self, p, cons, oDO, oIDO):  
         '''Print out the long description of the thing.'''
         dbg.debug("Called Thing.look_at()")
-        if oDO != self: 
+        if self == oDO or self == oIDO:
+            cons.write(self.long_desc)
+            return True
+        else:
             return "Not sure what you are trying to look at!"
-        cons.write(self.long_desc)
-        return True
-
+        
