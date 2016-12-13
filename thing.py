@@ -82,9 +82,10 @@ class Thing:
         # pass message to containing object, if it can receive messages
         holder = self.location
         if not holder: 
-            return 
+            #  this Thing is a room, pass message to all creatures in the room
+            holder = self
         if holder not in ignore and hasattr(holder, 'perceive'):
-            # immeidate container can see messages, probably a creature/player
+            # immediate container can see messages, probably a creature/player
             dbg.debug("creature holding this object is: " + holder.id)
             holder.perceive(message)
         # now get list of recipients (usually creatures) contained by holder (usually a Room)

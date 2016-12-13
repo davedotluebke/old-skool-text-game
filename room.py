@@ -77,19 +77,27 @@ class Room(Container):
         words = p.words
         dbg.debug("verb function go_to: words == ")
         dbg.debug(str(words))
+        user = cons.user
         sExit = words[1]
         if sExit in list(self.exits):
             dest = self.exits[sExit]
-            cons.write("You %s to the %s." % (words[0], sExit))
             if cons.user.move_to(dest):
+                loc = user.location
+                verb = words[0]
+                conjugated = "goes" if verb == "go" else verb + 's'
+                cons.write("You %s to the %s." % (verb, sExit))
+                self.emit("%s %s to the %s." % (str(user), conjugated, sExit))
                 if dest.is_dark():
                     cons.write("It's too dark to see anything here.")
                     return True
-                cons.write("You enter a %s." % cons.user.location.short_desc)
-                if (len(cons.user.location.exits) > 0):
+                cons.write("You enter a %s." % loc.short_desc)
+                if (len(loc.exits) > 0):
                     cons.write("Exits are:")
-                    for w in cons.user.location.exits:
+                    for w in loc.exits:
                         cons.write('\t' + w)
+                    local_objects = ["a " + str(o) for o in loc.contents if o is not user]
+                    if local_objects:
+                        cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
                 else:
                     cons.write("There are no obvious exits.")
                 return True
