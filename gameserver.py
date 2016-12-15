@@ -19,22 +19,32 @@ class Game():
         self.heartbeat_users = []
 
     def save_game(self, filename):
+        if not filename.endswith('.OAD'): 
+            filename += '.OAD'
         try:
             f = open(filename, 'w+b')
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+            self.cons.write("Saved entire game to file %s" % filename)
             f.close()
         except:
             self.cons.write("Error writing to file %s" % filename)
             
     def load_game(self, filename):
+        if not filename.endswith('.OAD'): 
+            filename += '.OAD'
         try: 
             f = open(filename, 'r+b')
+        except FileNotFoundError:
+            self.cons.write("Error, couldn't find file named %s" % filename)
+        try:
             newgame = pickle.load(f)
             self.cons, self.user, self.heartbeat_users = newgame.cons, newgame.user, newgame.heartbeat_users
             self.cons.game = self
-            f.close()
-        except FileNotFoundError:
-            self.cons.write("Error, couldn't find file named %s" % filename)
+            self.cons.write("Restored game state from file %s" % filename)
+        except PickleError:
+            self.cons.write("Encountered error while pickling to file %s, game not saved." % filename)
+        f.close()
+        
         
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""

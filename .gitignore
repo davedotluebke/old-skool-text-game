@@ -2,4 +2,5 @@
 *.pyc               # ignore temp files created by python
 __pycache__         # ignore the directory where python stores them
 test_log.txt        # ignore the default logfile
+*.OAD               # ignore saved game files
 
