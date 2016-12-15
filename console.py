@@ -3,7 +3,6 @@ from textwrap import TextWrapper
 from debug import dbg
 from parse import Parser
 
-
 class Console:
     default_width = 75
     help_msg = "Your goal is to explore the world around you, solve puzzles,"\
@@ -26,7 +25,8 @@ class Console:
                "more details. Type 'quit' to save your progress and leave "\
                "the game (NOTE: saving is not yet implemented)."  
 
-    def __init__(self):
+    def __init__(self, game = None):
+        self.game = game
         self.parser = Parser()
         self.width = Console.default_width
         self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = True, tabsize = 4) 
@@ -117,6 +117,22 @@ class Console:
             
             if self.words[0] == 'help':
                 self.write(self.help_msg)
+                return True
+            
+            if self.words[0] == 'save':
+                if (len(self.words) == 2):
+                    filename = self.words[1]
+                    self.game.save_game(filename)
+                else:
+                    self.write("Usage: save <filename>")                  
+                return True
+            
+            if (self.words[0] == 'load'):
+                if (len(self.words) == 2):
+                    filename = self.words[1]
+                    self.game.load_game(filename)
+                else:
+                    self.write("Usage: load <filename>")
                 return True
 
         return False

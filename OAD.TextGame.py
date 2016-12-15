@@ -1,6 +1,6 @@
 from debug import dbg
-from game import game
 
+from gameserver import Game
 from action import Action
 from thing import Thing
 from container import Container
@@ -16,6 +16,12 @@ from bookcase import Bookcase
 from sink import Sink
 from cave import CaveEntry
 from flashlight import Flashlight
+
+## 
+## "game" is a special global variable, an object of class Game that holds
+## the actual game state 
+## 
+game = Game()
 
 bedroom = Room('bedroom')
 hallway = Room('hallway')
@@ -123,7 +129,7 @@ willow = Scenery('willow', 'sad weeping willow', 'This is the most mournful weep
 willow.add_adjectives('weeping','sad','mournful','willow')
 willow.add_names('tree')
 willow.add_response(['climb'], 'You cannot hold onto the branches, and they are over a small river.',)
-willow.add_response(['cry', 'weep'], 'You cry as you look at the willow, but then you see the meancing old oak tree across the path, and you eventually stop.', False, True)
+willow.add_response(['cry', 'weep'], 'You cry as you look at the willow, but then you see the menacing old oak tree across the path, and you eventually stop.', False, True)
 willow.add_response(['hug', 'hold'], 'This just isn\'t the right tree to hug.')
 forest_three.insert(willow)
 
