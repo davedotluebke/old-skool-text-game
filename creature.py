@@ -1,12 +1,38 @@
 import random
 from debug import dbg
+from thing import Thing
 from container import Container
 
 class Creature(Container):
-    def __init__(self, ID):
-        Container.__init__(self, ID)
+    def __init__(self, default_name):
+        Container.__init__(self, default_name)
+        self.closed = True
+        self.see_inside = False
         self.hitpoints = 10           # default hitpoints
         self.health = self.hitpoints  # default full health (0 health --> dead)
+        self.viewed = False
+        self.armor_class = 0
+        self.combat_skill = 0
+        self.strength = 0
+        self.dexterity = 0
+        self.armor_worn = None
+        self.wepon_weilding = None
+
+    def set_combat_vars(self, armor_class, combat_skill, strength, dexterity):
+        self.armor_class = armor_class
+        self.combat_skill = combat_skill
+        self.strength = strength
+        self.dexterity = dexterity
+
+    def look_at(self, p, cons, oDO, oIDO):
+        '''Print out the long description of the creature.'''
+        self.viewed = cons.user
+        dbg.debug("Called Creature.look_at()")
+        if self == oDO or self == oIDO:
+            cons.write(self.long_desc)
+            return True
+        else:
+            return "Not sure what you are trying to look at!"
 
     def perceive(self, message):
         """Receive a message emitted by an object carried by or in vicinity of this creature."""
@@ -45,7 +71,7 @@ class NPC(Creature):
                 self.talk()
             for i in self.location.contents: # if an enimy is in room, attack
                 if i in self.enimies and self.aggressive:
-                    attack()
+                    attack(i)
                 elif i in self.enimies and not self.aggressive:  #can't attack (e.g. bluebird)? Run away.
                     self.move_around()
             else:                    # otherwise pick a random action
@@ -89,14 +115,31 @@ class NPC(Creature):
                     self.current_script_idx = 0
             else:
                 self.current_script = random.choice(self.scripts)
-    def attack(self):
+    def attack(self, enimy=None):
         """Attack any enimies, if possible, or if highley aggressive, attack anyone in the room"""
-        attacking = None
+        attacking = enimy
         for i in self.enimies:
-            if i in self.location.contents:
+            if i in self.location.contents and not attacking:
                 attacking = i
                 continue
         if self.aggressive == 2 and not attacking:
             attacking = random.choice(hasattr(self.location.contents, hitpoints))
             self.enimies.append(attacking)
         dbg.debug(attacking.id)
+        if not self.wepon_weilding:
+            for w in self.contents:
+                if hasattr(w, damage):
+                    self.wepon_weilding = w
+                    dbg.debug("wepon chosen: %s" % wepon_weilding)
+                    continue
+        if not self.armor_worn:
+            for a in self.contents:
+                if hasattr(a, damage_prevent_num):
+                    self.armor_worn = a
+                    dbg.debug("armor chosen: %s" % armor_worn)
+                    continue
+        chance_of_hitting_self = self.armor_class * self.armor_worn.damage_prevent_num
+        chance_of_hitting_enimy = self.combat_skill * self.wepon_weilding.accuracy
+        damage_done_self = self.wepon_weilding.damage - 1/self.strength
+        attack_freq_self = self.dexterity * (1/self.wepon_weilding.unweildiness) * (1/self.armor_worn.unweildiness)
+

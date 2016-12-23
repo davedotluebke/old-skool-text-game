@@ -193,7 +193,16 @@ sunflower.actions.append(Action(sunflower.take, ['pick'], True, False))
 garden.insert(sunflower)
 
 poppy = Thing("poppy")
-poppy.set_description("red poppy","This poppy is VERY pretty!")
+poppy.set_description("red poppy","This poppy is VERY pretty! You really want to pick it!")
+poppy.set_volume(2.122)
+poppy.set_weight(200)
+poppy.add_adjectives("very","pretty")
+poppy.actions.append(Action(poppy.take, ['pick'], True, False))
+garden.insert(poppy)
+
+tomato_plant = Container("tomato plant")
+tomato_plant.set_description("tomato plant","This tomato plant look like it prodoces yummy tomatoes.")
+tomato_plant.
 
 table = Container('table')
 table.set_description("kitchen table", "This dated-looking kitchen table has chrome edging and a formica top.")
