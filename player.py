@@ -2,7 +2,7 @@ from creature import Creature
 from action import Action
 
 class Player(Creature):
-    def __init__(self,ID, console):
+    def __init__(self, ID, console):
         """Initialize the Player object and attach a console"""
         Creature.__init__(self, ID)
         self.cons = console

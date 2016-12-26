@@ -11,6 +11,8 @@ from player import Player
 from console import Console
 from scenery import Scenery
 from liquid import Liquid
+from weapon import Weapon
+from armor import Armor
 
 from bookcase import Bookcase
 from sink import Sink
@@ -19,9 +21,10 @@ from flashlight import Flashlight
 
 ## 
 ## "game" is a special global variable, an object of class Game that holds
-## the actual game state 
+## the actual game state. 
 ## 
 game = Game()
+nulspace = Room('nulspace')         #"nulspace" is a room for objects that should be deleted. TODO: Automaticly delete items from nulspace every heartbeat.
 
 bedroom = Room('bedroom')
 hallway = Room('hallway')
@@ -147,6 +150,11 @@ Tweety tweet-tweet''')
 woods.insert(bird)
 bird.act_frequency = 1
 
+seed = Thing('seed')
+seed.set_description('seed, so test failed. Type "look seed" for more info.','This seed was created for testing purposes. You should not be able to see it. If you do, please note this on issue #17 on github.')
+seed.location = bird
+bird.contents.append('seed')
+
 butterfly = NPC('butterfly', game)
 butterfly.set_description('butterfly', 'A pretty monarch butterfly')
 butterfly.add_script('''wh''')
@@ -202,7 +210,7 @@ garden.insert(poppy)
 
 tomato_plant = Container("tomato plant")
 tomato_plant.set_description("tomato plant","This tomato plant look like it prodoces yummy tomatoes.")
-tomato_plant.
+#tomato_plant.
 
 table = Container('table')
 table.set_description("kitchen table", "This dated-looking kitchen table has chrome edging and a formica top.")
@@ -267,6 +275,28 @@ glass_bottle.set_description("normal glass bottle","This is a normal glass bottl
 sink = Sink('sink')
 sink.add_adjectives('metal', "60's")
 kitchen.insert(sink)
+
+
+# Begin experimental test code
+monster = NPC('monster', game, 2)
+monster.set_description('terrible monster', 'This is a horrible monster. You want to run away from it.')
+monster.set_combat_vars(50, 60, 80, 40)
+monster.act_frequency = 1
+
+sword = Weapon('sword', 6, 30, 2)
+sword.set_description('rusty old sword', 'This is a rusty old sword the monster has for testing purposes.')
+
+leather_suit = Armor('leather suit', 25, 2)
+leather_suit.set_description('leather skin', 'A sturdy leather hide')
+
+cave.insert(monster)
+monster.insert(sword)
+monster.insert(leather_suit)
+
+game.user.hitpoints = 100
+game.user.health = game.user.hitpoints
+# End experimental test code
+
 
 woods.insert(game.user)
 game.user.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
