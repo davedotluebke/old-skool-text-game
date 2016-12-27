@@ -17,26 +17,22 @@ class CaveEntry(Room):
         self.last_cons = None
    
     def go_to(self, p, cons, oDO, oIDO):
-        try:
-            if p.words[1] == 'east':
-                Room.go_to(self, p, cons, oDO, oIDO)
-            elif cons == self.last_cons:
-                if cons != None:
-                    self.last_cons = cons
-                cons.write('You convince yourself to enter the scary cave.')
-                cons.user.emit('%s slowly enters the cave, visibly shaking.' % cons.user)
-                Room.go_to(self, p, cons, oDO, oIDO)
-                dbg.debug('%s slowly enters the cave, visibly shaking. The DebugLog says that the cave is scary, because it was meant to be.' % cons.user.id)
-            else:
-                cons.write('Entering the cave is very scary, and you have a hard time convincing yourself to go in.')
-                if cons != None:
-                    self.last_cons = cons
-                    dbg.debug('self.last_cons was just set to %s, %s' % (self.last_cons, cons))
-        except AttributeError:
+        if p.words[1] == 'east':
+            return Room.go_to(self, p, cons, oDO, oIDO)
+        elif cons == self.last_cons:
+            if cons != None:
+                self.last_cons = cons
+            cons.write('You convince yourself to enter the scary cave.')
+            cons.user.emit('%s slowly enters the cave, visibly shaking.' % cons.user)
+            Room.go_to(self, p, cons, oDO, oIDO)
+            dbg.debug('%s slowly enters the cave, visibly shaking. The DebugLog says that the cave is scary, because it was meant to be.' % cons.user.id)
+            return True
+        else:
             cons.write('Entering the cave is very scary, and you have a hard time convincing yourself to go in.')
             if cons != None:
                 self.last_cons = cons
                 dbg.debug('self.last_cons was just set to %s, %s' % (self.last_cons, cons))
+            return True
    
     def heartbeat(self):
         dbg.debug('self.last_cons is %s' % self.last_cons)

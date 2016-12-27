@@ -31,18 +31,19 @@ class Console:
         self.parser = Parser()
         self.width = Console.default_width
         self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = True, tabsize = 4) 
-        self.alias_map = {'n':  'go north',
-                          's':  'go south',
-                          'e':  'go east', 
-                          'w':  'go west', 
-                          'nw': 'go northwest',
-                          'sw': 'go southwest',
-                          'ne': 'go northeast',
-                          'se': 'go southeast',
-                          'u':  'go up',
-                          'd':  'go down',
-                          'i':  'inventory',
-                          'l':  'look',
+        self.alias_map = {'n':       'go north',
+                          's':       'go south',
+                          'e':       'go east', 
+                          'w':       'go west', 
+                          'nw':      'go northwest',
+                          'sw':      'go southwest',
+                          'ne':      'go northeast',
+                          'se':      'go southeast',
+                          'u':       'go up',
+                          'd':       'go down',
+                          'i':       'inventory',
+                          'l':       'look',
+                          'around':  '',            # temporary
                           }
     
     def set_user(self, self_user):

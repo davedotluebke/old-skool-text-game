@@ -1,12 +1,43 @@
 import random
 from debug import dbg
+from thing import Thing
 from container import Container
+from weapon import Weapon
+from armor import Armor
 
 class Creature(Container):
-    def __init__(self, ID):
-        Container.__init__(self, ID)
+    def __init__(self, default_name):
+        Container.__init__(self, default_name)
+        self.closed = True
+        self.closable = False
+        self.see_inside = False
         self.hitpoints = 10           # default hitpoints
         self.health = self.hitpoints  # default full health (0 health --> dead)
+        self.enemies = []
+        self.viewed = False
+        self.armor_class = 0
+        self.combat_skill = 0
+        self.strength = 0
+        self.dexterity = 0
+        self.armor_worn = None
+        self.weapon_wielding = None
+        self.closed_err = "You can't put things in creatures!"
+
+    def set_combat_vars(self, armor_class, combat_skill, strength, dexterity):
+        self.armor_class = armor_class
+        self.combat_skill = combat_skill
+        self.strength = strength
+        self.dexterity = dexterity
+
+    def look_at(self, p, cons, oDO, oIDO):
+        '''Print out the long description of the creature.'''
+        self.viewed = cons.user
+        dbg.debug("Called Creature.look_at()")
+        if self == oDO or self == oIDO:
+            cons.write(self.long_desc)
+            return True
+        else:
+            return "Not sure what you are trying to look at!"
 
     def perceive(self, message):
         """Receive a message emitted by an object carried by or in vicinity of this creature."""
@@ -15,6 +46,51 @@ class Creature(Container):
     def say(self, speech):
         """Emit a message to the room "The <creature> says: <speech>". """
         self.emit("The %s says: %s" % (self, speech))
+
+    def get_armor_class(self):
+        return self.armor_class + (0 if not self.armor_worn else armor_worn.bonus)
+    
+    def take_damage(self, damage):
+        self.health -= damage
+        if self.health <= 0:
+            self.die('default message')
+
+    def attack(self, enemy):
+        chance_of_hitting = self.combat_skill + self.weapon_wielding.accuracy - enemy.get_armor_class()
+        if random.randint(1, 100) <= chance_of_hitting:
+            d = self.weapon_wielding.damage
+            damage_done = random.randint(d/2, d) + self.strength / 10.0
+            enemy.take_damage(damage_done)
+            self.emit('The %s attacks the %s, doing %s damage!' % (self, enemy, damage_done), ignore=[self, enemy])
+
+            self.perceive('You attack the %s, doing %s damage!' % (enemy, damage_done))
+            enemy.perceive('The %s attacks you, doing %s damage!' % (self, damage_done))
+            if self not in enemy.enemies:
+                enemy.enemies.append(self)
+
+#        chance_of_being_hit = self.armor_class
+#        chance_of_hitting_enemy = self.combat_skill * self.weapon_wielding.accuracy
+#        damage_done_by_self = self.weapon_wielding.damage - 1/self.strength - enemy.armor_worn.damage_prevent_num
+#        attack_freq_self = self.dexterity * (1/self.weapon_wielding.unwieldiness) * (1/self.armor_worn.unwieldiness)
+    def attack_freq(self):
+        return (20.0/self.dexterity + self.weapon_wielding.unwieldiness + self.armor_worn.unwieldiness)
+    
+    def die(self, message):
+        #What to do when 0 health
+        corpse = Container('corpse of %s' % (self))
+        corpse.set_description('corpse of a %s' % (self.short_desc), 'This is a foul-smelling corpse of a %s. It looks nasty.' % (self.short_desc))
+        corpse.set_weight(self.weight)
+        corpse.set_volume(self.volume)
+        corpse.set_max_weight_carried(self.max_weight_carried)
+        corpse.set_max_volume_carried(self.max_volume_carried)
+        self.location.insert(corpse)
+        for i in self.contents:
+            i.move_to(corpse)    #Drop everything carried
+        self.emit(message)
+        if hasattr(self, 'cons'):
+            self.move_to(woods)     #TODO: Starting Rooms
+            return
+        self.move_to(nulspace)      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
         
 class NPC(Creature):
     def __init__(self, ID, g, aggressive=0):
@@ -23,13 +99,13 @@ class NPC(Creature):
         self.act_frequency = 3  # how many heartbeats between NPC actions
         self.act_soon = 0       # how many heartbeats till next action
         self.choices = ['move_around', 'talk']  # list of things NPC might do
-        self.enimies = []
-        if self.aggressive:     # aggressive: 0 = will never attack anyone, even if attacked by them. Will flee. 1 = only attacks enimies. 2 = attacks anyone. highly aggressive.
-            self.choices.append('attack')
+        if self.aggressive:     # aggressive: 0 = will never attack anyone, even if attacked by them. Will flee. 1 = only attacks enemies. 2 = attacks anyone. highly aggressive.
+            self.choices.append('attack_enemy')
         # list of strings that the NPC might say
         self.scripts = []
         self.current_script = None
         self.current_script_idx = 0
+        self.attack_now = 0
 
         g.register_heartbeat(self)
     
@@ -39,16 +115,20 @@ class NPC(Creature):
     def heartbeat(self):
         self.act_soon += 1
         dbg.debug('beat')
-        if self.act_soon == self.act_frequency or self.enimies in self.location.contents:
+        if self.act_soon == self.act_frequency or self.enemies in self.location.contents:
+            acting = False
             self.act_soon = 0
             if self.current_script:  # if currently reciting, continue
                 self.talk()
-            for i in self.location.contents: # if an enimy is in room, attack
-                if i in self.enimies and self.aggressive:
-                    attack()
-                elif i in self.enimies and not self.aggressive:  #can't attack (e.g. bluebird)? Run away.
-                    self.move_around()
-            else:                    # otherwise pick a random action
+                acting = True
+            for i in self.location.contents: # if an enemy is in room, attack
+                if i in self.enemies:
+                    if self.aggressive:
+                        self.attack_enemy(i)
+                    else:  #can't attack (e.g. bluebird)? Run away.
+                        self.move_around()
+                    acting = True
+            if not acting:           # otherwise pick a random action
                 choice = random.choice(self.choices)
                 try:
                     choice_fn = getattr(self, choice)
@@ -89,14 +169,37 @@ class NPC(Creature):
                     self.current_script_idx = 0
             else:
                 self.current_script = random.choice(self.scripts)
-    def attack(self):
-        """Attack any enimies, if possible, or if highley aggressive, attack anyone in the room"""
-        attacking = None
-        for i in self.enimies:
-            if i in self.location.contents:
-                attacking = i
-                continue
+    
+    def attack_enemy(self, enemy=None):
+        """Attack any enemies, if possible, or if highly aggressive, attack anyone in the room"""
+        targets = [x for x in self.location.contents if isinstance(x, Creature) and x != self]
+        if not targets:
+            return
+        attacking = enemy
+        if not attacking:
+            for i in self.enemies:
+                if i in self.location.contents:
+                    attacking = i
+                    continue
         if self.aggressive == 2 and not attacking:
-            attacking = random.choice(hasattr(self.location.contents, hitpoints))
-            self.enimies.append(attacking)
-        dbg.debug(attacking.id)
+            attacking = random.choice(targets)
+            self.enemies.append(attacking)
+        dbg.debug("Attacking %s" % attacking)
+        # Figured out who to attack
+        if not self.weapon_wielding:
+            for w in self.contents:
+                if isinstance(w, Weapon):
+                    self.weapon_wielding = w
+                    dbg.debug("weapon chosen: %s" % self.weapon_wielding)
+                    continue
+        if not self.armor_worn:
+            for a in self.contents:
+                if isinstance(a, Armor):
+                    self.armor_worn = a
+                    dbg.debug("armor chosen: %s" % self.armor_worn)
+                    continue
+        if self.attack_freq() <= self.attack_now:
+            self.attack(enemy)
+        else:
+            self.attack_now += 1
+
