@@ -23,11 +23,13 @@ from flashlight import Flashlight
 ## 
 game = Game()
 
+woods = Room('woods')
+woods.set_description('bright and cheerful woods', 'Theese woods have happy birdsongs and pretty trees. They are bright.')
+
 bedroom = Room('bedroom')
 hallway = Room('hallway')
 kitchen = Room('kitchen')
 entryway = Room('entryway')
-woods = Room('woods')
 hideout = Room('secret hideout')
 forest_one = Room('forest')
 forest_two = Room('forest')
@@ -42,7 +44,6 @@ bedroom.set_description('dusty bedroom', 'The bare board walls of this bedroom a
 hallway.set_description('dusty hallway', 'This hallway has dusty walls made of wood. It is dim.')
 kitchen.set_description('dusty kitchen with 50-year old apliences and decorations', 'This kitchen looks about 50 years old, and is very dusty but apears still useable.')
 entryway.set_description('barren entryway', 'The dusty entryway has one chandelier hanging from the celing.')
-woods.set_description('bright and cheerful woods', 'Theese woods have happy birdsongs and pretty trees. They are bright.')
 hideout.set_description('secret room in the house', 'This is a secret hideout which is hard to find an entrence to but has magical exit doors.')
 forest_one.set_description('nice forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least.')
 forest_two.set_description('nice forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least.')
@@ -137,19 +138,19 @@ bird = NPC('bird', game)
 bird.set_description('bluebird', 'A nice looking little bluebird.')
 bird.set_weight(200)
 bird.set_volume(0.2)
-bird.add_script('''Tweet!''')
-bird.add_script('''Tweet tweet''')
+bird.add_script("""Tweet!""")
+bird.add_script("""Tweet tweet""")
 bird.add_script(
-'''Tweet tweet tweet,
+"""Tweet tweet tweet,
 tweet tweet
 tweet, tweet,
-Tweety tweet-tweet''')
+Tweety tweet-tweet""")
 woods.insert(bird)
 bird.act_frequency = 1
 
 butterfly = NPC('butterfly', game)
 butterfly.set_description('butterfly', 'A pretty monarch butterfly')
-butterfly.add_script('''wh''')
+butterfly.add_script("""wh""")
 field.insert(butterfly)
 
 elm = Scenery("elm", "massive old elm tree", "This huge elm tree must be over a hundred years old. You are tempted to hug it.")

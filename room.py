@@ -72,6 +72,22 @@ class Room(Container):
 
     def move_to(self, p, cons, oDO, oIDO):
         cons.write('rooms cannot be moved!')
+    
+    def report_arrival(self, cons, user, dest):
+        loc = user.location
+        if dest.is_dark():
+            cons.write("It's too dark to see anything here.")
+            return True
+        cons.write("You enter a %s." % loc.short_desc)
+        if (len(loc.exits) > 0):
+            cons.write("Exits are:")
+            for w in loc.exits:
+                cons.write('\t' + w)
+            local_objects = ["a " + str(o) for o in loc.contents if o is not user]
+            if local_objects:
+                cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
+        else:
+            cons.write("There are no obvious exits.")
 
     def go_to(self, p, cons, oDO, oIDO):
         words = p.words
@@ -87,19 +103,7 @@ class Room(Container):
                 conjugated = "goes" if verb == "go" else verb + 's'
                 cons.write("You %s to the %s." % (verb, sExit))
                 self.emit("%s %s to the %s." % (str(user), conjugated, sExit))
-                if dest.is_dark():
-                    cons.write("It's too dark to see anything here.")
-                    return True
-                cons.write("You enter a %s." % loc.short_desc)
-                if (len(loc.exits) > 0):
-                    cons.write("Exits are:")
-                    for w in loc.exits:
-                        cons.write('\t' + w)
-                    local_objects = ["a " + str(o) for o in loc.contents if o is not user]
-                    if local_objects:
-                        cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
-                else:
-                    cons.write("There are no obvious exits.")
+                self.report_arrival(cons, user, dest)
                 return True
             else:
                 return "For some reason you are unable to go to the %s." % sExit
