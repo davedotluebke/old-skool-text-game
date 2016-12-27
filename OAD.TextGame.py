@@ -300,6 +300,7 @@ game.user.health = game.user.hitpoints
 
 
 woods.insert(game.user)
+game.user.start_loc = woods
 game.user.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
 "Type 'look' to examine your surroundings or an object, "
 "'inventory' to see what you are carrying, " 

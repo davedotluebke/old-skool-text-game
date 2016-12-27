@@ -73,9 +73,10 @@ class Room(Container):
     def move_to(self, p, cons, oDO, oIDO):
         cons.write('rooms cannot be moved!')
     
-    def report_arrival(self, cons, user, dest):
+    def report_arrival(self, user):
         loc = user.location
-        if dest.is_dark():
+        cons = user.cons
+        if loc.is_dark():
             cons.write("It's too dark to see anything here.")
             return True
         cons.write("You enter a %s." % loc.short_desc)
@@ -103,7 +104,7 @@ class Room(Container):
                 conjugated = "goes" if verb == "go" else verb + 's'
                 cons.write("You %s to the %s." % (verb, sExit))
                 self.emit("%s %s to the %s." % (str(user), conjugated, sExit))
-                self.report_arrival(cons, user, dest)
+                self.report_arrival(user)
                 return True
             else:
                 return "For some reason you are unable to go to the %s." % sExit

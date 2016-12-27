@@ -77,7 +77,9 @@ class Creature(Container):
     
     def die(self, message):
         #What to do when 0 health
-        corpse = Container('corpse of %s' % (self))
+        self.emit("The %s dies!" % self, [self])
+        corpse = Container("corpse of %s" % (self))
+        corpse.add_names("corpse")
         corpse.set_description('corpse of a %s' % (self.short_desc), 'This is a foul-smelling corpse of a %s. It looks nasty.' % (self.short_desc))
         corpse.set_weight(self.weight)
         corpse.set_volume(self.volume)
@@ -85,12 +87,10 @@ class Creature(Container):
         corpse.set_max_volume_carried(self.max_volume_carried)
         self.location.insert(corpse)
         for i in self.contents:
-            i.move_to(corpse)    #Drop everything carried
+            i.move_to(corpse)    # Move everything carried to the corpse
         self.emit(message)
-        if hasattr(self, 'cons'):
-            self.move_to(woods)     #TODO: Starting Rooms
-            return
-        self.move_to(nulspace)      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+        
+        self.move_to(Thing.ID_dict['nulspace'])      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
         
 class NPC(Creature):
     def __init__(self, ID, g, aggressive=0):

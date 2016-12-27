@@ -86,7 +86,7 @@ class Game():
 
     def load_player(self, filename):
         
-        room.report_arrival(self.cons, self, room)
+        room.report_arrival(self)
         room.emit("%s suddenly appears, as if by sorcery!" % self)
 
         pass

@@ -10,6 +10,7 @@ class Player(Creature):
         """Initialize the Player object and attach a console"""
         Creature.__init__(self, ID)
         self.cons = console
+        self.start_loc = None
         self.set_weight(175/2.2)
         self.set_volume(66)
         inv = Action(self.inventory, "inventory", False, True)
@@ -52,6 +53,14 @@ class Player(Creature):
         self.location = None  # use move_to so room is updated correctly
         self.move_to(room)
 '''
+
+    def die(self, message):
+        Creature.die(self, message)
+        self.cons.write("You have died!\n\nFortunately you are reincarnated immediately...")
+        self.health = self.hitpoints
+        self.move_to(self.start_loc)
+        self.start_loc.report_arrival(self)
+        
 
     def perceive(self, message):
         if not self.location.is_dark():
