@@ -154,7 +154,7 @@ bird.act_frequency = 1
 seed = Thing('seed')
 seed.set_description('seed, so test failed. Type "look seed" for more info.','This seed was created for testing purposes. You should not be able to see it. If you do, please note this on issue #17 on github.')
 seed.location = bird
-bird.contents.append('seed')
+bird.insert(seed)
 
 butterfly = NPC('butterfly', game)
 butterfly.set_description('butterfly', 'A pretty monarch butterfly')
@@ -238,7 +238,7 @@ bottle.liquid = True
 table.insert(bottle)
 
 gold = Thing('gold')
-gold.set_description('bunch of shiny gold coins', 'This is a collection of seven shiney real gold coins.')
+gold.set_description('bunch of shiny gold coins', 'This is a collection of seven shiny real gold coins.')
 gold.set_weight(74000)
 cave.insert(gold)
 
