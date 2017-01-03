@@ -5,6 +5,8 @@ from action import Action
 
 from debug import dbg
 
+import pickle
+
 class Player(Creature):
     def __init__(self, ID, console):
         """Initialize the Player object and attach a console"""
@@ -15,44 +17,40 @@ class Player(Creature):
         self.set_volume(66)
         inv = Action(self.inventory, "inventory", False, True)
         self.actions.append(inv)
-    '''
+       
     def __getstate__(self):
         """Custom pickling code for Player. 
         
         Avoids directly pickling the associated console (will eventually
         delete this for save-and-quit functionality in multiplayer; for 
         now just detach the console to support save-and-keep-playing). 
-
-        Avoids directly pickling the player's location, instead returning 
-        the location's (presumed unique) ID for lookup in Thing.ID_dict."""
+        """
         # Copy the object's state from self.__dict__ which contains
         # all our instance attributes. Always use the dict.copy()
         # method to avoid modifying the original state.
         if self.id == "Joe Test": # XXX temp for debugging purposes
             dbg.debug("Pickling Joe Test!")
-        state = self.__dict__.copy()
+        state = super(Player, self).__getstate__()
         # Remove the unpicklable entries.
         del state['cons']
-        del state['location']
-        state['locationID'] = self.location.id
         return state
 
     def __setstate__(self, state):
         """Custom unpickling code for Player
 
-        Set the location to the (Room) object indicated by the stored ID.
-        Eventually, when multiplayer works, the function unpickling the 
-        Player will then attach it to a new console."""
+        Note 1: The function unpickling the Player must then attach it to
+        a new console.
+        
+        Note 2: If the player is joining an ongoing game (as opposed to the
+        entire game including players getting saved/restored) then the 
+        function unpickling the player should restore the location field from
+        an ID string to a direct reference, do the same for the objects in the
+        contents field, and call move_to() to update the room."""
+        super(Player, self).__setstate__(state) # updates Thing.ID_dict
         if (state['id'] == "Joe Test"):
             dbg.debug("Unpickling Joe Test!")
         # Restore instance attributes
-        room_id = state['locationID']
-        room = Thing.ID_dict[room_id]
-        del state['locationID']
-        self.__dict__.update(state)
-        self.location = None  # use move_to so room is updated correctly
-        self.move_to(room)
-'''
+        self.short_desc = "Clone of " + self.short_desc # XXX temp for debugging
 
     def die(self, message):
         Creature.die(self, message)
@@ -75,3 +73,7 @@ class Player(Creature):
             cons.write("a " + i.short_desc)
         return True
 
+class PlayerPickler(pickle.Pickler):
+    """Save/load a Player object into a persistent game.
+    Pickles the player and his/her inventory, but stores the
+    room as an ID string rather than pickling the room & contents."""

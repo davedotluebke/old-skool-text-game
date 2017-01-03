@@ -1,5 +1,6 @@
 import pickle
 import io
+import gc
 
 from debug import dbg
 from thing import Thing
@@ -53,32 +54,56 @@ class Game():
             filename += '.OAD'
         try:
             f = open(filename, 'w+b')
-            pickle.dump(Thing.ID_dict, f, pickle.HIGHEST_PROTOCOL)
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+            # explicitly dump ID_dict to guarantee we dump all objects
+            save = Thing.ID_dict, self
+            pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
             self.cons.write("Saved entire game to file %s" % filename)
             f.close()
-        except:
+        except IOError:
             self.cons.write("Error writing to file %s" % filename)
+        except pickle.PickleError:
+            self.cons.write("Error pickling when saving to file %s" % filename)
             
     def load_game(self, filename):
         if not filename.endswith('.OAD'): 
             filename += '.OAD'
-        try: 
+        try:
             f = open(filename, 'r+b')
         except FileNotFoundError:
             self.cons.write("Error, couldn't find file named %s" % filename)
             return
         try:
-            new_ID_dict = pickle.load(f)
-            Thing.ID_dict = new_ID_dict
-            newgame = pickle.load(f)
-            self.user, self.heartbeat_users = newgame.user, newgame.heartbeat_users
-            self.cons.game = self
-            self.user.cons = self.cons  # custom pickling code for Player doesn't save console
-            self.cons.user = self.user  # update backref from cons
-            self.cons.write("Restored game state from file %s" % filename)
+            backup_ID_dict = Thing.ID_dict.copy()
+            Thing.ID_dict.clear()  # unpickling will re-create Thing.ID_dict
+            saved = pickle.load(f)
+            new_ID_dict, newgame = saved
         except pickle.PickleError:
             self.cons.write("Encountered error while pickling to file %s, game not saved." % filename)
+            Thing.ID_dict = backup_ID_dict
+            f.close()
+            return
+        del backup_ID_dict
+        
+        # TODO: move below code for deleting player to Player.__del__()
+        # Unlink player object from room, contents:
+        if self.user.location.extract(self.user):
+            dbg.debug("Error deleting player from room during load_game()")
+        for o in self.user.contents: 
+            if self.user.extract(o):
+                dbg.debug("Error deleting contents of player (%s) during load_game()" % o)
+        self.cons.user = None
+        gc.collect()
+        referrers = gc.get_referrers(self.user)
+        
+        self.user, self.heartbeat_users = newgame.user, newgame.heartbeat_users
+        self.user.cons = self.cons  # custom pickling code for Player doesn't save console
+        self.cons.user = self.user  # update backref from cons
+
+        for o in Thing.ID_dict: 
+            Thing.ID_dict[o]._restore_objs_from_IDs()
+            
+        self.cons.write("Restored game state from file %s" % filename)
+    
         f.close()
     
     def save_player(self, filename):
