@@ -1,3 +1,6 @@
+import pickle
+import sys
+
 from thing import Thing
 from room import Room
 from creature import Creature
@@ -5,7 +8,6 @@ from action import Action
 
 from debug import dbg
 
-import pickle
 
 class Player(Creature):
     def __init__(self, ID, console):
@@ -15,8 +17,9 @@ class Player(Creature):
         self.start_loc = None
         self.set_weight(175/2.2)
         self.set_volume(66)
-        inv = Action(self.inventory, "inventory", False, True)
-        self.actions.append(inv)
+        self.actions.append(Action(self.inventory, "inventory", False, True))
+        self.actions.append(Action(self.execute, "execute", True, True))
+        
        
     def __getstate__(self):
         """Custom pickling code for Player. 
@@ -30,7 +33,8 @@ class Player(Creature):
         # method to avoid modifying the original state.
         if self.id == "Joe Test": # XXX temp for debugging purposes
             dbg.debug("Pickling Joe Test!")
-        state = super(Player, self).__getstate__()
+        state = super().__getstate__()
+        state['start_loc'] = self.start_loc.id
         # Remove the unpicklable entries.
         del state['cons']
         return state
@@ -50,6 +54,7 @@ class Player(Creature):
         if (state['id'] == "Joe Test"):
             dbg.debug("Unpickling Joe Test!")
         # Restore instance attributes
+        self.start_loc = Thing.ID_dict[state['start_loc']]
         self.short_desc = "Clone of " + self.short_desc # XXX temp for debugging
 
     def die(self, message):
@@ -72,8 +77,14 @@ class Player(Creature):
         for i in self.contents:
             cons.write("a " + i.short_desc)
         return True
+    
+    def execute(self, p, cons, oDO, oIDO):
+        cmd = ' '.join(p.words[1:])
+        cons.write("Executing command: '%s'" % cmd)
+        try: 
+            exec(cmd)
+        except Exception as inst:
+            cons.write("Unexpected error: " + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1]))
+            # cons.write(type(inst)+"\n"+inst)    # the exception instance
+        return True
 
-class PlayerPickler(pickle.Pickler):
-    """Save/load a Player object into a persistent game.
-    Pickles the player and his/her inventory, but stores the
-    room as an ID string rather than pickling the room & contents."""

@@ -95,7 +95,6 @@ class Parser:
 
     def parse(self, user, console, command):
         """Parse and enact the user's command. Return False to quit game."""     
-        command = command.lower()   # convert whole string to lowercase
         if command == 'quit': 
             return False
         
@@ -108,9 +107,11 @@ class Parser:
             return True
         
         self.words = command.split()
-
-        # remove articles:
-        self.words = [w for w in self.words if w not in ['a', 'an', 'the']]
+        # remove articles and convert to lowercase, unless the command 
+        # requires the exact user text:
+        if self.words[0] not in ['execute', 'say', 'shout']:
+            command = command.lower()   
+            self.words = [w for w in self.words if w not in ['a', 'an', 'the']]
 
         sV = None            # verb as string
         sDO = None           # Direct object as string

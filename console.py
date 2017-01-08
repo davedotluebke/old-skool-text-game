@@ -43,7 +43,7 @@ class Console:
                           'd':       'go down',
                           'i':       'inventory',
                           'l':       'look',
-                          'around':  '',            # temporary
+                          'x':       'execute'
                           }
     
     def set_user(self, self_user):
