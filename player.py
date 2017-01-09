@@ -24,3 +24,6 @@ class Player(Creature):
             cons.write("a " + i.short_desc)
         return True
 
+    def hold_object(self, obj):
+        self.visible_inventory.append(obj)
+

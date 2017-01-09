@@ -16,7 +16,7 @@ class Bookcase(Thing):
 
     def handle_book(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
-        if sDO in ['book', 'old book', 'new book']:
+        if sDO in ['tattered book', 'old book']:
             cons.write('You pull on a book. ')
             self.emit('The bookcase shakes, and swings open, revealing a secret staircase leading down.')
             self.location.add_exit('down', self.hidden_room)

@@ -22,6 +22,7 @@ class Creature(Container):
         self.armor_worn = None
         self.weapon_wielding = None
         self.closed_err = "You can't put things in creatures!"
+        self.visible_inventory = []     #Things the creature is holding, you can see them.
 
     def set_combat_vars(self, armor_class, combat_skill, strength, dexterity):
         self.armor_class = armor_class
@@ -30,11 +31,20 @@ class Creature(Container):
         self.dexterity = dexterity
 
     def look_at(self, p, cons, oDO, oIDO):
-        '''Print out the long description of the creature.'''
+        '''Print out the long description of the creature, as well as any Weapons it is wielding and any armor it is wearing.'''
         self.viewed = cons.user
         dbg.debug("Called Creature.look_at()")
         if self == oDO or self == oIDO:
             cons.write(self.long_desc)
+            if self.weapon_wielding:
+                cons.write("It is wielding a %s." % (self.weapon_wielding.short_desc))        #if we use "bare hands" we will have to change this
+            if self.armor_worn:
+                cons.write("It is wearing %s." % (self.armor_worn.short_desc))
+            if self.visible_inventory and self.visible_inventory != [self.armor_worn, self.weapon_wielding] and self.visible_inventory != [self.weapon_wielding, self.armor_worn]:
+                cons.write('It is holding:')
+                for i in self.visible_inventory:
+                    if i != self.armor_worn and i != self.weapon_wielding:
+                        cons.write('/na '+i.short_desc)
             return True
         else:
             return "Not sure what you are trying to look at!"
@@ -83,14 +93,17 @@ class Creature(Container):
         corpse.set_volume(self.volume)
         corpse.set_max_weight_carried(self.max_weight_carried)
         corpse.set_max_volume_carried(self.max_volume_carried)
+        corpse.add_names('corpse')
         self.location.insert(corpse)
         for i in self.contents:
-            i.move_to(corpse)    #Drop everything carried
-        self.emit(message)
+            (Thing.ID_dict[i]).move_to(corpse)    #Drop everything carried
+        self.emit(str(self.id)+str(message))
         if hasattr(self, 'cons'):
-            self.move_to(woods)     #TODO: Starting Rooms
+            self.move_to(Thing.ID_dict['woods'])     #TODO: Starting Rooms
+            self.health = self.hitpoints
+            self.cons.write('You '+message)
             return
-        self.move_to(nulspace)      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+        self.move_to(Thing.ID_dict['nulspace'])      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
         
 class NPC(Creature):
     def __init__(self, ID, g, aggressive=0):
@@ -148,11 +161,13 @@ class NPC(Creature):
         dbg.debug("Trying to move to the %s exit!" % (exit))
         current_room = self.location
         new_room = self.location.exits[exit]
+        if new_room.monster_safe:
+            dbg.debug('Can\'t go to a %s, monster safe room!' % new_room)
+            self.move_around()
+            return
  
         self.emit("The %s goes %s." % (self, exit))
-        current_room.extract(self)
- 
-        new_room.insert(self)
+        self.move_to(new_room)
         self.emit("The %s arrives." % self)
         dbg.debug("Moved to new room %s" % (new_room))
         return
@@ -191,12 +206,14 @@ class NPC(Creature):
                 if isinstance(w, Weapon):
                     self.weapon_wielding = w
                     dbg.debug("weapon chosen: %s" % self.weapon_wielding)
+                    self.visible_inventory.append(self.weapon_wielding)
                     continue
         if not self.armor_worn:
             for a in self.contents:
                 if isinstance(a, Armor):
                     self.armor_worn = a
                     dbg.debug("armor chosen: %s" % self.armor_worn)
+                    self.visible_inventory.append(self.armor_worn)
                     continue
         if self.attack_freq() <= self.attack_now:
             self.attack(enemy)
