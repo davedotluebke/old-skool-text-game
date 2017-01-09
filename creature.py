@@ -72,7 +72,6 @@ class Creature(Container):
             damage_done = random.randint(d/2, d) + self.strength / 10.0
             enemy.take_damage(damage_done)
             self.emit('The %s attacks the %s, doing %s damage!' % (self, enemy, damage_done), ignore=[self, enemy])
-
             self.perceive('You attack the %s, doing %s damage!' % (enemy, damage_done))
             enemy.perceive('The %s attacks you, doing %s damage!' % (self, damage_done))
             if self not in enemy.enemies:
@@ -87,7 +86,9 @@ class Creature(Container):
     
     def die(self, message):
         #What to do when 0 health
-        corpse = Container('corpse of %s' % (self))
+        self.emit("The %s dies!" % self, [self])
+        corpse = Container("corpse of %s" % (self))
+        corpse.add_names("corpse")
         corpse.set_description('corpse of a %s' % (self.short_desc), 'This is a foul-smelling corpse of a %s. It looks nasty.' % (self.short_desc))
         corpse.set_weight(self.weight)
         corpse.set_volume(self.volume)
@@ -96,14 +97,8 @@ class Creature(Container):
         corpse.add_names('corpse')
         self.location.insert(corpse)
         for i in self.contents:
-            (Thing.ID_dict[i]).move_to(corpse)    #Drop everything carried
-        self.emit(str(self.id)+str(message))
-        if hasattr(self, 'cons'):
-            self.move_to(Thing.ID_dict['woods'])     #TODO: Starting Rooms
-            self.health = self.hitpoints
-            self.cons.write('You '+message)
-            return
-        self.move_to(Thing.ID_dict['nulspace'])      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+            self.move_to(Thing.ID_dict['nulspace'])      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+        self.emit(message)
         
 class NPC(Creature):
     def __init__(self, ID, g, aggressive=0):

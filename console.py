@@ -5,25 +5,26 @@ from parse import Parser
 
 class Console:
     default_width = 75
-    help_msg = "Your goal is to explore the world around you, solve puzzles,"\
-               "fight monsters, complete quests, and eventually become a "\
-               "Sorcerer capable of changing and adding to the very fabric "\
-               "of the world itself.\n\n"\
-               "Useful commands include 'look' to examine your surroundings "\
-               "or an object, 'take' to pick something up, 'inventory' to see "\
-               "what you are carrying, 'go' to move a particular direction. "\
-               "You can use prepositions to create more complex commands and "\
-               "adjectives to specify particular objects; articles are "\
-               "optional. Here are some examples of valid commands:\n\n"\
-               "\t'look'\n"\
-               "\t'go north'\n"\
-               "\t'take sword'\n"\
-               "\t'take the rusty sword'\n"\
-               "\t'drink potion from tall flask'\n"\
-               "\t'put the gold coin in the leather bag'\n\n"\
-               "You can create shortcuts to reduce typing; type 'alias' for "\
-               "more details. Type 'quit' to save your progress and leave "\
-               "the game (NOTE: saving is not yet implemented)."  
+    help_msg = """Your goal is to explore the world around you, solve puzzles,
+               fight monsters, complete quests, and eventually become a
+               Sorcerer capable of changing and adding to the very fabric 
+               of the world itself.\n\n
+               Useful commands include 'look' to examine your surroundings 
+               or an object, 'take' to pick something up, 'inventory' to see 
+               what you are carrying, 'go' to move a particular direction. 
+               You can use prepositions to create more complex commands and
+               adjectives to specify particular objects; articles are 
+               optional. Here are some examples of valid commands:\n\n
+               \t'look'\n
+               \t'go north'\n
+               \t'take sword'\n
+               \t'take the rusty sword'\n
+               \t'drink potion from tall flask'\n
+               \t'put the gold coin in the leather bag'\n\n
+               You can create shortcuts to reduce typing; type 'alias' for 
+               more details. Type 'width' to change the console's text width. 
+               Type 'quit' to save your progress and leave 
+               the game (NOTE: saving is not yet implemented)."""
 
     def __init__(self, game = None):
         self.game = game
@@ -99,11 +100,12 @@ class Console:
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
         if len(self.words) > 0:
-            if self.words[0] == 'alias':
+            cmd = self.words[0]
+            if cmd == 'alias':
                 self._add_alias(self.command)
                 return True
             
-            if self.words[0] == 'width': 
+            if cmd == 'width': 
                 if len(self.words) == 2 :
                     try: 
                         self.width = int(self.words[1])
@@ -116,26 +118,22 @@ class Console:
                     self.write("The console width is currently %d. Type 'console <width>' to change it." % self.width)
                 return True
             
-            if self.words[0] == 'help':
+            if cmd == 'help':
                 self.write(self.help_msg)
                 return True
             
-            if self.words[0] == 'save':
+            file_cmds = {'savegame':self.game.save_game,
+                         'loadgame':self.game.load_game,
+                         'save':self.game.save_player,
+                         'load':self.game.load_player}
+            if cmd in file_cmds:
                 if (len(self.words) == 2):
                     filename = self.words[1]
-                    self.game.save_game(filename)
+                    file_cmds[cmd](filename)
                 else:
-                    self.write("Usage: save <filename>")                  
+                    self.write("Usage: %s <filename>" % cmd)                  
                 return True
             
-            if (self.words[0] == 'load'):
-                if (len(self.words) == 2):
-                    filename = self.words[1]
-                    self.game.load_game(filename)
-                else:
-                    self.write("Usage: load <filename>")
-                return True
-
         return False
 
     def write(self, text):

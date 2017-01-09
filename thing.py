@@ -5,9 +5,6 @@ import random
 class Thing:
     ID_dict = {}
 
-    def __str__(self): 
-        return self.names[0]
-
     def __init__(self, default_name):
         self.names = [default_name]
         self.id = default_name
@@ -30,6 +27,55 @@ class Thing:
         self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
         self.actions.append(Action(self.take, ["take", "get"], True, False))
         self.actions.append(Action(self.drop, ["drop"], True, False))
+
+    def __str__(self): 
+        return self.names[0]
+
+    def __getstate__(self): 
+        """Custom pickling code for Thing.
+        
+        Doesn't pickle Thing.ID_dict (which refers to all objects in game).
+        We will re-create this dictionary from scratch as we unpickle objects.
+        To facilitate this, replace all references to other objects with 
+        their unique ID strings. After unpickling we will replace these with
+        the actual references. 
+        """
+        # Copy the object's state from self.__dict__ which contains
+        # all our instance attributes. Always use the dict.copy()
+        # method to avoid modifying the original state.
+        state = self.__dict__.copy()
+        if self.location != None: 
+            state['location'] = self.location.id
+        if self.contents != None: 
+            # replace with new list of id strings, or leave as None (not [])
+            state['contents'] = [x.id for x in self.contents] 
+        return state
+
+    def __setstate__(self, state):
+        """Custom unpickling code for Game.
+
+        Re-create the Thing.ID_dict{} dictionary during unpickling:
+        if an object's ID is in the dictionary (because some other object
+        referred to it, e.g. via the location[] or contents[] fields)
+        just leave it there; otherwise create its entry.
+
+        After unpickling, another pass will be required to replace ID strings
+        (in location and contents fields) with the actual object references.
+        All objects end up in Thing.ID_dict, so we can just iterate over it.
+        """
+        # Restore instance attributes
+        try: 
+            obj = Thing.ID_dict[state['id']] # is this obj already in dict?
+            dbg.debug("Note: %s already in Thing.ID_dict, maps to %s" % (state.id, obj))
+        except KeyError:  # 
+            Thing.ID_dict[state['id']] = self
+        self.__dict__.update(state)
+
+    def _restore_objs_from_IDs(self):
+        if isinstance(self.location, str):
+            self.location = Thing.ID_dict[self.location]
+        if self.contents != None:
+            self.contents = [Thing.ID_dict[id] for id in self.contents]
 
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""
