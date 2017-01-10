@@ -23,6 +23,7 @@ class Creature(Container):
         self.weapon_wielding = None
         self.closed_err = "You can't put things in creatures!"
         self.visible_inventory = []     #Things the creature is holding, you can see them.
+        self.invisible = False
 
     def set_combat_vars(self, armor_class, combat_skill, strength, dexterity):
         self.armor_class = armor_class
@@ -182,13 +183,13 @@ class NPC(Creature):
     
     def attack_enemy(self, enemy=None):
         """Attack any enemies, if possible, or if highly aggressive, attack anyone in the room"""
-        targets = [x for x in self.location.contents if isinstance(x, Creature) and x != self]
+        targets = [x for x in self.location.contents if isinstance(x, Creature) and x != self and x.invisible == False]
         if not targets:
             return
         attacking = enemy
         if not attacking:
             for i in self.enemies:
-                if i in self.location.contents:
+                if i in self.location.contents and i.invisible == False:
                     attacking = i
                     continue
         if self.aggressive == 2 and not attacking:
