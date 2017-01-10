@@ -297,10 +297,9 @@ game.user.hitpoints = 100
 game.user.health = game.user.hitpoints
 # End experimental test code
 
-
-(Thing.ID_dict['great hall']).insert(game.user)
-(Thing.ID_dict['scroll']).move_to(game.user)
-game.user.start_loc = (Thing.ID_dict['great hall'])
+Thing.ID_dict['great hall'].insert(game.user)
+Thing.ID_dict['scroll'].move_to(game.user)
+game.user.set_start_loc = Thing.ID_dict['great hall']
 game.user.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
 "Type 'look' to examine your surroundings or an object, "
 "'inventory' to see what you are carrying, " 

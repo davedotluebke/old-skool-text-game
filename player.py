@@ -1,3 +1,6 @@
+import pickle
+import sys
+
 from thing import Thing
 from room import Room
 from creature import Creature
@@ -5,19 +8,18 @@ from action import Action
 
 from debug import dbg
 
-import pickle
 
 class Player(Creature):
     def __init__(self, ID, console):
         """Initialize the Player object and attach a console"""
         Creature.__init__(self, ID)
         self.cons = console
-        self.start_loc = None
+        self.start_loc_id = None
         self.set_weight(175/2.2)
         self.set_volume(66)
-        inv = Action(self.inventory, "inventory", False, True)
-        self.actions.append(inv)
-       
+        self.actions.append(Action(self.inventory, "inventory", False, True))
+        self.actions.append(Action(self.execute, "execute", True, True))
+        
     def __getstate__(self):
         """Custom pickling code for Player. 
         
@@ -30,7 +32,7 @@ class Player(Creature):
         # method to avoid modifying the original state.
         if self.id == "Joe Test": # XXX temp for debugging purposes
             dbg.debug("Pickling Joe Test!")
-        state = super(Player, self).__getstate__()
+        state = super().__getstate__()
         # Remove the unpicklable entries.
         del state['cons']
         return state
@@ -52,13 +54,19 @@ class Player(Creature):
         # Restore instance attributes
         self.short_desc = "Clone of " + self.short_desc # XXX temp for debugging
 
+    def set_start_loc(self, startroom):
+        self.start_loc_id = startroom.id
+
     def die(self, message):
         Creature.die(self, message)
         self.cons.write("You have died!\n\nFortunately you are reincarnated immediately...")
         self.health = self.hitpoints
-        self.move_to(self.start_loc)
-        self.start_loc.report_arrival(self)
-        
+        if (self.start_loc_id):
+            room = Thing.ID_dict[self.start_loc_id]
+            self.move_to(room)
+            room.report_arrival(self)
+        else:
+            self.cons.write("Uh-oh! You don't have a starting location. You are in a great void...")
 
     def perceive(self, message):
         if not self.location.is_dark():
@@ -72,11 +80,16 @@ class Player(Creature):
         for i in self.contents:
             cons.write("a " + i.short_desc)
         return True
+    
+    def execute(self, p, cons, oDO, oIDO):
+        cmd = ' '.join(p.words[1:])
+        cons.write("Executing command: '%s'" % cmd)
+        try: 
+            exec(cmd)
+        except Exception as inst:
+            cons.write("Unexpected error: " + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1]))
+            # cons.write(type(inst)+"\n"+inst)    # the exception instance
+        return True
 
     def hold_object(self, obj):
         self.visible_inventory.append(obj)
-
-class PlayerPickler(pickle.Pickler):
-    """Save/load a Player object into a persistent game.
-    Pickles the player and his/her inventory, but stores the
-    room as an ID string rather than pickling the room & contents."""

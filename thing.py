@@ -5,13 +5,20 @@ import random
 class Thing:
     ID_dict = {}
 
-    def __init__(self, default_name):
-        self.names = [default_name]
-        self.id = default_name
+    def _add_ID(self, preferred_id):
+        """Add object to Thing.ID_dict (the dictionary mapping IDs to objects).
+
+        Takes a preferred ID string and (if necessary) creates a unique ID
+        string from it. Returns the unique ID string. """
+        self.id = preferred_id
         while self.id in Thing.ID_dict:     # unique-ify self.id if necessary
             self.id = self.id + str(random.randint(0, 9))
         Thing.ID_dict[self.id] = self
+        return self.id
 
+    def __init__(self, default_name):
+        self.names = [default_name]
+        self._add_ID(default_name)
         self.plural = False         # should this thing be treated as plural?
         self.weight = 0.0
         self.volume = 0.0
@@ -52,7 +59,7 @@ class Thing:
         return state
 
     def __setstate__(self, state):
-        """Custom unpickling code for Game.
+        """Custom unpickling code for Thing.
 
         Re-create the Thing.ID_dict{} dictionary during unpickling:
         if an object's ID is in the dictionary (because some other object
@@ -66,17 +73,18 @@ class Thing:
         # Restore instance attributes
         try: 
             obj = Thing.ID_dict[state['id']] # is this obj already in dict?
-            dbg.debug("Note: %s already in Thing.ID_dict, maps to %s" % (state.id, obj))
+            dbg.debug("Note: %s already in Thing.ID_dict, maps to %s" % (state['id'], obj))
         except KeyError:  # 
             Thing.ID_dict[state['id']] = self
         self.__dict__.update(state)
 
     def _restore_objs_from_IDs(self):
+        """Update object references stored as ID strings to directly reference the objects, using Thing.ID_dict."""
         if isinstance(self.location, str):
             self.location = Thing.ID_dict[self.location]
         if self.contents != None:
-            self.contents = [Thing.ID_dict[id] for id in self.contents]
-
+            self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
+    
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""
         self.names += list(sNames)
