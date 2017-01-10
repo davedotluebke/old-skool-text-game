@@ -91,3 +91,13 @@ class Player(Creature):
             # cons.write(type(inst)+"\n"+inst)    # the exception instance
         return True
 
+<<<<<<< HEAD
+=======
+    def hold_object(self, obj):
+        self.visible_inventory.append(obj)
+
+class PlayerPickler(pickle.Pickler):
+    """Save/load a Player object into a persistent game.
+    Pickles the player and his/her inventory, but stores the
+    room as an ID string rather than pickling the room & contents."""
+>>>>>>> 76db1492742f2abdf6486929b297250b333da7c3

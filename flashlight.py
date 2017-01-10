@@ -7,6 +7,8 @@ class Flashlight(Thing):
         Thing.__init__(self, default_name)
         self.emits_light = 0
         self.actions.append(Action(self.activate, ["activate", "turn"], True, True))
+        self.actions.append(Action(self.use, ["use"], True, False))
+        self.actions.append(Action(self.put_away, ["hide"], True, True))
     
     def _adjust_descriptions(self):
         if self.emits_light: 
@@ -26,11 +28,43 @@ class Flashlight(Thing):
                 # loc is a Room, increase it's light level
                 loc.light += delta
                 break
-            if loc.see_inside:
-                # loc is a Container that passes light, recurse 
+            if loc.see_inside or (hasattr(loc, 'cons') and (self in loc.visible_inventory)):
+                # loc is a Container that passes light, recurse or loc is a Player using the flashlight, recurse
                 loc = loc.location
             else:
                 break
+
+    def use(self, p, cons, oDO, oIDO):
+        if self.location == cons.user:
+            cons.user.visible_inventory.append(self)
+            if self. emits_light:
+                self.change_room_light(1)
+            cons.write('You shine the flashlight around the %s.' % cons.user.location)
+            return True
+        elif self.location == cons.user.location:
+            self.move_to(cons.user)
+            cons.user.visible_inventory.append(self)
+            cons.write('You take the flashlight and shine it around the %s.' % cons.user.location)
+            if self.emits_light:
+                self.change_room_light(1)
+            return True
+        else:
+            return "I'm not quite sure what you are trying to do in this case."
+
+    def put(self, p, cons, oDO, oIDO):
+        (sV, sDO, sPrep, sIDO) = p.diagram_sentance(p.words)
+        if sPrep == 'away' or sDO == 'away' or sIDO == 'away':      #TODO: Fix this up
+            return self.put_away(p, cons, oDO, oIDO)
+        else:
+            return "I don't know what you mean by put in this context"
+    
+    def put_away(self, p, cons, oDO, oIDO):
+        i = cons.user.visible_inventory.index(self)
+        del cons.user.visible_inventory[i]
+        if self.emits_light:
+            self.change_room_light(self, -1)
+        cons.write('You put away the flashlight')
+        return True
 
     def activate(self, p, cons, oDO, oIDO):
         # TODO: emit something to the room when player turns flashlight on and off
@@ -73,9 +107,3 @@ class Flashlight(Thing):
                 return True
         return "I don't know what you mean by %s in this context." % sV
                 
-
-
-
-
-        
-    

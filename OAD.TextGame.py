@@ -33,7 +33,6 @@ bedroom = Room('bedroom')
 hallway = Room('hallway')
 kitchen = Room('kitchen')
 entryway = Room('entryway')
-hideout = Room('secret hideout')
 forest_one = Room('forest')
 forest_two = Room('forest')
 forest_three = Room('forest')
@@ -43,11 +42,12 @@ cave = Room('cave', light=0)
 cave_entrance = CaveEntry('cave mouth', forest_three, game)
 garden = Room("garden")
 
+import school
+
 bedroom.set_description('dusty bedroom', 'The bare board walls of this bedroom are dusty. A musty smell fills the air.')
 hallway.set_description('dusty hallway', 'This hallway has dusty walls made of wood. It is dim.')
 kitchen.set_description('dusty kitchen with 50-year old apliences and decorations', 'This kitchen looks about 50 years old, and is very dusty but apears still useable.')
 entryway.set_description('barren entryway', 'The dusty entryway has one chandelier hanging from the celing.')
-hideout.set_description('secret room in the house', 'This is a secret hideout which is hard to find an entrence to but has magical exit doors.')
 forest_one.set_description('nice forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least.')
 forest_two.set_description('nice forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least.')
 forest_three.set_description('ancient forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least. The trees seem gloomy here. There is a small dark cave to the west.')
@@ -67,9 +67,6 @@ hallway.add_exit('southeast', bedroom)
 bedroom.add_exit('northwest', hallway)
 kitchen.add_exit('northeast', entryway)
 kitchen.add_exit('southeast', hallway)
-hideout.add_exit('south', bedroom)
-hideout.add_exit('west', kitchen)
-hideout.add_exit('up', woods)
 forest_one.add_exit('south', woods)
 forest_one.add_exit('east', forest_two)
 forest_two.add_exit('west', forest_one)
@@ -81,10 +78,12 @@ cave.add_exit('east', forest_three)
 field.add_exit('west', forest_two)
 field.add_exit('in', shack)
 field.add_exit("north",garden)
+field.add_exit('northeast', Thing.ID_dict['grand entry'])
 shack.add_exit('out', field)
 cave_entrance.add_exit('east', forest_three)
 cave_entrance.add_exit('in', cave)
 garden.add_exit("south",field)
+garden.add_exit('southeast', Thing.ID_dict['grand entry'])
 
 forest_one.add_names('forest')
 forest_one.add_adjectives('ancient','towering','nice')
@@ -93,9 +92,6 @@ forest_two.add_adjectives('ancient','towering','nice')
 forest_three.add_names('forest')
 forest_three.add_adjectives('ancient','towering','gloomy')
 cave.add_adjectives('scary', 'dark', 'terrifying')
-
-bookcase = Bookcase('bookcase', hideout)
-entryway.insert(bookcase)
 
 bag = Container('bag')
 bag.set_description('normal bag', 'A normal-looking brown bag.')
@@ -152,7 +148,7 @@ woods.insert(bird)
 bird.act_frequency = 1
 
 seed = Thing('seed')
-seed.set_description('seed, so test failed. Type "look seed" for more info.','This seed was created for testing purposes. You should not be able to see it. If you do, please note this on issue #17 on github.')
+seed.set_description('sunflower seed','This is a normal sunflower seed that looks like it has been eaten.')
 seed.location = bird
 bird.insert(seed)
 
@@ -283,6 +279,8 @@ monster = NPC('monster', game, 2)
 monster.set_description('terrible monster', 'This is a horrible monster. You want to run away from it.')
 monster.set_combat_vars(50, 60, 80, 40)
 monster.act_frequency = 1
+monster.set_volume(20)
+monster.set_weight(500000)
 
 sword = Weapon('sword', 6, 30, 2)
 sword.set_description('rusty old sword', 'This is a rusty old sword the monster has for testing purposes.')
@@ -298,9 +296,9 @@ game.user.hitpoints = 100
 game.user.health = game.user.hitpoints
 # End experimental test code
 
-
-woods.insert(game.user)
-game.user.set_start_loc(woods)
+Thing.ID_dict['great hall'].insert(game.user)
+Thing.ID_dict['scroll'].move_to(game.user)
+game.user.set_start_loc = Thing.ID_dict['great hall']
 game.user.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
 "Type 'look' to examine your surroundings or an object, "
 "'inventory' to see what you are carrying, " 

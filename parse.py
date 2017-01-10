@@ -31,7 +31,7 @@ class Parser:
             return (sV, None, None, None)
 
         # list of legal prepositions
-        prepositions = ['in', 'on', 'over', 'under', 'with', 'at', 'from', 'off', 'out', 'into'] 
+        prepositions = ['in', 'on', 'over', 'under', 'with', 'at', 'from', 'off', 'out', 'into', 'away'] 
         textwords = words[1:]  # all words after the verb
         text = ' '.join(textwords)  
         

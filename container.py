@@ -64,7 +64,7 @@ class Container(Thing):
     def extract(self, obj):
         """Remove obj from this Container, returning True if the operation failed"""
         if obj not in self.contents:
-            dbg.debug("Error! "+self+" doesn't contain item "+obj.id)
+            dbg.debug("Error! "+str(self)+" doesn't contain item "+str(obj.id))
             return True
         
         found = -1

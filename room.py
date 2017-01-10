@@ -4,7 +4,7 @@ from container import Container
 from action import Action
 
 class Room(Container):
-    def __init__(self, default_name, light=1):
+    def __init__(self, default_name, light=1, safe=False):
         """Initialize the room. Set <light> level to 0 for a dark room."""
         Container.__init__(self, default_name)
         self.exits = {}
@@ -15,6 +15,7 @@ class Room(Container):
         self.fix_in_place("You can't move that!")
         self.closable = False
         self.light = light  # Can see and perceive emits when light level > 0
+        self.monster_safe = safe
 
     def __getstate__(self):
         """Custom pickling code for Room to handle the exits dictionary.
@@ -40,6 +41,7 @@ class Room(Container):
          
     def is_dark(self):
         return False if self.light > 0 else True
+        dbg.debug('light level is %s' % self.light, 1)
         
     def insert(self, obj):
         if Container.insert(self, obj):
