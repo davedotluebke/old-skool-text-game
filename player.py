@@ -14,13 +14,12 @@ class Player(Creature):
         """Initialize the Player object and attach a console"""
         Creature.__init__(self, ID)
         self.cons = console
-        self.start_loc = None
+        self.start_loc_id = None
         self.set_weight(175/2.2)
         self.set_volume(66)
         self.actions.append(Action(self.inventory, "inventory", False, True))
         self.actions.append(Action(self.execute, "execute", True, True))
         
-       
     def __getstate__(self):
         """Custom pickling code for Player. 
         
@@ -34,7 +33,6 @@ class Player(Creature):
         if self.id == "Joe Test": # XXX temp for debugging purposes
             dbg.debug("Pickling Joe Test!")
         state = super().__getstate__()
-        state['start_loc'] = self.start_loc.id
         # Remove the unpicklable entries.
         del state['cons']
         return state
@@ -54,16 +52,21 @@ class Player(Creature):
         if (state['id'] == "Joe Test"):
             dbg.debug("Unpickling Joe Test!")
         # Restore instance attributes
-        self.start_loc = Thing.ID_dict[state['start_loc']]
         self.short_desc = "Clone of " + self.short_desc # XXX temp for debugging
+
+    def set_start_loc(self, startroom):
+        self.start_loc_id = startroom.id
 
     def die(self, message):
         Creature.die(self, message)
         self.cons.write("You have died!\n\nFortunately you are reincarnated immediately...")
         self.health = self.hitpoints
-        self.move_to(self.start_loc)
-        self.start_loc.report_arrival(self)
-        
+        if (self.start_loc_id):
+            room = Thing.ID_dict[self.start_loc_id]
+            self.move_to(room)
+            room.report_arrival(self)
+        else:
+            self.cons.write("Uh-oh! You don't have a starting location. You are in a great void...")
 
     def perceive(self, message):
         if not self.location.is_dark():

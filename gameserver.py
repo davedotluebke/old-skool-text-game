@@ -1,6 +1,5 @@
 import pickle
 import io
-import gc
 
 from debug import dbg
 from thing import Thing
@@ -19,35 +18,6 @@ class Game():
         self.user.set_max_volume_carried(2000)
         self.cons.set_user(self.user)
         self.heartbeat_users = []
-    '''
-    def __getstate__(self):
-        """Custom pickling code for Game. 
-        
-        First pickles Thing.ID_dict which references every object in the game.
-        We only want to pickle this dictionary once, and we want to pickle it
-        before pickling any of those objects.
-        """
-        # Copy the object's state from self.__dict__ which contains
-        # all our instance attributes. Always use the dict.copy()
-        # method to avoid modifying the original state.
-        state = self.__dict__.copy()
-        state['ID_dict'] = Thing.ID_dict.copy()
-        # Remove the unpicklable entries.
-        del state['cons']
-        return state
-
-    def __setstate__(self, state):
-        """Custom unpickling code for Game.abs
-
-        First unpickles and sets the new Thing.ID_dict, so unpickling later
-        objects that refer to others by ID (such as Player.location) works.
-        """
-        # Restore instance attributes
-        Thing.ID_dict = state['ID_dict']
-        del state['ID_dict']
-        # state.cons = self.cons
-        self.__dict__.update(state)
-    '''
     
     def save_game(self, filename):
         if not filename.endswith('.OAD'): 
@@ -92,8 +62,6 @@ class Game():
             if self.user.extract(o):
                 dbg.debug("Error deleting contents of player (%s) during load_game()" % o)
         self.cons.user = None
-        gc.collect()
-        referrers = gc.get_referrers(self.user)
         
         self.user, self.heartbeat_users = newgame.user, newgame.heartbeat_users
         self.user.cons = self.cons  # custom pickling code for Player doesn't save console
@@ -107,14 +75,74 @@ class Game():
         f.close()
     
     def save_player(self, filename):
-        pass
+        if not filename.endswith('.OADplayer'): 
+            filename += '.OADplayer'
+        try:
+            f = open(filename, 'w+b')
+            pickle.dump(self.user, f, pickle.HIGHEST_PROTOCOL)
+            self.cons.write("Saved player data to file %s" % filename)
+            f.close()
+        except IOError:
+            self.cons.write("Error writing to file %s" % filename)
+        except pickle.PickleError:
+            self.cons.write("Error pickling when saving to file %s" % filename)
+        
 
     def load_player(self, filename):
-        
-        room.report_arrival(self)
-        room.emit("%s suddenly appears, as if by sorcery!" % self)
+        """Unpickle a single player and his/her inventory from a saved file.
 
-        pass
+        Objects in the player's inventory (and their contents, recursively) 
+        are treated as new objects, and will often be duplicates of
+        existing objects already in the game. Thus after unpickling each 
+        object we need to add it to Thing.ID_dict with a new and unique ID.""" 
+
+        if not filename.endswith('.OADplayer'): 
+            filename += '.OADplayer'
+        try:
+            f = open(filename, 'r+b')
+        except FileNotFoundError:
+            self.cons.write("Error, couldn't find file named %s" % filename)
+            return
+        try:
+            del Thing.ID_dict[self.user.id]  # unpickling will re-create Thing.ID_dict entry for new Player object
+            newplayer = pickle.load(f)
+            f.close()
+        except pickle.PickleError:
+            self.cons.write("Encountered error while pickling to file %s, player not saved." % filename)
+            Thing.ID_dict[self.user.id] = self.user
+            f.close()
+            return
+                
+        # TODO: move below code for deleting player to Player.__del__()
+        # Unlink player object from room, contents:
+        if self.user.location.extract(self.user):
+            dbg.debug("Error deleting player from room during load_game()")
+        for o in self.user.contents: 
+            if self.user.extract(o):
+                dbg.debug("Error deleting contents of player (%s) during load_game()" % o)
+        self.cons.user = None
+        
+        self.user = newplayer
+        self.user.cons = self.cons  # custom pickling code for Player doesn't save console
+        self.cons.user = self.user  # update backref from cons
+
+        self.user.location = Thing.ID_dict[self.location] # XXX protect for case where saved room no longer exists
+
+        # Create new entries in ID_dict for objects player is holding, 
+        # and make sure that those objects refer to each other by the new IDs
+        newIDs = {}  # mapping from ID strings stored with objs to new ID strings
+        objs = self.user.contents
+        for o in objs: 
+            o._add_ID(preferred_id = o.id)  # XXX this won't work, contents were pickled as strings not original objects. 
+            raise
+            if o.contents != None:
+                objs += o.contents
+            
+        room = self.user.location
+        room.insert(self.user)  # insert() does some necessary bookkeeping
+        self.cons.write("Restored game state from file %s" % filename)
+        room.report_arrival(self.user)
+        room.emit("%s suddenly appears, as if by sorcery!" % self.user, [self.user])
         
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""

@@ -1,4 +1,5 @@
 from debug import dbg
+from thing import Thing
 from container import Container
 from action import Action
 
@@ -14,6 +15,25 @@ class Room(Container):
         self.fix_in_place("You can't move that!")
         self.closable = False
         self.light = light  # Can see and perceive emits when light level > 0
+
+    def __getstate__(self):
+        """Custom pickling code for Room to handle the exits dictionary.
+
+        During pickling, store the rooms in the exits dictionary as IDs
+        rather than objects. Note: after unpickling, another pass is 
+        required to replace the exit ID strings with the actual objects."""
+        state = super().__getstate__().copy()
+        del state['exits']
+        exitIDs = {}
+        for x in self.exits.keys():
+            exitIDs[x] = self.exits[x].id
+        state['exits'] = exitIDs
+        return state
+    
+    def _restore_objs_from_IDs(self):
+        super(Room, self)._restore_objs_from_IDs()
+        for e in self.exits:
+            self.exits[e] = Thing.ID_dict[self.exits[e]]
 
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room
