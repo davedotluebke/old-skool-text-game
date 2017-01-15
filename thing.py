@@ -38,6 +38,23 @@ class Thing:
     def __str__(self): 
         return self.names[0]
 
+    def __repr__(self):
+        """Custom canonical string representation for Thing. 
+
+        Creates a string of Python code which, if executed, will re-create 
+        this object. This is used instead of pickling when saving and 
+        restoring player inventories, because objects a restored player
+        is carrying should be added to the game as new objects rather than
+        restoring references to existing objects. 
+        
+        Note that subclasses of Thing may need to define their own
+        __repr__() with additonal class-specific initialization code. """
+        obj_class = self.__class__
+        obj_module = obj_class.__module__
+        str = "from {mod} import {cls}; ".format(mod=obj_module, cls=obj_class)
+        str += "_tmp = {cls} ({name}); ".format(cls=obj_class, name=self.names[0])
+
+
     def __getstate__(self): 
         """Custom pickling code for Thing.
         
