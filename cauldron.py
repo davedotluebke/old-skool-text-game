@@ -3,11 +3,12 @@ from debug import dbg
 from action import Action
 from thing import Thing
 from container import Container
-from liquid import Liquid
+from potions import PinkPotion
+from potions import InvisibilityPotion
 
 class Cauldron(Container):
-    recipes = [({'water', 'molasses'}, 'pink potion'),  #, 'poppyseed'
-               ({'water', 'molasses', 'sunflower petal', 'cave moss', 'truffles'}, 'invisibilitypotion'),
+    recipes = [({'water', 'molasses', 'poppyseed'}, 'pink potion'),  
+               ({'water', 'molasses', 'sunflower petal', 'cave moss', 'truffles'}, 'invisibility potion'),
                ({'poppyseed', 'truffles', 'cave moss'}, 'explode')]
 
     def __init__(self, default_name):
@@ -25,9 +26,16 @@ class Cauldron(Container):
                 else:
                     for a in self.contents:
                         a.move_to(Thing.ID_dict['nulspace'])
-                    created = Liquid(i[1])
-                    created.set_description(i[1], 'This is %s %s' % ('an' if list(i[1])[1] in ['a','e','i','o','u'] else 'a', i[1]))
-                    created.move_to(self)
+                    if i[1] == 'pink potion':
+                        created = PinkPotion(i[1])
+                        created.set_description(i[1], 'This is %s %s' % ('an' if list(i[1])[1] in ['a','e','i','o','u'] else 'a', i[1]))
+                        created.add_names('potion')
+                        created.move_to(self)
+                    if i[1] == 'invisibility potion':
+                        created = InvisibilityPotion(i[1])
+                        created.set_description(i[1], 'This is %s %s' % ('an' if list(i[1])[1] in ['a','e','i','o','u'] else 'a', i[1]))
+                        created.move_to(self)
+                        created.add_names('potion')
                     self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.short_desc))
         return False
     

@@ -18,6 +18,7 @@ from bookcase import Bookcase
 from sink import Sink
 from cave import CaveEntry
 from flashlight import Flashlight
+from flower import Flower
 
 ## 
 ## "game" is a special global variable, an object of class Game that holds
@@ -189,7 +190,7 @@ scarf.set_weight(200)
 scarf.set_volume(0.1)
 forest_one.insert(scarf)
 
-sunflower = Thing("sunflower")
+sunflower = Flower("sunflower", 'sunflower')
 sunflower.set_description("giant sunflower" , "By looking at this giant sunflower you start feeling more happy.")
 sunflower.set_volume(3)
 sunflower.set_weight(200)
@@ -197,7 +198,7 @@ sunflower.add_adjectives('happiness','giant')
 sunflower.actions.append(Action(sunflower.take, ['pick'], True, False))
 garden.insert(sunflower)
 
-poppy = Thing("poppy")
+poppy = Flower("poppy", 'poppy')
 poppy.set_description("red poppy","This poppy is VERY pretty! You really want to pick it!")
 poppy.set_volume(2.122)
 poppy.set_weight(200)
@@ -206,7 +207,7 @@ poppy.actions.append(Action(poppy.take, ['pick'], True, False))
 garden.insert(poppy)
 
 tomato_plant = Container("tomato plant")
-tomato_plant.set_description("tomato plant","This tomato plant look like it prodoces yummy tomatoes.")
+tomato_plant.set_description("tomato plant","This tomato plant look like it prodoces yummy tomatoes.")      #CLEANUP
 #tomato_plant.
 
 table = Container('table')

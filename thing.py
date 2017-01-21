@@ -150,6 +150,8 @@ class Thing:
 
     def emit(self, message, ignore = []):
         """Write a message to be seen by creatures holding this Thing or in the same room, skipping creatures in the list <ignore>"""
+        if hasattr(self, 'invisible') and self.invisible == True:
+            return
         # pass message to containing object, if it can receive messages
         holder = self.location
         if not holder: 
