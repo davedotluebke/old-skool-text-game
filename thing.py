@@ -37,6 +37,7 @@ class Thing:
 
     def __str__(self): 
         return self.names[0]
+
     '''
     def __repr__(self):
         """Custom canonical string representation for Thing. 
@@ -55,6 +56,7 @@ class Thing:
         str += "_tmp = {cls} ({name}); ".format(cls=obj_class, name=self.names[0])
         str += ", ".join("%s=%s" % (k,v) for k,v in sorted(self.__dict__.items()))
 '''
+
     def __getstate__(self): 
         """Custom pickling code for Thing.
         
