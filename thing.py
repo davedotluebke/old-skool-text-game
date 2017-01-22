@@ -1,6 +1,7 @@
 from debug import dbg
 from action import Action
 import random
+import re
 
 class Thing:
     ID_dict = {}
@@ -38,7 +39,7 @@ class Thing:
     def __str__(self): 
         return self.names[0]
 
-    '''
+    
     def __repr__(self):
         """Custom canonical string representation for Thing. 
 
@@ -51,11 +52,13 @@ class Thing:
         Note that subclasses of Thing may need to define their own
         __repr__() with additonal class-specific initialization code. """
         obj_class = self.__class__
-        obj_module = obj_class.__module__
-        str = "from {mod} import {cls}; ".format(mod=obj_module, cls=obj_class)
-        str += "_tmp = {cls} ({name}); ".format(cls=obj_class, name=self.names[0])
-        str += ", ".join("%s=%s" % (k,v) for k,v in sorted(self.__dict__.items()))
-'''
+        obj_module_name = str(obj_class.__module__)
+        obj_class_name = re.search(r"<class (\S+)\.(\S+)'>", str(obj_class)).group(2)
+        s = "from {mod} import {cls}; ".format(mod=obj_module_name, cls=obj_class_name)
+        s += "_tmp = {cls} ('{name}'); ".format(cls=obj_class_name, name=self.names[0])
+        s += ", ".join("%s=%s" % (k,v) for k,v in sorted(self.__dict__.items()))
+        return s
+
 
     def __getstate__(self): 
         """Custom pickling code for Thing.
