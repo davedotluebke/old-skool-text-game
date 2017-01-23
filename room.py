@@ -80,10 +80,7 @@ class Room(Container):
         cons.write(self.long_desc)
         assert(cons.user in self.contents)  # current player should always be in the room 
         contents_minus_user = [i for i in self.contents if i is not cons.user]  
-        dbg.debug("self.contents = %s" % (self.contents))
-        dbg.debug("contents_minus_user = %s" % (contents_minus_user))
-
-        if len(contents_minus_user) > 0:
+        if contents_minus_user:
             cons.write("Here you see:")
             for item in contents_minus_user:
                 cons.write("\ta " + item.short_desc)
