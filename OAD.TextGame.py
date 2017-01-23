@@ -25,7 +25,12 @@ from flower import Flower
 ## the actual game state. 
 ## 
 game = Game()
-nulspace = Room('nulspace')         #"nulspace" is a room for objects that should be deleted. TODO: Automaticly delete items from nulspace every heartbeat.
+nulspace = Room('nulspace')         #"nulspace" is a room for objects that should be deleted. TODO: Automaticly delete items from nulspace every 10 heartbeats.
+nulspace.set_description('void', 'This is an empty void where dead and destroyd things go. Good luck getting out!')
+nulspace.add_exit('north', nulspace)
+nulspace.add_exit('south', nulspace)
+nulspace.add_exit('east', nulspace)
+nulspace.add_exit('west', nulspace)
 
 woods = Room('woods')
 woods.set_description('bright and cheerful woods', 'Theese woods have happy birdsongs and pretty trees. They are bright.')
@@ -119,12 +124,16 @@ bed.add_response(['sleep'], 'You briefly consider sleeping on the dusty soiled m
 bed.add_response(['make'], 'You look around for sheets or blankets, but see nothing suitable with which to make the bed.')
 bedroom.insert(bed)
 
-oak = Scenery('oak', 'menacing old oak', 'This is an old oak that is leaning over the trail. It seems to be scowling at you. You are afraid.')
+oak = Scenery('oak', 'menacing old oak', 'This is an old oak that is leaning over the trail. It seems to be scowling at you. You see some truffles at the base.')
 oak.add_adjectives('menacing', 'old', 'oak')
 oak.add_names('tree')
 oak.add_response(['climb'], "The towering oak looks climbable, but it is a menacing old tree, the most so you have ever seen, so you decide to look around for other trees.")
 oak.add_response(['grab', 'hold', 'touch', 'hug'], "To touch the scary old tree for no reson seems silly, and slightly scary, so you decide not to. You think that if you saw a nice tree you would hug it.")
 forest_three.insert(oak)
+
+truffles = Thing('truffles')
+truffles.set_description('truffles', 'Theese truffles look very determined for some reason.')
+truffles.move_to(forest_three)
 
 willow = Scenery('willow', 'sad weeping willow', 'This is the most mournful weeping willow you have ever seen. You almost cry from looking at it.')
 willow.add_adjectives('weeping','sad','mournful','willow')
@@ -208,7 +217,7 @@ garden.insert(poppy)
 
 tomato_plant = Container("tomato plant")
 tomato_plant.set_description("tomato plant","This tomato plant look like it prodoces yummy tomatoes.")      #CLEANUP
-#tomato_plant.
+#tomato_plant.      #Cleanup
 
 table = Container('table')
 table.set_description("kitchen table", "This dated-looking kitchen table has chrome edging and a formica top.")
@@ -233,11 +242,6 @@ bottle.set_max_weight_carried(4e9)
 bottle.set_max_volume_carried(3e9)
 bottle.liquid = True
 table.insert(bottle)
-
-gold = Thing('gold')
-gold.set_description('bunch of shiny gold coins', 'This is a collection of seven shiny real gold coins.')
-gold.set_weight(74000)
-cave.insert(gold)
 
 cabinets = Container('cabinets')
 cabinets.set_description('bunch of cabinets', 'The lightly stained wooden cabinets in this kitchen are slightly dusty.')
@@ -289,12 +293,13 @@ sword.set_description('rusty old sword', 'This is a rusty old sword the monster 
 leather_suit = Armor('leather suit', 25, 2)
 leather_suit.set_description('leather skin', 'A sturdy leather hide')
 
-cave.insert(monster)
 monster.insert(sword)
 monster.insert(leather_suit)
 
-game.user.hitpoints = 100
+game.user.hitpoints = 20
 game.user.health = game.user.hitpoints
+
+cave_entrance.attach_monster(monster)
 # End experimental test code
 
 Thing.ID_dict['great hall'].insert(game.user)
