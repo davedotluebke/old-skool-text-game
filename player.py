@@ -19,6 +19,9 @@ class Player(Creature):
         self.set_volume(66)
         self.actions.append(Action(self.inventory, "inventory", False, True))
         self.actions.append(Action(self.execute, "execute", True, True))
+        self.actions.append(Action(self.fetch, "fetch", True, True))
+        self.actions.append(Action(self.clone, "clone", True, True))
+        self.actions.append(Action(self.apparate, "apparate", True, True))
         
     def __getstate__(self):
         """Custom pickling code for Player. 
@@ -90,6 +93,49 @@ class Player(Creature):
             cons.write("Unexpected error: " + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1]))
             # cons.write(type(inst)+"\n"+inst)    # the exception instance
         return True
+
+    def fetch(self, p, cons, oDO, oIDO):
+        '''Find an in-game object by ID and bring it to the player.'''
+        if len(p.words) < 2: 
+            cons.write("Usage: 'fetch <id>', where id is an entry in Thing.ID_dict[]")
+            return True
+        id = " ".join(p.words[1:])
+        try:
+            obj = Thing.ID_dict[id]
+            if obj.move_to(self) == False:
+                if obj.move_to(self.location) == False:
+                    cons.write("You attempt to fetch the %s but somehow cannot bring it to this place." % obj.names[0])
+                else:
+                    cons.write("You perform a magical incantation and bring the %s to this place!" % obj.names[0])
+            else:
+                cons.write("You perform a magical incantation and bring to %s to your hands!" % obj.names[0])
+            self.emit("%s performs a magical incantation, and you sense something has changed." % self.names[0], [self])
+        except KeyError: 
+            return "There seems to be no object with true name '%s'!" % id
+        
+        return True                    
+
+    def clone(self, p, cons, oDO, oIDO):
+        pass
+    
+    def apparate(self, p, cons, oDO, oIDO):
+        if len(p.words) < 2: 
+            cons.write("Usage: 'apparate <id>', where id is the entry of a Room in Thing.ID_dict[]")
+            return True
+        id = " ".join(p.words[1:])
+        try:
+            room = Thing.ID_dict[id]
+            if isinstance(room, Room) == False:
+                    cons.write("You cannot apparate to %s; that is not a place!" % obj.names[0])
+                    return True
+            self.emit("%s performs a magical incantation, and vanishes!" % self.names[0], [self])
+            self.move_to(room)
+            self.emit("%s arrives suddenly, as if by magic!" % self.names[0], [self])
+        except KeyError: 
+            return "There seems to be no place with true name '%s'!" % id
+        cons.write("You perform a magical incantation and are suddenly in a new place!")
+        room.report_arrival(p)
+        return True             
 
     def hold_object(self, obj):
         self.visible_inventory.append(obj)
