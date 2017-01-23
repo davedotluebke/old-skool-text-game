@@ -108,7 +108,7 @@ class Player(Creature):
                 else:
                     cons.write("You perform a magical incantation and bring the %s to this place!" % obj.names[0])
             else:
-                cons.write("You perform a magical incantation and bring to %s to your hands!" % obj.names[0])
+                cons.write("You perform a magical incantation and the %s appears in your hands!" % obj.names[0])
             self.emit("%s performs a magical incantation, and you sense something has changed." % self.names[0], [self])
         except KeyError: 
             return "There seems to be no object with true name '%s'!" % id
@@ -134,7 +134,7 @@ class Player(Creature):
         except KeyError: 
             return "There seems to be no place with true name '%s'!" % id
         cons.write("You perform a magical incantation and are suddenly in a new place!")
-        room.report_arrival(p)
+        room.report_arrival(self)
         return True             
 
     def hold_object(self, obj):
