@@ -40,8 +40,8 @@ class Thing:
         return self.names[0]
 
     
-    def __repr__(self):
-        """Custom canonical string representation for Thing. 
+    def clone_code(self, prefix):
+        """Return code to duplicate this object (non-recursive). 
 
         Creates a string of Python code which, if executed, will re-create 
         this object. This is used instead of pickling when saving and 
@@ -49,14 +49,37 @@ class Thing:
         is carrying should be added to the game as new objects rather than
         restoring references to existing objects. 
         
+        Attributes consisting of standard Python types (int, string, list...)
+        are saved directly. Attributes such as location and contents[], which
+        consist of references to Thing objects (or subclasses thereof) store
+        the object ID string from Thing.ID_dict instead, prepended with 
+        <prefix> which should be a unique string. This ensures that when the
+        code is executed it creates a new set of objects rather than finding 
+        existing instances in the game with the same, original ID. 
+
+        Note: this function does not recursively call clone_code() for such 
+        referenced objects (contents of containers, etc).
+
         Note that subclasses of Thing may need to define their own
-        __repr__() with additonal class-specific initialization code. """
+        clone_code() with additonal class-specific initialization code. """
         obj_class = self.__class__
         obj_module_name = str(obj_class.__module__)
         obj_class_name = re.search(r"<class (\S+)\.(\S+)'>", str(obj_class)).group(2)
         s = "from {mod} import {cls}; ".format(mod=obj_module_name, cls=obj_class_name)
         s += "_tmp = {cls} ('{name}'); ".format(cls=obj_class_name, name=self.names[0])
-        s += ", ".join("%s=%s" % (k,v) for k,v in sorted(self.__dict__.items()))
+        for k,v in sorted(self.__dict__.items()):
+            if k in ('actions', 'cons', 'contents'):
+                continue
+            if isinstance(v, Thing): 
+                v = prefix + v.id
+            s += "_tmp.%s = %s; " % (k, repr(v))
+        if self.contents:
+            s += "_tmp.contents = ["
+            for i in self.contents:
+                s += "'%s%s', " % (prefix, i.id)
+            s += "]"
+        else:
+            s += "_tmp.contents = None"
         return s
 
 
