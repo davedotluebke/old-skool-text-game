@@ -18,7 +18,7 @@ class Creature(Container):
         self.armor_class = 0
         self.combat_skill = 0
         self.strength = 0
-        self.dexterity = 0
+        self.dexterity = 1
         self.armor_worn = None
         self.weapon_wielding = None
         self.closed_err = "You can't put things in creatures!"
@@ -103,7 +103,10 @@ class Creature(Container):
 #        damage_done_by_self = self.weapon_wielding.damage - 1/self.strength - enemy.armor_worn.damage_prevent_num
 #        attack_freq_self = self.dexterity * (1/self.weapon_wielding.unwieldiness) * (1/self.armor_worn.unwieldiness)
     def attack_freq(self):
-        return (20.0/self.dexterity + self.weapon_wielding.unwieldiness + self.armor_worn.unwieldiness)
+        try:
+            return (20.0/self.dexterity + self.weapon_wielding.unwieldiness + self.armor_worn.unwieldiness)
+        except AttributeError:
+            return (20.0/self.dexterity)
     
     def die(self, message):
         #What to do when 0 health
@@ -122,7 +125,7 @@ class Creature(Container):
         self.emit(message)
 
     def attack_enemy(self, enemy=None):
-        """Attack any enemies, if possible, or if highly aggressive, attack anyone in the room"""
+        """Attack any enemies, if possible, or if a highly aggressive Creature, attack anyone in the room."""
         targets = [x for x in self.location.contents if (isinstance(x, Creature)) and (x != self) and (x.invisible == False)]
         assert self not in targets
         if not targets:
@@ -139,7 +142,7 @@ class Creature(Container):
         dbg.debug("Attacking %s" % attacking)
         self.attacking = attacking
         # Figured out who to attacking
-        self.weapon_and_armor_grab(self, enemy)
+        self.weapon_and_armor_grab(enemy)
         
 class NPC(Creature):
     def __init__(self, ID, g, aggressive=0):

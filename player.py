@@ -22,6 +22,15 @@ class Player(Creature):
         self.actions.append(Action(self.fetch, "fetch", True, True))
         self.actions.append(Action(self.clone, "clone", True, True))
         self.actions.append(Action(self.apparate, "apparate", True, True))
+        self.actions.append(Action(self.engage, "engage", True, False))
+        self.actions.append(Action(self.disengage, "disengage", False, True))
+        self.aggressive = 1         #TODO: Specilized individual stats
+        self.armor_class = 10
+        self.combat_skill = 40
+        self.strength = 20
+        self.dexterity = 60
+        self.attack_now = 0
+        self.attacking = False
         
     def __getstate__(self):
         """Custom pickling code for Player. 
@@ -59,6 +68,19 @@ class Player(Creature):
 
     def set_start_loc(self, startroom):
         self.start_loc_id = startroom.id
+
+    def heartbeat(self):
+        if True:            # TODO: Player Prefrences
+            if self.attacking:
+                if self.attacking == 'quit':
+                    return
+                else:
+                    self.attack_enemy(self.attacking)
+            for i in self.location.contents:
+                if i in self.enemies:
+                    self.cons.write('You attack your enemy %s' % i.short_desc)
+                    self.attacking = i
+                    self.attack_enemy(i)
 
     def die(self, message):
         Creature.die(self, message)
@@ -141,10 +163,18 @@ class Player(Creature):
         self.visible_inventory.append(obj)
 
     def engage(self, p, cons, oDO, oIDO):
-        self.weapon_and_armor_grab(self, oDO)
+        if not oDO:
+            return "Who do you intend to engage in combat?"
+        self.attacking = oDO
+        self.weapon_and_armor_grab(oDO)
+        return True
 
     def disengage(self, p, cons, oDO, oIDO):        #TODO: Finish up.
-        self.attacking = False
+        self.attacking = 'quit'
+        return True
 
-    def attack_enemy(self, p, cons, oDO, oIDO):
-        super().attack_enemy(self)
+    def attack_enemy(self, enemy):
+        if self.attacking in self.location.contents:
+            self.weapon_and_armor_grab(enemy)
+        else:
+            self.attacking = None

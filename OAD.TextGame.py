@@ -301,6 +301,15 @@ game.user.hitpoints = 20
 game.user.health = game.user.hitpoints
 
 cave_entrance.attach_monster(monster)
+
+tsword = Weapon('sword', 6, 30, 2)
+tsword.set_description('rusty old sword', 'This is a rusty old sword the monster has for testing purposes.')
+
+tleather_suit = Armor('leather suit', 25, 2)
+tleather_suit.set_description('leather skin', 'A sturdy leather hide')
+
+game.cons.user.insert(tleather_suit)
+game.cons.user.insert(tsword)
 # End experimental test code
 
 Thing.ID_dict['great hall'].insert(game.user)
