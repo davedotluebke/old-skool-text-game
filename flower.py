@@ -21,6 +21,7 @@ class Flower(Thing):
             if sDO == 'petal' and sPrep in ['from', 'off']:
                 petal = Thing(self.names[0] + ' petal')
                 petal.set_description(self.names[0] + ' petal', "This is a single petal from a %s" % self.names[0])
+                petal.add_names('petal')
                 petal.add_adjectives(self.names[0])
                 petal.set_volume(0.0005)
                 petal.set_weight(0.5)

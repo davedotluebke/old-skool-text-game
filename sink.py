@@ -22,9 +22,9 @@ class Sink(Thing):
             return True
         cons.write('Water comes out of the sink, and fills your %s' % filling)
         self.emit('The %s is filled with water at the sink.' % filling)
-        oDO.insert(water)
         water = Liquid('water', 'some normal water', 'This is some normal clear water.')
         water.add_response(['drink'], 'You take a big drink of the water, and your thirst is quenched.')
+        oDO.insert(water)
         return True
     
     def pour_out_in_sink(self, p, cons, oDO, oIDO):
@@ -32,7 +32,7 @@ class Sink(Thing):
             obj = oDO
         else:
             obj = oIDO
-        if obj == self:
+        if obj == self or obj == None:
             return "Imposible to pour out a sink in a sink."
         cons.write('You pour the %s into the sink, and it goes down the drain.' % obj)
         obj.move_to(Thing.ID_dict['nulspace'])

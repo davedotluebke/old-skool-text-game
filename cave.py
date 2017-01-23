@@ -15,6 +15,42 @@ class CaveEntry(Room):
         g.register_heartbeat(self)
         self.game_redirect = g
         self.last_cons = None
+        self.released_monster = False
+        self.monster_storage = Room('monster_storage073T4', 0)
+        self.create_cave_moss()
+        self.create_gold()
+
+    def create_cave_moss(self):
+        try:
+            if Thing.ID_dict['moss'] not in self.exits['in'].contents:
+                cave_moss = Thing('cave moss')
+                cave_moss.set_description('cave moss', 'This is some strange moss growing in the cave.')
+                cave_moss.add_adjectives('cave')
+                cave_moss.add_names('moss')
+                cave_moss.move_to(self.exits['in'])
+        except KeyError:
+                cave_moss = Thing('cave moss')
+                cave_moss.set_description('cave moss', 'This is some strange moss growing in the cave.')
+                cave_moss.add_adjectives('cave')
+                cave_moss.add_names('moss')
+                cave_moss.move_to(Thing.ID_dict['cave'])
+
+    def create_gold(self):
+        try:
+            if Thing.ID_dict['gold'] not in self.exits['in'].contents:
+                gold = Thing('gold')
+                gold.set_description('bunch of shiny gold coins', 'This is a collection of seven shiny real gold coins.')
+                gold.set_weight(74000)
+                self.exits['in'].insert(gold)
+        except KeyError:
+            gold = Thing('gold')
+            gold.set_description('bunch of shiny gold coins', 'This is a collection of seven shiny real gold coins.')
+            gold.set_weight(74000)
+            Thing.ID_dict['cave'].insert(gold)
+    
+    def attach_monster(self, monster):
+        self.monster = monster
+        self.monster.move_to(self.monster_storage)
    
     def go_to(self, p, cons, oDO, oIDO):
         if p.words[1] == 'east':
@@ -54,4 +90,22 @@ class CaveEntry(Room):
                 dbg.debug('extracting %s!' % i)
                 self.extract(i)
                 self.escape_room.insert(i)
-            self.in_entry_user = 0                
+            self.in_entry_user = 0
+        if (Thing.ID_dict['cave moss'] or Thing.ID_dict['gold']) not in self.exits['in'].contents:
+            if self.released_monster == False:
+                if self.monster.location == self.monster_storage:
+                    self.monster_storage.extract(self.monster)
+                    self.exits['in'].insert(self.monster)
+                    self.monster.emit('A %s arrives!' % self.monster.short_desc)
+                    self.released_monster == True
+                    self.counter = 10
+                    for m in self.monster.location.contents:
+                        if hasattr(m, 'hitpoints'):
+                            self.monster.enemies.append(m)
+        if self.released_monster:
+            self.counter -= 1
+            if self.counter <= 0:
+                self.monster.move_to(self.monster_storage)
+                self.create_cave_moss()
+                self.create_gold()
+                self.released_monster = False
