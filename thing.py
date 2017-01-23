@@ -30,11 +30,9 @@ class Thing:
         self.long_desc = 'need_long_desc'
         self.adjectives = []
         self.contents = None        # None - only Containers can contain things
-        # dictionary mapping verb strings to functions:
-        self.actions = []
-        self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
-        self.actions.append(Action(self.take, ["take", "get"], True, False))
-        self.actions.append(Action(self.drop, ["drop"], True, False))
+        self.actions = [Action(self.look_at, ["look", "examine"], True, True), 
+                        Action(self.take, ["take", "get"], True, False),
+                        Action(self.drop, ["drop"], True, False)]
 
     def __str__(self): 
         return self.names[0]
@@ -65,21 +63,27 @@ class Thing:
         obj_class = self.__class__
         obj_module_name = str(obj_class.__module__)
         obj_class_name = re.search(r"<class (\S+)\.(\S+)'>", str(obj_class)).group(2)
+        # build a string with code to import module and create an instance
         s = "from {mod} import {cls}; ".format(mod=obj_module_name, cls=obj_class_name)
         s += "_tmp = {cls} ('{name}'); ".format(cls=obj_class_name, name=self.names[0])
+        # add code to set attributes in new object to match attributes of self
         for k,v in sorted(self.__dict__.items()):
+            # special-case actions, contents, and attached console
             if k in ('actions', 'cons', 'contents'):
                 continue
             if isinstance(v, Thing): 
                 v = prefix + v.id
             s += "_tmp.%s = %s; " % (k, repr(v))
-        if self.contents:
-            s += "_tmp.contents = ["
-            for i in self.contents:
-                s += "'%s%s', " % (prefix, i.id)
-            s += "]"
-        else:
-            s += "_tmp.contents = None"
+        # deal with contents
+        s += "_tmp.contents = " 
+        s += ("[" + ", ".join(["'%s%s'" % (prefix, x.id) for x in self.contents]) + "]; ") if self.contents else "None; "
+        # deal with actions 
+        s += "_tmp.actions = []; \n"
+        for a in self.actions:
+            if a in self.__class__.actions: 
+                continue
+            s += "_tmp.actions.append(Action(%s, %s, %s, %s, %s)); \n" % \
+            (a.func, a.verblist, a.transitive, a.intransitive, a.restrictions)
         return s
 
 
