@@ -66,6 +66,26 @@ class Creature(Container):
         if self.health <= 0:
             self.die('default message')
 
+    def weapon_and_armor_grab(self, enemy):
+        if not self.weapon_wielding:
+            for w in self.contents:
+                if isinstance(w, Weapon):
+                    self.weapon_wielding = w
+                    dbg.debug("weapon chosen: %s" % self.weapon_wielding)
+                    self.visible_inventory.append(self.weapon_wielding)
+                    continue
+        if not self.armor_worn:
+            for a in self.contents:
+                if isinstance(a, Armor):
+                    self.armor_worn = a
+                    dbg.debug("armor chosen: %s" % self.armor_worn)
+                    self.visible_inventory.append(self.armor_worn)
+                    continue
+        if self.attack_freq() <= self.attack_now:
+            self.attack(enemy)
+        else:
+            self.attack_now += 1
+
     def attack(self, enemy):
         chance_of_hitting = self.combat_skill + self.weapon_wielding.accuracy - enemy.get_armor_class()
         if random.randint(1, 100) <= chance_of_hitting:
@@ -100,6 +120,26 @@ class Creature(Container):
         for i in self.contents:
             self.move_to(Thing.ID_dict['nulspace'])      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
         self.emit(message)
+
+    def attack_enemy(self, enemy=None):
+        """Attack any enemies, if possible, or if highly aggressive, attack anyone in the room"""
+        targets = [x for x in self.location.contents if (isinstance(x, Creature)) and (x != self) and (x.invisible == False)]
+        assert self not in targets
+        if not targets:
+            return
+        attacking = enemy
+        if not attacking:
+            for i in self.enemies:
+                if i in self.location.contents and i.invisible == False:
+                    attacking = i
+                    continue
+        if self.aggressive == 2 and not attacking:
+            attacking = random.choice(targets)
+            self.enemies.append(attacking)
+        dbg.debug("Attacking %s" % attacking)
+        self.attacking = attacking
+        # Figured out who to attacking
+        self.weapon_and_armor_grab(self, enemy)
         
 class NPC(Creature):
     def __init__(self, ID, g, aggressive=0):
@@ -195,40 +235,3 @@ class NPC(Creature):
             else:
                 self.current_script = random.choice(self.scripts)
     
-    def attack_enemy(self, enemy=None):
-        """Attack any enemies, if possible, or if highly aggressive, attack anyone in the room"""
-        targets = [x for x in self.location.contents if (isinstance(x, Creature)) and (x != self) and (x.invisible == False)]
-        assert self not in targets
-        if not targets:
-            return
-        attacking = enemy
-        if not attacking:
-            for i in self.enemies:
-                if i in self.location.contents and i.invisible == False:
-                    attacking = i
-                    continue
-        if self.aggressive == 2 and not attacking:
-            attacking = random.choice(targets)
-            self.enemies.append(attacking)
-        dbg.debug("Attacking %s" % attacking)
-        self.attacking = attacking
-        # Figured out who to attack
-        if not self.weapon_wielding:
-            for w in self.contents:
-                if isinstance(w, Weapon):
-                    self.weapon_wielding = w
-                    dbg.debug("weapon chosen: %s" % self.weapon_wielding)
-                    self.visible_inventory.append(self.weapon_wielding)
-                    continue
-        if not self.armor_worn:
-            for a in self.contents:
-                if isinstance(a, Armor):
-                    self.armor_worn = a
-                    dbg.debug("armor chosen: %s" % self.armor_worn)
-                    self.visible_inventory.append(self.armor_worn)
-                    continue
-        if self.attack_freq() <= self.attack_now:
-            self.attack(enemy)
-        else:
-            self.attack_now += 1
-

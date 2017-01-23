@@ -93,3 +93,12 @@ class Player(Creature):
 
     def hold_object(self, obj):
         self.visible_inventory.append(obj)
+
+    def engage(self, p, cons, oDO, oIDO):
+        self.weapon_and_armor_grab(self, oDO)
+
+    def disengage(self, p, cons, oDO, oIDO):        #TODO: Finish up.
+        self.attacking = False
+
+    def attack_enemy(self, p, cons, oDO, oIDO):
+        super().attack_enemy(self)
