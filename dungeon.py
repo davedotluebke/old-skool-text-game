@@ -1,3 +1,4 @@
+from thing import Thing
 from room import Room
 
 lair = Room('lair')
@@ -15,7 +16,9 @@ lair.add_exit('east', Thing.ID_dict['cave'])
 lair.add_exit('northwest', crawlway)
 crawlway.add_exit('southeast', lair)
 crawlway.add_exit('north', dungeon_hall)
+great_cavern.add_exit('east', dungeon_hall)
 dungeon_hall.add_exit('east', crawlway)
+dungeon_hall.add_exit('west', great_cavern)
 
 lair.add_adjectives("monster's'")
 crawlway.add_adjectives('tight')

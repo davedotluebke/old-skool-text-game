@@ -50,7 +50,7 @@ cave_entrance = CaveEntry('cave mouth', forest_three, game)
 garden = Room("garden")
 
 import school
-import dungon
+import dungeon
 
 bedroom.set_description('dusty bedroom', 'The bare board walls of this bedroom are dusty. A musty smell fills the air.')
 hallway.set_description('dusty hallway', 'This hallway has dusty walls made of wood. It is dim.')
@@ -83,6 +83,7 @@ forest_one.add_exit('northwest', forest_three)
 forest_three.add_exit('southeast', forest_one)
 forest_three.add_exit('west', cave_entrance)
 cave.add_exit('east', forest_three)
+cave.add_exit('west', Thing.ID_dict['lair'])
 field.add_exit('west', forest_two)
 field.add_exit('in', shack)
 field.add_exit("north",garden)
