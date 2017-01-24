@@ -50,6 +50,7 @@ cave_entrance = CaveEntry('cave mouth', forest_three, game)
 garden = Room("garden")
 
 import school
+import dungon
 
 bedroom.set_description('dusty bedroom', 'The bare board walls of this bedroom are dusty. A musty smell fills the air.')
 hallway.set_description('dusty hallway', 'This hallway has dusty walls made of wood. It is dim.')
@@ -285,7 +286,7 @@ monster = NPC('monster', game, 2)
 monster.set_description('terrible monster', 'This is a horrible monster. You want to run away from it.')
 monster.set_combat_vars(50, 60, 80, 40)
 monster.act_frequency = 1
-monster.set_volume(20)
+monster.set_volume(100)
 monster.set_weight(500000)
 
 sword = Weapon('sword', 6, 30, 2)
