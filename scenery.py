@@ -3,9 +3,9 @@ from thing import Thing
 from action import Action
 
 class Scenery(Thing):
-    def __init__(self, ID, short_desc, long_desc,):
-        Thing.__init__(self, ID)
-        self.fix_in_place("You can't move the %s!" % (ID))
+    def __init__(self, default_name, short_desc, long_desc, pref_id=None):
+        Thing.__init__(self, default_name)
+        self.fix_in_place("You can't move the %s!" % (default_name))
         self.set_description(short_desc, long_desc)
         # response tuple is (verblist, result_str, transitive, intransitive)
         self.responses = []     # list of response tuples

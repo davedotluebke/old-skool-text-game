@@ -6,8 +6,8 @@ from weapon import Weapon
 from armor import Armor
 
 class Creature(Container):
-    def __init__(self, default_name):
-        Container.__init__(self, default_name)
+    def __init__(self, default_name, pref_id=None):
+        Container.__init__(self, default_name, pref_id)
         self.closed = True
         self.closable = False
         self.see_inside = False
@@ -145,7 +145,7 @@ class Creature(Container):
         self.weapon_and_armor_grab(enemy)
         
 class NPC(Creature):
-    def __init__(self, ID, g, aggressive=0):
+    def __init__(self, ID, g, aggressive=0, pref_id=None):
         Creature.__init__(self, ID)
         self.aggressive = aggressive
         self.act_frequency = 3  # how many heartbeats between NPC actions

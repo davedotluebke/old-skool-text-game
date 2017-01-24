@@ -5,8 +5,8 @@ from scenery import Scenery
 from container import Container
 
 class Liquid(Scenery):
-    def __init__(self, default_name, short_desc = None, long_desc = None):
-        Scenery.__init__(self, default_name, short_desc, long_desc)
+    def __init__(self, default_name, short_desc = None, long_desc = None, pref_id=None):
+        Scenery.__init__(self, default_name, short_desc, long_desc, pref_id)
         self.actions.append(Action(self.pour, ['pour'], True))
         self.actions.append(Action(self.drink, ['drink', 'sip', 'taste'], True))
 

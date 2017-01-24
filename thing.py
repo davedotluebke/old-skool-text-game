@@ -16,9 +16,9 @@ class Thing:
         Thing.ID_dict[self.id] = self
         return self.id
 
-    def __init__(self, default_name):
+    def __init__(self, default_name, pref_id=None):
         self.names = [default_name]
-        self._add_ID(default_name)
+        self._add_ID(default_name if not pref_id else pref_id)
         self.plural = False         # should this thing be treated as plural?
         self.weight = 0.0
         self.volume = 0.0

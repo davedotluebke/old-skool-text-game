@@ -3,8 +3,8 @@ from thing import Thing
 from action import Action
 
 class Container(Thing):
-    def __init__(self, default_name):
-        Thing.__init__(self, default_name)
+    def __init__(self, default_name, pref_id=None):
+        Thing.__init__(self, default_name, pref_id)
         self.contents = []
         self.see_inside = True      # can contents of container be seen? 
         self.closed = False         # can't remove items from closed container

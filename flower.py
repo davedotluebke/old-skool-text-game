@@ -4,7 +4,7 @@ from action import Action
 from thing import Thing
 
 class Flower(Thing):
-    def __init__(self, default_name, type=None):
+    def __init__(self, default_name, type=None, pref_id=None):
         super().__init__(default_name)
         self.type = type
         self.actions.append(Action(self.pick, ['pick', 'take', 'pluck'], True, False))
