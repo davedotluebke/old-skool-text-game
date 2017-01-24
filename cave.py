@@ -91,7 +91,15 @@ class CaveEntry(Room):
                 self.extract(i)
                 self.escape_room.insert(i)
             self.in_entry_user = 0
-        if (Thing.ID_dict['cave moss'] or Thing.ID_dict['gold']) not in self.exits['in'].contents:
+#        if (Thing.ID_dict['cave moss'] or Thing.ID_dict['gold']) not in self.exits['in'].contents:
+        gold_check = False
+        cave_moss_check = False
+        for k in self.contents:
+            if k.names[0] == 'cave moss':
+                cave_moss_check = True
+            if k.names[0] == 'gold':
+                gold_check = True
+        if not cave_moss_check or not gold_check:
             if self.released_monster == False:
                 if self.monster.location == self.monster_storage:
                     self.monster_storage.extract(self.monster)

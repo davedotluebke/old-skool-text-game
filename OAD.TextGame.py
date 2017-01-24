@@ -323,4 +323,3 @@ game.user.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
 "'quit' to end the game, and 'help' for more information.")
 game.loop()
 
-

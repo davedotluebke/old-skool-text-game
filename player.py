@@ -148,7 +148,7 @@ class Player(Creature):
         try:
             room = Thing.ID_dict[id]
             if isinstance(room, Room) == False:
-                    cons.write("You cannot apparate to %s; that is not a place!" % obj.names[0])
+                    cons.write("You cannot apparate to %s; that is not a place!" % room.names[0])
                     return True
             self.emit("%s performs a magical incantation, and vanishes!" % self.names[0], [self])
             self.move_to(room)
