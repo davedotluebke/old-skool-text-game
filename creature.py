@@ -66,7 +66,7 @@ class Creature(Container):
         if self.health <= 0:
             self.die('default message')
 
-    def weapon_and_armor_grab(self, enemy):
+    def weapon_and_armor_grab(self, enemy=None):
         if not self.weapon_wielding:
             for w in self.contents:
                 if isinstance(w, Weapon):
@@ -87,6 +87,7 @@ class Creature(Container):
             self.attack_now += 1
 
     def attack(self, enemy):
+        assert enemy != self
         chance_of_hitting = self.combat_skill + self.weapon_wielding.accuracy - enemy.get_armor_class()
         if random.randint(1, 100) <= chance_of_hitting:
             d = self.weapon_wielding.damage
@@ -135,6 +136,7 @@ class Creature(Container):
             for i in self.enemies:
                 if i in self.location.contents and i.invisible == False:
                     attacking = i
+                    assert attacking != self
                     continue
         if self.aggressive == 2 and not attacking:
             attacking = random.choice(targets)

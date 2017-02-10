@@ -5,6 +5,7 @@ from room import Room
 from scenery import Scenery
 from cauldron import Cauldron
 from liquid import Liquid
+from scroll import Scroll
 
 from debug import dbg 
 
@@ -112,7 +113,5 @@ flask.insert(molasses)
 
 potion_storage.insert(flask)
 
-scroll = Scenery('scroll', 'scroll', 'This scroll appears to say something on it.')
-scroll.add_adjectives('first')
-scroll.unfix()
-scroll.add_response(['read'], 'On the scroll there are theese words:\nMake a potion to hide thyself. Use this potion to sneak past an unbeatable enemy.\nDue next class.')
+scroll = Scroll('scroll')
+

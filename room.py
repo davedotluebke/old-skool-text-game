@@ -6,7 +6,7 @@ from action import Action
 class Room(Container):
     def __init__(self, default_name, light=1, safe=False, pref_id=None):
         """Initialize the room. Set <light> level to 0 for a dark room."""
-        Container.__init__(self, default_name)
+        Container.__init__(self, default_name, pref_id=pref_id)
         self.exits = {}
         self.set_max_weight_carried(4e9)
         self.set_max_volume_carried(3e9)

@@ -316,6 +316,7 @@ game.cons.user.insert(tsword)
 
 Thing.ID_dict['great hall'].insert(game.user)
 Thing.ID_dict['scroll'].move_to(game.user)
+game.register_heartbeat(Thing.ID_dict['scroll'])
 game.user.set_start_loc = Thing.ID_dict['great hall']
 game.user.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
 "Type 'look' to examine your surroundings or an object, "
