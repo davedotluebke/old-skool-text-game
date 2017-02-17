@@ -7,7 +7,7 @@ class Scroll(Thing):
         super().__init__(default_name, pref_id)
         self.set_description('scroll', 'This scroll appears to say somthing on it.')
         self.actions.append(Action(self.read, ['read'], True, False))
-        self.messages = ['Make a potion to hide thyself. Use this potion to sneak past an unbeatable enemy.\nDue next class.', 'Find thyself a power inside\nTake the a large stride\nBe the one who does not cower\nAnd be the one who discovers the power\n\nFinish your task to find the power\nHere upon ticks your hour...\n\n']
+        self.messages = ['Make a potion to hide thyself. Use this potion to sneak past an unbeatable enemy.\nDue next class.', 'Find thyself a power inside\nTake thee a large stride\nBe the one who does not cower\nAnd be the one who discovers the power\n\nFinish your task to find the power\nHere upon ticks your hour...\n\n']
         self.message_number = 0
         self.triggers = ['scrollchangeroom1','EOFError no more Scroll messages;']
         self.next_trigger_room = 'scrollchangeroom1'

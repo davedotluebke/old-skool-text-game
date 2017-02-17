@@ -180,6 +180,6 @@ class Parser:
             return True
 
         # no objects handled the verb; print the first error message 
-        console.write(err_msg)
+        console.write(err_msg if err_msg else "No objects handled verb, but no error message defined!")
         return True
 

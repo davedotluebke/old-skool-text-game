@@ -37,7 +37,7 @@ class Flashlight(Thing):
     def use(self, p, cons, oDO, oIDO):
         if self.location == cons.user:
             cons.user.visible_inventory.append(self)
-            if self. emits_light:
+            if self.emits_light:
                 self.change_room_light(1)
             cons.write('You shine the flashlight around the %s.' % cons.user.location)
             return True

@@ -4,6 +4,7 @@ from thing import Thing
 from container import Container
 from room import Room
 from action import Action
+from creature import Creature
 
 class CaveEntry(Room):
     def __init__(self, ID, escape_room, g):
@@ -73,8 +74,8 @@ class CaveEntry(Room):
     def heartbeat(self):
         dbg.debug('self.last_cons is %s' % self.last_cons)
         try:
-            test_var = self.contents[0].id
-            dbg.debug(test_var)
+            self.contents[0].id
+            dbg.debug('contents[0] of cave is %s' % self.contents[0].id)
             contents_question = True
         except IndexError:
             contents_question = False
@@ -94,7 +95,7 @@ class CaveEntry(Room):
 #        if (Thing.ID_dict['cave moss'] or Thing.ID_dict['gold']) not in self.exits['in'].contents:
         gold_check = False
         cave_moss_check = False
-        for k in self.contents:
+        for k in self.exits['in'].contents:
             if k.names[0] == 'cave moss':
                 cave_moss_check = True
             if k.names[0] == 'gold':
@@ -108,7 +109,7 @@ class CaveEntry(Room):
                     self.released_monster == True
                     self.counter = 10
                     for m in self.monster.location.contents:
-                        if hasattr(m, 'hitpoints'):
+                        if m != self.monster and isinstance(m, Creature):
                             self.monster.enemies.append(m)
         if self.released_monster:
             self.counter -= 1

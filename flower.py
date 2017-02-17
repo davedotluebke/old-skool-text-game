@@ -26,6 +26,7 @@ class Flower(Thing):
                 petal.set_volume(0.0005)
                 petal.set_weight(0.5)
                 petal.move_to(cons.user)
+                cons.write('You pick a petal from the %s.' % self.type)
                 return True
             else:
                 return "I'm not sure what you are trying to pick from the %s...a petal perhaps?" % self.names[0]

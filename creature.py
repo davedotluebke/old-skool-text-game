@@ -66,28 +66,26 @@ class Creature(Container):
         if self.health <= 0:
             self.die('default message')
 
-    def weapon_and_armor_grab(self, enemy=None):
+    def weapon_and_armor_grab(self):
         if not self.weapon_wielding:
             for w in self.contents:
                 if isinstance(w, Weapon):
                     self.weapon_wielding = w
                     dbg.debug("weapon chosen: %s" % self.weapon_wielding)
                     self.visible_inventory.append(self.weapon_wielding)
-                    continue
+                    break
         if not self.armor_worn:
             for a in self.contents:
                 if isinstance(a, Armor):
                     self.armor_worn = a
                     dbg.debug("armor chosen: %s" % self.armor_worn)
                     self.visible_inventory.append(self.armor_worn)
-                    continue
-        if self.attack_freq() <= self.attack_now:
-            self.attack(enemy)
-        else:
-            self.attack_now += 1
+                    break
 
     def attack(self, enemy):
-        assert enemy != self
+        if (self == enemy):
+            dbg.debug('Creature tried to attack self!')
+            return
         chance_of_hitting = self.combat_skill + self.weapon_wielding.accuracy - enemy.get_armor_class()
         if random.randint(1, 100) <= chance_of_hitting:
             d = self.weapon_wielding.damage
@@ -137,15 +135,20 @@ class Creature(Container):
                 if i in self.location.contents and i.invisible == False:
                     attacking = i
                     assert attacking != self
-                    continue
+                    break
         if self.aggressive == 2 and not attacking:
             attacking = random.choice(targets)
             self.enemies.append(attacking)
         dbg.debug("Attacking %s" % attacking)
         self.attacking = attacking
-        # Figured out who to attacking
-        self.weapon_and_armor_grab(enemy)
-        
+        # Figured out who to attack, wield any weapons/armor
+        self.weapon_and_armor_grab()
+
+        if self.attack_freq() <= self.attack_now:
+            self.attack(attacking)
+        else:
+            self.attack_now += 1
+
 class NPC(Creature):
     def __init__(self, ID, g, aggressive=0, pref_id=None):
         Creature.__init__(self, ID)
@@ -170,7 +173,7 @@ class NPC(Creature):
     def heartbeat(self):
         self.act_soon += 1
         dbg.debug('beat')
-        if self.act_soon == self.act_frequency or self.enemies in self.location.contents or self.attacking:
+        if self.act_soon >= self.act_frequency or (set(self.enemies) & set(self.location.contents)) or self.attacking:
             acting = False
             self.act_soon = 0
             if self.current_script:  # if currently reciting, continue
@@ -187,7 +190,7 @@ class NPC(Creature):
             except AttributeError:
                 dbg.debug('AttributeError, not in any room.')
                 return
-            if self.attacking not in self.location.contents and self.attacking != False:
+            if (self.attacking not in self.location.contents) and (self.attacking != False):
                 for l in self.location.exits:
                     if l == self.attacking.location:
                         self.move_to(l)
