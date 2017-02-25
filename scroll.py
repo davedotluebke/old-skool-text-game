@@ -25,5 +25,8 @@ class Scroll(Thing):
                     break
 
     def read(self, p, cons, oDO, oIDO):
-        cons.write('On the scroll there are theese words:\n'+self.messages[self.message_number])
-        return True
+        if len(p.words) == 2:
+            cons.write('On the scroll there are theese words:\n'+self.messages[self.message_number])
+            return True
+        else:
+            return "A problem occured!"
