@@ -16,9 +16,7 @@ class Book(Thing):
         c = 0
         page = '\n'
         for i in message.splitlines(True):
-            page += i
-            c += 1
-            if c == 7:
+            if i == "#*\n":
                 page_num += 1
                 c = 0
                 try:
@@ -26,6 +24,10 @@ class Book(Thing):
                 except IndexError:
                     self.what_you_read.append(page)
                 page = '\n'
+                continue
+            page += i
+            c += 1
+            # #* means page break
         try:
             self.what_you_read[page_num] = (page + '\n\n')
         except IndexError:
@@ -61,19 +63,20 @@ class Book(Thing):
                 break
         try:
             if self.what_you_read and (case == 1):
-                cons.write("You read:"+str(self.what_you_read[self.index]))
+                cons.write("You read:"+str(self.what_you_read[self.index]).rjust(8))
                 return True
             elif self.what_you_read and (case == 2):
                 self.index = int(pagenum)-1
-                cons.write('You flip to page '+str(self.index+1))
-                cons.write("You read:"+str(self.what_you_read[self.index]))
+                cons.write('You flip to page '+str(self.index+1)+'.')
+                cons.write("You read:"+str(self.what_you_read[self.index]).rjust(8))
                 return True
             elif self.what_you_read and (case == 3):
                 self.index += 1
-                cons.write("You read:"+str(self.what_you_read[self.index]))
+                cons.write("You read:"+str(self.what_you_read[self.index]).rjust(8))
                 return True
             else:
                 cons.write("A problem occured!")
                 return True
         except IndexError:
-            cons.write('The book does not have a page numbered %s' % self.index)
+            cons.write('The book does not have a page numbered %s!' % str(self.index+1))
+            return True

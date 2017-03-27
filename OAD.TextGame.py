@@ -315,25 +315,25 @@ game.cons.user.insert(tleather_suit)
 game.cons.user.insert(tsword)
 # End experimental test code
 
-#testing books
-b = Book('testbook', 'test book', 'This is the test book.')
-b.set_message('''line1
-line2
-line3
-line4
-line5
-line6
-line7
-newpage1
-line9
-line10
-line11
-line12
-line13
-line14
-newpage2
-''')
-b.move_to(garden)
+##testing books
+#b = Book('testbook', 'test book', 'This is the test book.')
+#b.set_message('''line1
+#line2
+#line3
+#line4
+#line5
+#line6
+#line7
+#newpage1
+#line9
+#line10
+#line11
+#line12
+#line13
+#line14
+#newpage2
+#''')
+#b.move_to(garden)
 
 Thing.ID_dict['great hall'].insert(game.user)
 Thing.ID_dict['scroll'].move_to(game.user)

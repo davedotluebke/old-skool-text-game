@@ -6,6 +6,8 @@ from scenery import Scenery
 from cauldron import Cauldron
 from liquid import Liquid
 from scroll import Scroll
+from book import Book
+#import owen_domain  #testing domains
 
 from debug import dbg 
 
@@ -67,6 +69,39 @@ hallway.add_exit('south', gallery)
 
 bookcase = Bookcase('bookcase', potion_storage)
 library.insert(bookcase)
+
+potion_book = Book("leather book", "leather-bound tome", "This is an old leather-bound book titled \"Potion Recipies for the Beggining and Intermediate Sorcerer (First Edition).\"")
+potion_book.add_names("tome", "book")
+potion_book.add_adjectives("leather-bound")
+potion_book.set_message('''
+
+
+Potion Recipies for the Beggining and Intermediate Wizard (First Edition)
+
+#*
+Table of Contents:
+
+Invisibility Potion on page 3
+Pink Potion on page 4
+
+#*
+Invisibility Potion
+
+The First Step: Gather thyself moss from a cave, water, truffles, a petal from a sunflower, and molasses.
+The Second Step: Put the ingredients in thy cauldron and put the cauldron over a burner.
+The Third Step: Drink thys potion, and turn thyself invisible.
+The Fourth Step: Beware, becuase thy will not be invisible forever.
+#*
+Pink Potion
+
+The First Step: Gather thyself water, molasses, and a seed from a poppy.
+The Second Step: Put the ingredients in a cauldron and put the cauldron over a burner.
+The Third Step: Drink thys potion, and turn thyself pink.
+The Fourth Step: Beware, because thy will not be pink for long.
+#*
+''')
+potion_book.move_to(library)
+
 
 b_table = Container('table')
 b_table.set_description('banquet-size table', 'This is a extremely long banquet table, stretching almost from one end of the room to the other.')
