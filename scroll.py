@@ -25,6 +25,8 @@ class Scroll(Thing):
                     break
 
     def read(self, p, cons, oDO, oIDO):
+        if oDO != self:
+            return "Are you intending to read the scroll?"
         if len(p.words) == 2:
             cons.write('On the scroll there are theese words:\n'+self.messages[self.message_number])
             return True

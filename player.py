@@ -31,6 +31,7 @@ class Player(Creature):
         self.dexterity = 60
         self.attack_now = 0
         self.attacking = False
+        self.reading = False
         
     def __getstate__(self):
         """Custom pickling code for Player. 

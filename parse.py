@@ -101,12 +101,18 @@ class Parser:
         if command == 'verbose':
             self._toggle_verbosity(console)
             return True
-        
-        self.words = command.split()
-        if len(self.words) == 0:
+
+        if command == "new user" or command == "add user":
+            console.new_user()
             return True
         
         self.words = command.split()
+        if len(self.words) == 0:
+            if user.reading == True:
+                self.words = ["read", "next", "page"]
+            else:
+                return True
+        
         # remove articles and convert to lowercase, unless the command 
         # requires the exact user text:
         if self.words[0] not in ['execute', 'say', 'shout']:

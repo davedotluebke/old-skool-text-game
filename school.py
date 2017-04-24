@@ -7,7 +7,7 @@ from cauldron import Cauldron
 from liquid import Liquid
 from scroll import Scroll
 from book import Book
-#import owen_domain  #testing domains
+from owen_domain import new_book
 
 from debug import dbg 
 
@@ -72,7 +72,7 @@ library.insert(bookcase)
 
 potion_book = Book("leather book", "leather-bound tome", "This is an old leather-bound book titled \"Potion Recipies for the Beggining and Intermediate Sorcerer (First Edition).\"")
 potion_book.add_names("tome", "book")
-potion_book.add_adjectives("leather-bound")
+potion_book.add_adjectives("leather-bound", "leather")
 potion_book.set_message('''
 
 
@@ -101,7 +101,7 @@ The Fourth Step: Beware, because thy will not be pink for long.
 #*
 ''')
 potion_book.move_to(library)
-
+new_book.move_to(library)
 
 b_table = Container('table')
 b_table.set_description('banquet-size table', 'This is a extremely long banquet table, stretching almost from one end of the room to the other.')

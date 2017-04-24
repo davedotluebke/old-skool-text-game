@@ -2,6 +2,7 @@ from textwrap import TextWrapper
 
 from debug import dbg
 from parse import Parser
+from player import Player
 
 class Console:
     default_width = 75
@@ -136,10 +137,29 @@ class Console:
             
         return False
 
-    def write(self, text):
+    def write(self, text, indent=0):
         lines = text.splitlines()
+        self.tw.initial_indent = indent * ' '
+        self.tw.subsequent_indent = indent * ' '
         for l in lines:
             print(self.tw.fill(l))
+
+    def new_user(self):
+        self.write("Create your new user.")
+        user_default_name = input("User default name: ")    #TODO: Simplify and make text more user-friendly.
+        user_short_description = input("User short description: ")
+        user_long_description = input("User long description: ")
+        new_user = Player(user_default_name, self)
+        new_user.set_description(user_short_description, user_long_description)
+        new_user.set_max_weight_carried(750000)
+        new_user.set_max_volume_carried(2000)
+        new_user.move_to(self.user.location)
+        for i in self.user.contents:
+            i.move_to(new_user)
+        self.write("You are now %s!" % new_user.id)
+        self.write(str(new_user.cons))
+        self.set_user(new_user)
+        self.game.user = new_user
 
     def take_input(self, prompt):
         self.command = input(prompt)

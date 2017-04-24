@@ -38,41 +38,45 @@ class Book(Thing):
             cons.write('You need to take the book before reading it!')
             return True
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
-        # see if they typed "read page #" 
         case = None
-        while not case:
-            match = re.search(r'page (\d+)', sDO)
-            if match:
-                pagenum = match.group(1)
-                case = 2
-                break
+        if oDO == self:
+            if cons.user.reading:
+                case = 3
+            else:
+                case = 1
+        # see if they typed "read page #" 
+        match = re.search(r'page (\d+)', sDO)
+        if match:
+            pagenum = match.group(1)
+            case = 2
+        if not case:
             match = re.search(r'next page', sDO)
             if match:
                 case = 3
-                break
-            match = re.search(r'page', sDO)
-            if match:
-                case = 1
-                break
-            match = re.search(r'(\S+)', sDO)
-            if match:
-                if match.group(1) in self.names:
+            if not case:
+                match = re.search(r'page', sDO)
+                if match:
                     case = 1
-                    break
-            if not match:
-                break
+                if not case:
+                    match = re.search(r'(\S+)', sDO)
+                    if match:
+                        if match.group(1) in self.names:
+                            case = 1
         try:
             if self.what_you_read and (case == 1):
-                cons.write("You read:"+str(self.what_you_read[self.index]).rjust(8))
+                cons.write("You read:"+str(self.what_you_read[self.index]), 8)
+                cons.user.reading = True
                 return True
             elif self.what_you_read and (case == 2):
                 self.index = int(pagenum)-1
                 cons.write('You flip to page '+str(self.index+1)+'.')
-                cons.write("You read:"+str(self.what_you_read[self.index]).rjust(8))
+                cons.write("You read:"+str(self.what_you_read[self.index]), 8)
+                cons.user.reading = True
                 return True
             elif self.what_you_read and (case == 3):
                 self.index += 1
-                cons.write("You read:"+str(self.what_you_read[self.index]).rjust(8))
+                cons.write("You read:"+str(self.what_you_read[self.index]), 8)
+                cons.user.reading = True
                 return True
             else:
                 cons.write("A problem occured!")
