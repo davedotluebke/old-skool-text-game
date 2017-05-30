@@ -32,6 +32,7 @@ class Player(Creature):
         self.attack_now = 0
         self.attacking = False
         self.reading = False
+        self.cons.game.register_heartbeat(self)
         
     def __getstate__(self):
         """Custom pickling code for Player. 
@@ -167,7 +168,7 @@ class Player(Creature):
         if not oDO:
             return "Who do you intend to engage in combat?"
         self.attacking = oDO
-        self.weapon_and_armor_grab(oDO)
+        self.weapon_and_armor_grab()
         return True
 
     def disengage(self, p, cons, oDO, oIDO):        #TODO: Finish up.
@@ -176,6 +177,6 @@ class Player(Creature):
 
     def attack_enemy(self, enemy):
         if self.attacking in self.location.contents:
-            self.weapon_and_armor_grab(enemy)
+            self.attack(enemy)
         else:
             self.attacking = None

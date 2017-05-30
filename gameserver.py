@@ -11,13 +11,13 @@ class Game():
     
     Eventually this will grow to include a list of players, associated consoles, etc."""
     def __init__(self):
+        self.heartbeat_users = []
         self.cons = Console(game = self)
         self.user = Player("Joe Test", self.cons)
         self.user.set_description('Joe Test', 'Our test player named Joe')
         self.user.set_max_weight_carried(750000)
         self.user.set_max_volume_carried(2000)
         self.cons.set_user(self.user)
-        self.heartbeat_users = []
     
     def save_game(self, filename):
         if not filename.endswith('.OAD'): 

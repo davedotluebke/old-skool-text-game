@@ -20,10 +20,17 @@ class Creature(Container):
         self.strength = 0
         self.dexterity = 1
         self.armor_worn = None
-        self.weapon_wielding = None
+        self.default_weapon = Weapon("bare hands", 1, 5, 1)
+        self.default_armor = Armor("skin", 0, 0)
+        self.weapon_wielding = self.default_weapon
         self.closed_err = "You can't put things in creatures!"
         self.visible_inventory = []     #Things the creature is holding, you can see them.
         self.invisible = False
+
+    def set_default_weapon(self, name, damage, accuracy, unwieldiness):
+        self.default_weapon = Weapon(name, damage, accuracy, unwieldiness)
+    def set_default_armor(self, name, bonus, unwieldiness):
+        self.default_armor = Armor(name, bonus, unwieldiness)
 
     def set_combat_vars(self, armor_class, combat_skill, strength, dexterity):
         self.armor_class = armor_class
@@ -89,13 +96,17 @@ class Creature(Container):
         chance_of_hitting = self.combat_skill + self.weapon_wielding.accuracy - enemy.get_armor_class()
         if random.randint(1, 100) <= chance_of_hitting:
             d = self.weapon_wielding.damage
-            damage_done = random.randint(d/2, d) + self.strength / 10.0
+            damage_done = random.randint(int(d/2), d) + self.strength / 10.0
             enemy.take_damage(damage_done)
             self.emit('The %s attacks the %s, doing %s damage!' % (self, enemy, damage_done), ignore=[self, enemy])
             self.perceive('You attack the %s, doing %s damage!' % (enemy, damage_done))
             enemy.perceive('The %s attacks you, doing %s damage!' % (self, damage_done))
             if self not in enemy.enemies:
                 enemy.enemies.append(self)
+        else:
+            self.emit('The %s attacks the %s, but misses.' % (self, enemy), ignore=[self, enemy])
+            self.perceive('You attack the %s, but miss.' % (enemy))
+            enemy.perceive('The %s attacks you, but misses.' % (self))
 
 #        chance_of_being_hit = self.armor_class
 #        chance_of_hitting_enemy = self.combat_skill * self.weapon_wielding.accuracy
