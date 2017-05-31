@@ -1,4 +1,5 @@
 import time
+import inspect
 
 class DebugLog():
     """A simple class for printing or logging debug messages.
@@ -20,6 +21,13 @@ class DebugLog():
 
     def debug(self, s = "default error msg", level = 1):
         """Print the string s if level is <= current verbosity level."""
+        stack = inspect.stack()     # returns a list of FrameInfo tuples
+        func_name = stack[1].function + ":" + str(stack[1].lineno)
+        for f in stack[2:]:         
+            if f.function == "loop": break
+            func_name = f.function + ":" + func_name
+         
+        s = func_name + ": " + s
         if level <= self.verbosity:
             print(s)
         self.log.write("%s\n" % s)
