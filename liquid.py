@@ -1,3 +1,4 @@
+from thing import Thing
 from debug import dbg
 from action import Action
 

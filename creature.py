@@ -108,10 +108,6 @@ class Creature(Container):
             self.perceive('You attack the %s, but miss.' % (enemy))
             enemy.perceive('The %s attacks you, but misses.' % (self))
 
-#        chance_of_being_hit = self.armor_class
-#        chance_of_hitting_enemy = self.combat_skill * self.weapon_wielding.accuracy
-#        damage_done_by_self = self.weapon_wielding.damage - 1/self.strength - enemy.armor_worn.damage_prevent_num
-#        attack_freq_self = self.dexterity * (1/self.weapon_wielding.unwieldiness) * (1/self.armor_worn.unwieldiness)
     def attack_freq(self):
         try:
             return (20.0/self.dexterity + self.weapon_wielding.unwieldiness + self.armor_worn.unwieldiness)
