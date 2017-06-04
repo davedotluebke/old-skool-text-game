@@ -21,7 +21,7 @@ class Liquid(Scenery):
             if (oDO, oIDO) == (self, None) or (oDO, oIDO) == (None, self):
                 # e.g. "pour out potion" or "pour potion out"
                 cons.write("You pour out the %s on the ground." % self)
-                self.move_to(Thing.ID_Dict['nulspace'])
+                self.move_to(Thing.ID_dict['nulspace'])
                 # TODO: actually delete the object
                 return True
         if oDO == self and sPrep in ("in", 'into') and isinstance(oIDO, Container) and oIDO.liquid:
