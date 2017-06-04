@@ -154,11 +154,10 @@ class Game():
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-        
-        while: 
-            current_events = self.events.check_for_event(self.time)
-            for ev in current_events: 
-                ev.callback(event.payload)
+            
+        current_events = self.events.check_for_event(self.time)
+        for event in current_events: 
+            event.callback(event.payload)
 
         for h in self.heartbeat_users:
             h.heartbeat()
