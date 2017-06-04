@@ -36,9 +36,15 @@ class Liquid(Scenery):
             return True
         else:
             return "You can't pour the %s into the %s!" % (self, oIDO)
+    
     def drink(self, p, cons, oDO, oIDO):
-        return "There was a problem processing your request. Please try again later."
-            
+        if self != oDO: 
+            return "Did you meant to drink the %s?" % self.short_desc
+        self.emit("%s drinks something." % cons.user, [cons.user])
+        cons.user.perceive("You drink the %s." % self.short_desc)
+        self.move_to(Thing.ID_dict['nulspace'])
+        return True
+    
     
 
 

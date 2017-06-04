@@ -6,28 +6,25 @@ from action import Action
 
 class PinkPotion(Liquid):
     def drink(self, p, cons, oDO, oIDO):
-        super().drink(p, cons, oDO, oIDO)
-        cons.write('You drink the potion, and turn hot pink!')
+        if self != oDO: 
+            return "Did you meant to drink the %s?" % self.short_desc
+        cons.user.perceive('You drink the potion, and turn hot pink!')
         cons.user.emit('%s drinks the potion and turns bright pink!' % cons.user, ignore=[cons.user])
         return True
 
 class InvisibilityPotion(Liquid):
     def drink(self, p, cons, oDO, oIDO):
-        super().drink(p, cons, oDO, oIDO)
+        if self != oDO: 
+            return "Did you meant to drink the %s?" % self.short_desc
         cons.user.invisible = True      #TODO: Cleanup
-        for i in Thing.ID_dict:
-            if hasattr(i, 'game_redirect'):
-                i.game_redirect.register_heartbeat(self)
-                self.game_redirect = i.game_redirect
-                break
-        if hasattr(self, 'counters'):
-            self.counters.append([cons.user, 10])
-        else:
-            self.counters = [[cons.user, 10]]
-    
-    def heartbeat(self):
-        for i in self.counters:
-            i[1] -= 1
-            if i[1] <= 0:
-                del self.counters[i]
-                self.game_redirect.cons.user.invisible = False
+        cons.game.events.schedule(cons.game.time+10, self.reappear, cons.user)
+        self.emit('%s drinks a potion and fades from sight.' % cons.user, [cons.user])
+        cons.user.perceive('You drink the potion, and notice yourself fading away.')
+        return True
+
+    def reappear(self, user):
+        user.invisible = False
+        self.emit('%s suddenly fades into sight, appearing as if out of thin air!' % user, [user])
+        user.perceive('You notice you are now fading back into visibility.')
+        
+       
