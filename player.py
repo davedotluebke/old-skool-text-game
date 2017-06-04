@@ -103,11 +103,11 @@ class Player(Creature):
     def inventory(self, p, cons, oDO, oIDO):
         cons.write("You are carrying:")
         if not self.contents:
-            cons.write('nothing')
+            cons.write('\tnothing')
         for i in self.contents:
             if i == self.weapon_wielding or i == self.armor_worn: 
                 continue
-            cons.write("a " + i.short_desc)
+            cons.write("\ta " + i.short_desc)
         if self.weapon_wielding != self.default_weapon: 
             cons.write('You are wielding a %s.' % self.weapon_wielding.short_desc)
         if self.armor_worn != self.default_armor:

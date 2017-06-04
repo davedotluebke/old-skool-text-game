@@ -304,7 +304,7 @@ game.user.health = game.user.hitpoints
 cave.cave.attach_monster(monster)
 
 tsword = Weapon('sword', 6, 30, 2)
-tsword.set_description('rusty old sword', "This is a rusty old sword. It's not very sharp but still better than bare hands.')
+tsword.set_description('rusty old sword', "This is a rusty old sword. It's not very sharp but still better than bare hands.")
 
 tleather_suit = Armor('leather suit', 25, 2)
 tleather_suit.set_description('leather suit', 'A crude tunic made of sturdy leather hide. Wearing it should provide some protection in a fight.')
