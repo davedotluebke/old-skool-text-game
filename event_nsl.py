@@ -1,3 +1,5 @@
+import sys
+
 class Event:
     def __init__(self, timestamp, callback, payload):
         self.timestamp = timestamp
@@ -9,7 +11,8 @@ class Event:
 
 class EventQueue:
     def __init__(self):
-        self.Q = []
+        sentinel = Event(sys.maxsize, None, None)     # an event at the end of time
+        self.Q = [sentinel]
     
     # TODO: make this more efficient. Right now it re-sorts every time
     def schedule(self, timestamp, callback, payload=None):
@@ -20,10 +23,10 @@ class EventQueue:
                 index += 1
         self.Q.insert(index, ev)
 
-    def check_for_event(self, timestamp):
-        """Return a (possibly empty) list of events scheduled on or before the given timestamp"""
+    def check_for_event(self, time):
+        """Return a (possibly empty) list of events scheduled on or before the given time"""
         ev_list = []
-        while self.Q[0] <= timestamp:
+        while self.Q[0].timestamp <= time:  # sentinel avoids an IndexError
             ev_list.append(self.Q[0])
             del self.Q[0]
         return ev_list
