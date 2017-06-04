@@ -105,7 +105,13 @@ class Player(Creature):
         if not self.contents:
             cons.write('nothing')
         for i in self.contents:
+            if i == self.weapon_wielding or i == self.armor_worn: 
+                continue
             cons.write("a " + i.short_desc)
+        if self.weapon_wielding != self.default_weapon: 
+            cons.write('You are wielding a %s.' % self.weapon_wielding.short_desc)
+        if self.armor_worn != self.default_armor:
+            cons.write('You are wearing a %s.' % self.armor_worn)
         return True
     
     def execute(self, p, cons, oDO, oIDO):

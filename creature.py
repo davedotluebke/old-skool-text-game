@@ -19,10 +19,10 @@ class Creature(Container):
         self.combat_skill = 0
         self.strength = 0
         self.dexterity = 1
-        self.armor_worn = None
         self.default_weapon = Weapon("bare hands", 1, 5, 1)
         self.default_armor = Armor("skin", 0, 0)
         self.weapon_wielding = self.default_weapon
+        self.armor_worn = self.default_armor
         self.closed_err = "You can't put things in creatures!"
         self.visible_inventory = []     #Things the creature is holding, you can see them.
         self.invisible = False
