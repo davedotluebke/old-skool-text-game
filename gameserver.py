@@ -5,6 +5,7 @@ from debug import dbg
 from thing import Thing
 from player import Player
 from console import Console
+from event_nsl import EventQueue
 
 class Game():
     """The Game class contains a console and associated game state (e.g. player object for the console).
@@ -18,6 +19,8 @@ class Game():
         self.user.set_max_weight_carried(750000)
         self.user.set_max_volume_carried(2000)
         self.cons.set_user(self.user)
+        self.events = EventQueue()
+        self.time = 0
     
     def save_game(self, filename):
         if not filename.endswith('.OAD'): 
@@ -149,7 +152,14 @@ class Game():
         self.heartbeat_users.append(obj)
     
     def beat(self):
-        """call all of the registered heartbeat functions"""
+        """Advance time, run scheduled events, and call registered heartbeat functions"""
+        self.time += 1
+        
+        while: 
+            current_events = self.events.check_for_event(self.time)
+            for ev in current_events: 
+                ev.callback(event.payload)
+
         for h in self.heartbeat_users:
             h.heartbeat()
 
