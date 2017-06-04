@@ -12,7 +12,7 @@ class EventQueue:
         self.Q = []
     
     # TODO: make this more efficient. Right now it re-sorts every time
-    def schedule(self, timestamp, callback, payload):
+    def schedule(self, timestamp, callback, payload=None):
         ev = Event(timestamp, callback, payload)
         index = 0
         for w in self.Q:
@@ -21,9 +21,9 @@ class EventQueue:
         self.Q.insert(index, ev)
 
     def check_for_event(self, timestamp):
-        if Q[0] <= timestamp:
-            ev = Q[0]
-            del Q[0]
-            return ev
-        else:
-            return None
+        """Return a (possibly empty) list of events scheduled on or before the given timestamp"""
+        ev_list = []
+        while self.Q[0] <= timestamp:
+            ev_list.append(self.Q[0])
+            del self.Q[0]
+        return ev_list
