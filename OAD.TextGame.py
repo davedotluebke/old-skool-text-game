@@ -17,7 +17,6 @@ from book import Book
 
 from bookcase import Bookcase
 from sink import Sink
-from cave import CaveEntry
 from flashlight import Flashlight
 from flower import Flower
 
@@ -46,12 +45,17 @@ forest_two = Room('forest')
 forest_three = Room('forest')
 field = Room('field')
 shack = Room('shack')
-cave = Room('cave', light=0)
-cave_entrance = CaveEntry('cave mouth', forest_three, game)
 garden = Room("garden")
 
 import school
 import dungeon
+
+import cave
+cave.cave_entrance.add_aditional_vars(forest_three, game)
+cave.cave.add_exit('east', forest_three)
+cave.cave_entrance.add_exit('east', forest_three)
+game.register_heartbeat(cave.cave)
+dungeon.crawlway.add_exit('southeast', cave.lair)
 
 bedroom.set_description('dusty bedroom', 'The bare board walls of this bedroom are dusty. A musty smell fills the air.')
 hallway.set_description('dusty hallway', 'This hallway has dusty walls made of wood. It is dim.')
@@ -62,7 +66,6 @@ forest_two.set_description('nice forest', 'This is an ancient forest with toweri
 forest_three.set_description('ancient forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least. The trees seem gloomy here. There is a small dark cave to the west.')
 field.set_description('field with a small shack on the west side', 'This field is on the outskirts of Firlefile sorcery school and has a small shack on the west side.')
 shack.set_description('empty shack', 'This shack appears to be abandoned and has nothing but cobwebs and walls.')
-cave.set_description('terrifying dark cave', 'This is one of the most scary caves you have ever been in. You are anxiousley looking around to see if there are any monsters.')
 garden.set_description("beutiful garden","This is a very beautiful garden in the northwest corner of Firlefile Sorcery School, and has many useful plants growing in it.")
 
 woods.add_exit('west', entryway)
@@ -82,16 +85,12 @@ forest_two.add_exit('west', forest_one)
 forest_two.add_exit('east', field)
 forest_one.add_exit('northwest', forest_three)
 forest_three.add_exit('southeast', forest_one)
-forest_three.add_exit('west', cave_entrance)
-cave.add_exit('east', forest_three)
-cave.add_exit('west', Thing.ID_dict['lair'])
+forest_three.add_exit('west', cave.cave_entrance)
 field.add_exit('west', forest_two)
 field.add_exit('in', shack)
 field.add_exit("north",garden)
 field.add_exit('northeast', Thing.ID_dict['grand entry'])
 shack.add_exit('out', field)
-cave_entrance.add_exit('east', forest_three)
-cave_entrance.add_exit('in', cave)
 garden.add_exit("south",field)
 garden.add_exit('southeast', Thing.ID_dict['grand entry'])
 
@@ -101,7 +100,6 @@ forest_two.add_names('forest')
 forest_two.add_adjectives('ancient','towering','nice')
 forest_three.add_names('forest')
 forest_three.add_adjectives('ancient','towering','gloomy')
-cave.add_adjectives('scary', 'dark', 'terrifying')
 
 bag = Container('bag')
 bag.set_description('normal bag', 'A normal-looking brown bag.')
@@ -303,13 +301,15 @@ monster.insert(leather_suit)
 game.user.hitpoints = 20
 game.user.health = game.user.hitpoints
 
-cave_entrance.attach_monster(monster)
+cave.cave.attach_monster(monster)
 
 tsword = Weapon('sword', 6, 30, 2)
 tsword.set_description('rusty old sword', 'This is a rusty old sword the monster has for testing purposes.')
 
 tleather_suit = Armor('leather suit', 25, 2)
 tleather_suit.set_description('leather skin', 'A sturdy leather hide')
+tleather_suit.add_adjectives('leather')
+tleather_suit.add_names('skin','suit')
 
 game.cons.user.insert(tleather_suit)
 game.cons.user.insert(tsword)
