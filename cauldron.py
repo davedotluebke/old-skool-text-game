@@ -28,12 +28,12 @@ class Cauldron(Container):
                         a.move_to(Thing.ID_dict['nulspace'])
                     if i[1] == 'pink potion':
                         created = PinkPotion(i[1])
-                        created.set_description(i[1], 'This is %s %s' % ('an' if list(i[1])[1] in ['a','e','i','o','u'] else 'a', i[1]))
+                        created.set_description(i[1], 'This is %s %s' % ('an' if list(i[1])[0] in ['a','e','i','o','u'] else 'a', i[1]))
                         created.add_names('potion')
                         created.move_to(self)
                     if i[1] == 'invisibility potion':
                         created = InvisibilityPotion(i[1])
-                        created.set_description(i[1], 'This is %s %s' % ('an' if list(i[1])[1] in ['a','e','i','o','u'] else 'a', i[1]))
+                        created.set_description(i[1], 'This is %s %s' % ('an' if list(i[1])[0] in ['a','e','i','o','u'] else 'a', i[1]))
                         created.move_to(self)
                         created.add_names('potion')
                     self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.short_desc))
