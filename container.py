@@ -3,6 +3,7 @@ from thing import Thing
 from action import Action
 
 class Container(Thing):
+    actions = []
     def __init__(self, default_name):
         Thing.__init__(self, default_name)
         self.contents = []
@@ -54,7 +55,7 @@ class Container(Thing):
                   "holding %d grams and %d liters)" 
                   % (obj.weight, obj.volume, obj.id, self.id, self.max_weight_carried, self.max_volume_carried, contents_weight, contents_volume))
             return True
-
+    
     def set_max_weight_carried(self, max_grams_carried):
         self.max_weight_carried = max_grams_carried
 

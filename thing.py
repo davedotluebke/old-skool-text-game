@@ -65,7 +65,7 @@ class Thing:
         obj_class_name = re.search(r"<class (\S+)\.(\S+)'>", str(obj_class)).group(2)
         # build a string with code to import module and create an instance
         s = "from {mod} import {cls}; ".format(mod=obj_module_name, cls=obj_class_name)
-        s += "_tmp = {cls} ('{name}'); ".format(cls=obj_class_name, name=self.names[0])
+        s += "_tmp = {cls}('{name}'); ".format(cls=obj_class_name, name=self.names[0])
         # add code to set attributes in new object to match attributes of self
         for k,v in sorted(self.__dict__.items()):
             # special-case actions, contents, and attached console
@@ -102,9 +102,9 @@ class Thing:
         state = self.__dict__.copy()
         if self.location != None: 
             state['location'] = self.location.id
-        if self.contents != None: 
+        #if self.contents != None: 
             # replace with new list of id strings, or leave as None (not [])
-            state['contents'] = [x.id for x in self.contents] 
+        #    state['contents'] = [x.id for x in self.contents] 
         return state
 
     def __setstate__(self, state):

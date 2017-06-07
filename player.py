@@ -32,9 +32,15 @@ class Player(Creature):
         # method to avoid modifying the original state.
         if self.id == "Joe Test": # XXX temp for debugging purposes
             dbg.debug("Pickling Joe Test!")
+        clone_contents = []
+        r_contents = self.contents
+        for i in self.contents:
+            clone_contents.append(i.clone_code('cloned'))
+        self.contents = clone_contents
         state = super().__getstate__()
         # Remove the unpicklable entries.
         del state['cons']
+        self.contents = r_contents
         return state
 
     def __setstate__(self, state):

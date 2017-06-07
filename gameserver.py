@@ -126,17 +126,19 @@ class Game():
         self.user.cons = self.cons  # custom pickling code for Player doesn't save console
         self.cons.user = self.user  # update backref from cons
 
-        self.user.location = Thing.ID_dict[self.location] # XXX protect for case where saved room no longer exists
+        self.user.location = Thing.ID_dict[self.user.location] # XXX protect for case where saved room no longer exists
 
         # Create new entries in ID_dict for objects player is holding, 
         # and make sure that those objects refer to each other by the new IDs
         newIDs = {}  # mapping from ID strings stored with objs to new ID strings
         objs = self.user.contents
-        for o in objs: 
-            o._add_ID(preferred_id = o.id)  # XXX this won't work, contents were pickled as strings not original objects. 
-            raise
-            if o.contents != None:
-                objs += o.contents
+        for o in objs:
+            exec(o)
+         #for o in objs: 
+         #   o._add_ID(preferred_id = o.id)  # XXX this won't work, contents were pickled as strings not original objects. 
+         #   raise
+         #   if o.contents != None:
+         #       objs += o.contents
             
         room = self.user.location
         room.insert(self.user)  # insert() does some necessary bookkeeping

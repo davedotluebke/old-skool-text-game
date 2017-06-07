@@ -3,6 +3,7 @@ from thing import Thing
 from action import Action
 
 class Scenery(Thing):
+    actions = []
     def __init__(self, ID, short_desc="Need_short_desc", long_desc="Need_long_desc"):
         Thing.__init__(self, ID)
         self.fix_in_place("You can't move the %s!" % (ID))
