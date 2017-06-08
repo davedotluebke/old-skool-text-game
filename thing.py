@@ -76,14 +76,15 @@ class Thing:
             s += "_tmp.%s = %s; " % (k, repr(v))
         # deal with contents
         s += "_tmp.contents = " 
-        s += ("[" + ", ".join(["'%s%s'" % (prefix, x.id) for x in self.contents]) + "]; ") if self.contents else "None; "
+        s += ("[" + ", ".join(["'%s%s'" % (prefix, x.id) for x in self.contents]) + "]; ") if self.contents else ("[]; " if self.contents == list() else "None; ")
         # deal with actions 
-        s += "_tmp.actions = []; \n"
+        s += "_tmp.actions = []; "
         for a in self.actions:
             if a in self.__class__.actions: 
                 continue
-            s += "_tmp.actions.append(Action(%s, %s, %s, %s, %s)); \n" % \
-            (a.func, a.verblist, a.transitive, a.intransitive, a.restrictions)
+            s += "_tmp.actions.append(Action(%s, %s, %s, %s, %s)); " % \
+            ('_tmp.' + a.func.__name__, a.verblist, a.transitive, a.intransitive, a.restrictions)
+        s += "user_contents.append(_tmp); "
         return s
 
 

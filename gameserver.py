@@ -5,6 +5,7 @@ from debug import dbg
 from thing import Thing
 from player import Player
 from console import Console
+from action import Action
 
 class Game():
     """The Game class contains a console and associated game state (e.g. player object for the console).
@@ -132,14 +133,21 @@ class Game():
         # and make sure that those objects refer to each other by the new IDs
         newIDs = {}  # mapping from ID strings stored with objs to new ID strings
         objs = self.user.contents
+        user_contents = []
         for o in objs:
             exec(o)
+        for i in user_contents:
+            i.location = self.user
          #for o in objs: 
          #   o._add_ID(preferred_id = o.id)  # XXX this won't work, contents were pickled as strings not original objects. 
          #   raise
          #   if o.contents != None:
          #       objs += o.contents
-            
+        #for n in user_contents:
+        #    if hasattr(n, contents):
+        #        if n.contents == None:
+        #            n.contents = []
+        self.user.contents = user_contents
         room = self.user.location
         room.insert(self.user)  # insert() does some necessary bookkeeping
         self.cons.write("Restored game state from file %s" % filename)
