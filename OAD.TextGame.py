@@ -52,6 +52,8 @@ import school
 import dungeon
 import cave
 
+import owen_domain
+
 cave.cave_entrance.add_aditional_vars(forest_three, game)
 cave.cave.add_exit('east', forest_three)
 cave.cave_entrance.add_exit('east', forest_three)

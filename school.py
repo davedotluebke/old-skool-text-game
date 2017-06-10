@@ -7,7 +7,6 @@ from cauldron import Cauldron
 from liquid import Liquid
 from scroll import Scroll
 from book import Book
-from owen_domain import new_book
 
 from debug import dbg 
 
@@ -101,7 +100,6 @@ The Fourth Step: Beware, because thy will not be pink for long.
 #*
 ''')
 potion_book.move_to(library)
-new_book.move_to(library)
 
 b_table = Container('table')
 b_table.set_description('banquet-size table', 'This is a extremely long banquet table, stretching almost from one end of the room to the other.')
