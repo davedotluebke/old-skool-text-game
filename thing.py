@@ -5,6 +5,7 @@ import re
 
 class Thing:
     ID_dict = {}
+    actions = []
 
     def _add_ID(self, preferred_id):
         """Add object to Thing.ID_dict (the dictionary mapping IDs to objects).
@@ -128,12 +129,12 @@ class Thing:
             Thing.ID_dict[state['id']] = self
         self.__dict__.update(state)
 
-    def _restore_objs_from_IDs(self):
+    def restore_objs_from_IDs(self):
         """Update object references stored as ID strings to directly reference the objects, using Thing.ID_dict."""
         if isinstance(self.location, str):
             self.location = Thing.ID_dict[self.location]
-        if self.contents != None:
-            self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
+        #if self.contents != None:
+        #    self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
     
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""

@@ -31,8 +31,8 @@ class Room(Container):
         state['exits'] = exitIDs
         return state
     
-    def _restore_objs_from_IDs(self):
-        super(Room, self)._restore_objs_from_IDs()
+    def restore_objs_from_IDs(self):
+        super(Room, self).restore_objs_from_IDs()
         for e in self.exits:
             self.exits[e] = Thing.ID_dict[self.exits[e]]
 

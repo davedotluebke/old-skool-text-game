@@ -109,7 +109,7 @@ class Game():
             newplayer = pickle.load(f)
             f.close()
         except pickle.PickleError:
-            self.cons.write("Encountered error while pickling to file %s, player not saved." % filename)
+            self.cons.write("Encountered error while unpickling from file %s, player not loaded." % filename)
             Thing.ID_dict[self.user.id] = self.user
             f.close()
             return
@@ -147,6 +147,7 @@ class Game():
         #    if hasattr(n, contents):
         #        if n.contents == None:
         #            n.contents = []
+        self.user.restore_objs_from_IDs()
         self.user.contents = user_contents
         room = self.user.location
         room.insert(self.user)  # insert() does some necessary bookkeeping
