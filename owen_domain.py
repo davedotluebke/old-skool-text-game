@@ -149,23 +149,62 @@ class FaucetThing(Thing):
 		obj.move_to(Thing.ID_dict['nulspace'])
 		return True
 
+class PlaceChooser(Thing):
+	def __init__(self, ID):
+		super().__init__(ID)
+		self.written_on = 'woods'
+		self.actions.append(Action(self.write, ['write'], True, False))
+		self.fix_in_place('This paper is fixed to the wall with sorcery.')
+		self.set_description('magical piece of paper', 'This magical paper says "woods" on it.')
+		self.add_names('paper')
+		self.add_adjectives('magical')
+
+	def write(self, p, cons, oDO, oIDO):
+		try:
+			self.written_on = p.words[1]
+		except IndexError:
+			return 'Did you mean to write something on the paper?'
+		cons.write('You write %s on the paper and feel a magical shift occur.' % self.written_on)
+		del self.location.exits['west']
+		try:
+			self.location.exits['west'] = Thing.ID_dict[self.written_on]
+		except KeyError:
+			cons.write('The text on the paper morphs back into the words "woods".')
+			self.written_on = 'woods'
+			self.location.exits['west'] = Thing.ID_dict[self.written_on]
+		self.long_desc = 'This magical paper says "%s" on it.' % self.written_on
+		return True
+
 living_room = Room('living room', pref_id='lr31795')
 bathroom = Room('bathroom', pref_id='btr31795')
 bedroom = Room('bedroom', pref_id='br31795')
+magic_room = Room('magical room', pref_id='mr31795')
 
 living_room.set_description('well-kept living room', 'This is a comfortable living room, while quite small. It has a couch on one wall.')
 bathroom.set_description('modern bathroom', 'This small bathroom has a bathtub, a shower, and a sink.')
 bedroom.set_description('normal bedroom', 'This bedroom is small but nice. There are bookshelves on the walls and a great big window overlooking Firlefile sorcery school. ')
+magic_room.set_description('magical room', 'This room has a lot of magical supplies. It also has a door on the west side of the room with a piece of paper above it.')
 
 living_room.add_exit('west', bathroom)
 living_room.add_exit('up', bedroom)
+living_room.add_exit('south', magic_room)
 bathroom.add_exit('east', living_room)
 bedroom.add_exit('down', living_room)
+magic_room.add_exit('north', living_room)
+magic_room.add_exit('west', Thing.ID_dict['woods'])
 
 living_room.add_names('room', 'space')
 living_room.add_adjectives('living', 'well-kept', 'comfortable')
 bathroom.add_adjectives('modern')
 bedroom.add_adjectives('small', 'comfortable')
+magic_room.add_names('room')
+magic_room.add_adjectives('magic', 'magical')
+
+#in magical room
+
+magical_paper = PlaceChooser('magical paper')
+magical_paper.move_to(magic_room)
+
 # in bedroom
 bed = Bed('bed')
 bed.set_description('soft, comfortable bed', 'This bed is soft and comfortable. It has white sheets on it.')
