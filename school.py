@@ -152,6 +152,7 @@ scale = Thing('dragon scale')
 scale.set_description('golden dragon scale', 'This is a golden dragon scale. It is used in many very strong potions.')
 scale.add_adjectives('dragon', 'golden')
 scale.add_names('scale')
+scale.move_to(potion_storage)
 
 scroll = Scroll('scroll')
 
