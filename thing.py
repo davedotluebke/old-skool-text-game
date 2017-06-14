@@ -34,6 +34,8 @@ class Thing:
         self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
         self.actions.append(Action(self.take, ["take", "get"], True, False))
         self.actions.append(Action(self.drop, ["drop"], True, False))
+        self.spawn_location = None
+        self.spawn_interval = None
 
     def __str__(self): 
         return self.names[0]
@@ -85,6 +87,18 @@ class Thing:
         if self.contents != None:
             self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
     
+    def set_spawn(self, game, spawn_location, spawn_interval):
+        self.spawn_state = self.__dict__.copy()
+        self.spawn_location = spawn_location
+        self.spawn_interval = spawn_interval
+        game.events.schedule(game.time+self.spawn_interval, self.spawn, game)
+
+    def spawn(self, game):
+        self.spawning = Thing('')
+        self.spawning.__dict__ = self.spawn_state
+        self.spawning.move_to(self.spawn_location)
+        game.events.sch(game.time+self.spawn_interval, self.spawn, game)
+
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""
         self.names += list(sNames)

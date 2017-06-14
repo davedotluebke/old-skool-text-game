@@ -32,7 +32,7 @@ class Liquid(Scenery):
                 cons.write("You can't get the %s into the %s!" % (self, loc))
                 loc.insert(self)  # put this object back into original Container
                 return True
-            cons.write('You pour the %s from the %s into the %s.' % (self, loc, oIDO))
+            cons.user.perceive('You pour the %s from the %s into the %s.' % (self, loc, oIDO))
             return True
         else:
             return "You can't pour the %s into the %s!" % (self, oIDO)

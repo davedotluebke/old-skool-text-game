@@ -27,4 +27,14 @@ class InvisibilityPotion(Liquid):
         self.emit('%s suddenly fades into sight, appearing as if out of thin air!' % user, [user])
         user.perceive('You notice you are now fading back into visibility.')
         
-       
+class StrengthPotion(Liquid):
+    def drink(self, p, cons, oDO, oIDO):
+        if self != oDO: 
+            return "Did you meant to drink the %s?" % self.short_desc
+        cons.user.perceive("You drink the potion, and feel stronger than you did before.")
+        cons.user.strength += 70
+        cons.game.events.schedule(cons.game.time+15, self.wear_off, cons.user)
+    
+    def wear_off(self, user):
+        user.strength -= 70
+        cons.user.perceive("You feel like you could colapse in exaustion now.")

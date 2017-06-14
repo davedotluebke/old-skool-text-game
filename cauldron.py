@@ -5,11 +5,13 @@ from thing import Thing
 from container import Container
 from potions import PinkPotion
 from potions import InvisibilityPotion
+from potions import StrengthPotion
 
 class Cauldron(Container):
     recipes = [({'water', 'molasses', 'poppyseed'}, 'pink potion'),  
                ({'water', 'molasses', 'sunflower petal', 'cave moss', 'truffles'}, 'invisibility potion'),
-               ({'poppyseed', 'truffles', 'cave moss'}, 'explode')]
+               ({'poppyseed', 'truffles', 'cave moss'}, 'explode'),
+               ({'molasses', 'dragon scale', 'poppyseed'}, 'strength potion')]
 
     def __init__(self, default_name, pref_id=None):
         super().__init__(default_name, pref_id)
@@ -33,6 +35,11 @@ class Cauldron(Container):
                         created.move_to(self)
                     if i[1] == 'invisibility potion':
                         created = InvisibilityPotion(i[1])
+                        created.set_description(i[1], 'This is %s %s' % ('an' if list(i[1])[0] in ['a','e','i','o','u'] else 'a', i[1]))
+                        created.move_to(self)
+                        created.add_names('potion')
+                    if i[1] == 'strength potion':
+                        created = StrengthPotion(i[1])
                         created.set_description(i[1], 'This is %s %s' % ('an' if list(i[1])[0] in ['a','e','i','o','u'] else 'a', i[1]))
                         created.move_to(self)
                         created.add_names('potion')
