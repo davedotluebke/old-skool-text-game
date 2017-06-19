@@ -129,7 +129,7 @@ class Game():
         self.user.cons = self.cons  # custom pickling code for Player doesn't save console
         self.cons.user = self.user  # update backref from cons
 
-        self.user.location = Thing.ID_dict[self.location] # XXX protect for case where saved room no longer exists
+        self.user.location = Thing.ID_dict[self.user.location] # XXX protect for case where saved room no longer exists #XXX updated in save_player branch
 
         # Create new entries in ID_dict for objects player is holding, 
         # and make sure that those objects refer to each other by the new IDs
@@ -154,7 +154,7 @@ class Game():
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-            
+
         current_events = self.events.check_for_event(self.time)
         for event in current_events: 
             event.callback(event.payload)

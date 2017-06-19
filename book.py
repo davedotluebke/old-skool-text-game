@@ -7,7 +7,7 @@ class Book(Thing):
         super().__init__(default_name, pref_id)
         self.set_description(s_desc, l_desc)
         self.what_you_read = list()
-        self.index = 1
+        self.index = 0
         self.actions.append(Action(self.read, ['read'], True, False))
         self.add_names('book')
 

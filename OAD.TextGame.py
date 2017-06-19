@@ -26,6 +26,7 @@ from flower import Flower
 ## 
 game = Game()
 nulspace = Room('nulspace')         #"nulspace" is a room for objects that should be deleted. TODO: Automaticly delete items from nulspace every 10 heartbeats.
+nulspace.game = game
 nulspace.set_description('void', 'This is an empty void where dead and destroyd things go. Good luck getting out!')
 nulspace.add_names('void')
 nulspace.add_exit('north', nulspace)
@@ -50,8 +51,10 @@ garden = Room("garden")
 import school
 Thing.ID_dict['dragon scale'].set_spawn(game, Thing.ID_dict['potion storage'], 4)
 import dungeon
-
 import cave
+
+import owen_domain
+
 cave.cave_entrance.add_aditional_vars(forest_three, game)
 cave.cave.add_exit('east', forest_three)
 cave.cave_entrance.add_exit('east', forest_three)

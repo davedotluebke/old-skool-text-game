@@ -20,10 +20,31 @@ from sink import Sink
 from flashlight import Flashlight
 from flower import Flower
 
-new_book = Book("blue book", "newer light blue book", "This book is newer, sky blue, and says \"Dragonsky\" on the cover.")
-new_book.add_names("book", "Dragonsky")
-new_book.add_adjectives("blue", "newer", "light")
-new_book.set_message('''
+living_room = Room('living room', pref_id='lr31795')
+bathroom = Room('bathroom', pref_id='btr31795')
+bedroom = Room('bedroom', pref_id='br31795')
+
+living_room.set_description('well-kept living room', 'This is a comfortable living room, while quite small. It has a couch on one wall.')
+bathroom.set_description('modern bathroom', 'This small bathroom has a bathtub, a shower, and a sink.')
+bedroom.set_description('normal bedroom', 'This bedroom is small but nice. There are bookshelves on the walls and a great big window overlooking Firlefile sorcery school. ')
+
+living_room.add_exit('west', bathroom)
+living_room.add_exit('up', bedroom)
+bathroom.add_exit('east', living_room)
+bedroom.add_exit('down', living_room)
+
+living_room.add_names('room', 'space')
+living_room.add_adjectives('living', 'well-kept', 'comfortable')
+bathroom.add_adjectives('modern')
+bedroom.add_adjectives('small', 'comfortable')
+
+bed = Container('bed')
+bed.fix_in_place('Moving the bed would require a lot of effort.')
+
+blue_book = Book("blue book", "newer light blue book", "This book is newer, sky blue, and says \"Dragonsky\" on the cover.")
+blue_book.add_names("book", "Dragonsky")
+blue_book.add_adjectives("blue", "newer", "light")
+blue_book.set_message('''
 
 Dragonsky
 
