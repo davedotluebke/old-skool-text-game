@@ -125,8 +125,11 @@ cauldron.set_max_weight_carried(2000)
 cauldron.set_max_volume_carried(30)
 cauldron.move_to(potion_storage)
 
-water = Liquid('water', 'some normal water', 'This is some normal clear water.')
-water.add_response(['drink'], 'You take a big drink of the water, and your thirst is quenched.')
+scale = Thing('dragon scale')
+scale.set_description('golden dragon scale', 'This is a golden dragon scale. It is used in many very strong potions.')
+scale.add_adjectives('dragon', 'golden')
+scale.add_names('scale')
+scale.move_to(potion_storage)
 
 scroll = Scroll('scroll')
 
