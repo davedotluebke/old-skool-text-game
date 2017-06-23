@@ -79,14 +79,20 @@ class Room(Container):
             return True
         cons.write(self.long_desc)
         assert(cons.user in self.contents)  # current player should always be in the room 
-        contents_minus_user = [i for i in self.contents if i is not cons.user]  
-        if contents_minus_user:
-            cons.write("Here you see:")
-            for item in contents_minus_user:
-                cons.write("\ta " + item.short_desc)
-        cons.write('Exits are:')
-        for e in self.exits:
-            cons.write('\t' + e)
+        #contents_minus_user = [i for i in self.contents if i is not cons.user]  XXX Code below is more efficient
+        #if contents_minus_user:
+        #    cons.write("Here you see:")
+        #    for item in contents_minus_user:
+        #        cons.write("\ta " + item.short_desc)
+        if (len(self.exits) > 0):
+            cons.write("Exits are:")
+            for w in self.exits:
+                cons.write('\t' + w)
+            local_objects = ["a " + str(o) for o in self.contents if o is not cons.user]
+            if local_objects:
+                cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
+        else:
+            cons.write("There are no obvious exits.")
         return True
 
     def move_to(self, p, cons, oDO, oIDO):

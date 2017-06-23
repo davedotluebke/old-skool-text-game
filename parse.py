@@ -1,3 +1,6 @@
+import sys
+import traceback
+
 from debug import dbg
 from container import Container
 from player import Player
@@ -176,7 +179,14 @@ class Parser:
         result = False
         err_msg = None
         for act in possible_verb_actions:
-            result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
+            try:
+                result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
+            except Exception as isnt:
+                console.write(traceback.print_exc())
+                #console.write("/n")
+                #console.write("Unexpected error: " + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1]))
+                #console.write(type(inst)+"\n"+inst)    # the exception instance
+                result = 'We appologise for the problem. The above error has occured. Please continue the game, this error has been reported. It will be fixed as soon as possible.'
             if result == True:
                 break               # verb has been enacted, all done!
             if err_msg == None: 
