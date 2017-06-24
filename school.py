@@ -130,6 +130,6 @@ scale.set_description('golden dragon scale', 'This is a golden dragon scale. It 
 scale.add_adjectives('dragon', 'golden')
 scale.add_names('scale')
 scale.move_to(potion_storage)
+scale.set_spawn(Thing.ID_dict['nulspace'].game, potion_storage, 4)
 
 scroll = Scroll('scroll')
-

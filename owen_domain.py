@@ -150,11 +150,11 @@ class FaucetThing(Thing):
 		return True
 
 class PlaceChooser(Thing):
-	def __init__(self, ID):
+	def __init__(self, ID, fixed_to):
 		super().__init__(ID)
 		self.written_on = 'woods'
 		self.actions.append(Action(self.write, ['write'], True, False))
-		self.fix_in_place('This paper is fixed to the wall with sorcery.')
+		self.fix_in_place('This paper is fixed to the %s with sorcery.' % fixed_to)
 		self.set_description('magical piece of paper', 'This magical paper says "woods" on it.')
 		self.add_names('paper')
 		self.add_adjectives('magical')
@@ -202,7 +202,7 @@ magic_room.add_adjectives('magic', 'magical')
 
 #in magical room
 
-magical_paper = PlaceChooser('magical paper')
+magical_paper = PlaceChooser('magical paper', 'wall')
 magical_paper.move_to(magic_room)
 
 # in bedroom

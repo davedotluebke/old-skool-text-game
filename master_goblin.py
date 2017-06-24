@@ -49,16 +49,21 @@ class Roots(Thing):
     def __init__(self, default_name):
         Thing.__init__(self, default_name)
         self.open = False
-        self.set_description('strong roots', 'When you feel theese roots you feel movement and life in them. You feel like you could move them.')
+        self.set_description('strong roots', 'These roots look very strong. You wish you could move them.')
         self.add_adjectives('strong')
         self.actions.append(Action(self.move_roots, ['move'], True, False))
     
     def move_roots(self, p, cons, oDO, oIDO):
-        self.open = True
-        cons.write('To your suprise, you make the roots part and open up in front of you.')
-        cons.write('You feel an urge to find out more about this power, why it exits, and what it does for you.')
-        cons.write('You can now go west twords a waterfall.')
-        self.location.add_exit('west', Thing.ID_dict['waterfall'])
+        if cons.user.wizardry_element == 'plant':
+            self.open = True
+            cons.write('To your suprise, when you put your hands on the roots you find you can make them part and open up in front of you.')
+            cons.write('You feel an urge to find out more about this power, why it exits, and what it does for you.')
+            cons.write('You can now go west twords a waterfall.')
+            self.location.add_exit('west', Thing.ID_dict['waterfall'])
+            return True
+        else:
+            cons.write("You can't move the roots, they're very strong!")
+            return True
 
 class MasterGoblin(NPC):
     def __init__(self):

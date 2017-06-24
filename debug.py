@@ -21,6 +21,7 @@ class DebugLog():
 
     def debug(self, s = "default error msg", level = 1):
         """Print the string s if level is <= current verbosity level."""
+        s = str(s)
         stack = inspect.stack()     # returns a list of FrameInfo tuples
         class_name = stack[1].frame.f_locals["self"].__class__.__name__
         func_name = class_name + '.' + stack[1].function + ":" + str(stack[1].lineno)

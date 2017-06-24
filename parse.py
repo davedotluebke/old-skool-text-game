@@ -182,12 +182,13 @@ class Parser:
             try:
                 result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
             except Exception as isnt:
-                console.write(traceback.print_exc())
-                #console.write("/n")
-                #console.write("Unexpected error: " + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1]))
-                #console.write(type(inst)+"\n"+inst)    # the exception instance
-                result = 'We appologise for the problem. The above error has occured. Please continue the game, this error has been reported. It will be fixed as soon as possible.'
-            if result == True:
+                console.write('An error has occured. Please bear with us while we fix this. Please do not try this action again.')
+                console.write(traceback.format_exc())
+                console.write('Continue your game as normal.')
+                dbg.debug(traceback.format_exc())
+                dbg.debug("Error caught!")
+                result = True       # we don't want the parser to go and do an action they probably didn't
+            if result == True:      # mean to do if there is a bug in the one they did mean to do
                 break               # verb has been enacted, all done!
             if err_msg == None: 
                 err_msg = result    # save the first error encountered
