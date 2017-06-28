@@ -98,9 +98,10 @@ class Creature(Container):
             d = self.weapon_wielding.damage
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
             enemy.take_damage(damage_done)
-            self.emit('The %s attacks the %s, doing %s damage!' % (self, enemy, damage_done), ignore=[self, enemy])
-            self.perceive('You attack the %s, doing %s damage!' % (enemy, damage_done))
-            enemy.perceive('The %s attacks you, doing %s damage!' % (self, damage_done))
+            intd = int(damage_done)
+            self.emit('The %s attacks the %s, doing %s damage!' % (self, enemy, intd), ignore=[self, enemy])
+            self.perceive('You attack the %s, doing %s damage!' % (enemy, intd))
+            enemy.perceive('The %s attacks you, doing %s damage!' % (self, intd))
             if self not in enemy.enemies:
                 enemy.enemies.append(self)
         else:
@@ -197,12 +198,13 @@ class NPC(Creature):
             except AttributeError:
                 dbg.debug('AttributeError, not in any room.')
                 return
-            if (self.attacking not in self.location.contents) and (self.attacking != False):
-                for l in self.location.exits:
-                    if l == self.attacking.location:
-                        self.move_to(l)
-                        moved = True
-                        break
+            if self.attacking:
+                if (self.attacking not in self.location.contents):
+                    for l in self.location.exits:
+                        if l == self.attacking.location:
+                            self.move_to(l)
+                            moved = True
+                            break
 
 #                if not moved:
 #                    self.attacking = None

@@ -30,6 +30,8 @@ class Player(Creature):
         self.strength = 20
         self.dexterity = 60
         self.attack_now = 0
+        self.wizardry_skill = 0
+        self.wizardry_element = 'fire' #XXX: Temp until player setup finished
         self.attacking = False
         self.reading = False
         self.cons.game.register_heartbeat(self)

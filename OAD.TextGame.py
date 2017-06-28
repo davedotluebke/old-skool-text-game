@@ -49,9 +49,9 @@ shack = Room('shack')
 garden = Room("garden")
 
 import school
-Thing.ID_dict['dragon scale'].set_spawn(game, Thing.ID_dict['potion storage'], 4)
 import dungeon
 import cave
+import waterfall
 
 import owen_domain
 

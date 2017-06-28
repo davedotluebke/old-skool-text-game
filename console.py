@@ -138,11 +138,13 @@ class Console:
         return False
 
     def write(self, text, indent=0):
-        lines = text.splitlines()
+        str_text = str(text)
+        lines = str_text.splitlines()
         self.tw.initial_indent = indent * ' '
         self.tw.subsequent_indent = indent * ' '
         for l in lines:
             print(self.tw.fill(l))
+        dbg.debug('cons.write wrote %s!' % text)
 
     def new_user(self):
         self.write("Create your new user.")
@@ -157,7 +159,7 @@ class Console:
         for i in self.user.contents:
             i.move_to(new_user)
         self.write("You are now %s!" % new_user.id)
-        self.write(str(new_user.cons))
+        self.user.move_to(Thing.ID_dict['nulspace'])
         self.set_user(new_user)
         self.game.user = new_user
 

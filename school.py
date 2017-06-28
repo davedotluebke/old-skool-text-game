@@ -125,32 +125,11 @@ cauldron.set_max_weight_carried(2000)
 cauldron.set_max_volume_carried(30)
 cauldron.move_to(potion_storage)
 
-water = Liquid('water', 'some normal water', 'This is some normal clear water.')
-water.add_response(['drink'], 'You take a big drink of the water, and your thirst is quenched.')
-
-molasses = Liquid('molasses')
-molasses.set_description('thick brown molasses', 'This brownish liquid is sweet and thick. Not surprisingly, it is used in recipes as a sweetener and a thickener.')
-molasses.add_adjectives('thick', 'brown', 'brown', 'brownish')
-molasses.set_volume(0.040)
-molasses.set_weight(40)
-
-flask = Container('flask')
-flask.set_description('small flask', 'This is a small flask of clear glass. ')
-flask.add_adjectives('small', 'clear', 'glass')
-flask.set_max_volume_carried(0.050)
-flask.set_max_weight_carried(200)
-flask.liquid = True
-
-flask.insert(water)
-flask.insert(molasses)
-
-potion_storage.insert(flask)
-
 scale = Thing('dragon scale')
 scale.set_description('golden dragon scale', 'This is a golden dragon scale. It is used in many very strong potions.')
 scale.add_adjectives('dragon', 'golden')
 scale.add_names('scale')
 scale.move_to(potion_storage)
+scale.set_spawn(Thing.ID_dict['nulspace'].game, potion_storage, 4)
 
 scroll = Scroll('scroll')
-

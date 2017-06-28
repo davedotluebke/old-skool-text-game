@@ -1,5 +1,6 @@
 import pickle
 import io
+import traceback
 
 from debug import dbg
 from thing import Thing
@@ -156,11 +157,21 @@ class Game():
         self.time += 1
 
         current_events = self.events.check_for_event(self.time)
-        for event in current_events: 
-            event.callback(event.payload)
+        for event in current_events:
+            try:
+                event.callback(event.payload)
+            except Exception as inst:
+                dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (event.timestamp, event.callback, event.payload))
+                dbg.debug(traceback.format_exc())
+                dbg.debug('Error caught!')
 
         for h in self.heartbeat_users:
-            h.heartbeat()
+            try:
+                h.heartbeat()
+            except Exception as inst:
+                dbg.debug("An error occured inside code for %s! Printing below:" % h)
+                dbg.debug(traceback.format_exc())
+                dbg.debug('Error caught!')
 
     def loop(self):
         while True:

@@ -3,6 +3,7 @@ from room import Room
 from scenery import Scenery
 from trapthings import TrapThing
 from creature import NPC
+from master_goblin import MasterGoblin
 
 crawlway = Room('crawlway')
 dungeon_hall = Room('dungeon hall', pref_id='scrollchangeroom1')
@@ -50,14 +51,14 @@ goblin_post.add_names('room', 'hall', 'post')
 goblin_post.add_adjectives('spooky', 'torchlit', 'square')
 
 goblins = []
+goblin_adjectives = ['dark-eyed', 'swarthy', 'short', 'tall', 'green', 'angry-faced','slimey','red','enourmous','swift','slow','anoying','little','crazy','wild','yellow','nasty','bad','big-eyed','large']
 for i in range(0, 20):
-    goblin = NPC('goblin', Thing.ID_dict['nulspace'].game)
-    goblin.set_location(goblin_post)
-    goblin.set_description('horrid goblin', 'This goblin is staring at you in rage. It keeps staring at you, then looks around the room.')
-    goblin.add_adjectives('horrid', 'creepy', 'mean', i)
+    goblin = NPC('goblin', Thing.ID_dict['nulspace'].game, 1)
+    goblin.move_to(goblin_post)
+    goblin.set_description('%s and horrid goblin' % goblin_adjectives[i], 'This goblin is staring at you in rage. It keeps staring at you, then looks around the room.')
+    goblin.add_adjectives('horrid', 'creepy', 'mean', goblin_adjectives[i])
     goblin.set_weight(200/2.2)
     goblin.set_volume(71)
-    goblin.aggressive = 1
     goblin.armor_class = 100
     goblin.combat_skill = 70
     goblin.strength = 35
@@ -68,7 +69,13 @@ for i in range(0, 20):
 
 crawlway.set_max_volume_carried(70)
 
+master_goblin = MasterGoblin()
+master_goblin.move_to(goblin_post)
+
 gold = TrapThing('gold', 'You try to take the gold but a trap is sprung! You fall into a great void...', Thing.ID_dict['nulspace'], 'goldtrap9125')
 gold.set_description('bunch of shiny gold coins', 'This is a collection of 50 shiny real gold coins.')
 gold.set_weight(74000)
 gold.move_to(trap)
+
+# Test Emerald, make magical and powerful later. Copied from an execute. 
+m = Thing('emerald'); m.set_description('nice emerald', 'This is a nice and magical emerald.'); m.move_to(trap)

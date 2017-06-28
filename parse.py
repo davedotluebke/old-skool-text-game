@@ -1,3 +1,6 @@
+import sys
+import traceback
+
 from debug import dbg
 from container import Container
 from player import Player
@@ -176,8 +179,16 @@ class Parser:
         result = False
         err_msg = None
         for act in possible_verb_actions:
-            result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
-            if result == True:
+            try:
+                result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
+            except Exception as isnt:
+                console.write('An error has occured. Please bear with us while we fix this. Please do not try this action again.')
+                console.write(traceback.format_exc())
+                console.write('Continue your game as normal.')
+                dbg.debug(traceback.format_exc())
+                dbg.debug("Error caught!")
+                result = True       # we don't want the parser to go and do an action they probably didn't
+            if result == True:      # mean to do if there is a bug in the one they did mean to do
                 break               # verb has been enacted, all done!
             if err_msg == None: 
                 err_msg = result    # save the first error encountered
