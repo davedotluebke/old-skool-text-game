@@ -39,6 +39,7 @@ import domains.school.waterfall as waterfall
 
 import home.owen.house
 
+#adding a few connections
 cave.cave_entrance.add_aditional_vars(forest.forest_three, game)
 cave.cave.add_exit('east', forest.forest_three)
 cave.cave_entrance.add_exit('east', forest.forest_three)

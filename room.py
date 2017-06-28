@@ -120,7 +120,27 @@ class Room(Container):
         else:
             cons.write("There are no obvious exits.")
     def enter(self, p, cons, oDO, oIDO):
-        return "Not working yet, sorry!"
+        words = p.words
+        del words[0]
+        sEnter = ''
+        b = False
+        for i in words:
+            if not b:
+                sEnter += ' '
+            sEnter += i
+            b = True
+        if sEnter in list(self.enters):
+            dest = self.enters[sEnter]
+            if cons.user.move_to(dest):
+                loc = cons.user.location
+                cons.write("You enter %s" % sEnter)
+                self.emit("%s enters %s" % (str(user), sEnter))
+                loc.report_arrival(user)
+                return True
+            else:
+                return "For some reason you are unable to enter %s." % sEnter
+        else:
+            return "I don't see anywhere named %s you can enter!" % sEnter
 
     def go_to(self, p, cons, oDO, oIDO):
         words = p.words
@@ -136,7 +156,7 @@ class Room(Container):
                 conjugated = "goes" if verb == "go" else verb + 's'
                 cons.write("You %s to the %s." % (verb, sExit))
                 self.emit("%s %s to the %s." % (str(user), conjugated, sExit))
-                self.report_arrival(user)
+                loc.report_arrival(user)
                 return True
             else:
                 return "For some reason you are unable to go to the %s." % sExit
