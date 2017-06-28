@@ -66,6 +66,8 @@ towerstairs.add_exit('up', lookout)
 lookout.add_exit('down', towerstairs)
 potion_storage.add_exit('up', library)
 hallway.add_exit('south', gallery)
+Thing.ID_dict['field'].add_exit('northeast', grand_entry)
+Thing.ID_dict['garden'].add_exit('southeast', grand_entry)
 
 bookcase = Bookcase('bookcase', potion_storage)
 library.insert(bookcase)

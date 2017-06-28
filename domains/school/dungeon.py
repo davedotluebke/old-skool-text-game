@@ -1,9 +1,9 @@
 from thing import Thing
 from room import Room
 from scenery import Scenery
-from trapthings import TrapThing
+from domains.school.trapthings import TrapThing
 from creature import NPC
-from master_goblin import MasterGoblin
+from domains.school.master_goblin import MasterGoblin
 
 crawlway = Room('crawlway')
 dungeon_hall = Room('dungeon hall', pref_id='scrollchangeroom1')

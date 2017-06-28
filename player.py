@@ -8,7 +8,6 @@ from action import Action
 
 from debug import dbg
 
-
 class Player(Creature):
     def __init__(self, ID, console):
         """Initialize the Player object and attach a console"""
@@ -34,6 +33,8 @@ class Player(Creature):
         self.wizardry_element = 'fire' #XXX: Temp until player setup finished
         self.attacking = False
         self.reading = False
+        self.hitpoints = 20
+        self.health = 20
         self.cons.game.register_heartbeat(self)
         
     def __getstate__(self):

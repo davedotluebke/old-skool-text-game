@@ -9,7 +9,7 @@ class TrapThing(Thing):
     
     def take(self, p, cons, oDO, oIDO):
         if oDO != self and oIDO != self:
-            return "I don't understand what your'e trying to take!"
+            return "I don't understand what you're trying to take!"
         cons.write(self.trap_message)
         cons.user.move_to(self.trap_location)
         return True

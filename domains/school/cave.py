@@ -6,6 +6,14 @@ from room import Room
 from action import Action
 from creature import Creature
 from player import Player
+from creature import NPC
+
+monster = NPC('monster', Thing.ID_dict['nulspace'].game, 2)
+monster.set_description('terrible monster', 'This is a horrible monster. You want to run away from it.')
+monster.set_combat_vars(50, 60, 80, 40)
+monster.act_frequency = 1
+monster.set_volume(100)
+monster.set_weight(500000)
 
 class Lair(Room):
     def go_to(self, p, cons, oDO, oIDO):
@@ -152,3 +160,4 @@ lair.add_exit('east', cave)
 lair.add_exit('northwest', Thing.ID_dict['crawlway'])
 cave.add_exit('west', lair)
 cave_entrance.add_exit('in', cave)
+cave.attach_monster(monster)

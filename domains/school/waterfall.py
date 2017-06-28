@@ -1,5 +1,6 @@
 from room import Room
 from thing import Thing
+from action import Action
 
 class PlaceChooser(Thing):
 	def __init__(self, ID, fixed_to):

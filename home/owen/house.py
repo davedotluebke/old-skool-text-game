@@ -17,10 +17,10 @@ from weapon import Weapon
 from armor import Armor
 from book import Book
 
-from bookcase import Bookcase
-from sink import Sink
-from flashlight import Flashlight
-from flower import Flower
+from domains.school.bookcase import Bookcase
+from domains.school.sink import Sink
+from domains.school.flashlight import Flashlight
+from domains.school.flower import Flower
 
 class Bed(Container):
 	def __init__(self, default_name):
