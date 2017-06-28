@@ -1,6 +1,6 @@
 from room import Room
-from transporter import TransportRoom
 from scenery import Scenery
+from domains.school.transporter import TransportRoom
 
 central_fountain = Room('square')
 government_entrences = Room('cobbled street')

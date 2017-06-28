@@ -1,12 +1,13 @@
 from thing import Thing
-from bookcase import Bookcase
 from container import Container
 from room import Room
 from scenery import Scenery
-from cauldron import Cauldron
 from liquid import Liquid
-from scroll import Scroll
 from book import Book
+from cauldron import Cauldron
+
+from domains.school.bookcase import Bookcase
+from domains.school.scroll import Scroll
 
 from debug import dbg 
 

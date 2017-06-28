@@ -15,10 +15,10 @@ from weapon import Weapon
 from armor import Armor
 from book import Book
 
-from bookcase import Bookcase
-from sink import Sink
-from flashlight import Flashlight
-from flower import Flower
+from domains.school.bookcase import Bookcase
+from domains.school.sink import Sink
+from domains.school.flashlight import Flashlight
+from domains.school.flower import Flower
 
 ## 
 ## "game" is a special global variable, an object of class Game that holds
@@ -34,7 +34,7 @@ nulspace.add_exit('south', nulspace)
 nulspace.add_exit('east', nulspace)
 nulspace.add_exit('west', nulspace)
 
-import wizardry_lands.galsbilly
+import domains.wizardry.galsbilly
 
 woods = Room('woods')
 woods.set_description('bright and cheerful woods', 'Theese woods have happy birdsongs and pretty trees. They are bright.')
@@ -50,12 +50,12 @@ field = Room('field')
 shack = Room('shack')
 garden = Room("garden")
 
-import school
-import dungeon
-import cave
-import waterfall
+import domains.school.school
+import domains.school.dungeon
+import domains.school.cave
+import domains.school.waterfall
 
-import owen_domain
+import home.owen.house
 
 cave.cave_entrance.add_aditional_vars(forest_three, game)
 cave.cave.add_exit('east', forest_three)
