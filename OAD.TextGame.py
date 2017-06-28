@@ -34,6 +34,8 @@ nulspace.add_exit('south', nulspace)
 nulspace.add_exit('east', nulspace)
 nulspace.add_exit('west', nulspace)
 
+import wizardry_lands.galsbilly
+
 woods = Room('woods')
 woods.set_description('bright and cheerful woods', 'Theese woods have happy birdsongs and pretty trees. They are bright.')
 

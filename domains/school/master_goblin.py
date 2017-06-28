@@ -25,7 +25,7 @@ class PitRoom(Room):
                         self.long_desc = 'This is a crude pit. It is about 1/%s filled with water.' % self.water_level_den
                         i.perceive('The pit fills up more! The water is getting higher faster and faster!')
                     if self.water_level_den == 1 and not self.player_done:
-                        self.add_exit('up', Thing.ID_dict['square room'])
+                        self.add_exit('up', Thing.ID_dict['waterfall'])
                         self.long_desc = 'This is a crude pit. It is completely full of water.'
                         self.player_done = True
                         if i.wizardry_element == 'water':
@@ -40,6 +40,7 @@ class PitRoom(Room):
             except KeyError:
                 pass
             self.player_done = False
+
     def ability_realize(self, player):
         player.cons.write('You are now underwater. But you are breathing fine. You begin to realize that you are able to breathe underwater wherever you are.')
         player.cons.write('You feel an urge to find out more about this power, why it exits, and what it does for you.')
@@ -123,6 +124,7 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
         self.emit('The fireball seemingly shatters at %s' % player.short_desc, ignore=[player])
         self.emit('The goblin screams in rage.')
         self.complete_players.append(player)
+        self.move_player_to_waterfall(player)
     
     def throw_boulder(self, player):
         self.emit('The goblin yells "You kept the emerald for yourself! I will punish you!"')
@@ -135,6 +137,7 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
         player.cons.write('You feel an urge to find out more about this power, why it exits, and what it does for you.')
         self.emit('The goblin screams in rage.')
         self.complete_players.append(player)
+        self.move_player_to_waterfall(player)
 
     def dunk_in_water(self, player):
         self.emit('The goblin screams: "You kept the emerald for yourself! I will punish you!"')
@@ -151,3 +154,8 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
         player.move_to(self.root_room)
         self.emit('The goblin says "They will sit there for a long time! Ha Ha Ha!"')
         self.complete_players.append(player)
+
+    def move_player_to_waterfall(self, player):
+        player.cons.write("All of the sudden the world shifts around you. The dark walls of the room blur into green and blue. They start fading into something. You start sliding forward.")
+        player.move_to(Thing.ID_dict['waterfall'])
+        Thing.ID_dict['waterfall'].report_arrival(player)

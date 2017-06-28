@@ -8,10 +8,12 @@ class Room(Container):
         """Initialize the room. Set <light> level to 0 for a dark room."""
         Container.__init__(self, default_name, pref_id=pref_id)
         self.exits = {}
+        self.enters = {}
         self.set_max_weight_carried(4e9)
         self.set_max_volume_carried(3e9)
         self.actions.append(Action(self.go_to, ["go", "walk"], True, False))
         self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
+        self.actions.append(Action(self.enter, ["enter"], True, False))
         self.fix_in_place("You can't move that!")
         self.closable = False
         self.light = light  # Can see and perceive emits when light level > 0
@@ -38,7 +40,10 @@ class Room(Container):
 
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room
-         
+    
+    def add_enter(self, enter_name, enter_room):
+        self.enters[enter_name] = enter_room
+
     def is_dark(self):
         return False if self.light > 0 else True
         dbg.debug('light level is %s' % self.light, 1)
@@ -114,6 +119,8 @@ class Room(Container):
                 cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
         else:
             cons.write("There are no obvious exits.")
+    def enter(self, p, cons, oDO, oIDO):
+        return "Not working yet, sorry!"
 
     def go_to(self, p, cons, oDO, oIDO):
         words = p.words

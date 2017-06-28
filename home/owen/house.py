@@ -161,7 +161,7 @@ class PlaceChooser(Thing):
 
 	def write(self, p, cons, oDO, oIDO):
 		try:
-			self.written_on = p.words[1]
+			self.written_on = " ".join(p.words[1:])
 		except IndexError:
 			return 'Did you mean to write something on the paper?'
 		cons.write('You write %s on the paper and feel a magical shift occur.' % self.written_on)

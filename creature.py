@@ -44,9 +44,9 @@ class Creature(Container):
         dbg.debug("Called Creature.look_at()")
         if self == oDO or self == oIDO:
             cons.write(self.long_desc)
-            if self.weapon_wielding:
-                cons.write("It is wielding a %s." % (self.weapon_wielding.short_desc))        #if we use "bare hands" we will have to change this
-            if self.armor_worn:
+            if self.weapon_wielding and (self.weapon_wielding != self.default_weapon):
+                cons.write("It is wielding a %s." % (self.weapon_wielding.short_desc))        #if we use "bare hands" we will have to change this XXX not true anymore
+            if self.armor_worn and (self.armor_worn != self.default_armor):
                 cons.write("It is wearing %s." % (self.armor_worn.short_desc))
             if self.visible_inventory and self.visible_inventory != [self.armor_worn, self.weapon_wielding] and self.visible_inventory != [self.weapon_wielding, self.armor_worn]:
                 cons.write('It is holding:')
@@ -98,16 +98,16 @@ class Creature(Container):
             d = self.weapon_wielding.damage
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
             enemy.take_damage(damage_done)
-            intd = int(damage_done)
-            self.emit('The %s attacks the %s, doing %s damage!' % (self, enemy, intd), ignore=[self, enemy])
-            self.perceive('You attack the %s, doing %s damage!' % (enemy, intd))
-            enemy.perceive('The %s attacks you, doing %s damage!' % (self, intd))
+            self.emit('The %s attacks the %s with its %s!' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
+            self.perceive('You attack the %s with your %s!' % (enemy, self.weapon_wielding))
+            enemy.perceive('The %s attacks you with its %s' % (self, self.weapon_wielding))
+            #TODO: Proper names and introductions: The monster attacks you with its sword, Cedric attacks you with his sword, Madiline attacks you with her sword.
             if self not in enemy.enemies:
                 enemy.enemies.append(self)
         else:
-            self.emit('The %s attacks the %s, but misses.' % (self, enemy), ignore=[self, enemy])
-            self.perceive('You attack the %s, but miss.' % (enemy))
-            enemy.perceive('The %s attacks you, but misses.' % (self))
+            self.emit('The %s attacks the %s with its %s, but misses.' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
+            self.perceive('You attack the %s with your %s, but miss.' % (enemy, self.weapon_wielding))
+            enemy.perceive('The %s attacks you, but misses %s.' % (self, self.weapon_wielding))
 
     def attack_freq(self):
         try:
@@ -115,7 +115,7 @@ class Creature(Container):
         except AttributeError:
             return (20.0/self.dexterity)
     
-    def die(self, message):
+    def die(self, message=None):
         #What to do when 0 health
         self.emit("The %s dies!" % self, [self])
         corpse = Container("corpse of %s" % (self))
@@ -128,8 +128,9 @@ class Creature(Container):
         corpse.add_names('corpse')
         self.location.insert(corpse)
         for i in self.contents:
-            self.move_to(Thing.ID_dict['nulspace'])      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
-        self.emit(message)
+            self.move_to(corpse)      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+        if message:
+            self.emit(message)
 
     def attack_enemy(self, enemy=None):
         """Attack any enemies, if possible, or if a highly aggressive Creature, attack anyone in the room."""
