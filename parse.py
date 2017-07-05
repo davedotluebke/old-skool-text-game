@@ -121,6 +121,9 @@ class Parser:
         if self.words[0] not in ['execute', 'say', 'shout']:
             command = command.lower()   
             self.words = [w for w in self.words if w not in ['a', 'an', 'the']]
+            if len(self.words) == 0:
+                console.write("Please specify more than just articles!")
+                return True
 
         sV = None            # verb as string
         sDO = None           # Direct object as string

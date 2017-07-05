@@ -122,25 +122,26 @@ class Room(Container):
     def enter(self, p, cons, oDO, oIDO):
         words = p.words
         del words[0]
+        words = words
         sEnter = ''
         b = False
         for i in words:
-            if not b:
+            if b:
                 sEnter += ' '
-            sEnter += i
+            sEnter += i.lower()
             b = True
         if sEnter in list(self.enters):
             dest = self.enters[sEnter]
             if cons.user.move_to(dest):
                 loc = cons.user.location
-                cons.write("You enter %s" % sEnter)
-                self.emit("%s enters %s" % (str(user), sEnter))
-                loc.report_arrival(user)
+                cons.write("You enter %s" % sEnter.capitalize())
+                self.emit("%s enters %s" % (str(cons.user), sEnter.capitalize()))
+                loc.report_arrival(cons.user)
                 return True
             else:
-                return "For some reason you are unable to enter %s." % sEnter
+                return "For some reason you are unable to enter %s." % sEnter.capitalize()
         else:
-            return "I don't see anywhere named %s you can enter!" % sEnter
+            return "I don't see anywhere named %s you can enter!" % sEnter.capitalize()
 
     def go_to(self, p, cons, oDO, oIDO):
         words = p.words
