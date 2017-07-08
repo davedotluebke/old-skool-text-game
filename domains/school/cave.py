@@ -157,7 +157,6 @@ class CaveEntry(Room):
 
 cave_entrance = CaveEntry('cave mouth')
 lair.add_exit('east', cave)
-lair.add_exit('northwest', Thing.ID_dict['crawlway'])
 cave.add_exit('west', lair)
 cave_entrance.add_exit('in', cave)
 cave.attach_monster(monster)

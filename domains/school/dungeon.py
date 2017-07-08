@@ -79,3 +79,5 @@ gold.move_to(trap)
 
 # Test Emerald, make magical and powerful later. Copied from an execute. 
 m = Thing('emerald'); m.set_description('nice emerald', 'This is a nice and magical emerald.'); m.move_to(trap)
+
+Thing.ID_dict['lair'].add_exit('northwest', crawlway)

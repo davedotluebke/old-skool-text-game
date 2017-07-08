@@ -1,4 +1,5 @@
 from debug import dbg
+import traceback
 
 from gameserver import Game
 from action import Action
@@ -29,23 +30,26 @@ nulspace.add_exit('south', nulspace)
 nulspace.add_exit('east', nulspace)
 nulspace.add_exit('west', nulspace)
 
-import domains.wizardry.galsbilly
+try:
+    import domains.wizardry.galsbilly
 
-import domains.school.forest as forest
-import domains.school.school as school
-import domains.school.dungeon as dungeon
-import domains.school.cave as cave
-import domains.school.waterfall as waterfall
+    import domains.school
 
-import home.owen.house
-
-#adding a few connections
-cave.cave_entrance.add_aditional_vars(forest.forest_three, game)
-cave.cave.add_exit('east', forest.forest_three)
-cave.cave_entrance.add_exit('east', forest.forest_three)
-game.register_heartbeat(cave.cave)
-dungeon.crawlway.add_exit('southeast', cave.lair)
-forest.forest_three.add_exit('west', cave.cave_entrance)
+    import home.owen.house
+except:
+    dbg.debug(traceback.format_exc())
+    try:
+        import domains.school
+    except:
+        game.user.cons.write('The game is broken, sorry! Error below:')
+        cons.write(traceback.format_exc())
+        dbg.debug(traceback.format_exc())
+        cons.write('\nDue to the problem with the above error, the game is closing.')
+        try:
+            game.user.move_to(nulspace)
+        except:
+            dbg.debug(traceback.format_exc())
+            cons.write('NOTHING IS WORKING. THE GAME IS BROKEN. PLEASE COME AGAIN LATER AFTER THIS ISSUE IS RESOLVED.')
 
 Thing.ID_dict['great hall'].insert(game.user)
 Thing.ID_dict['scroll'].move_to(game.user)

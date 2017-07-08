@@ -22,19 +22,22 @@ class DebugLog():
     def debug(self, s = "default error msg", level = 1):
         """Print the string s if level is <= current verbosity level."""
         s = str(s)
-        stack = inspect.stack()     # returns a list of FrameInfo tuples
-        class_name = stack[1].frame.f_locals["self"].__class__.__name__
-        func_name = class_name + '.' + stack[1].function + ":" + str(stack[1].lineno)
-        for f in stack[2:]:         
-            if f.function == "loop": break
-            try:
-                caller_class = f.frame.f_locals["self"].__class__
-                class_name = caller_class.__name__ + '.' if caller_class else ''
-            except KeyError:
-                class_name = f.filename
-            func_name = class_name + f.function + ":" + func_name
-         
-        s = func_name + ": " + s
+        try:   #XXX temp fix
+            stack = inspect.stack()     # returns a list of FrameInfo tuples
+            class_name = stack[1].frame.f_locals["self"].__class__.__name__
+            func_name = class_name + '.' + stack[1].function + ":" + str(stack[1].lineno)
+            for f in stack[2:]:         
+                if f.function == "loop": break
+                try:
+                    caller_class = f.frame.f_locals["self"].__class__
+                    class_name = caller_class.__name__ + '.' if caller_class else ''
+                except KeyError:
+                    class_name = f.filename
+                func_name = class_name + f.function + ":" + func_name
+            
+            s = func_name + ": " + s
+        except KeyError:
+            s = "Error tracing stack, s = %s" % s
         if level <= self.verbosity:
             print(s)
         self.log.write("%s\n" % s)
