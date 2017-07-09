@@ -2,6 +2,7 @@ from room import Room
 from scenery import Scenery
 from container import Container
 from domains.school.transporter import TransportRoom
+from domains.wizardry.deep_pocket import DeepPocketSignUpWizard
 
 central_fountain = Room('square', safe=True)
 government_entrences = Room('cobbled street', safe=True)
@@ -32,6 +33,9 @@ government_entrences.add_names('street')
 fountain = Scenery('fountain', 'crystal clear fountain', 'This is studded with gems in the center. All of the water coming out of the fountain is crystal clear.')
 fountain.add_adjectives('gem-studded', 'crystal','clear')
 fountain.move_to(central_fountain)
+
+silemon = DeepPocketSignUpWizard(government_entrences)
+silemon.move_to(government_entrences)
 
 for i in range(1, 6):
     table = Container('table')
