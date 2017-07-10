@@ -22,7 +22,7 @@ class Game():
         self.cons.set_user(self.user)
         self.events = EventQueue()
         self.time = 0
-    
+
     def save_game(self, filename):
         if not filename.endswith('.OAD'): 
             filename += '.OAD'
@@ -147,7 +147,11 @@ class Game():
         self.cons.write("Restored game state from file %s" % filename)
         room.report_arrival(self.user)
         room.emit("%s suddenly appears, as if by sorcery!" % self.user, [self.user])
-        
+
+    def reload(self, filename):
+        pass
+        #filename
+
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""
         self.heartbeat_users.append(obj)

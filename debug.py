@@ -46,6 +46,4 @@ class DebugLog():
         """The function that closes down the DebugLog class and file."""
         self.log.close()
 
-
-
 dbg = DebugLog()

@@ -36,7 +36,7 @@ class Player(Creature):
         self.hitpoints = 20
         self.health = 20
         self.cons.game.register_heartbeat(self)
-        
+
     def __getstate__(self):
         """Custom pickling code for Player. 
         

@@ -18,7 +18,7 @@ class Room(Container):
         self.closable = False
         self.light = light  # Can see and perceive emits when light level > 0
         self.monster_safe = safe
-
+    
     def __getstate__(self):
         """Custom pickling code for Room to handle the exits dictionary.
 

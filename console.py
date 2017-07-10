@@ -126,13 +126,14 @@ class Console:
             file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game,
                          'save':self.game.save_player,
-                         'load':self.game.load_player}
+                         'load':self.game.load_player,
+                         'reload':self.game.reload}
             if cmd in file_cmds:
                 if (len(self.words) == 2):
                     filename = self.words[1]
                     file_cmds[cmd](filename)
                 else:
-                    self.write("Usage: %s <filename>" % cmd)                  
+                    self.write("Usage: %s <filename>" % cmd)
                 return True
             
         return False
