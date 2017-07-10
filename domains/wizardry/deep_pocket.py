@@ -4,6 +4,7 @@ from thing import Thing
 from container import Container
 from creature import NPC
 from player import Player
+from room import Room
 
 class DeepPocket(Container):
     def __init__(self, default_name, exit_loc, user, pref_id=None):
@@ -75,4 +76,14 @@ class DeepPocketSignUpWizard(NPC):
         customer.cons.write('Silemon says: "Your deep pocket is ready! Enjoy!"')
         self.serving_customer = False
         self.in_process = False
-        
+
+class VaultRoom(Room):
+    def heartbeat(self):
+        for i in self.contents:
+            if isinstance(i, Player):
+                for l in self.vaults:
+                    if l.user == i:
+                        i.move_to(l)
+vaults = VaultRoom("Vaults")
+vaults.set_description("vault entrance", "This small room serves as the entrence to all of the vaults.")
+

@@ -156,7 +156,7 @@ class CaveEntry(Room):
 #        if (Thing.ID_dict['cave moss'] or Thing.ID_dict['gold']) not in self.exits['in'].contents:
 
 cave_entrance = CaveEntry('cave mouth')
-lair.add_exit('east', cave)
-cave.add_exit('west', lair)
-cave_entrance.add_exit('in', cave)
+lair.add_exit('east', cave.id)
+cave.add_exit('west', lair.id)
+cave_entrance.add_exit('in', cave.id)
 cave.attach_monster(monster)

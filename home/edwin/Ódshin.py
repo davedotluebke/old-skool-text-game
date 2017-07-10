@@ -24,6 +24,6 @@ famlyroom.set_description("nice family room", "This is a nice family room with a
 dungeon.set_description("dungeon","This is a scary dungeon like the ones from movies. You are scared.")
 aviary.set_description("aviary", "This is a beutiful and large aviary. You see many birds and poles for them to perch on.")
 
-dock.add_exit('east', water1)
-dock.add_exit('west', water2)
-dock.add_exit('north', water3)
+dock.add_exit('east', water1.id)
+dock.add_exit('west', water2.id)
+dock.add_exit('north', water3.id)

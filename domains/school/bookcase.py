@@ -19,7 +19,7 @@ class Bookcase(Thing):
         if sDO in ['tattered book', 'old book']:
             cons.write('You pull on a book. ')
             self.emit('The bookcase shakes, and swings open, revealing a secret staircase leading down.')
-            self.location.add_exit('down', self.hidden_room)
+            self.location.add_exit('down', self.hidden_room.id)
             self.set_description('a bookcase door wide open to a secret staircase', 'This door is cleverly disguised as a bookcase. It is open, revealing a secret staircase leading down.')
             return True
         else:

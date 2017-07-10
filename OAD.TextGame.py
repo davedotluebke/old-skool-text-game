@@ -23,12 +23,12 @@ from book import Book
 game = Game()
 nulspace = Room('nulspace')         #"nulspace" is a room for objects that should be deleted. TODO: Automaticly delete items from nulspace every 10 heartbeats.
 nulspace.game = game
-nulspace.set_description('void', 'This is an empty void where dead and destroyd things go. Good luck getting out!')
+nulspace.set_description('void', 'This is an empty void where dead and destroyed things go. Good luck getting out!')
 nulspace.add_names('void')
-nulspace.add_exit('north', nulspace)
-nulspace.add_exit('south', nulspace)
-nulspace.add_exit('east', nulspace)
-nulspace.add_exit('west', nulspace)
+nulspace.add_exit('north', 'nulspace')
+nulspace.add_exit('south', 'nulspace')
+nulspace.add_exit('east', 'nulspace')
+nulspace.add_exit('west', 'nulspace')
 
 try:
     import domains.wizardry.galsbilly

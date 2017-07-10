@@ -119,6 +119,7 @@ class Room(Container):
                 cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
         else:
             cons.write("There are no obvious exits.")
+
     def enter(self, p, cons, oDO, oIDO):
         words = p.words
         del words[0]
@@ -150,7 +151,12 @@ class Room(Container):
         user = cons.user
         sExit = words[1]
         if sExit in list(self.exits):
-            dest = self.exits[sExit]
+            try:
+                dest = Thing.ID_dict[self.exits[sExit]]
+            except KeyError:
+                dbg.debug("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]))
+                cons.write("There was an internal error with the exit. ")
+                return True
             if cons.user.move_to(dest):
                 loc = user.location
                 verb = words[0]

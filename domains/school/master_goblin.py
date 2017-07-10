@@ -25,7 +25,7 @@ class PitRoom(Room):
                         self.long_desc = 'This is a crude pit. It is about 1/%s filled with water.' % self.water_level_den
                         i.perceive('The pit fills up more! The water is getting higher faster and faster!')
                     if self.water_level_den == 1 and not self.player_done:
-                        self.add_exit('up', Thing.ID_dict['waterfall'])
+                        self.add_exit('up', 'waterfall')
                         self.long_desc = 'This is a crude pit. It is completely full of water.'
                         self.player_done = True
                         if i.wizardry_element == 'water':
@@ -59,8 +59,8 @@ class Roots(Thing):
             self.open = True
             cons.write('To your suprise, when you put your hands on the roots you find you can make them part and open up in front of you.')
             cons.write('You feel an urge to find out more about this power, why it exits, and what it does for you.')
-            cons.write('You can now go west twords a waterfall.')
-            self.location.add_exit('west', Thing.ID_dict['waterfall'])
+            cons.write('You can now go west towards a waterfall.')
+            self.location.add_exit('west', 'waterfall')
             return True
         else:
             cons.write("You can't move the roots, they're very strong!")
