@@ -2,19 +2,9 @@ from debug import dbg
 import traceback
 
 from gameserver import Game
-from action import Action
 from thing import Thing
-from container import Container
 from room import Room  
-from creature import Creature 
-from creature import NPC
-from player import Player
 from console import Console
-from scenery import Scenery
-from liquid import Liquid
-from weapon import Weapon
-from armor import Armor
-from book import Book
 
 ## 
 ## "game" is a special global variable, an object of class Game that holds
