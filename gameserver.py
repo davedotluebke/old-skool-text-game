@@ -185,3 +185,9 @@ class Game():
             if not keep_going:
                 dbg.shut_down()
                 break
+
+    def clear_nulspace(self):
+        for i in self.nulspace.contents:
+            if not hasattr(i, 'cons'): #if it is not player
+                i.delete()
+        self.events.schedule(self.time+5, self.clear_nulspace)

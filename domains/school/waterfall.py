@@ -20,7 +20,7 @@ class PlaceChooser(Thing):
 		cons.write('You write %s on the paper and feel a magical shift occur.' % self.written_on)
 		del self.location.exits['west']
 		try:
-			self.location.exits['west'] = Thing.ID_dict[self.written_on]
+			self.location.exits['west'] = self.written_on
 		except KeyError:
 			cons.write('The text on the paper morphs back into the words "woods".')
 			self.written_on = 'woods'

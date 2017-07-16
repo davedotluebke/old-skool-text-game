@@ -3,6 +3,7 @@ from scenery import Scenery
 from container import Container
 from domains.school.transporter import TransportRoom
 from domains.wizardry.deep_pocket import DeepPocketSignUpWizard
+from domains.wizardry.gems import *
 
 central_fountain = Room('square', safe=True)
 government_entrences = Room('cobbled street', safe=True)
@@ -47,3 +48,12 @@ for i in range(1, 6):
     table.set_max_volume_carried(5000)
     table.set_max_weight_carried(150000)
     restraunt_one.insert(table)
+
+test_r = Ruby('ruby', 'normal ruby', 'This is a normal red ruby.')
+test_r.move_to(central_fountain)
+
+test_d = Diamond('diamond', 'normal diamond', 'This is a normal diamond.')
+test_d.move_to(central_fountain)
+
+test_o = Opal('opal', 'normal opal', 'This is a normal opal.')
+test_o.move_to(central_fountain)

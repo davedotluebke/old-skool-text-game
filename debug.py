@@ -40,10 +40,12 @@ class DebugLog():
             s = "Error tracing stack, s = %s" % s
         if level <= self.verbosity:
             print(s)
-        self.log.write("%s\n" % s)
+        if self.log:
+            self.log.write("%s\n" % s)
 
     def shut_down(self):
         """The function that closes down the DebugLog class and file."""
         self.log.close()
+        self.log = None
 
 dbg = DebugLog()

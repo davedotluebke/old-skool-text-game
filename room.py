@@ -18,25 +18,6 @@ class Room(Container):
         self.closable = False
         self.light = light  # Can see and perceive emits when light level > 0
         self.monster_safe = safe
-    
-    def __getstate__(self):
-        """Custom pickling code for Room to handle the exits dictionary.
-
-        During pickling, store the rooms in the exits dictionary as IDs
-        rather than objects. Note: after unpickling, another pass is 
-        required to replace the exit ID strings with the actual objects."""
-        state = super().__getstate__().copy()
-        del state['exits']
-        exitIDs = {}
-        for x in self.exits.keys():
-            exitIDs[x] = self.exits[x].id
-        state['exits'] = exitIDs
-        return state
-    
-    def _restore_objs_from_IDs(self):
-        super(Room, self)._restore_objs_from_IDs()
-        for e in self.exits:
-            self.exits[e] = Thing.ID_dict[self.exits[e]]
 
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room
@@ -132,7 +113,7 @@ class Room(Container):
             sEnter += i.lower()
             b = True
         if sEnter in list(self.enters):
-            dest = self.enters[sEnter]
+            dest = Thing.ID_dict[self.enters[sEnter]]
             if cons.user.move_to(dest):
                 loc = cons.user.location
                 cons.write("You enter %s" % sEnter.capitalize())
