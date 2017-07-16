@@ -19,7 +19,6 @@ from book import Book
 
 from domains.school.bookcase import Bookcase
 from domains.school.sink import Sink
-from domains.school.flashlight import Flashlight
 from domains.school.flower import Flower
 
 class Bed(Container):

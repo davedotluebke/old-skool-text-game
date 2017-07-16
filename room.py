@@ -16,7 +16,7 @@ class Room(Container):
         self.actions.append(Action(self.enter, ["enter"], True, False))
         self.fix_in_place("You can't move that!")
         self.closable = False
-        self.light = light  # Can see and perceive emits when light level > 0
+        self.default_light = light  # Can see and perceive emits when light level > 0
         self.monster_safe = safe
 
     def add_exit(self, exit_name, exit_room):
@@ -26,33 +26,18 @@ class Room(Container):
         self.enters[enter_name] = enter_room
 
     def is_dark(self):
-        return False if self.light > 0 else True
-        dbg.debug('light level is %s' % self.light, 1)
+        total_light = self.default_light
+        obj_list = self.contents[:]
+        for obj in obj_list:
+            if hasattr(obj, 'light'):
+                total_light += obj.light
+            # recursively check for lights inside containers or players
+            if isinstance(obj, Container) and (obj.see_inside or hasattr(obj, 'cons')):
+                if obj.contents: 
+                    obj_list += obj.contents 
+            dbg.debug('Room %s: light level is %s' % (self.id, total_light))
+        return (total_light <= 0)
         
-    def insert(self, obj):
-        if Container.insert(self, obj):
-            return True  # insert returns True if operation failed
-        
-        # insert succeeded; see if obj is or contains a light source
-        possible_lights = [obj]
-        for i in possible_lights:
-            self.light += i.emits_light  # i.emits_light is positive if object emits light, else 0
-            if hasattr(i, "see_inside") and i.see_inside: 
-                possible_lights += i.contents # recurse on i.contents
-        return False
-        
-    def extract(self, obj):
-        if Container.extract(self, obj): 
-            return True  # extract returns True if the operation failed
-        
-        # extract succeeded; see if obj is or contains a light source
-        possible_lights = [obj]
-        for i in possible_lights:
-            self.light -= i.emits_light  # i.emits_light is positive if object emits light, else 0
-            if hasattr(i, "see_inside") and i.see_inside:
-                possible_lights += i.contents
-        return False
-
     def look_at(self, p, cons, oDO, oIDO):
         """Print long description of room, list items (excluding this player) and exits"""
         dbg.debug("Called Room.look_at()")
@@ -65,11 +50,6 @@ class Room(Container):
             return True
         cons.write(self.long_desc)
         assert(cons.user in self.contents)  # current player should always be in the room 
-        #contents_minus_user = [i for i in self.contents if i is not cons.user]  XXX Code below is more efficient
-        #if contents_minus_user:
-        #    cons.write("Here you see:")
-        #    for item in contents_minus_user:
-        #        cons.write("\ta " + item.short_desc)
         if (len(self.exits) > 0):
             cons.write("Exits are:")
             for w in self.exits:

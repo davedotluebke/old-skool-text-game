@@ -63,38 +63,9 @@ class Ruby(Thing):
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)
 
     def heartbeat(self):
-        if self.power_num > 0:
-            self.power_num -= 1
-            if not self.emiting_light:
-                self.change_room_light(1)
-                self.emiting_light = True
-        else:
-            if self.emiting_light:
-                self.change_room_light(-1)
-                self.emiting_light = False
-        
-    def change_room_light(self, delta):
-        """Change light level in the containing room by delta. Call only when emit_light changes."""
-        loc = self.location
-        while loc:
-            if hasattr(loc, "light"):
-                # loc is a Room, increase it's light level
-                loc.light += delta
-                break
-            if loc.see_inside or (hasattr(loc, 'cons') and (self in loc.visible_inventory)):
-                # loc is a Container that passes light, recurse or loc is a Player using the ruby, recurse
-                loc = loc.location
-            else:
-                break
+        self.light = 1 if self.power_num > 0 else 0
+        self.power_num = self.power_num - 1 if self.power_num > 1 else 0
     
-    def move_to(self, dest):
-        if self.emiting_light:
-            self.change_room_light(-1)
-        re = super().move_to(dest)
-        if self.emiting_light:
-            self.change_room_light(1)
-        return re
-
 class Diamond(Thing):
     def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
         super().__init__(default_name, pref_id=None)
@@ -125,38 +96,10 @@ class Opal(Thing):
         self.set_description(short_desc, long_desc+' It is very dark in the center.')
         self.add_names('opal')
         self.power_num = power_num
-        self.emiting_dark = False
+        self.light = 0  # light is negative if powered, 0 otherwise (default 0)
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)
 
     def heartbeat(self):
-        if self.power_num > 0:
-            self.power_num -= 1
-            if not self.emiting_dark:
-                self.change_room_light(-1)
-                self.emiting_dark = True
-        else:
-            if self.emiting_dark:
-                self.change_room_light(1)
-                self.emiting_dark = False
+        self.light = -1 if self.power_num > 0 else 0
+        self.power_num = self.power_num - 1 if self.power_num > 1 else 0
         
-    def change_room_light(self, delta):
-        """Change light level in the containing room by delta. Call only when emit_light changes."""
-        loc = self.location
-        while loc:
-            if hasattr(loc, "light"):
-                # loc is a Room, increase it's light level
-                loc.light += delta
-                break
-            if loc.see_inside or (hasattr(loc, 'cons') and (self in loc.visible_inventory)):
-                # loc is a Container that passes light, recurse or loc is a Player using the opal, recurse
-                loc = loc.location
-            else:
-                break
-    
-    def move_to(self, dest):
-        if self.emiting_dark:
-            self.change_room_light(1)
-        re = super().move_to(dest)
-        if self.emiting_dark:
-            self.change_room_light(-1)
-        return re
