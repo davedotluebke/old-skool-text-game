@@ -4,6 +4,7 @@ from scenery import Scenery
 from domains.school.trapthings import TrapThing
 from creature import NPC
 from domains.school.master_goblin import MasterGoblin
+from domains.wizardry.gems import Emerald
 
 crawlway = Room('crawlway')
 dungeon_hall = Room('dungeon hall', pref_id='scrollchangeroom1')
@@ -77,7 +78,7 @@ gold.set_description('bunch of shiny gold coins', 'This is a collection of 50 sh
 gold.set_weight(74000)
 gold.move_to(trap)
 
-# Test Emerald, make magical and powerful later. Copied from an execute. 
-m = Thing('emerald'); m.set_description('nice emerald', 'This is a nice and magical emerald.'); m.move_to(trap)
+emerald = Emerald('emerald', "magical emerald", 'This is a magical green emerald.')
+emerald.move_to(trap)
 
 Thing.ID_dict['lair'].add_exit('northwest', crawlway.id)

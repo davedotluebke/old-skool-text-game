@@ -2,7 +2,7 @@ from debug import dbg
 from action import Action
 import random
 
-class Thing:
+class Thing(object):
     ID_dict = {}
 
     def _add_ID(self, preferred_id):
@@ -37,6 +37,17 @@ class Thing:
         self.spawn_location = None
         self.spawn_interval = None
         self.spawn_message = None
+    
+    def __del__(self):
+        dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id))
+    
+    def delete(self):
+        if self.contents:
+            for i in self.contents:
+                i.delete()
+        if self.location:
+            self.location.extract(self)
+        del Thing.ID_dict[self.id]
 
     def __str__(self): 
         return self.names[0]
@@ -87,7 +98,7 @@ class Thing:
             self.location = Thing.ID_dict[self.location]
         if self.contents != None:
             self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
-    
+
     def set_spawn(self, game, location, interval, message=None):
         self.spawn_state = self.__dict__.copy()
         self.spawn_location = location

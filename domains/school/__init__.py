@@ -11,6 +11,6 @@ import domains.school.dungeon
 cave.cave_entrance.add_aditional_vars(forest.forest_three.id, Thing.ID_dict['nulspace'].game)
 cave.cave.add_exit('east', forest.forest_three.id)
 cave.cave_entrance.add_exit('east', forest.forest_three.id)
-Thing.ID_dict['nulspace'].game.register_heartbeat(cave.cave.id)
+Thing.ID_dict['nulspace'].game.register_heartbeat(cave.cave)
 dungeon.crawlway.add_exit('southeast', cave.lair.id)
 forest.forest_three.add_exit('west', cave.cave_entrance.id)

@@ -29,6 +29,8 @@ nulspace.add_exit('north', 'nulspace')
 nulspace.add_exit('south', 'nulspace')
 nulspace.add_exit('east', 'nulspace')
 nulspace.add_exit('west', 'nulspace')
+game.events.schedule(game.time+5, game.clear_nulspace)
+game.nulspace = nulspace
 
 try:
     import domains.wizardry.galsbilly
@@ -42,7 +44,7 @@ except:
         import domains.school
     except:
         game.user.cons.write('The game is broken, sorry! Error below:')
-        cons.write(traceback.format_exc())
+        game.user.cons.write(traceback.format_exc())
         dbg.debug(traceback.format_exc())
         cons.write('\nDue to the problem with the above error, the game is closing.')
         try:
