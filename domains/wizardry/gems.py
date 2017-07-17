@@ -64,36 +64,20 @@ class Ruby(Thing):
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)
 
     def heartbeat(self):
-        self.light = 1 if self.power_num > 0 else 0
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
-        if self.power_num > 0:
-            self.power_num -= 1
         (head, sep, tail) = self.long_desc.partition(' It is ')
         if self.power_num >= 10:
             self.long_desc = head + ' It is briliantly glowing red.'
-            self.light = 3
+            self.light = 2
         elif self.power_num >= 5:
             self.long_desc = head + ' It is brightly glowing red.'
             self.light = 1
         elif self.power_num >= 2:
             self.long_desc = head + ' It is faintly glowing red.'
+            self.light = 0
         else:
             self.long_desc = head + ' It almost seems to glow, as if light was trapped inside.'
-        
-    def change_room_light(self, delta):
-        """Change light level in the containing room by delta. Call only when emit_light changes."""
-        loc = self.location
-        while loc:
-            if hasattr(loc, "light"):
-                # loc is a Room, increase it's light level
-                loc.light += delta
-                break
-            if loc.see_inside or (hasattr(loc, 'cons') and (self in loc.visible_inventory)):
-                # loc is a Container that passes light, recurse or loc is a Player using the ruby, recurse
-                loc = loc.location
-            else:
-                break
-    
+            
 class Diamond(Thing):
     def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
         super().__init__(default_name, pref_id=None)
@@ -128,16 +112,14 @@ class Opal(Thing):
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)
 
     def heartbeat(self):
-        self.light = -1 if self.power_num > 0 else 0
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
-        if self.power_num > 0:
-            self.power_num -= 1
-        (head, sep, tail) = self.long_desc.partition(' It is ')
-        if self.power_num <= 5:
+        (head, sep, tail) = self.long_desc.partition(' It ')
+        if self.power_num >= 5:
             self.long_desc = head + ' It is a swirl of colors, spinning and pulling the light into it.'
-            self.light = 1
-        elif self.power_num <= 2:
+            self.light = -1
+        elif self.power_num >= 2:
             self.long_desc = head + ' It seems like the surrouning light is going behind the swirl, trapped.'
+            self.light = 0
         else:
             self.long_desc = head + ' It is a swirl of colors that seem to draw light inside it.'
         
