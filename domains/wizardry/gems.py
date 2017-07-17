@@ -14,7 +14,7 @@ from action import Action
 class Emerald(Thing):
     def __init__(self, default_name, short_desc, long_desc, power_num=10, pref_id=None):
         super().__init__(default_name, pref_id=None)
-        self.set_description(short_desc, long_desc+' It is about %s inches in all dimentions.' % power_num)
+        self.set_description(short_desc, long_desc+' It is about %s milimeters in all dimentions.' % power_num)
         self.add_names('emerald')
         self.power_num = power_num
         self.actions.append(Action(self.move_power, ['power'], True, False))
@@ -25,7 +25,7 @@ class Emerald(Thing):
         gem.power_num += amt
         self.power_num -= amt
         (head, sep, tail) = self.long_desc.partition(' It is about')
-        self.long_desc = head + ' It is about %s inches in all dimentions.' % self.power_num
+        self.long_desc = head + ' It is about %s milimeters in all dimentions.' % self.power_num
         if self.power_num <= 0:
             self.emit('The emerald shrinks and vanishes!')
             self.move_to(Thing.ID_dict['nulspace'])
@@ -50,21 +50,49 @@ class Emerald(Thing):
             amt = int(amt)
         except ValueError:
             cons.parser.parse(cons.user, cons, amt)
+            return
         self.power_gem(gem, amt)
         cons.write("You feel the power moving from the emerald to the %s." % gem.short_desc)
 
 class Ruby(Thing):
     def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
         super().__init__(default_name, pref_id=None)
-        self.set_description(short_desc, long_desc+' It is faintly glowing red.')
+        self.set_description(short_desc, long_desc+' It almost seems to glow, as if light was trapped inside.')
         self.add_names('ruby')
         self.power_num = power_num
-        self.emiting_light = False
+        self.light = 0
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)
 
     def heartbeat(self):
         self.light = 1 if self.power_num > 0 else 0
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
+        if self.power_num > 0:
+            self.power_num -= 1
+        (head, sep, tail) = self.long_desc.partition(' It is ')
+        if self.power_num >= 10:
+            self.long_desc = head + ' It is briliantly glowing red.'
+            self.light = 3
+        elif self.power_num >= 5:
+            self.long_desc = head + ' It is brightly glowing red.'
+            self.light = 1
+        elif self.power_num >= 2:
+            self.long_desc = head + ' It is faintly glowing red.'
+        else:
+            self.long_desc = head + ' It almost seems to glow, as if light was trapped inside.'
+        
+    def change_room_light(self, delta):
+        """Change light level in the containing room by delta. Call only when emit_light changes."""
+        loc = self.location
+        while loc:
+            if hasattr(loc, "light"):
+                # loc is a Room, increase it's light level
+                loc.light += delta
+                break
+            if loc.see_inside or (hasattr(loc, 'cons') and (self in loc.visible_inventory)):
+                # loc is a Container that passes light, recurse or loc is a Player using the ruby, recurse
+                loc = loc.location
+            else:
+                break
     
 class Diamond(Thing):
     def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
@@ -93,7 +121,7 @@ class Diamond(Thing):
 class Opal(Thing):
     def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
         super().__init__(default_name, pref_id=None)
-        self.set_description(short_desc, long_desc+' It is very dark in the center.')
+        self.set_description(short_desc, long_desc+' It is a swirl of colors that seem to draw light inside it.')
         self.add_names('opal')
         self.power_num = power_num
         self.light = 0  # light is negative if powered, 0 otherwise (default 0)
@@ -102,4 +130,14 @@ class Opal(Thing):
     def heartbeat(self):
         self.light = -1 if self.power_num > 0 else 0
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
+        if self.power_num > 0:
+            self.power_num -= 1
+        (head, sep, tail) = self.long_desc.partition(' It is ')
+        if self.power_num <= 5:
+            self.long_desc = head + ' It is a swirl of colors, spinning and pulling the light into it.'
+            self.light = 1
+        elif self.power_num <= 2:
+            self.long_desc = head + ' It seems like the surrouning light is going behind the swirl, trapped.'
+        else:
+            self.long_desc = head + ' It is a swirl of colors that seem to draw light inside it.'
         
