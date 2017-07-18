@@ -7,7 +7,10 @@
 # [ ] saphire - allows people other than sky wizards to fly in nearby areas
 # note that there are also other unique gems, such as the emerald of life, which have different powers than normal gems and are not listed here.
 
+import random
+
 from thing import Thing
+from container import Container
 from player import Player
 from action import Action
 # Gem is a generic base class for all gems, used for isinstance() and other internal functions.
@@ -28,6 +31,9 @@ class Emerald(Gem):
             amt = self.power_num
         gem.power_num += amt
         self.power_num -= amt
+        self.adjust_description()
+
+    def adjust_description(self):
         (head, sep, tail) = self.long_desc.partition(' It is about')
         self.long_desc = head + ' It is about %s milimeters in all dimentions.' % self.power_num
         if self.power_num <= 0:
@@ -57,6 +63,45 @@ class Emerald(Gem):
             return
         self.power_gem(gem, amt)
         cons.write("You feel the power moving from the emerald to the %s." % gem.short_desc)
+
+class Jade(Gem):
+    def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
+        super().__init__(default_name, short_desc, long_desc+' It seems as almost as if it were somewhere else.', power_num, pref_id)
+        self.add_names('jade')
+        Thing.ID_dict['nulspace'].game.register_heartbeat(self)
+
+    def heartbeat(self):
+        if self.power_num > 0:
+            for i in self.location.contents:
+                if isinstance(i, Player):
+                    i.cons.write('Where would you like to send this power? Type the true name of the place you want to send the power below:')
+                    sLoc = i.cons.take_input('-> ')
+                    try:
+                        loc = Thing.ID_dict[sLoc]
+                    except KeyError:
+                        i.cons.parser.parse(sLoc)
+                        return
+                    self.send_power(loc)
+                    return
+            loc = random.choice(Thing.ID_dict)
+            self.send_power(loc)
+    
+    def send_power(self, loc):
+        if not loc.contents:
+            loc = random.choice([x for x in Thing.ID_dict if isinstance(x, Container)])
+        objs = loc.contents
+        while self.power_num > 0:
+            obj = random.choice(objs)
+            if isinstance(obj, Gem):
+                obj.power_num += 1
+                self.power_num -= 1
+                if isinstance(obj, Emerald):
+                    obj.adjust_description()
+            if isinstance(obj, Container):
+                objs.append(obj.contents)
+            del objs[objs.index(obj)]
+            if not objs:
+                break
 
 class Ruby(Gem):
     def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
