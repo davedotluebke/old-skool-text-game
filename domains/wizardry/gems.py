@@ -10,13 +10,17 @@
 from thing import Thing
 from player import Player
 from action import Action
-
-class Emerald(Thing):
-    def __init__(self, default_name, short_desc, long_desc, power_num=10, pref_id=None):
-        super().__init__(default_name, pref_id=None)
-        self.set_description(short_desc, long_desc+' It is about %s milimeters in all dimentions.' % power_num)
-        self.add_names('emerald')
+# Gem is a generic base class for all gems, used for isinstance() and other internal functions.
+class Gem(Thing):
+    def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
+        super().__init__(default_name, pref_id)
         self.power_num = power_num
+        self.set_description(short_desc, long_desc)
+
+class Emerald(Gem):
+    def __init__(self, default_name, short_desc, long_desc, power_num=10, pref_id=None):
+        super().__init__(default_name, short_desc, long_desc+' It is about %s milimeters in all dimentions.' % power_num, power_num, pref_id)
+        self.add_names('emerald')
         self.actions.append(Action(self.move_power, ['power'], True, False))
     
     def power_gem(self, gem, amt):
@@ -31,11 +35,11 @@ class Emerald(Thing):
             self.move_to(Thing.ID_dict['nulspace'])
     
     def move_power(self, p, cons, oDO, oIDO):
-        if oDO == self and hasattr(oIDO, "power_num"):
+        if oDO == self and isinstance(oIDO, Gem):
             self.find_amount(cons, oIDO)
-        elif oIDO == self and hasattr(oDO, 'power_num'):
+        elif oIDO == self and isinstance(oDO, Gem):
             self.find_amount(cons, oDO)
-        elif oIDO == None and oDO != self and hasattr(oDO, 'power_num'):
+        elif oIDO == None and oDO != self and isinstance(oDO, Gem):
             self.find_amount(cons, oDO)
         elif oIDO == None and oDO == self:
             return "Did you mean to put power into the emerald?"
@@ -54,18 +58,16 @@ class Emerald(Thing):
         self.power_gem(gem, amt)
         cons.write("You feel the power moving from the emerald to the %s." % gem.short_desc)
 
-class Ruby(Thing):
+class Ruby(Gem):
     def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
-        super().__init__(default_name, pref_id=None)
-        self.set_description(short_desc, long_desc+' It almost seems to glow, as if light was trapped inside.')
+        super().__init__(default_name, short_desc, long_desc+' It almost seems to glow, as if light was trapped inside.', power_num, pref_id)
         self.add_names('ruby')
-        self.power_num = power_num
         self.light = 0
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)
 
     def heartbeat(self):
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
-        (head, sep, tail) = self.long_desc.partition(' It is ')
+        (head, sep, tail) = self.long_desc.partition(' It ')
         if self.power_num >= 10:
             self.long_desc = head + ' It is briliantly glowing red.'
             self.light = 2
@@ -78,12 +80,10 @@ class Ruby(Thing):
         else:
             self.long_desc = head + ' It almost seems to glow, as if light was trapped inside.'
             
-class Diamond(Thing):
+class Diamond(Gem):
     def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
-        super().__init__(default_name, pref_id=None)
-        self.set_description(short_desc, long_desc+' It is crystal clear.')
+        super().__init__(default_name, short_desc, long_desc+' It is crystal clear.', power_num, pref_id)
         self.add_names('diamond')
-        self.power_num = power_num
         self.hiding_user = False
         self.user = None
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)
@@ -96,18 +96,20 @@ class Diamond(Thing):
                     self.location.invisible = True
                     self.user = self.location
                     self.hiding_user = True
+                    self.user.cons.write("You notice yourself fading. ")
+                    self.user.emit("%s suddenly dissapears!" % self.user, ignore=[self.user])
         else:
             if self.hiding_user:
                 self.user.invisible = False
+                self.user.cons.write("You notice yourself fading back into visibility.")
+                self.user.emit("%s suddenly appears!" % self.user, ignore=[self.user])
                 self.hiding_user = False
                 self.user = None
 
-class Opal(Thing):
+class Opal(Gem):
     def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
-        super().__init__(default_name, pref_id=None)
-        self.set_description(short_desc, long_desc+' It is a swirl of colors that seem to draw light inside it.')
+        super().__init__(default_name, short_desc, long_desc+' It is a swirl of colors that seem to draw light inside it.', power_num, pref_id=None)
         self.add_names('opal')
-        self.power_num = power_num
         self.light = 0  # light is negative if powered, 0 otherwise (default 0)
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)
 
