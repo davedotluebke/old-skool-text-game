@@ -1,7 +1,18 @@
+import importlib
+
 from debug import dbg
 from thing import Thing
 from container import Container
 from action import Action
+
+def check_loaded(roomPath):
+        '''Check whether a room exists (i.e., has been created and inserted into Thing_ID.dict[]).
+        Takes roomPath, the file of the room module as returned by gametools.findGamePath().
+        Returns a reference to the room, or False if the room does not yet exist.'''
+        if roomPath in Thing.ID_dict:
+            return Thing.ID_dict[roomPath]
+        else:
+            return False
 
 class Room(Container):
     def __init__(self, default_name, light=1, safe=False, pref_id=None):
@@ -107,13 +118,13 @@ class Room(Container):
 
     def go_to(self, p, cons, oDO, oIDO):
         words = p.words
-        dbg.debug("verb function go_to: words == ")
-        dbg.debug(str(words))
         user = cons.user
-        sExit = words[1]
+        sExit = words[1]  
         if sExit in list(self.exits):
             try:
-                dest = Thing.ID_dict[self.exits[sExit]]
+                destFile = self.exits[sExit]  # filename of the destination room module
+                destMod = importlib.import_module(destFile)  # python module of the destination room
+                dest = destMod.load()
             except KeyError:
                 dbg.debug("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]))
                 cons.write("There was an internal error with the exit. ")

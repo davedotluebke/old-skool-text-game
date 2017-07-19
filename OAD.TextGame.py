@@ -1,5 +1,6 @@
-from debug import dbg
+import importlib
 import traceback
+from debug import dbg
 
 from gameserver import Game
 from thing import Thing
@@ -23,11 +24,11 @@ game.events.schedule(game.time+5, game.clear_nulspace)
 game.nulspace = nulspace
 
 try:
-    import domains.wizardry.galsbilly
+    #import domains.wizardry.galsbilly
 
     import domains.school
 
-    import home.owen.house
+    #import home.owen.house
 except:
     dbg.debug(traceback.format_exc())
     try:
@@ -43,10 +44,13 @@ except:
             dbg.debug(traceback.format_exc())
             cons.write('NOTHING IS WORKING. THE GAME IS BROKEN. PLEASE COME AGAIN LATER AFTER THIS ISSUE IS RESOLVED.')
 
-Thing.ID_dict['great hall'].insert(game.user)
+start_room_mod = importlib.import_module('domains.school.school.great_hall')
+start_room = start_room_mod.load()
+start_room.insert(game.user)
+
 Thing.ID_dict['scroll'].move_to(game.user)
 game.register_heartbeat(Thing.ID_dict['scroll'])
-game.user.set_start_loc = Thing.ID_dict['great hall']
+game.user.set_start_loc = start_room
 game.user.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
 "Type 'look' to examine your surroundings or an object, "
 "'inventory' to see what you are carrying, " 
