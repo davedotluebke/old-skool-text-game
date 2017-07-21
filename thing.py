@@ -1,6 +1,7 @@
 from debug import dbg
 from action import Action
 import random
+import gametools
 
 class Thing(object):
     ID_dict = {}
@@ -16,7 +17,8 @@ class Thing(object):
         Thing.ID_dict[self.id] = self
         return self.id
 
-    def __init__(self, default_name, pref_id=None):
+    def __init__(self, default_name, path, pref_id=None):
+        self.path = gametools.findGamePath(path) if path else None
         self.names = [default_name]
         self._add_ID(default_name if not pref_id else pref_id)
         self.plural = False         # should this thing be treated as plural?
@@ -99,25 +101,25 @@ class Thing(object):
         if self.contents != None:
             self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
 
-    def set_spawn(self, game, location, interval, message=None):
-        self.spawn_state = self.__dict__.copy()
-        self.spawn_location = location
-        self.spawn_interval = interval
-        self.spawn_message = message
-        game.events.schedule(game.time+self.spawn_interval, self.spawn, game)
+    # def set_spawn(self, game, location, interval, message=None):
+    #     self.spawn_state = self.__dict__.copy()
+    #     self.spawn_location = location
+    #     self.spawn_interval = interval
+    #     self.spawn_message = message
+    #     game.events.schedule(game.time+self.spawn_interval, self.spawn, game)
 
-    def spawn(self, game):
-        game.events.schedule(game.time+self.spawn_interval, self.spawn, game)
-        for i in self.spawn_location.contents:
-            if i.names[0] == self.names[0]:
-                return
-        self.spawning = Thing(self.id)
-        tmp_id = self.spawning.id
-        self.spawning.__dict__.update(self.spawn_state)
-        self.spawning.id = tmp_id
-        self.spawning.move_to(self.spawn_location)
-        if self.spawn_message:
-            self.emit(self.spawn_message)
+    # def spawn(self, game):
+    #     game.events.schedule(game.time+self.spawn_interval, self.spawn, game)
+    #     for i in self.spawn_location.contents:
+    #         if i.names[0] == self.names[0]:
+    #             return
+    #     self.spawning = Thing(self.id)
+    #     tmp_id = self.spawning.id
+    #     self.spawning.__dict__.update(self.spawn_state)
+    #     self.spawning.id = tmp_id
+    #     self.spawning.move_to(self.spawn_location)
+    #     if self.spawn_message:
+    #         self.emit(self.spawn_message)
 
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""

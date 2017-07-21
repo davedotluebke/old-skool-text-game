@@ -29,8 +29,8 @@ lair.set_description('monster\'s lair', 'This is a lair where the terrible monst
 lair.add_adjectives("monster's")
 
 class CaveRoom(Room):
-    def __init__(self, ID):
-        Room.__init__(self, ID, light=0)
+    def __init__(self, ID, path):
+        Room.__init__(self, ID, path, light=0)
         self.monster_storage = lair
         self.released_monster = False
         self.create_cave_moss()
@@ -102,8 +102,8 @@ cave.set_description('terrifying dark cave', 'This is one of the most scary cave
 cave.add_adjectives('scary', 'dark', 'terrifying')
 
 class CaveEntry(Room):
-    def __init__(self, ID):
-        Room.__init__(self, ID)
+    def __init__(self, ID, path):
+        Room.__init__(self, ID, path)
         self.set_description('terrifying dark cave mouth', 'This is one of the most scary caves you have ever been seen. You are anxiously looking around to see if there are any monsters.')
         self.add_adjectives('scary', 'dark', 'terrifying')
         self.in_entry_user = 0

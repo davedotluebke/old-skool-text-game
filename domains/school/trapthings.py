@@ -2,8 +2,8 @@ from thing import Thing
 from room import Room
 
 class TrapThing(Thing):
-    def __init__(self, default_name, trap_message, trap_location, ID):
-        super().__init__(default_name, ID)
+    def __init__(self, default_name, path, trap_message, trap_location, ID):
+        super().__init__(default_name, path, ID)
         self.trap_message = trap_message
         self.trap_location = trap_location
     

@@ -6,7 +6,7 @@ from weapon import Weapon
 from armor import Armor
 
 class Creature(Container):
-    def __init__(self, default_name, pref_id=None):
+    def __init__(self, default_name, path, pref_id=None):
         Container.__init__(self, default_name, pref_id)
         self.closed = True
         self.closable = False
@@ -19,8 +19,8 @@ class Creature(Container):
         self.combat_skill = 0
         self.strength = 0
         self.dexterity = 1
-        self.default_weapon = Weapon("bare hands", 1, 5, 1)
-        self.default_armor = Armor("skin", 0, 0)
+        self.default_weapon = Weapon("bare hands", None, 1, 5, 1)
+        self.default_armor = Armor("skin", path, 0, 0)
         self.weapon_wielding = self.default_weapon
         self.armor_worn = self.default_armor
         self.closed_err = "You can't put things in creatures!"

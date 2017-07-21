@@ -3,8 +3,8 @@ from thing import Thing
 from action import Action
 
 class Container(Thing):
-    def __init__(self, default_name, pref_id=None):
-        Thing.__init__(self, default_name, pref_id)
+    def __init__(self, default_name, path, pref_id=None):
+        Thing.__init__(self, default_name, path, pref_id)
         self.contents = []
         self.see_inside = True      # can contents of container be seen? 
         self.closed = False         # can't remove items from closed container
@@ -28,6 +28,21 @@ class Container(Thing):
         [in, into, inside]. The first preposition given will be used in messages
         and should be the most common. """
         self.insert_prepositions = list(preps)
+
+    def set_spawn(self, path, interval):
+        Thing.ID_dict['nulspace'].game.events.schedule(Thing.ID_dict['nulspace'].game.time+interval, self.spawn_obj, (path, interval, Thing.ID_dict['nulspace'].game))
+
+    def spawn_obj(self, info):
+        path = info[0]
+        interval = info[1]
+        game = info[2]
+        Thing.ID_dict['nulspace'].game.events.schedule(game.time+interval, self.spawn_obj, (path, interval, game))
+        for i in self.contents:
+            if i.path == path:
+                return
+        import path as obj_file
+        obj = obj_file.clone()
+        self.insert(obj)
 
     def insert(self, obj):
         """Put obj into this Container object, returning True if the operation failed"""

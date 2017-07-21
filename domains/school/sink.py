@@ -5,8 +5,8 @@ from action import Action
 from liquid import Liquid
 
 class Sink(Thing):
-    def __init__(self, ID):
-        Thing.__init__(self, ID)
+    def __init__(self, ID, path):
+        Thing.__init__(self, ID, path)
         self.set_description('metal sink', 'This is an old metal sink, probably from the 1960s and nothing seems wrong with it.')
         self.fix_in_place("You can't take the sink!")
         self.actions.append(Action(self.fill_container, ["fill"], True, False))

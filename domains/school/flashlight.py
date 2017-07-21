@@ -3,8 +3,8 @@ from thing import Thing
 from action import Action
 
 class Flashlight(Thing):
-    def __init__(self, default_name):
-        Thing.__init__(self, default_name)
+    def __init__(self, default_name, path):
+        Thing.__init__(self, default_name, path)
         self.light = 0
         self.actions.append(Action(self.activate, ["activate", "turn"], True, True))
         self.actions.append(Action(self.put_away, ["hide"], True, True))

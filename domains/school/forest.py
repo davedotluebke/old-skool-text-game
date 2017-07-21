@@ -264,3 +264,6 @@ leather_suit.add_names('hide','suit')
 
 leather_suit.move_to(bedroom)
 sword.move_to(bedroom)
+
+Thing.ID_dict['field'].add_exit('northeast', grand_entry.id)
+Thing.ID_dict['garden'].add_exit('southeast', grand_entry.id)

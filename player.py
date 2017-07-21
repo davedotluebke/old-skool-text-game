@@ -9,9 +9,9 @@ from action import Action
 from debug import dbg
 
 class Player(Creature):
-    def __init__(self, ID, console):
+    def __init__(self, ID, path, console):
         """Initialize the Player object and attach a console"""
-        Creature.__init__(self, ID)
+        Creature.__init__(self, ID, path)
         self.cons = console
         self.start_loc_id = None
         self.set_weight(175/2.2)

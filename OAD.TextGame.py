@@ -1,6 +1,7 @@
 import importlib
 import traceback
 from debug import dbg
+import gametools
 
 from gameserver import Game
 from thing import Thing
@@ -24,9 +25,10 @@ game.events.schedule(game.time+5, game.clear_nulspace)
 game.nulspace = nulspace
 
 try:
+    pass
     #import domains.wizardry.galsbilly
 
-    import domains.school
+    #import domains.school
 
     #import home.owen.house
 except:
@@ -48,6 +50,7 @@ start_room_mod = importlib.import_module('domains.school.school.great_hall')
 start_room = start_room_mod.load()
 start_room.insert(game.user)
 
+gametools.clone('domains.school.school.scroll_obj')
 Thing.ID_dict['scroll'].move_to(game.user)
 game.register_heartbeat(Thing.ID_dict['scroll'])
 game.user.set_start_loc = start_room

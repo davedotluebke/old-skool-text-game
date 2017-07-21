@@ -15,7 +15,7 @@ class Game():
     def __init__(self):
         self.heartbeat_users = []
         self.cons = Console(game = self)
-        self.user = Player("Joe Test", self.cons)
+        self.user = Player("Joe Test", None, self.cons)
         self.user.set_description('Joe Test', 'Our test player named Joe')
         self.user.set_max_weight_carried(750000)
         self.user.set_max_volume_carried(2000)

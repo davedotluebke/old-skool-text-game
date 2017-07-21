@@ -11,4 +11,8 @@ def load():
     great_hall.add_names('hall', 'chamber')
     great_hall.add_adjectives('grand', 'enormous')
     great_hall.add_exit('west', 'domains.school.school.grand_entry')
+    great_hall.add_exit('east', 'domains.school.school.landing')
+
+    table = gametools.clone('domains.school.school.banquet_table')
+    great_hall.insert(table)
     return great_hall

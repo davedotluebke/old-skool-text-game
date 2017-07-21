@@ -13,8 +13,8 @@ class Cauldron(Container):
                ({'poppyseed', 'truffles', 'cave moss'}, 'explode'),
                ({'molasses', 'dragon scale', 'poppyseed'}, 'strength potion')]
 
-    def __init__(self, default_name, pref_id=None):
-        super().__init__(default_name, pref_id)
+    def __init__(self, default_name, path, pref_id=None):
+        super().__init__(default_name, path, pref_id)
         self.liquid = True
 
     def insert(self, obj):
