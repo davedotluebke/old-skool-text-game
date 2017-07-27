@@ -1,4 +1,5 @@
 import random
+import gametools
 from debug import dbg
 from thing import Thing
 from container import Container
@@ -164,9 +165,9 @@ class NPC(Creature):
         self.aggressive = aggressive
         self.act_frequency = 3  # how many heartbeats between NPC actions
         self.act_soon = 0       # how many heartbeats till next action
-        self.choices = ['move_around', 'talk']  # list of things NPC might do
+        self.choices = [self.move_around, self.talk]  # list of things NPC might do
         if self.aggressive:     # aggressive: 0 = will never attack anyone, even if attacked by them. Will flee. 1 = only attacks enemies. 2 = attacks anyone. highly aggressive.
-            self.choices.append('attack_enemy')
+            self.choices.append(self.attack_enemy)
         # list of strings that the NPC might say
         self.scripts = []
         self.current_script = None
@@ -181,7 +182,6 @@ class NPC(Creature):
 
     def heartbeat(self):
         self.act_soon += 1
-        dbg.debug('beat')
         if self.act_soon >= self.act_frequency or (set(self.enemies) & set(self.location.contents)) or self.attacking:
             acting = False
             self.act_soon = 0
@@ -212,10 +212,12 @@ class NPC(Creature):
             if not acting:           # otherwise pick a random action
                 choice = random.choice(self.choices)
                 try:
-                    choice_fn = getattr(self, choice)
-                    choice_fn()
-                except AttributeError:
-                    dbg.debug("Object "+self.id+" heartbeat tried to run non-existant action choice "+choice+"!")
+                    try:
+                        choice()
+                    except TypeError:
+                        choice(self)
+                except NameError:
+                    dbg.debug("Object "+str(self.id)+" heartbeat tried to run non-existant action choice "+str(choice)+"!")
             
     def move_around(self):
         """The NPC leaves the room, taking a random exit"""
@@ -228,10 +230,10 @@ class NPC(Creature):
 
         dbg.debug("Trying to move to the %s exit!" % (exit))
         current_room = self.location
-        new_room = self.location.exits[exit]
+        new_room_string = self.location.exits[exit]
+        new_room = gametools.load_room(new_room_string)
         if new_room.monster_safe:
             dbg.debug('Can\'t go to a %s, monster safe room!' % new_room)
-            self.move_around()
             return
  
         self.emit("The %s goes %s." % (self, exit))
