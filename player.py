@@ -1,12 +1,14 @@
 import pickle
 import sys
 
+import gametools
+from debug import dbg
+
 from thing import Thing
 from room import Room
 from creature import Creature
 from action import Action
 
-from debug import dbg
 
 class Player(Creature):
     def __init__(self, ID, path, console):
@@ -149,23 +151,49 @@ class Player(Creature):
         return True                    
 
     def clone(self, p, cons, oDO, oIDO):
-        pass
+        '''Clone a new copy of an object specified by ID or by module path, and bring it to the player.'''
+        if len(p.words) < 2: 
+            cons.write("Usage:\n\t'clone <id>', where id is an entry in Thing.ID_dict[]"
+                       "\n\t'clone <path>', where path is of the form 'domains.school.test_object'")
+            return True
+        id = " ".join(p.words[1:])
+        try:
+            current_obj = Thing.ID_dict[id]
+            objpath = current_obj.path
+        except KeyError: 
+            objpath = id
+        obj = gametools.clone(objpath)
+        if obj == None:
+            return "There seems to be no object with true name '%s'!" % id
+        if obj.move_to(self) == False:
+            if obj.move_to(self.location) == False:
+                cons.write("You attempt to clone the %s but somehow cannot bring it to this place." % obj.names[0])
+            else:
+                cons.write("You perform a magical incantation and bring the %s to this place!" % obj.names[0])
+        else:
+            cons.write("You perform a magical incantation and the %s appears in your hands!" % obj.names[0])
+        self.emit("%s performs a magical incantation, and you sense something has changed." % self.names[0], [self])
+        
+        return True                    
+
     
     def apparate(self, p, cons, oDO, oIDO):
         if len(p.words) < 2: 
-            cons.write("Usage: 'apparate <id>', where id is the entry of a Room in Thing.ID_dict[]")
+            cons.write("Usage: 'apparate <id>', where id is the entry of a Room in Thing.ID_dict[] or a path to it's module")
             return True
         id = " ".join(p.words[1:])
         try:
             room = Thing.ID_dict[id]
-            if isinstance(room, Room) == False:
-                    cons.write("You cannot apparate to %s; that is not a place!" % room.names[0])
-                    return True
-            self.emit("%s performs a magical incantation, and vanishes!" % self.names[0], [self])
-            self.move_to(room)
-            self.emit("%s arrives suddenly, as if by magic!" % self.names[0], [self])
         except KeyError: 
-            return "There seems to be no place with true name '%s'!" % id
+            room = gametools.load_room(id)
+        if room == None:
+            return "There seems to be no place with id (or path) '%s'!" % id
+        if isinstance(room, Room) == False:
+                cons.write("You cannot apparate to %s; that is not a place!" % room.names[0])
+                return True
+        self.emit("%s performs a magical incantation, and vanishes!" % self.names[0], [self])
+        self.move_to(room)
+        self.emit("%s arrives suddenly, as if by magic!" % self.names[0], [self])
         cons.write("You perform a magical incantation and are suddenly in a new place!")
         room.report_arrival(self)
         return True             

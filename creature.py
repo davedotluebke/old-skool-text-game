@@ -159,8 +159,8 @@ class Creature(Container):
             self.attack_now += 1
 
 class NPC(Creature):
-    def __init__(self, ID, g, aggressive=0, pref_id=None):
-        Creature.__init__(self, ID)
+    def __init__(self, ID, path, g, aggressive=0, pref_id=None):
+        Creature.__init__(self, ID, path)
         self.aggressive = aggressive
         self.act_frequency = 3  # how many heartbeats between NPC actions
         self.act_soon = 0       # how many heartbeats till next action

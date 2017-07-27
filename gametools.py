@@ -22,6 +22,22 @@ def clone(obj_module):
         dbg.debug("Error cloning from module %s: clone() return None" % obj_module)
     return obj
 
+def load_room(modpath):
+    """Attempt to load a room from its modpath (e.g. 'domains.school.testroom'). 
+    Returns a reference to the room, or None if the given modpath could not be loaded."""
+    try: 
+        mod = importlib.import_module(modpath)
+        room = mod.load()  # TODO: allow pass-through parameters
+    except ImportError:
+        dbg.debug("Error importing room module %s" % modpath, 0)
+        return None
+    except AttributeError:
+        dbg.debug("Error loading from room module %s: no load() method" % modpath)
+        return None
+    if room == None:
+        dbg.debug("Error cloning from room module %s:load() returned None" % modpath)
+    return room
+    
 def findGamePath(filepath):
     gamePath = os.path.relpath(filepath, gameroot).replace("\\", ".").replace("/", ".")
     (head, sep, tail) = gamePath.partition(".py")

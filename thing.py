@@ -191,6 +191,9 @@ class Thing(object):
         Returns True if the move succeds. If the insertion fails, attempts to 
         re-insert into the original location and returns False."""
         origin = self.location
+        if self.fixed:
+            if not hasattr(dest, 'exits'):
+                return False # cannot move an object that is fixed in place
         if origin:
             origin.extract(self)
         # if cannot insert into destination, return to where it came from
