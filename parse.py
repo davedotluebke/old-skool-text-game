@@ -6,13 +6,16 @@ from container import Container
 from player import Player
 
 class Parser:
-    def _toggle_verbosity(self, cons):
+    def _set_verbosity(self, level=-1):
+        if level != -1:
+            dbg.verbosity = level
+            return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity)
         if dbg.verbosity == 0:
             dbg.verbosity = 1
-            cons.write("Verbose debug output now on.")
+            return "Verbose debug output now on, verbosity level %s." % dbg.verbosity
         else:
             dbg.verbosity = 0
-            cons.write("Verbose debug output now off.")
+            return "Verbose debug output now off."
 
     def diagram_sentence(self, words):
         """Categorize sentence type and set verb, direct/indirect object strings.
@@ -84,7 +87,7 @@ class Parser:
 
             if match:   # name & all adjectives match
                 matched_objects.append(obj)
-        dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects))        
+        dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects), 3)        
         if len(matched_objects) > 1:
             candidates = ", or ".join(o.short_desc for o in matched_objects)
             cons.write("By '%s', do you mean %s?" % (sObj, candidates))
@@ -100,11 +103,6 @@ class Parser:
         """Parse and enact the user's command. Return False to quit game."""     
         if command == 'quit': 
             return False
-        
-        if command == 'verbose':
-            self._toggle_verbosity(console)
-            return True
-
         if command == "new user" or command == "add user":
             console.new_user()
             return True
@@ -115,6 +113,18 @@ class Parser:
                 self.words = ["read", "next", "page"]
             else:
                 return True
+
+        if self.words[0] == 'verbose':
+            try:
+                level = int(self.words[1])
+            except IndexError:
+                console.write(self._set_verbosity())
+                return True
+            except ValueError:
+                console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>")
+                return True
+            console.write(self._set_verbosity(level))
+            return True
         
         # remove articles and convert to lowercase, unless the command 
         # requires the exact user text:
@@ -156,7 +166,7 @@ class Parser:
                 console.write("Parse error: can't find any object supporting transitive verb %s!" % sV)
             # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
             return True
-        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects))
+        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
 
         # NEXT, find objects that match the direct & indirect object strings    
         if sDO: 
@@ -188,8 +198,8 @@ class Parser:
                 console.write('An error has occured. Please bear with us while we fix this. Please do not try this action again.')
                 console.write(traceback.format_exc())
                 console.write('Continue your game as normal.')
-                dbg.debug(traceback.format_exc())
-                dbg.debug("Error caught!")
+                dbg.debug(traceback.format_exc(), 0)
+                dbg.debug("Error caught!", 0)
                 result = True       # we don't want the parser to go and do an action they probably didn't
             if result == True:      # mean to do if there is a bug in the one they did mean to do
                 break               # verb has been enacted, all done!

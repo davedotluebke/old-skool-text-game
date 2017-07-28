@@ -46,20 +46,18 @@ class Container(Thing):
 
     def insert(self, obj):
         """Put obj into this Container object, returning True if the operation failed"""
-        dbg.debug("in insert")
         # error checking for max weight etc goes here
         if obj == self:
             dbg.debug('Trying to insert into self - not allowed!')
             return True
         contents_weight = 0
         contents_volume = 0
-        dbg.debug("going to start looping")
         for w in self.contents:
             contents_weight = contents_weight + w.weight
             contents_volume = contents_volume + w.volume
-        dbg.debug("done looping - carrying %d weight and %d volume" % (contents_weight, contents_volume))
+        dbg.debug("insert(): %s currently carrying %d weight and %d volume" % (self.id, contents_weight, contents_volume), 3)
         if self.max_weight_carried >= contents_weight+obj.weight and self.max_volume_carried >= contents_volume+obj.volume:
-            dbg.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.weight, obj.volume))
+            dbg.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.weight, obj.volume), 3)
             obj.set_location(self)   # make this container the location of obj
             self.contents.append(obj)
             return False
@@ -67,7 +65,7 @@ class Container(Thing):
             dbg.debug("The weight(%d) and volume(%d) of the %s can't be held by the %s, "
                   "which can only carry %d grams and %d liters (currently "
                   "holding %d grams and %d liters)" 
-                  % (obj.weight, obj.volume, obj.id, self.id, self.max_weight_carried, self.max_volume_carried, contents_weight, contents_volume))
+                  % (obj.weight, obj.volume, obj.id, self.id, self.max_weight_carried, self.max_volume_carried, contents_weight, contents_volume), 2)
             return True
 
     def set_max_weight_carried(self, max_grams_carried):
@@ -79,7 +77,7 @@ class Container(Thing):
     def extract(self, obj):
         """Remove obj from this Container, returning True if the operation failed"""
         if obj not in self.contents:
-            dbg.debug("Error! "+str(self)+" doesn't contain item "+str(obj.id))
+            dbg.debug("Error! "+str(self)+" doesn't contain item "+str(obj.id), 0)
             return True
         
         found = -1
@@ -91,7 +89,6 @@ class Container(Thing):
         del self.contents[i]
 
     def look_at(self, p, cons, oDO, oIDO):
-        dbg.debug("Called Container.look_at()")
         result = Thing.look_at(self, p, cons, oDO, oIDO)
         if result != True:
             return result

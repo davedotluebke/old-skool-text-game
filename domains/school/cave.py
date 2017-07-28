@@ -123,33 +123,31 @@ class CaveEntry(Room):
             cons.write('You convince yourself to enter the scary cave.')
             cons.user.emit('%s slowly enters the cave, visibly shaking.' % cons.user)
             Room.go_to(self, p, cons, oDO, oIDO)
-            dbg.debug('%s slowly enters the cave, visibly shaking. The DebugLog says that the cave is scary, because it was meant to be.' % cons.user.id)
             return True
         else:
             cons.write('Entering the cave is very scary, and you have a hard time convincing yourself to go in.')
             if cons != None:
                 self.last_cons = cons
-                dbg.debug('self.last_cons was just set to %s, %s' % (self.last_cons, cons))
+                dbg.debug('self.last_cons was just set to %s, %s' % (self.last_cons, cons), 2)
             return True
    
     def heartbeat(self):
-        dbg.debug('self.last_cons is %s' % self.last_cons)
+        dbg.debug('self.last_cons is %s' % self.last_cons, 2)
         try:
-            self.contents[0].id
-            dbg.debug('contents[0] of cave is %s' % self.contents[0].id)
+            dbg.debug('contents[0] of cave is %s' % self.contents[0].id, 2)
             contents_question = True
         except IndexError:
             contents_question = False
-            dbg.debug('Nothing in the CaveEntry')
-        dbg.debug("%s, %s" % (contents_question, self.in_entry_user))
+            dbg.debug('Nothing in the CaveEntry', 2)
+        dbg.debug("%s, %s" % (contents_question, self.in_entry_user), 2)
         if self.in_entry_user < 1 and contents_question:
             self.in_entry_user += 1
-            dbg.debug(str(self.in_entry_user))
+            dbg.debug(str(self.in_entry_user), 2)
         elif self.in_entry_user > 0 and contents_question:
             for i in self.contents:
                 if isinstance(i, Player):
                     i.cons.write('You step back from the cave mouth into the gloomy forest.')
-                dbg.debug('extracting %s!' % i)
+                dbg.debug('extracting %s!' % i, 2)
                 self.extract(i)
                 self.escape_room.insert(i)
             self.in_entry_user = 0

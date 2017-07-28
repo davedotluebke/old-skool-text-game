@@ -41,7 +41,7 @@ class Thing(object):
         self.spawn_message = None
     
     def __del__(self):
-        dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id))
+        dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id), 0)
     
     def delete(self):
         if self.contents:
@@ -90,7 +90,7 @@ class Thing(object):
         try: 
             obj = Thing.ID_dict[state['id']] # is this obj already in dict?
             dbg.debug("Note: %s already in Thing.ID_dict, maps to %s" % (state['id'], obj))
-        except KeyError:  # 
+        except KeyError:  # Not already in dict
             Thing.ID_dict[state['id']] = self
         self.__dict__.update(state)
 
@@ -131,14 +131,14 @@ class Thing(object):
     
     def set_weight(self, grams):
         if (grams < 0):
-            dbg.debug("Error: weight cannot be negative")
+            dbg.debug("Error: weight cannot be negative", 0)
             raise
         else:
             self.weight = grams
 
     def set_volume(self, liters):
         if (liters < 0):
-            dbg.debug("Error: volume cannot be negative")
+            dbg.debug("Error: volume cannot be negative", 0)
             raise
         else:
             self.volume = liters
@@ -178,11 +178,11 @@ class Thing(object):
             holder = self
         if holder not in ignore and hasattr(holder, 'perceive'):
             # immediate container can see messages, probably a creature/player
-            dbg.debug("creature holding this object is: " + holder.id)
+            dbg.debug("creature holding this object is: " + holder.id, 3)
             holder.perceive(message)
         # now get list of recipients (usually creatures) contained by holder (usually a Room)
         recipients = [x for x in holder.contents if hasattr(x, 'perceive') and (x is not self) and (x not in ignore)]
-        dbg.debug("other creatures in this room include: " + str(recipients))
+        dbg.debug("other creatures in this room include: " + str(recipients), 3)
         for recipient in recipients:
             recipient.perceive(message)
 
@@ -228,7 +228,6 @@ class Thing(object):
 
     def look_at(self, p, cons, oDO, oIDO):  
         '''Print out the long description of the thing.'''
-        dbg.debug("Called Thing.look_at()")
         if self == oDO or self == oIDO:
             cons.write(self.long_desc)
             return True

@@ -91,11 +91,11 @@ class Console:
         for t in self.words:
             if t in self.alias_map:
                 cmd += self.alias_map[t] + " "
-                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]))
+                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]), 3)
             else:
                 cmd += t + " "
         cmd = cmd[:-1]   # strip trailing space added above
-        dbg.debug("User input with aliases resolved:\n    %s" % (cmd))
+        dbg.debug("User input with aliases resolved:\n    %s" % (cmd), 3)
         return cmd
     
     def _handle_console_commands(self):
@@ -145,7 +145,7 @@ class Console:
         self.tw.subsequent_indent = indent * ' '
         for l in lines:
             print(self.tw.fill(l))
-        dbg.debug('cons.write wrote %s!' % text)
+        dbg.debug('cons.write wrote %s!' % text, 4)
 
     def new_user(self):
         self.write("Create your new user.")

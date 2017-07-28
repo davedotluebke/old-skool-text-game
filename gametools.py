@@ -16,10 +16,10 @@ def clone(obj_module):
         dbg.debug("Error importing module %s" % obj_module, 0)
         return None
     except AttributeError:
-        dbg.debug("Error cloning from module %s: no clone() method" % obj_module)
+        dbg.debug("Error cloning from module %s: no clone() method" % obj_module, 0)
         return None
     if obj == None:
-        dbg.debug("Error cloning from module %s: clone() return None" % obj_module)
+        dbg.debug("Error cloning from module %s: clone() return None" % obj_module, 0)
     return obj
 
 def load_room(modpath):
@@ -32,10 +32,10 @@ def load_room(modpath):
         dbg.debug("Error importing room module %s" % modpath, 0)
         return None
     except AttributeError:
-        dbg.debug("Error loading from room module %s: no load() method" % modpath)
+        dbg.debug("Error loading from room module %s: no load() method" % modpath, 0)
         return None
     if room == None:
-        dbg.debug("Error cloning from room module %s:load() returned None" % modpath)
+        dbg.debug("Error cloning from room module %s:load() returned None" % modpath, 0)
     return room
     
 def findGamePath(filepath):

@@ -46,12 +46,11 @@ class Room(Container):
             if isinstance(obj, Container) and (obj.see_inside or hasattr(obj, 'cons')):
                 if obj.contents: 
                     obj_list += obj.contents 
-            dbg.debug('Room %s: light level is %s' % (self.id, total_light))
+            dbg.debug('Room %s: light level is %s' % (self.id, total_light), 3)
         return (total_light <= 0)
         
     def look_at(self, p, cons, oDO, oIDO):
         """Print long description of room, list items (excluding this player) and exits"""
-        dbg.debug("Called Room.look_at()")
         # if verb is transitive, verify that the room is the direct object
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sDO and (oDO is None): 
@@ -126,7 +125,7 @@ class Room(Container):
                 destMod = importlib.import_module(destFile)  # python module of the destination room
                 dest = destMod.load()
             except KeyError:
-                dbg.debug("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]))
+                dbg.debug("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]), 0)
                 cons.write("There was an internal error with the exit. ")
                 return True
             if cons.user.move_to(dest):

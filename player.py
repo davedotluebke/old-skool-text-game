@@ -49,8 +49,6 @@ class Player(Creature):
         # Copy the object's state from self.__dict__ which contains
         # all our instance attributes. Always use the dict.copy()
         # method to avoid modifying the original state.
-        if self.id == "Joe Test": # XXX temp for debugging purposes
-            dbg.debug("Pickling Joe Test!")
         state = super().__getstate__()
         # Remove the unpicklable entries.
         del state['cons']
@@ -68,8 +66,6 @@ class Player(Creature):
         an ID string to a direct reference, do the same for the objects in the
         contents field, and call move_to() to update the room."""
         super(Player, self).__setstate__(state) # updates Thing.ID_dict
-        if (state['id'] == "Joe Test"):
-            dbg.debug("Unpickling Joe Test!")
         # Restore instance attributes
         self.short_desc = "Clone of " + self.short_desc # XXX temp for debugging
 
