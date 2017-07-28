@@ -32,3 +32,7 @@ class Scroll(Thing):
             return True
         else:
             return "A problem occured!"
+
+def clone(): 
+    obj = Scroll('scroll', __file__)
+    return obj

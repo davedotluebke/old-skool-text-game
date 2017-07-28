@@ -28,7 +28,6 @@ try:
     pass
     #import domains.wizardry.galsbilly
 
-    #import domains.school
 
     #import home.owen.house
 except:
@@ -50,9 +49,9 @@ start_room_mod = importlib.import_module('domains.school.school.great_hall')
 start_room = start_room_mod.load()
 start_room.insert(game.user)
 
-gametools.clone('domains.school.school.scroll_obj')
-Thing.ID_dict['scroll'].move_to(game.user)
-game.register_heartbeat(Thing.ID_dict['scroll'])
+scroll = gametools.clone('domains.school.scroll')
+scroll.move_to(game.user)
+game.register_heartbeat(scroll)
 game.user.set_start_loc = start_room
 game.user.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
 "Type 'look' to examine your surroundings or an object, "
