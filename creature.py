@@ -59,7 +59,7 @@ class Creature(Container):
 
     def perceive(self, message):
         """Receive a message emitted by an object carried by or in vicinity of this creature."""
-        dbg.debug("%s perceived a message "+message+" in Creature.perceive()" % self.id, 2)
+        dbg.debug("%s perceived a message %s in Creature.perceive()" % (self.id, message), 2)
 
     def say(self, speech):
         """Emit a message to the room "The <creature> says: <speech>". """

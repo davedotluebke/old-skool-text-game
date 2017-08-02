@@ -9,9 +9,9 @@ def load():
 
     forest_one = room.Room('forest')
     forest_one.set_description('nice forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least.')
-    forest_one.add_exit('south', woods.id)
-    forest_one.add_exit('east', forest_two.id)
-    forest_one.add_exit('northwest', forest_three.id)
+    forest_one.add_exit('south', 'domains.school.forest.woods')
+    forest_one.add_exit('east', 'domains.school.forest.forest2')
+    forest_one.add_exit('northwest', 'domains.school.forest.forest3')
     forest_one.add_adjectives('ancient','towering','nice')
 
     elm = scenery.Scenery("elm", "massive old elm tree", "This huge elm tree must be over a hundred years old. You are tempted to hug it.")

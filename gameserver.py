@@ -186,7 +186,7 @@ class Game():
                 dbg.shut_down()
                 break
 
-    def clear_nulspace(self):
+    def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
         for i in self.nulspace.contents:
             if not hasattr(i, 'cons'): #if it is not player
                 i.delete()

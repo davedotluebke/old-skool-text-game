@@ -15,14 +15,14 @@ from player import Player
 from action import Action
 # Gem is a generic base class for all gems, used for isinstance() and other internal functions.
 class Gem(Thing):
-    def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
-        super().__init__(default_name, pref_id)
+    def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
+        super().__init__(default_name, path, pref_id)
         self.power_num = power_num
         self.set_description(short_desc, long_desc)
 
 class Emerald(Gem):
-    def __init__(self, default_name, short_desc, long_desc, power_num=10, pref_id=None):
-        super().__init__(default_name, short_desc, long_desc+' It is about %s milimeters in all dimentions.' % power_num, power_num, pref_id)
+    def __init__(self, path, default_name, short_desc, long_desc, power_num=10, pref_id=None):
+        super().__init__(path, default_name, short_desc, long_desc+' It is about %s milimeters in all dimentions.' % power_num, power_num, pref_id)
         self.add_names('emerald')
         self.actions.append(Action(self.move_power, ['power'], True, False))
     
@@ -65,8 +65,8 @@ class Emerald(Gem):
         cons.write("You feel the power moving from the emerald to the %s." % gem.short_desc)
 
 class Jade(Gem):
-    def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
-        super().__init__(default_name, short_desc, long_desc+' It seems as almost as if it were somewhere else.', power_num, pref_id)
+    def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
+        super().__init__(path, default_name, short_desc, long_desc+' It seems as almost as if it were somewhere else.', power_num, pref_id)
         self.add_names('jade')
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)
 
@@ -104,8 +104,8 @@ class Jade(Gem):
                 break
 
 class Ruby(Gem):
-    def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
-        super().__init__(default_name, short_desc, long_desc+' It almost seems to glow, as if light was trapped inside.', power_num, pref_id)
+    def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
+        super().__init__(path, default_name, short_desc, long_desc+' It almost seems to glow, as if light was trapped inside.', power_num, pref_id)
         self.add_names('ruby')
         self.light = 0
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)
@@ -126,8 +126,8 @@ class Ruby(Gem):
             self.long_desc = head + ' It almost seems to glow, as if light was trapped inside.'
             
 class Diamond(Gem):
-    def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
-        super().__init__(default_name, short_desc, long_desc+' It is crystal clear.', power_num, pref_id)
+    def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
+        super().__init__(path, default_name, short_desc, long_desc+' It is crystal clear.', power_num, pref_id)
         self.add_names('diamond')
         self.hiding_user = False
         self.user = None
@@ -152,8 +152,8 @@ class Diamond(Gem):
                 self.user = None
 
 class Opal(Gem):
-    def __init__(self, default_name, short_desc, long_desc, power_num=0, pref_id=None):
-        super().__init__(default_name, short_desc, long_desc+' It is a swirl of colors that seem to draw light inside it.', power_num, pref_id=None)
+    def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
+        super().__init__(path, default_name, short_desc, long_desc+' It is a swirl of colors that seem to draw light inside it.', power_num, pref_id=None)
         self.add_names('opal')
         self.light = 0  # light is negative if powered, 0 otherwise (default 0)
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)

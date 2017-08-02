@@ -195,9 +195,7 @@ class Parser:
             try:
                 result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
             except Exception as isnt:
-                console.write('An error has occured. Please bear with us while we fix this. Please do not try this action again.')
-                console.write(traceback.format_exc())
-                console.write('Continue your game as normal.')
+                console.write('An error has occured. Please try a different action until the problem is resolved.')
                 dbg.debug(traceback.format_exc(), 0)
                 dbg.debug("Error caught!", 0)
                 result = True       # we don't want the parser to go and do an action they probably didn't

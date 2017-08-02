@@ -1,5 +1,6 @@
 import gametools
 import room
+import scenery
 
 def load():
     roomPath = gametools.findGamePath(__file__)
@@ -10,6 +11,7 @@ def load():
     woods.set_description('bright and cheerful woods', 'Theese woods have happy birdsongs and pretty trees. They are bright.')
     woods.add_exit('west', 'domains.school.forest.entryway')
     woods.add_exit('north', 'domains.school.forest.forest_one')
+    woods.add_exit('south', 'domains.school.forest.clearing')
 
     bag = gametools.clone('domains.school.forest.bag')
     woods.insert(bag)
@@ -17,7 +19,7 @@ def load():
     flashlight = gametools.clone('domains.school.forest.flashlight')
     woods.insert(flashlight)
 
-    beech = Scenery("beech", "old beech tree full of carvings", 
+    beech = scenery.Scenery("beech", "old beech tree full of carvings", 
     "This large old beech tree has been scarred with the reminders of many passers-by, who decided to immortalize their visit by carving their initials into the tree.")
     beech.add_names("tree")
     beech.add_adjectives("old", "beech", "carved")
