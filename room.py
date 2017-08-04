@@ -80,7 +80,10 @@ class Room(Container):
         if loc.is_dark():
             cons.write("It's too dark to see anything here.")
             return True
-        cons.write("You enter a %s." % loc.short_desc)
+        if user.terse:
+            cons.write("You enter a %s." % loc.short_desc)
+        else:
+            cons.write(loc.long_desc)
         if (len(loc.exits) > 0):
             cons.write("Exits are:")
             for w in loc.exits:

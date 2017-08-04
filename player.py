@@ -19,6 +19,7 @@ class Player(Creature):
         self.set_weight(175/2.2)
         self.set_volume(66)
         self.actions.append(Action(self.inventory, "inventory", False, True))
+        self.actions.append(Action(self.toggle_terse, "terse", False, True))
         self.actions.append(Action(self.execute, "execute", True, True))
         self.actions.append(Action(self.fetch, "fetch", True, True))
         self.actions.append(Action(self.clone, "clone", True, True))
@@ -37,6 +38,7 @@ class Player(Creature):
         self.reading = False
         self.hitpoints = 20
         self.health = 20
+        self.terse = False  # True -> show short description when entering room
         self.cons.game.register_heartbeat(self)
 
     def __getstate__(self):
@@ -114,6 +116,25 @@ class Player(Creature):
         if self.armor_worn != self.default_armor:
             cons.write('You are wearing a %s.' % self.armor_worn)
         return True
+    
+    def toggle_terse(self, p, cons, oDO, oIDO):
+        try: 
+            if p.words[1] == "on": 
+                self.terse = True
+            elif p.words[1] == "off": 
+                self.terse = False
+            else: 
+                return """Usage: 'terse [on/off]'
+                Use long descriptions (off) or short descriptions (on) when entering a place.
+                With no specifier, 'terse' toggles between on and off."""
+        except IndexError:
+            self.terse = not self.terse
+        cons.write("Terse mode %s. %s" % ("on" if self.terse else "off",
+            "Short descriptions will be used when entering a place; type 'look' for full description" if self.terse else
+            "Full descriptions will be used entering a place."))
+        # TODO: a mode that prints long description only when first entering a room
+        return True
+    
     
     def execute(self, p, cons, oDO, oIDO):
         cmd = ' '.join(p.words[1:])
