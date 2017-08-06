@@ -204,7 +204,6 @@ class Thing(object):
                 origin.insert(self)
             return False
 
-    # TODO: plumb validation protocol down to move_to(), insert(), extract()
     def take(self, p, cons, oDO, oIDO):
         if oDO == None: return "I don't know what you're trying to take!"
         if oDO != self: return "You can't take the %s!" % oDO.short_desc

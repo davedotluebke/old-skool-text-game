@@ -2,6 +2,7 @@ import os
 import importlib
 from debug import dbg
 
+# the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
 gameroot = os.path.dirname(__file__) 
 
 def clone(obj_module):
