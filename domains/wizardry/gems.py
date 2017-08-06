@@ -8,6 +8,7 @@
 # note that there are also other unique gems, such as the emerald of life, which have different powers than normal gems and are not listed here.
 
 import random
+import copy
 
 from thing import Thing
 from container import Container
@@ -72,7 +73,9 @@ class Jade(Gem):
 
     def heartbeat(self):
         if self.power_num > 0:
-            for i in self.location.contents:
+            possible_players = [x for x in self.location.contents]
+            possible_players.append(self.location)
+            for i in possible_players:
                 if isinstance(i, Player):
                     i.cons.write('Where would you like to send this power? Type the true name of the place you want to send the power below:')
                     sLoc = i.cons.take_input('-> ')
@@ -89,7 +92,7 @@ class Jade(Gem):
     def send_power(self, loc):
         if not loc.contents:
             loc = random.choice([x for x in Thing.ID_dict if isinstance(x, Container)])
-        objs = loc.contents
+        objs = copy.deepcopy(loc.contents)
         while self.power_num > 0:
             obj = random.choice(objs)
             if isinstance(obj, Gem):
