@@ -52,7 +52,7 @@ class Game():
             saved = pickle.load(f)
             new_ID_dict, newgame = saved
         except pickle.PickleError:
-            self.cons.write("Encountered error while pickling to file %s, game not saved." % filename)
+            self.cons.write("Encountered error while loading from file %s, game not loaded." % filename)
             Thing.ID_dict = backup_ID_dict
             f.close()
             return
@@ -79,6 +79,14 @@ class Game():
         f.close()
     
     def save_player(self, filename):
+        # Uniquify the ID string of every object carried by the player
+        tag = 'saveplayer'+str(random.randint(100000,999999))
+        l = [self.user] 
+        for obj in l:
+            obj.id = obj.id + tag
+            if obj.contents != None:
+                l += obj.contents
+
         if not filename.endswith('.OADplayer'): 
             filename += '.OADplayer'
         try:
