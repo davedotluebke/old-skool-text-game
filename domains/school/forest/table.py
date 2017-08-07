@@ -14,6 +14,5 @@ def clone():
     table.insert(bottle)
 
     plate = gametools.clone('domains.school.forest.plate')
-    plate.insert(b)
-
+    table.insert(plate)
     return table

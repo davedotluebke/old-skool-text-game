@@ -9,8 +9,8 @@ def load():
 
     kitchen = room.Room('kitchen')
     kitchen.set_description('dusty kitchen with 50-year old apliences and decorations', 'This kitchen looks about 50 years old, and is very dusty but apears still useable.')
-    kitchen.add_exit('northeast', entryway.id)
-    kitchen.add_exit('southeast', hallway.id)
+    kitchen.add_exit('northeast', 'domains.school.forest.entryway')
+    kitchen.add_exit('southeast', 'domains.school.forest.hallway')
 
     cabinets = gametools.clone('domains.school.forest.cabinets')
     kitchen.insert(cabinets)
