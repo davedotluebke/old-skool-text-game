@@ -110,6 +110,7 @@ class Game():
         existing objects already in the game. Thus after unpickling each 
         object we need to add it to Thing.ID_dict with a new and unique ID.""" 
 
+
         if not filename.endswith('.OADplayer'): 
             filename += '.OADplayer'
         try:
