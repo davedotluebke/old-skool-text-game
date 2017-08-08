@@ -6,7 +6,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    towerstairs = room.Room('towerstairs', safe=True)
+    towerstairs = room.Room('towerstairs', roomPath, safe=True)
     towerstairs.set_description('spiral staircase leading up the tower', 'You find yourself in a enormous tower, with winding stairs leading up it. There is a small door to the east.')
     towerstairs.add_names('stairs')
     towerstairs.add_adjectives('tower', 'spiral')

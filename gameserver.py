@@ -1,6 +1,7 @@
 import pickle
 import io
 import traceback
+import random
 
 import gametools
 
@@ -100,6 +101,9 @@ class Game():
             self.cons.write("Error writing to file %s" % filename)
         except pickle.PickleError:
             self.cons.write("Error pickling when saving to file %s" % filename)
+        for obj in l:
+            (head, sep, tail) = obj.id.partition(tag)
+            obj.id = head
         
 
     def load_player(self, filename):
@@ -127,7 +131,27 @@ class Game():
             Thing.ID_dict[self.user.id] = self.user
             f.close()
             return
+
+        tmp_id_dict = {}
+        for w in l:
+            tmp_id_dict[w.id] = w
+        
+        for obj in l:
+            try:
+                obj.location = tmp_id_dict[obj.location]
+            except KeyError:
+                pass
+            if obj.contents != None:
+                new_contents = []
+                for i in obj.contents:
+                    del obj.contents[obj.contents.index(i)]
+                    i = tmp_id_dict[i]
+                    new_contents.append(i)
+                obj.contents = new_contents
+
+
         newplayer = l[0]
+        assert isinstance(newplayer.location, str)
         # TODO: move below code for deleting player to Player.__del__()
         # Unlink player object from room, contents:
         if self.user.location.extract(self.user):
@@ -141,15 +165,16 @@ class Game():
         self.user.cons = self.cons  # custom pickling code for Player doesn't save console
         self.cons.user = self.user  # update backref from cons
 
-        self.user.location = gametools.load(self.user.location) # XXX protect for case where saved room no longer exists
-
+        self.user.location = gametools.load_room(self.user.location) # XXX protect for case where saved room no longer exists
+        if self.user.location == None:
+            self.user.location = gametools.load_room('domains.school.school.great_hall')
         # Create new entries in ID_dict for objects player is holding, 
         # and make sure that those objects refer to each other by the new IDs
         newIDs = {}  # mapping from ID strings stored with objs to new ID strings
         objs = self.user.contents
         for o in objs: 
-            o._add_ID(preferred_id = o.id)  # XXX this won't work, contents were pickled as strings not original objects. 
-            raise
+            o._add_ID(preferred_id = o.id)  #XXX out of date comment # XXX this won't work, contents were pickled as strings not original objects. 
+            #raise
             if o.contents != None:
                 objs += o.contents
             
