@@ -143,10 +143,11 @@ class Game():
                 pass
             if obj.contents != None:
                 new_contents = []
-                for i in obj.contents:
-                    del obj.contents[obj.contents.index(i)]
-                    i = tmp_id_dict[i]
-                    new_contents.append(i)
+                while obj.contents:
+                    o = tmp_id_dict[obj.contents[0]]
+                    del obj.contents[0]
+                    new_contents.append(o)
+                assert obj.contents == []
                 obj.contents = new_contents
 
 
