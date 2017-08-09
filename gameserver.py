@@ -1,6 +1,7 @@
 import pickle
 import io
 import traceback
+import random
 
 import gametools
 
@@ -82,7 +83,7 @@ class Game():
     
     def save_player(self, filename):
         # Uniquify the ID string of every object carried by the player
-        tag = 'saveplayer'+str(random.randint(100000,999999))
+        tag = '-saveplayer'+str(random.randint(100000,999999))
         l = [self.user] 
         for obj in l:
             obj.id = obj.id + tag
@@ -100,7 +101,10 @@ class Game():
             self.cons.write("Error writing to file %s" % filename)
         except pickle.PickleError:
             self.cons.write("Error pickling when saving to file %s" % filename)
-        
+        # restore original IDs by removing tag
+        for obj in l:
+            (head, sep, tail) = obj.id.partition(tag)
+            obj.id = head        
 
     def load_player(self, filename):
         """Unpickle a single player and his/her inventory from a saved file.
@@ -120,14 +124,15 @@ class Game():
             return
         try:
             del Thing.ID_dict[self.user.id]  # unpickling will re-create Thing.ID_dict entry for new Player object
-            l = pickle.load(f)
+            l = pickle.load(f)  # l is the list of objects (player + recursive inventory)
             f.close()
         except pickle.PickleError:
             self.cons.write("Encountered error while pickling to file %s, player not saved." % filename)
             Thing.ID_dict[self.user.id] = self.user
             f.close()
             return
-        newplayer = l[0]
+        newplayer = l[0]  # first object pickled is the player
+
         # TODO: move below code for deleting player to Player.__del__()
         # Unlink player object from room, contents:
         if self.user.location.extract(self.user):
@@ -141,18 +146,24 @@ class Game():
         self.user.cons = self.cons  # custom pickling code for Player doesn't save console
         self.cons.user = self.user  # update backref from cons
 
-        self.user.location = gametools.load(self.user.location) # XXX protect for case where saved room no longer exists
-
+        self.user.location = gametools.load_room(self.user.location) 
+        if self.user.location == None: 
+            dbg.debug("Saved location for player %s no longer exists; using default location" % self.user, 0)
+            self.cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
+            self.user.location = gametools.load_room('domains.school.school.great_hall')
         # Create new entries in ID_dict for objects player is holding, 
-        # and make sure that those objects refer to each other by the new IDs
-        newIDs = {}  # mapping from ID strings stored with objs to new ID strings
-        objs = self.user.contents
-        for o in objs: 
-            o._add_ID(preferred_id = o.id)  # XXX this won't work, contents were pickled as strings not original objects. 
-            raise
-            if o.contents != None:
-                objs += o.contents
-            
+        # using the uniquified IDs - guaranteed to succeed without changing ID
+        for o in l: 
+            o._add_ID(preferred_id = o.id)
+        # Now fix up location & contents[] to list object refs, not ID strings
+        for o in l:
+            o._restore_objs_from_IDs()
+        # Now de-uniquify all IDs, replace object.id and ID_dict{} entry
+        for o in l:
+            del Thing.ID_dict[o.id]
+            (head, sep, tail) = o.id.partition('-saveplayer')
+            o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
+
         room = self.user.location
         room.insert(self.user)  # insert() does some necessary bookkeeping
         self.cons.write("Restored game state from file %s" % filename)
