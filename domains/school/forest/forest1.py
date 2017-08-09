@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    forest_one = room.Room('forest')
+    forest_one = room.Room('forest', roomPath)
     forest_one.set_description('nice forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least.')
     forest_one.add_exit('south', 'domains.school.forest.woods')
     forest_one.add_exit('east', 'domains.school.forest.forest2')

@@ -123,23 +123,27 @@ class Game():
             self.cons.write("Error, couldn't find file named %s" % filename)
             return
         try:
-            del Thing.ID_dict[self.user.id]  # unpickling will re-create Thing.ID_dict entry for new Player object
-            l = pickle.load(f)  # l is the list of objects (player + recursive inventory)
+            # l is the list of objects (player + recursive inventory). Note that 
+            # unpickling calls init() which creates new entries in ID_dict for objects in l,
+            # using the uniquified IDs - guaranteed to succeed without further changing ID
+            l = pickle.load(f)  
             f.close()
         except pickle.PickleError:
             self.cons.write("Encountered error while pickling to file %s, player not saved." % filename)
-            Thing.ID_dict[self.user.id] = self.user
             f.close()
             return
         newplayer = l[0]  # first object pickled is the player
 
         # TODO: move below code for deleting player to Player.__del__()
-        # Unlink player object from room, contents:
-        if self.user.location.extract(self.user):
-            dbg.debug("Error deleting player from room during load_game()")
-        for o in self.user.contents: 
-            if self.user.extract(o):
-                dbg.debug("Error deleting contents of player (%s) during load_game()" % o)
+        # Unlink player object from room; delete player along with recursive inventory
+        eraselist = [self.user]
+        for o in eraselist:
+            if o.contents:
+                eraselist += o.contents          
+            if o.location.extract(o):
+                dbg.debug("Error deleting player or inventory during load_game(): object %s contained in %s " % (o, o.location))
+            del Thing.ID_dict[o.id]
+            # o.__del__()  # XXX probably doesn't truly delete the object; needs more research
         self.cons.user = None
         
         self.user = newplayer
@@ -151,10 +155,7 @@ class Game():
             dbg.debug("Saved location for player %s no longer exists; using default location" % self.user, 0)
             self.cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
             self.user.location = gametools.load_room('domains.school.school.great_hall')
-        # Create new entries in ID_dict for objects player is holding, 
-        # using the uniquified IDs - guaranteed to succeed without changing ID
-        for o in l: 
-            o._add_ID(preferred_id = o.id)
+        
         # Now fix up location & contents[] to list object refs, not ID strings
         for o in l:
             o._restore_objs_from_IDs()

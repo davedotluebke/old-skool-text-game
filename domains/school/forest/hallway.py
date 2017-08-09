@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    hallway = room.Room('hallway')
+    hallway = room.Room('hallway', roomPath)
     hallway.set_description('dusty hallway', 'This hallway has dusty walls made of wood. It is dim.')
     hallway.add_exit('north', 'domains.school.forest.entryway')
     hallway.add_exit('northwest', 'domains.school.forest.kitchen')

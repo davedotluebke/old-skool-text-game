@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    shack = room.Room('shack')
+    shack = room.Room('shack', roomPath)
     shack.set_description('empty shack', 'This shack appears to be abandoned and has nothing but cobwebs and walls.')
     shack.add_exit('out', 'domains.school.forest.field')
     
