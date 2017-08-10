@@ -101,11 +101,14 @@ class Player(Creature):
     def perceive(self, message):
         if not self.location.is_dark():
             Creature.perceive(self, message)
-            self.cons.write(message)        
-
+            self.cons.write(message) 
+                   
     def hold_object(self, obj):
         self.visible_inventory.append(obj)
 
+    #
+    # ACTION FUNCTIONS (verbs):
+    # 
     def inventory(self, p, cons, oDO, oIDO):
         cons.write("You are carrying:")
         if not self.contents:
