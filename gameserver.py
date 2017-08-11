@@ -89,12 +89,20 @@ class Game():
             obj.id = obj.id + tag
             if obj.contents != None:
                 l += obj.contents
+            if hasattr(obj, 'default_weapon'):
+                l += [obj.default_weapon]
+            if hasattr(obj, 'default_armor'):
+                l += [obj.default_armor]
 
         if not filename.endswith('.OADplayer'): 
             filename += '.OADplayer'
         try:
             f = open(filename, 'w+b')
+            # XXX double-check: is this really necessary? 
+            backup_ID_dict = Thing.ID_dict.copy()
+            Thing.ID_dict.clear()
             pickle.dump(l, f, pickle.HIGHEST_PROTOCOL)
+            Thing.ID_dict = backup_ID_dict
             self.cons.write("Saved player data to file %s" % filename)
             f.close()
         except IOError:
@@ -132,6 +140,8 @@ class Game():
             self.cons.write("Encountered error while pickling to file %s, player not saved." % filename)
             f.close()
             return
+        except EOFError:
+            self.cons.write("The file you are trying to load appears to be courrupt.")
         newplayer = l[0]  # first object pickled is the player
 
         # TODO: move below code for deleting player to Player.__del__()
