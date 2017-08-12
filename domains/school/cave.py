@@ -1,4 +1,5 @@
 from debug import dbg
+import gametools
 
 from thing import Thing
 from container import Container
@@ -7,13 +8,6 @@ from action import Action
 from creature import Creature
 from player import Player
 from creature import NPC
-
-monster = NPC('monster', Thing.ID_dict['nulspace'].game, 2)
-monster.set_description('terrible monster', 'This is a horrible monster. You want to run away from it.')
-monster.set_combat_vars(50, 60, 80, 40)
-monster.act_frequency = 1
-monster.set_volume(100)
-monster.set_weight(500000)
 
 class Lair(Room):
     def go_to(self, p, cons, oDO, oIDO):
@@ -24,14 +18,10 @@ class Lair(Room):
                     return True
         return Room.go_to(self, p, cons, oDO, oIDO)
 
-lair = Lair('lair')
-lair.set_description('monster\'s lair', 'This is a lair where the terrible monster hides. It has a wall with clubs hanging on it. There is a crawlway to the northwest.')
-lair.add_adjectives("monster's")
-
 class CaveRoom(Room):
-    def __init__(self, ID, path):
+    def __init__(self, ID, path, monster_storage):
         Room.__init__(self, ID, path, light=0)
-        self.monster_storage = lair
+        self.monster_storage = monster_storage
         self.released_monster = False
         self.create_cave_moss()
         self.create_gold()
@@ -40,19 +30,14 @@ class CaveRoom(Room):
         for i in self.contents:
             if i.names[0] == 'cave moss':
                 return True
-        cave_moss = Thing('cave moss')
-        cave_moss.set_description('cave moss', 'This is some strange moss growing in the cave.')
-        cave_moss.add_adjectives('cave')
-        cave_moss.add_names('moss')
+        cave_moss = gametools.clone('domains.school.cave.cave_moss')
         cave_moss.move_to(self)
 
     def create_gold(self):
         for i in self.contents:
             if i.names[0] == 'gold':
                 return True
-        gold = Thing('gold')
-        gold.set_description('bunch of shiny gold coins', 'This is a collection of seven shiny real gold coins.')
-        gold.set_weight(74000)
+        gold = gametools.clone('domains.school.cave.gold')
         self.insert(gold)
     
     def attach_monster(self, monster):
@@ -96,10 +81,6 @@ class CaveRoom(Room):
                 self.create_cave_moss()
                 self.create_gold()
                 self.released_monster = False
-
-cave = CaveRoom('cave')
-cave.set_description('terrifying dark cave', 'This is one of the most scary caves you have ever been in. You are anxiousley looking around to see if there are any monsters.')
-cave.add_adjectives('scary', 'dark', 'terrifying')
 
 class CaveEntry(Room):
     def __init__(self, ID, path):
@@ -149,12 +130,7 @@ class CaveEntry(Room):
                     i.cons.write('You step back from the cave mouth into the gloomy forest.')
                 dbg.debug('extracting %s!' % i, 2)
                 self.extract(i)
-                self.escape_room.insert(i)
+                going_to_loc = gametools.load_room(self.escape_room)
+                going_to_loc.insert(i)
             self.in_entry_user = 0
 #        if (Thing.ID_dict['cave moss'] or Thing.ID_dict['gold']) not in self.exits['in'].contents:
-
-cave_entrance = CaveEntry('cave mouth')
-lair.add_exit('east', cave.id)
-cave.add_exit('west', lair.id)
-cave_entrance.add_exit('in', cave.id)
-cave.attach_monster(monster)

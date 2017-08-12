@@ -13,9 +13,11 @@ class Scroll(Thing):
         self.next_trigger_room = 'scrollchangeroom1'
 
     def heartbeat(self):
+        # XXX below code is broken, just return for now
+        return
         if self.location:
             for l in range(1, 15):
-                counter = eval('self.'+str(l*'location.'+'id'))
+                counter = eval('self.'+str(l*'location'))
                 if counter == self.next_trigger_room:
                     self.emit('The scroll glows for a second!')
                     self.message_number += 1
@@ -23,6 +25,8 @@ class Scroll(Thing):
                     break
                 if isinstance(eval('self.'+str((l-1)*'location.')+'location'), Room) and counter != self.next_trigger_room:
                     break
+
+        
 
     def read(self, p, cons, oDO, oIDO):
         if oDO != self:
