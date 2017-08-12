@@ -67,11 +67,13 @@ class Thing(object):
         # all our instance attributes. Always use the dict.copy()
         # method to avoid modifying the original state.
         state = self.__dict__.copy()
-        if self.location != None: 
-            state['location'] = self.location.id
+        if self.location:
+            if not isinstance(self.location, str): 
+                # if it isn't already a string, convert it to one 
+                state['location'] = self.location.id
         if self.contents != None: 
             # replace with new list of id strings, or leave as None (not [])
-            state['contents'] = [x.id for x in self.contents] 
+            state['contents'] = [(x if isinstance(x, str) else x.id) for x in self.contents] 
         return state
 
     def __setstate__(self, state):
@@ -97,9 +99,16 @@ class Thing(object):
     def _restore_objs_from_IDs(self):
         """Update object references stored as ID strings to directly reference the objects, using Thing.ID_dict."""
         if isinstance(self.location, str):
-            self.location = Thing.ID_dict[self.location]
+            self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet? 
         if self.contents != None:
             self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
+
+    def _change_objs_to_IDs(self):
+        """Replace object references with ID strings, in preparation for pickling."""
+        if self.location:
+            self.location = self.location.id
+        if self.contents:
+            self.contents = [obj.id for obj in self.contents]
 
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""

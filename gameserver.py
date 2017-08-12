@@ -86,7 +86,11 @@ class Game():
         tag = '-saveplayer'+str(random.randint(100000,999999))
         l = [self.user] 
         for obj in l:
-            obj.id = obj.id + tag
+            # change object ID and corresponding entry in ID_dict
+            del Thing.ID_dict[obj.id]
+            obj.id = obj.id + tag  
+            obj._add_ID(obj.id)
+            # recursively add associated objects
             if obj.contents != None:
                 l += obj.contents
             if hasattr(obj, 'default_weapon'):
@@ -101,6 +105,9 @@ class Game():
             # XXX double-check: is this really necessary? 
             backup_ID_dict = Thing.ID_dict.copy()
             Thing.ID_dict.clear()
+            # change location & contents etc from obj reference to ID:
+            for obj in l:
+                obj._change_objs_to_IDs()
             pickle.dump(l, f, pickle.HIGHEST_PROTOCOL)
             Thing.ID_dict = backup_ID_dict
             self.cons.write("Saved player data to file %s" % filename)
@@ -109,10 +116,16 @@ class Game():
             self.cons.write("Error writing to file %s" % filename)
         except pickle.PickleError:
             self.cons.write("Error pickling when saving to file %s" % filename)
+        # restore location & contents etc to obj references:
+        for obj in l:
+            obj._restore_objs_from_IDs()
         # restore original IDs by removing tag
         for obj in l:
+            del Thing.ID_dict[obj.id]  # get rid of uniquified entry in ID_dict
             (head, sep, tail) = obj.id.partition(tag)
-            obj.id = head        
+            obj.id = head  
+            obj._add_ID(obj.id)  # re-create original entry in ID_dict
+        
 
     def load_player(self, filename):
         """Unpickle a single player and his/her inventory from a saved file.
