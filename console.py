@@ -30,6 +30,7 @@ class Console:
     def __init__(self, game = None):
         self.game = game
         self.parser = Parser()
+        self.handle_exceptions = True
         self.width = Console.default_width
         self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = True, tabsize = 4) 
         self.alias_map = {'n':       'go north',
@@ -121,6 +122,11 @@ class Console:
             
             if cmd == 'help':
                 self.write(self.help_msg)
+                return True
+
+            if cmd == 'exceptions'
+                self.handle_exceptions = not self.handle_exceptions
+                self.write("Toggle exception handling to %s" % "on" if self.handle_exceptions else "off")
                 return True
             
             file_cmds = {'savegame':self.game.save_game,

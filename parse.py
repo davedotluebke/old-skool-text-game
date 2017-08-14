@@ -192,13 +192,16 @@ class Parser:
         result = False
         err_msg = None
         for act in possible_verb_actions:
-            try:
-                result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
-            except Exception as isnt:
-                console.write('An error has occured. Please try a different action until the problem is resolved.')
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug("Error caught!", 0)
-                result = True       # we don't want the parser to go and do an action they probably didn't
+            if (console.handle_exceptions):
+                try:
+                    result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
+                except Exception as isnt:
+                    console.write('An error has occured. Please try a different action until the problem is resolved.')
+                    dbg.debug(traceback.format_exc(), 0)
+                    dbg.debug("Error caught!", 0)
+                    result = True       # we don't want the parser to go and do an action they probably didn't
+            else:
+                result = act.func(self, console, oDO, oIDO)  # <-- ENACT THE VERB
             if result == True:      # mean to do if there is a bug in the one they did mean to do
                 break               # verb has been enacted, all done!
             if err_msg == None: 
