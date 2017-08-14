@@ -124,7 +124,7 @@ class Console:
                 self.write(self.help_msg)
                 return True
 
-            if cmd == 'exceptions'
+            if cmd == 'exceptions':
                 self.handle_exceptions = not self.handle_exceptions
                 self.write("Toggle exception handling to %s" % "on" if self.handle_exceptions else "off")
                 return True

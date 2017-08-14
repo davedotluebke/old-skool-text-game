@@ -43,7 +43,7 @@ class CaveRoom(Room):
     def attach_monster(self, monster):
         self.monster = monster
         del self.monster.choices[0]  #keeps monster from moving around except to attack people in the cave or lair
-        del self.monster.choices[1]  #so the monster is quicker to choose the attack_enemy option. TODO: make monster automatically attack enemy when it is released.
+        del self.monster.choices[0]  #so the monster is quicker to choose the attack_enemy option. TODO: make monster automatically attack enemy when it is released.
         self.monster.move_to(self.monster_storage)
         self.monster_storage.monster = self.monster
     

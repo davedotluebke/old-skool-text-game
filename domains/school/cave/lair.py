@@ -1,6 +1,7 @@
-import domains.school.cave as cave_mod
+import domains.school.caveComplex as cave_mod
 import room
 import gametools
+import thing
 
 def load():
     roomPath = gametools.findGamePath(__file__)
@@ -14,6 +15,4 @@ def load():
     lair.monster = gametools.clone('domains.school.cave.monster')
     lair.insert(lair.monster)
 
-    # explicitly load cave, adding it to Thing.ID_dict
-    gametools.load_room('domains.school.cave.cave')
     return lair

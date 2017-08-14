@@ -1,7 +1,8 @@
 import creature
+import thing
 
 def clone():
-    monster = creature.NPC('monster', 'domains.school.cave.monster', Thing.ID_dict['nulspace'].game, 2)
+    monster = creature.NPC('monster', 'domains.school.cave.monster', thing.Thing.ID_dict['nulspace'].game, aggressive=2)
     monster.set_description('terrible monster', 'This is a horrible monster. You want to run away from it.')
     monster.set_combat_vars(50, 60, 80, 40)
     monster.act_frequency = 1
