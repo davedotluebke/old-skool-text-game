@@ -58,5 +58,6 @@ test_d.move_to(central_fountain)
 test_o = Opal('opal', 'normal opal', 'This is a normal opal.')
 test_o.move_to(central_fountain)
 
-test_j = Jade('jade', 'rare jade', 'This is a rare jade. It is orange.')
-test_j.move_to(central_fountain)
+#TODO: Fix jade
+#test_j = Jade('jade', 'rare jade', 'This is a rare jade. It is orange.')
+#test_j.move_to(central_fountain)
