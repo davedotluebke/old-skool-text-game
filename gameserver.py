@@ -80,6 +80,16 @@ class Game():
         self.cons.write("Restored game state from file %s" % filename)
     
         f.close()
+        #XXX temp for debugging purposes
+
+        for obj in Thing.ID_dict:
+            if isinstance(obj.location, str):
+                raise SyntaxError
+        
+            if obj.contents != None:
+                for i in obj.contents:
+                    if isinstance(i, str):
+                        raise SyntaxError
     
     def save_player(self, filename):
         # Uniquify the ID string of every object carried by the player
