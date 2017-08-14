@@ -124,9 +124,9 @@ class Console:
                 self.write(self.help_msg)
                 return True
 
-            if cmd == 'exceptions':
+            if cmd == 'debug':
                 self.handle_exceptions = not self.handle_exceptions
-                self.write("Toggle exception handling to %s" % "on" if self.handle_exceptions else "off")
+                self.write("Toggle debug exception handling to %s" % ("on" if self.handle_exceptions else "off"))
                 return True
             
             file_cmds = {'savegame':self.game.save_game,
