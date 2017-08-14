@@ -2,10 +2,11 @@ from debug import dbg
 from action import Action
 
 from thing import Thing
+import gametools
 
 class Flower(Thing):
-    def __init__(self, default_name, type=None, pref_id=None):
-        super().__init__(default_name)
+    def __init__(self, default_name, path, type=None, pref_id=None):
+        super().__init__(default_name, path)
         self.type = type
         self.actions.append(Action(self.pick, ['pick', 'take', 'pluck'], True, False))
         self.actions.append(Action(self.shake, ['shake'], True, False, ['held']))
@@ -40,8 +41,7 @@ class Flower(Thing):
                     return True
         if self.type in ['poppy']:
             cons.write('You shake the flower, and collect some %s seeds.' % self.names[0])
-            seed = Thing('%sseed' % self.names[0])
-            seed.set_description(seed.names[0], 'This is a normal %s seed.' % self.names[0])
+            seed = gametools.clone('domains.school.forest.seed')
             seed.move_to(cons.user)
             return True
         else:

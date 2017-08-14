@@ -1,12 +1,23 @@
+import importlib
+
 from debug import dbg
 from thing import Thing
 from container import Container
 from action import Action
 
+def check_loaded(roomPath):
+        '''Check whether a room exists (i.e., has been created and inserted into Thing_ID.dict[]).
+        Takes roomPath, the file of the room module as returned by gametools.findGamePath().
+        Returns a reference to the room, or False if the room does not yet exist.'''
+        if roomPath in Thing.ID_dict:
+            return Thing.ID_dict[roomPath]
+        else:
+            return False
+
 class Room(Container):
-    def __init__(self, default_name, light=1, safe=False, pref_id=None):
+    def __init__(self, default_name, pref_id, light=1, safe=False):
         """Initialize the room. Set <light> level to 0 for a dark room."""
-        Container.__init__(self, default_name, pref_id=pref_id)
+        Container.__init__(self, default_name, path=pref_id, pref_id=pref_id)
         self.exits = {}
         self.enters = {}
         self.set_max_weight_carried(4e9)
@@ -35,12 +46,11 @@ class Room(Container):
             if isinstance(obj, Container) and (obj.see_inside or hasattr(obj, 'cons')):
                 if obj.contents: 
                     obj_list += obj.contents 
-            dbg.debug('Room %s: light level is %s' % (self.id, total_light))
+            dbg.debug('Room %s: light level is %s' % (self.id, total_light), 3)
         return (total_light <= 0)
         
     def look_at(self, p, cons, oDO, oIDO):
         """Print long description of room, list items (excluding this player) and exits"""
-        dbg.debug("Called Room.look_at()")
         # if verb is transitive, verify that the room is the direct object
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sDO and (oDO is None): 
@@ -70,7 +80,10 @@ class Room(Container):
         if loc.is_dark():
             cons.write("It's too dark to see anything here.")
             return True
-        cons.write("You enter a %s." % loc.short_desc)
+        if user.terse:
+            cons.write("You enter a %s." % loc.short_desc)
+        else:
+            cons.write(loc.long_desc)
         if (len(loc.exits) > 0):
             cons.write("Exits are:")
             for w in loc.exits:
@@ -107,15 +120,15 @@ class Room(Container):
 
     def go_to(self, p, cons, oDO, oIDO):
         words = p.words
-        dbg.debug("verb function go_to: words == ")
-        dbg.debug(str(words))
         user = cons.user
-        sExit = words[1]
+        sExit = words[1]  
         if sExit in list(self.exits):
             try:
-                dest = Thing.ID_dict[self.exits[sExit]]
+                destFile = self.exits[sExit]  # filename of the destination room module
+                destMod = importlib.import_module(destFile)  # python module of the destination room
+                dest = destMod.load()
             except KeyError:
-                dbg.debug("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]))
+                dbg.debug("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]), 0)
                 cons.write("There was an internal error with the exit. ")
                 return True
             if cons.user.move_to(dest):

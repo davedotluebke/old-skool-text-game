@@ -30,6 +30,7 @@ class Console:
     def __init__(self, game = None):
         self.game = game
         self.parser = Parser()
+        self.handle_exceptions = True
         self.width = Console.default_width
         self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = True, tabsize = 4) 
         self.alias_map = {'n':       'go north',
@@ -91,11 +92,11 @@ class Console:
         for t in self.words:
             if t in self.alias_map:
                 cmd += self.alias_map[t] + " "
-                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]))
+                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]), 3)
             else:
                 cmd += t + " "
         cmd = cmd[:-1]   # strip trailing space added above
-        dbg.debug("User input with aliases resolved:\n    %s" % (cmd))
+        dbg.debug("User input with aliases resolved:\n    %s" % (cmd), 3)
         return cmd
     
     def _handle_console_commands(self):
@@ -122,6 +123,11 @@ class Console:
             if cmd == 'help':
                 self.write(self.help_msg)
                 return True
+
+            if cmd == 'debug':
+                self.handle_exceptions = not self.handle_exceptions
+                self.write("Toggle debug exception handling to %s" % ("on" if self.handle_exceptions else "off"))
+                return True
             
             file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game,
@@ -145,7 +151,7 @@ class Console:
         self.tw.subsequent_indent = indent * ' '
         for l in lines:
             print(self.tw.fill(l))
-        dbg.debug('cons.write wrote %s!' % text)
+        dbg.debug('cons.write wrote %s!' % text, 4)
 
     def new_user(self):
         self.write("Create your new user.")
@@ -161,6 +167,7 @@ class Console:
             i.move_to(new_user)
         self.write("You are now %s!" % new_user.id)
         self.user.move_to(Thing.ID_dict['nulspace'])
+        self.user.cons = None
         self.set_user(new_user)
         self.game.user = new_user
 

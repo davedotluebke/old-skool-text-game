@@ -304,3 +304,9 @@ Bounce Away!® because they liked to feel like they were flying, and the trampol
 #*
 ''')
 blue_book.move_to(bookshelf)
+
+scarf = Thing('scarf')
+scarf.set_description('bright pink scarf', 'This bright pink scarf is very clean and soft.')
+scarf.set_weight(200)
+scarf.set_volume(0.1)
+forest_one.insert(scarf)

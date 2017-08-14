@@ -3,8 +3,8 @@ from thing import Thing
 from action import Action
 
 class Book(Thing):
-    def __init__(self, default_name, s_desc, l_desc, pref_id=None):
-        super().__init__(default_name, pref_id)
+    def __init__(self, default_name, path, s_desc, l_desc, pref_id=None):
+        super().__init__(default_name, path, pref_id)
         self.set_description(s_desc, l_desc)
         self.what_you_read = list()
         self.index = 0

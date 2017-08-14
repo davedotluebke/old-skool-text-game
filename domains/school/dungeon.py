@@ -82,3 +82,4 @@ emerald = Emerald('emerald', "magical emerald", 'This is a magical green emerald
 emerald.move_to(trap)
 
 Thing.ID_dict['lair'].add_exit('northwest', crawlway.id)
+dungeon.crawlway.add_exit('southeast', cave.lair.id)

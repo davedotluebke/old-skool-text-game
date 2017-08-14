@@ -21,6 +21,8 @@ class DebugLog():
 
     def debug(self, s = "default error msg", level = 1):
         """Print the string s if level is <= current verbosity level."""
+        if level > self.verbosity:
+            return
         s = str(s)
         try:   #XXX temp fix
             stack = inspect.stack()     # returns a list of FrameInfo tuples
@@ -38,8 +40,7 @@ class DebugLog():
             s = func_name + ": " + s
         except KeyError:
             s = "Error tracing stack, s = %s" % s
-        if level <= self.verbosity:
-            print(s)
+        print(s)
         if self.log:
             self.log.write("%s\n" % s)
 

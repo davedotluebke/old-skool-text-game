@@ -1,6 +1,7 @@
 from debug import dbg
 from action import Action
 import random
+import gametools
 
 class Thing(object):
     ID_dict = {}
@@ -16,7 +17,8 @@ class Thing(object):
         Thing.ID_dict[self.id] = self
         return self.id
 
-    def __init__(self, default_name, pref_id=None):
+    def __init__(self, default_name, path, pref_id=None):
+        self.path = gametools.findGamePath(path) if path else None
         self.names = [default_name]
         self._add_ID(default_name if not pref_id else pref_id)
         self.plural = False         # should this thing be treated as plural?
@@ -39,7 +41,7 @@ class Thing(object):
         self.spawn_message = None
     
     def __del__(self):
-        dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id))
+        dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id), 0)
     
     def delete(self):
         if self.contents:
@@ -65,11 +67,13 @@ class Thing(object):
         # all our instance attributes. Always use the dict.copy()
         # method to avoid modifying the original state.
         state = self.__dict__.copy()
-        if self.location != None: 
-            state['location'] = self.location.id
+        if self.location:
+            if not isinstance(self.location, str): 
+                # if it isn't already a string, convert it to one 
+                state['location'] = self.location.id
         if self.contents != None: 
             # replace with new list of id strings, or leave as None (not [])
-            state['contents'] = [x.id for x in self.contents] 
+            state['contents'] = [(x if isinstance(x, str) else x.id) for x in self.contents] 
         return state
 
     def __setstate__(self, state):
@@ -88,36 +92,23 @@ class Thing(object):
         try: 
             obj = Thing.ID_dict[state['id']] # is this obj already in dict?
             dbg.debug("Note: %s already in Thing.ID_dict, maps to %s" % (state['id'], obj))
-        except KeyError:  # 
+        except KeyError:  # Not already in dict
             Thing.ID_dict[state['id']] = self
         self.__dict__.update(state)
 
     def _restore_objs_from_IDs(self):
         """Update object references stored as ID strings to directly reference the objects, using Thing.ID_dict."""
         if isinstance(self.location, str):
-            self.location = Thing.ID_dict[self.location]
+            self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet? 
         if self.contents != None:
             self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
 
-    def set_spawn(self, game, location, interval, message=None):
-        self.spawn_state = self.__dict__.copy()
-        self.spawn_location = location
-        self.spawn_interval = interval
-        self.spawn_message = message
-        game.events.schedule(game.time+self.spawn_interval, self.spawn, game)
-
-    def spawn(self, game):
-        game.events.schedule(game.time+self.spawn_interval, self.spawn, game)
-        for i in self.spawn_location.contents:
-            if i.names[0] == self.names[0]:
-                return
-        self.spawning = Thing(self.id)
-        tmp_id = self.spawning.id
-        self.spawning.__dict__.update(self.spawn_state)
-        self.spawning.id = tmp_id
-        self.spawning.move_to(self.spawn_location)
-        if self.spawn_message:
-            self.emit(self.spawn_message)
+    def _change_objs_to_IDs(self):
+        """Replace object references with ID strings, in preparation for pickling."""
+        if self.location:
+            self.location = self.location.id
+        if self.contents:
+            self.contents = [obj.id for obj in self.contents]
 
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""
@@ -129,14 +120,14 @@ class Thing(object):
     
     def set_weight(self, grams):
         if (grams < 0):
-            dbg.debug("Error: weight cannot be negative")
+            dbg.debug("Error: weight cannot be negative", 0)
             raise
         else:
             self.weight = grams
 
     def set_volume(self, liters):
         if (liters < 0):
-            dbg.debug("Error: volume cannot be negative")
+            dbg.debug("Error: volume cannot be negative", 0)
             raise
         else:
             self.volume = liters
@@ -176,11 +167,11 @@ class Thing(object):
             holder = self
         if holder not in ignore and hasattr(holder, 'perceive'):
             # immediate container can see messages, probably a creature/player
-            dbg.debug("creature holding this object is: " + holder.id)
+            dbg.debug("creature holding this object is: " + holder.id, 3)
             holder.perceive(message)
         # now get list of recipients (usually creatures) contained by holder (usually a Room)
         recipients = [x for x in holder.contents if hasattr(x, 'perceive') and (x is not self) and (x not in ignore)]
-        dbg.debug("other creatures in this room include: " + str(recipients))
+        dbg.debug("other creatures in this room include: " + str(recipients), 3)
         for recipient in recipients:
             recipient.perceive(message)
 
@@ -189,6 +180,9 @@ class Thing(object):
         Returns True if the move succeds. If the insertion fails, attempts to 
         re-insert into the original location and returns False."""
         origin = self.location
+        if self.fixed:
+            if not hasattr(dest, 'exits'):
+                return False # cannot move an object that is fixed in place
         if origin:
             origin.extract(self)
         # if cannot insert into destination, return to where it came from
@@ -199,7 +193,6 @@ class Thing(object):
                 origin.insert(self)
             return False
 
-    # TODO: plumb validation protocol down to move_to(), insert(), extract()
     def take(self, p, cons, oDO, oIDO):
         if oDO == None: return "I don't know what you're trying to take!"
         if oDO != self: return "You can't take the %s!" % oDO.short_desc
@@ -223,7 +216,6 @@ class Thing(object):
 
     def look_at(self, p, cons, oDO, oIDO):  
         '''Print out the long description of the thing.'''
-        dbg.debug("Called Thing.look_at()")
         if self == oDO or self == oIDO:
             cons.write(self.long_desc)
             return True

@@ -3,8 +3,8 @@ from action import Action
 from room import Room
 
 class Scroll(Thing):
-    def __init__(self, default_name, pref_id=None):
-        super().__init__(default_name, pref_id)
+    def __init__(self, default_name, path, pref_id=None):
+        super().__init__(default_name, path, pref_id)
         self.set_description('scroll', 'This scroll appears to say somthing on it.')
         self.actions.append(Action(self.read, ['read'], True, False))
         self.messages = ['Make a potion to hide thyself. Use this potion to sneak past an unbeatable enemy.\nDue next class.', 'Find thyself a power inside\nTake thee a large stride\nBe the one who does not cower\nAnd be the one who discovers the power\n\nFinish your task to find the power\nHere upon ticks your hour...\n\n', 'Now that you have found your power, you must set off into the world.\nExplore the lands of Sorcery and Wizardry, Enchantment and Witchcraft. A letter will arrive for you awaiting your return.\n\nWrite the true name of a place on the magic paper, and go west to go there. Write "learn wizardry" and go west learn wizardry, "learn witchcraft" to learn witchcraft, "learn sorcery" to learn sorcery, and "learn enchantment" to learn enchantment.']
@@ -13,9 +13,11 @@ class Scroll(Thing):
         self.next_trigger_room = 'scrollchangeroom1'
 
     def heartbeat(self):
+        # XXX below code is broken, just return for now
+        return
         if self.location:
             for l in range(1, 15):
-                counter = eval('self.'+str(l*'location.'+'id'))
+                counter = eval('self.'+str(l*'location'))
                 if counter == self.next_trigger_room:
                     self.emit('The scroll glows for a second!')
                     self.message_number += 1
@@ -23,6 +25,8 @@ class Scroll(Thing):
                     break
                 if isinstance(eval('self.'+str((l-1)*'location.')+'location'), Room) and counter != self.next_trigger_room:
                     break
+
+        
 
     def read(self, p, cons, oDO, oIDO):
         if oDO != self:
@@ -32,3 +36,7 @@ class Scroll(Thing):
             return True
         else:
             return "A problem occured!"
+
+def clone(): 
+    obj = Scroll('scroll', __file__)
+    return obj
