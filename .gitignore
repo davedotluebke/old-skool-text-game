@@ -1,6 +1,4 @@
-# tell git which files and directories to ignore
-*.pyc               # ignore temp files created by python
-__pycache__         # ignore the directory where python stores them
-test_log.txt        # ignore the default logfile
-*.OAD               # ignore saved game files
-
+*.pyc
+test_log.txt
+*.OAD
+*.OADplayer
