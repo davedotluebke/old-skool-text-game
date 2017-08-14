@@ -167,6 +167,7 @@ class Console:
             i.move_to(new_user)
         self.write("You are now %s!" % new_user.id)
         self.user.move_to(Thing.ID_dict['nulspace'])
+        self.user.cons = None
         self.set_user(new_user)
         self.game.user = new_user
 

@@ -218,20 +218,26 @@ class Game():
 
         current_events = self.events.check_for_event(self.time)
         for event in current_events:
-            try:
+            if (self.cons.handle_exceptions):
+                try:
+                    event.callback(event.payload)
+                except Exception as inst:
+                    dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (event.timestamp, event.callback, event.payload), 0)
+                    dbg.debug(traceback.format_exc(), 0)
+                    dbg.debug('Error caught!', 0)
+            else:
                 event.callback(event.payload)
-            except Exception as inst:
-                dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (event.timestamp, event.callback, event.payload), 0)
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug('Error caught!', 0)
 
         for h in self.heartbeat_users:
-            try:
+            if (self.cons.handle_exceptions):
+                try:
+                    h.heartbeat()
+                except Exception as inst:
+                    dbg.debug("An error occured inside code for %s! Printing below:" % h, 0)
+                    dbg.debug(traceback.format_exc(), 0)
+                    dbg.debug('Error caught!', 0)
+            else:
                 h.heartbeat()
-            except Exception as inst:
-                dbg.debug("An error occured inside code for %s! Printing below:" % h, 0)
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug('Error caught!', 0)
 
     def loop(self):
         while True:
