@@ -16,15 +16,19 @@ class Game():
     
     Eventually this will grow to include a list of players, associated consoles, etc."""
     def __init__(self):
-        self.heartbeat_users = []
+        self.keep_going = True  # game ends when set to False
+        
+        self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
+        self.time = 0  # number of heartbeats since game began
+        self.events = EventQueue()  # events to occur in future 
+
         self.cons = Console(game = self)
         self.user = Player("Joe Test", None, self.cons)
+        self.cons.set_user(self.user)
+        
         self.user.set_description('Joe Test', 'Our test player named Joe')
         self.user.set_max_weight_carried(750000)
         self.user.set_max_volume_carried(2000)
-        self.cons.set_user(self.user)
-        self.events = EventQueue()
-        self.time = 0
 
     def save_game(self, filename):
         if not filename.endswith('.OAD'): 
@@ -230,13 +234,12 @@ class Game():
                 h.heartbeat()
 
     def loop(self):
-        while True:
+        while self.keep_going:
             self.beat()
-            cmd = self.cons.take_input('-> ')
-            keep_going = self.cons.parser.parse(self.user, self.cons, cmd)
-            if not keep_going:
-                dbg.shut_down()
-                break
+            # move to Player.heartbeat():
+            #  cmd = self.cons.take_input('-> ')
+            #  keep_going = self.cons.parser.parse(self.user, self.cons, cmd)
+        dbg.shut_down()
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
         for i in self.nulspace.contents:

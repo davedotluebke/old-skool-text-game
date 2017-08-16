@@ -75,7 +75,7 @@ class Player(Creature):
         self.start_loc_id = startroom.id
 
     def heartbeat(self):
-        if True:            # TODO: Player Prefrences
+        if True:            # TODO: Player Preferences
             if self.attacking:
                 if self.attacking == 'quit':
                     return
@@ -86,6 +86,9 @@ class Player(Creature):
                     self.cons.write('You attack your enemy %s' % i.short_desc)
                     self.attacking = i
                     self.attack_enemy(i)
+        cmd = self.cons.take_input('-> ')
+        self.cons.game.keep_going = self.cons.parser.parse(self, self.cons, cmd)
+            
 
     def die(self, message):
         Creature.die(self, message)
