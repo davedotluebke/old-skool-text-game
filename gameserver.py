@@ -2,6 +2,7 @@ import pickle
 import io
 import traceback
 import random
+import time
 
 import gametools
 
@@ -205,6 +206,10 @@ class Game():
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""
         self.heartbeat_users.append(obj)
+    
+    def deregister_heartbeat(self, obj):
+        """Remove the specified object (obj) from the heartbeat_users list"""
+        del self.heartbeat_users[self.heartbeat_users.index(obj)]
     
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
