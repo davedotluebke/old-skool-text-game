@@ -2,6 +2,7 @@ import pickle
 import io
 import traceback
 import random
+import time
 
 import gametools
 
@@ -202,6 +203,10 @@ class Game():
         """Add the specified object (obj) to the heartbeat_users list"""
         self.heartbeat_users.append(obj)
     
+    def deregister_heartbeat(self, obj):
+        """Remove the specified object (obj) from the heartbeat_users list"""
+        del self.heartbeat_users[self.heartbeat_users.index(obj)]
+    
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
@@ -232,11 +237,6 @@ class Game():
     def loop(self):
         while True:
             self.beat()
-            cmd = self.cons.take_input('-> ')
-            keep_going = self.cons.parser.parse(self.user, self.cons, cmd)
-            if not keep_going:
-                dbg.shut_down()
-                break
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
         for i in self.nulspace.contents:

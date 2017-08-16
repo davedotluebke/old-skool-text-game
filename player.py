@@ -32,6 +32,7 @@ class Player(Creature):
         self.strength = 20
         self.dexterity = 60
         self.attack_now = 0
+        self.auto_attack = True
         self.wizardry_skill = 0
         self.wizardry_element = 'fire' #XXX: Temp until player setup finished
         self.attacking = False
@@ -74,8 +75,19 @@ class Player(Creature):
     def set_start_loc(self, startroom):
         self.start_loc_id = startroom.id
 
+    def detach(self):
+        self.cons.detach()
+        self.cons = None
+        Thing.ID_dict['nulspace'].game.deregister_heartbeat(self)
+
     def heartbeat(self):
-        if True:            # TODO: Player Prefrences
+        cmd = self.cons.take_input('-> ')
+        keep_going = self.cons.parser.parse(self, self.cons, cmd)
+        if not keep_going:
+            self.move_to(Thing.ID_dict['nulspace'])
+            self.detach()
+
+        if self.auto_attack:            # TODO: Player Prefrences
             if self.attacking:
                 if self.attacking == 'quit':
                     return
@@ -219,7 +231,7 @@ class Player(Creature):
         self.emit("%s arrives suddenly, as if by magic!" % self.names[0], [self])
         cons.write("You perform a magical incantation and are suddenly in a new place!")
         room.report_arrival(self)
-        return True             
+        return True
 
     
     def engage(self, p, cons, oDO, oIDO):
