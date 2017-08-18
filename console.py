@@ -30,6 +30,7 @@ class Console:
     def __init__(self, game = None):
         self.game = game
         self.parser = Parser()
+        self.change_players = False
         self.handle_exceptions = True
         self.width = Console.default_width
         self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = True, tabsize = 4) 
@@ -177,8 +178,11 @@ class Console:
     def take_input(self, prompt):
         self.command = input(prompt)
         self.words = self.command.split()
-        # if user types a console command, handle it and start over
+        # if user types a console command, handle it and start over unless the player that called this is deactive
         while (self._handle_console_commands() == True):
+            if self.change_players:
+                self.change_players = False
+                return "quit" #deletes other player so new one can start
             self.command = input(prompt)
             self.words = self.command.split()
         # replace any aliases with their completed version

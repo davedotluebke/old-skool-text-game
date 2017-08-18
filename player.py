@@ -84,6 +84,7 @@ class Player(Creature):
         cmd = self.cons.take_input('-> ')
         keep_going = self.cons.parser.parse(self, self.cons, cmd)
         if not keep_going:
+            self.cons.game.keep_going = False #XXX temp so game is quitable
             self.move_to(Thing.ID_dict['nulspace'])
             self.detach()
 
