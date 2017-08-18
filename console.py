@@ -183,7 +183,7 @@ class Console:
         while (self._handle_console_commands() == True):
             if self.change_players:
                 self.change_players = False
-                return "quit" #deletes other player so new one can start
+                return "" #deletes other player so new one can start
             self.command = input(prompt)
             self.words = self.command.split()
         # replace any aliases with their completed version
