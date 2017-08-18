@@ -53,8 +53,9 @@ class Console:
         """Set the Player object associated with this console."""
         self.user = self_user
 
-    def detach(self):
-        self.user = None
+    def detach(self, user):
+        if self.user == user:
+            self.user = None
 
     def set_width(self, w):
         self.width = w
