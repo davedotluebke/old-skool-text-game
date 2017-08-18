@@ -167,9 +167,11 @@ class Game():
         eraselist = [self.user]
         for o in eraselist:
             if o.contents:
-                eraselist += o.contents          
+                eraselist += o.contents
             if o.location.extract(o):
                 dbg.debug("Error deleting player or inventory during load_game(): object %s contained in %s " % (o, o.location))
+            if o in self.heartbeat_users:
+                self.deregister_heartbeat(o)
             del Thing.ID_dict[o.id]
             # o.__del__()  # XXX probably doesn't truly delete the object; needs more research
         self.cons.user = None
@@ -177,6 +179,8 @@ class Game():
         self.user = newplayer
         self.user.cons = self.cons  # custom pickling code for Player doesn't save console
         self.cons.user = self.user  # update backref from cons
+
+        self.cons.change_players = True
 
         self.user.location = gametools.load_room(self.user.location) 
         if self.user.location == None: 
@@ -193,6 +197,9 @@ class Game():
             (head, sep, tail) = o.id.partition('-saveplayer')
             o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
 
+        for o in l:
+            self.heartbeat_users.append(o) #XXX temp, replace with detection system to detect if o.heartbeat() is empty (aka pass)
+
         room = self.user.location
         room.insert(self.user)  # insert() does some necessary bookkeeping
         self.cons.write("Restored game state from file %s" % filename)
@@ -205,11 +212,17 @@ class Game():
 
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""
-        self.heartbeat_users.append(obj)
+        if obj not in self.heartbeat_users:
+            self.heartbeat_users.append(obj)
+        else:
+            dbg.debug("object %s is already in the heartbeat_users list!" % obj, 2)
     
     def deregister_heartbeat(self, obj):
         """Remove the specified object (obj) from the heartbeat_users list"""
-        del self.heartbeat_users[self.heartbeat_users.index(obj)]
+        if obj in self.heartbeat_users:
+            del self.heartbeat_users[self.heartbeat_users.index(obj)]
+        else:
+            dbg.debug("object %s, not in heartbeat_users, tried to deregister heartbeat!" % obj, 2)
     
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""

@@ -76,7 +76,7 @@ class Player(Creature):
         self.start_loc_id = startroom.id
 
     def detach(self):
-        self.cons.detach()
+        self.cons.detach(self)
         self.cons = None
         Thing.ID_dict['nulspace'].game.deregister_heartbeat(self)
 
