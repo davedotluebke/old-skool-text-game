@@ -253,10 +253,13 @@ class Game():
 
     def loop(self):
         while self.keep_going:
+            start = time.time()
             self.beat()
-            # move to Player.heartbeat():
-            #  cmd = self.cons.take_input('-> ')
-            #  keep_going = self.cons.parser.parse(self.user, self.cons, cmd)
+            end = time.time()
+            time_taken = end - start
+            wait = 1 - time_taken
+            if wait >= 0:
+                time.sleep(wait)
         dbg.shut_down()
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
