@@ -20,18 +20,15 @@ class Flower(Thing):
                 return 'I\'m not sure what you mean.'
         if oIDO == self:
             if sDO == 'petal' and sPrep in ['from', 'off']:
-                petal = Thing(self.names[0] + ' petal')
-                petal.set_description(self.names[0] + ' petal', "This is a single petal from a %s" % self.names[0])
-                petal.add_names('petal')
-                petal.add_adjectives(self.names[0])
-                petal.set_volume(0.0005)
-                petal.set_weight(0.5)
+                import domains.school.forest.petal as petal_path
+                petal_path.set_species(self.type)
+                petal = gametools.clone("domains.school.forest.petal")
                 petal.move_to(cons.user)
                 cons.write('You pick a petal from the %s.' % self.type)
                 return True
             else:
                 return "I'm not sure what you are trying to pick from the %s...a petal perhaps?" % self.names[0]
-        return "I'm not sure what you mean! "
+        return "I'm not sure what you mean! Are you trying to pick the %s, or pick something from the %s? " % (self.names[0], self.names[0])
     
     def shake(self, p, cons, oDO, oIDO):
         for i in self.actions:

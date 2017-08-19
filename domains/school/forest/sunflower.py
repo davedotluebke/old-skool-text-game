@@ -7,5 +7,4 @@ def clone():
     sunflower.set_volume(3)
     sunflower.set_weight(200)
     sunflower.add_adjectives('happiness','giant')
-    sunflower.actions.append(action.Action(sunflower.take, ['pick'], True, False))
     return sunflower
