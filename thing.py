@@ -181,7 +181,10 @@ class Thing(object):
         re-insert into the original location and returns False."""
         origin = self.location
         if self.fixed:
-            if not hasattr(dest, 'exits'):
+            if hasattr(self, 'is_liquid'):
+                if not dest.liquid:
+                    return False
+            elif not hasattr(dest, 'exits'):
                 return False # cannot move an object that is fixed in place
         if origin:
             origin.extract(self)

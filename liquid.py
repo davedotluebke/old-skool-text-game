@@ -10,6 +10,7 @@ class Liquid(Scenery):
         Scenery.__init__(self, default_name, short_desc, long_desc, pref_id)
         self.actions.append(Action(self.pour, ['pour'], True))
         self.actions.append(Action(self.drink, ['drink', 'sip', 'taste'], True))
+        self.is_liquid = True
 
     def pour(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
