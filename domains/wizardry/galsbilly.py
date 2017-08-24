@@ -61,3 +61,29 @@ test_o.move_to(central_fountain)
 #TODO: Fix jade
 #test_j = Jade('jade', 'rare jade', 'This is a rare jade. It is orange.')
 #test_j.move_to(central_fountain)
+
+    def enter(self, p, cons, oDO, oIDO):
+        words = p.words
+        del words[0]
+        words = words
+        sEnter = ''
+        b = False
+        for i in words:
+            if b:
+                sEnter += ' '
+            sEnter += i.lower()
+            b = True
+        if sEnter in list(self.enters):
+            dest = Thing.ID_dict[self.enters[sEnter]]
+            if cons.user.move_to(dest):
+                loc = cons.user.location
+                cons.write("You enter %s" % sEnter.capitalize())
+                self.emit("%s enters %s" % (str(cons.user), sEnter.capitalize()))
+                loc.report_arrival(cons.user)
+                return True
+            else:
+                return "For some reason you are unable to enter %s." % sEnter.capitalize()
+        else:
+            return "I don't see anywhere named %s you can enter!" % sEnter.capitalize()
+
+

@@ -1,4 +1,5 @@
 from action import Action
+import gametools
 
 from thing import Thing
 from creature import NPC
@@ -6,8 +7,8 @@ from player import Player
 from room import Room
 
 class PitRoom(Room):
-    def __init__(self, default_name):
-        Room.__init__(self, default_name)
+    def __init__(self, default_name, pref_id):
+        Room.__init__(self, default_name, pref_id=pref_id)
         self.set_description('crude pit', 'This is a crude pit. It is about 1/10 filled with water.')
         self.has_player = False
         self.water_level_den = 10
@@ -47,8 +48,8 @@ class PitRoom(Room):
         player.cons.write('You notice that now you can reach the trapdoor the goblin closed.')
 
 class Roots(Thing):
-    def __init__(self, default_name):
-        Thing.__init__(self, default_name)
+    def __init__(self, default_name, path):
+        Thing.__init__(self, default_name, path)
         self.open = False
         self.set_description('strong roots', 'These roots look very strong. You wish you could move them.')
         self.add_adjectives('strong')
@@ -67,19 +68,17 @@ class Roots(Thing):
             return True
 
 class MasterGoblin(NPC):
-    def __init__(self):
-        NPC.__init__(self, 'goblin', Thing.ID_dict['nulspace'].game)
+    def __init__(self, path):
+        NPC.__init__(self, 'goblin', path, Thing.ID_dict['nulspace'].game)
         self.set_description('old mean goblin', 'This goblin is standing straight in front of the passage west. He is holding a piece of paper in his hand.')
         self.add_adjectives('old', 'horrid', 'mean')
         self.add_script('''Listen. If you intend to walk straight past here invisible I tell you that you will not get away with it. 
 I am the only one who can let you past and I'm not going to let you get past.
 And to pass you must pay me with a gem - an emerald, I think - and give it to me. 
 If you do not give me the emerald, however, but keep it, you will be severely punished.''')
-        self.pit = PitRoom('pit')
-        self.root_room = Room('roots')
-        self.root_room.set_description('crude dungeon', 'This is a crude dungeon with a shaft of light coming throgh some tree roots in a corner.')
-        self.roots = Roots('roots')
-        self.roots.move_to(self.root_room)
+        self.pit = gametools.load_room('domains.school.dungeon.pit')
+        self.root_room = gametools.load_room('domains.school.dungeon.root_room')
+        self.roots = gametools.clone('domains.school.dungeon.roots')
         self.complete_players = []
         self.approached = []
         self.complete_message = []

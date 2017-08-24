@@ -19,12 +19,10 @@ class Room(Container):
         """Initialize the room. Set <light> level to 0 for a dark room."""
         Container.__init__(self, default_name, path=pref_id, pref_id=pref_id)
         self.exits = {}
-        self.enters = {}
         self.set_max_weight_carried(4e9)
         self.set_max_volume_carried(3e9)
         self.actions.append(Action(self.go_to, ["go", "walk"], True, False))
         self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
-        self.actions.append(Action(self.enter, ["enter"], True, False))
         self.fix_in_place("You can't move that!")
         self.closable = False
         self.default_light = light  # Can see and perceive emits when light level > 0
@@ -33,9 +31,6 @@ class Room(Container):
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room
     
-    def add_enter(self, enter_name, enter_room):
-        self.enters[enter_name] = enter_room
-
     def is_dark(self):
         total_light = self.default_light
         obj_list = self.contents[:]
@@ -93,30 +88,6 @@ class Room(Container):
                 cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
         else:
             cons.write("There are no obvious exits.")
-
-    def enter(self, p, cons, oDO, oIDO):
-        words = p.words
-        del words[0]
-        words = words
-        sEnter = ''
-        b = False
-        for i in words:
-            if b:
-                sEnter += ' '
-            sEnter += i.lower()
-            b = True
-        if sEnter in list(self.enters):
-            dest = Thing.ID_dict[self.enters[sEnter]]
-            if cons.user.move_to(dest):
-                loc = cons.user.location
-                cons.write("You enter %s" % sEnter.capitalize())
-                self.emit("%s enters %s" % (str(cons.user), sEnter.capitalize()))
-                loc.report_arrival(cons.user)
-                return True
-            else:
-                return "For some reason you are unable to enter %s." % sEnter.capitalize()
-        else:
-            return "I don't see anywhere named %s you can enter!" % sEnter.capitalize()
 
     def go_to(self, p, cons, oDO, oIDO):
         words = p.words

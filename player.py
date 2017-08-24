@@ -34,7 +34,7 @@ class Player(Creature):
         self.attack_now = 0
         self.auto_attack = True
         self.wizardry_skill = 0
-        self.wizardry_element = 'fire' #XXX: Temp until player setup finished
+        self.wizardry_element = None
         self.attacking = False
         self.reading = False
         self.hitpoints = 20

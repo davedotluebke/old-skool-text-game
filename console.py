@@ -31,7 +31,7 @@ class Console:
         self.game = game
         self.parser = Parser()
         self.change_players = False
-        self.handle_exceptions = True
+        self.handle_exceptions = False
         self.width = Console.default_width
         self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = True, tabsize = 4) 
         self.alias_map = {'n':       'go north',

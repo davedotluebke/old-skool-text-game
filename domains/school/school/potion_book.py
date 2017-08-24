@@ -17,6 +17,7 @@ Table of Contents:
 
 Invisibility Potion on page 3
 Pink Potion on page 4
+Strength Potion on page 5
 
 #*
 Invisibility Potion
@@ -33,5 +34,11 @@ The Second Step: Put the ingredients in a cauldron and put the cauldron over a b
 The Third Step: Drink thys potion, and turn thyself pink.
 The Fourth Step: Beware, because thy will not be pink for long.
 #*
+Strength Potion
+
+The First Step: Gather thyself moss from a cave, molasses, and a seed from a poppy
+The Second Step: Put the ingredients in thy cauldron and put the cauldron over a burner.
+The Third Step: Drink thys potion, and make thyself stronger.
+The Fourth Step: Beware, because thy will not be stronger forever.
 ''')
     return potion_book
