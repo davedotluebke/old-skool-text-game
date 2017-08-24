@@ -50,7 +50,10 @@ class Container(Thing):
         """Put obj into this Container object, returning True if the operation failed"""
         # error checking for max weight etc goes here
         if obj == self:
-            dbg.debug('Trying to insert into self - not allowed!')
+            dbg.debug('Trying to insert into self - not allowed!', 0)
+            return True
+        if obj == None:
+            dbg.debug('Trying to insert a null object into %s!' % self, 0)
             return True
         contents_weight = 0
         contents_volume = 0

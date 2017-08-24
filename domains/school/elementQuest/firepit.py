@@ -1,20 +1,28 @@
+from debug import dbg
+
 import room
 import scenery
 import gametools
 
 def light(p, cons, oDO, oIDO):
-    pass
+    dbg.debug("firepit room -> light() action called!", 0)
+    return True
 
 def take(p, cons, oDO, oIDO):
-    (sV, sDO, sPrep, sIDO) =  p.diagram_sentence(p.words):
-    if not sDO == 'branch' and not sDO == 'oak branch':
-        return "Did you mean to take a branch?"
+    (sV, sDO, sPrep, sIDO) =  p.diagram_sentence(p.words)
+    errmsg =  "Did you mean to take a branch from the firepit?"
+    if not sDO in ('branch', 'oak branch'):
+        return  errmsg
+    if sPrep == "from" and oIDO != firepit:
+        return errmsg
     for i in cons.user.contents:
         if i.path == 'domains.school.elementQuest.branch':
             cons.write('You already have a branch. Perhaps you should leave the rest for others.')
             return True
     branch = gametools.clone('domains.school.elementQuest.branch')
     cons.user.insert(branch)
+    cons.write("You take a sturdy oak branch from the firepit.")
+    cons.user.emit("%s takes a sturdy oak branch from the firepit." % cons.user, [cons.user])
     return True
 
 def load():
