@@ -33,7 +33,7 @@ def load():
     firepit_room = room.Room('fireQuest1', roomPath)
     firepit_room.set_description('large room with a firepit in the middle', 'This large domed room has paintings of dancing flames on the walls. It has a firepit in the center, currently unlit and filled with sturdy oak branches.')
     firepit_room.add_exit('northwest', 'domains.school.elementQuest.path_choice')
-    firepit_room.add_exit('southeast', 'domains.school.elementQuest.TMP')
+    firepit_room.add_exit('southeast', 'domains.school.elementQuest.tapestries')
 
     firepit = scenery.Scenery('firepit', 'copper firepit', 'This copper firepit is filled with sturdy oak branches. It is unlit.')
     firepit.actions.append(room.Action(light, ['light', 'hold', 'touch', 'put'], True, False))
