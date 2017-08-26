@@ -9,6 +9,7 @@ def wrap(p, cons, oDO, oIDO):
         return True
     cons.write('You wrap the cloth around the branch and create a torch.')
     torch = gametools.clone('domains.school.elementQuest.torch')
+    torch.soaked = oDO.soaked
     torch.move_to(oIDO.location)
     for i in [oDO, oIDO]:
         i.move_to(thing.Thing.ID_dict['nulspace'])
@@ -19,4 +20,5 @@ def clone():
     cloth.set_description('plain white cloth', 'This cloth is plain white. It is very thin.')
     cloth.add_adjectives('plain', 'white')
     cloth.actions.append(thing.Action(wrap, ['wrap'], True, False))
+    cloth.soaked = False
     return cloth
