@@ -18,6 +18,7 @@ class Thing(object):
         return self.id
 
     def __init__(self, default_name, path, pref_id=None):
+        self.unlisted = False # should this thing be listed in room description  
         self.path = gametools.findGamePath(path) if path else None
         self.names = [default_name]
         self._add_ID(default_name if not pref_id else pref_id)
@@ -39,7 +40,7 @@ class Thing(object):
         self.spawn_location = None
         self.spawn_interval = None
         self.spawn_message = None
-    
+
     def __del__(self):
         dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id), 0)
     
@@ -141,9 +142,10 @@ class Thing(object):
     def unfix(self):
         self.fixed = False
 
-    def set_description(self, s_desc, l_desc):
+    def set_description(self, s_desc, l_desc, unlisted=False):
         self.short_desc = s_desc
         self.long_desc = l_desc
+        self.unlisted = unlisted
 
     def new_verb(self, verb, func):
         self.verb_dict[verb] = func

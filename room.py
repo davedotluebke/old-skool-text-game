@@ -59,7 +59,7 @@ class Room(Container):
             cons.write("Exits are:")
             for w in self.exits:
                 cons.write('\t' + w)
-            local_objects = ["a " + str(o) for o in self.contents if o is not cons.user]
+            local_objects = ["a " + o.short_desc for o in self.contents if o is not cons.user and not o.unlisted]
             if local_objects:
                 cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
         else:
@@ -83,7 +83,7 @@ class Room(Container):
             cons.write("Exits are:")
             for w in loc.exits:
                 cons.write('\t' + w)
-            local_objects = ["a " + str(o) for o in loc.contents if o is not user]
+            local_objects = ["a " + o.short_desc for o in loc.contents if o is not user and not o.unlisted]
             if local_objects:
                 cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
         else:
