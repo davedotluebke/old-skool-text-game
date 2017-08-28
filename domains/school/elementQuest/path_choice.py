@@ -33,8 +33,8 @@ class QuestDoor(thing.Thing):
         self.opened = True
         cons.write('You open the door, and see %s.' % self.view_through_door)
         self.long_desc += self.view_through_door
-        for i in self.location:
-            if isinstance(i, QuestDoor):
+        for i in self.location.contents:
+            if isinstance(i, QuestDoor) and i.opened and i != self:
                 i.opened = False
                 cons.write('The doorway to the path of %s slams closed!' % i.names[0])
         return True
@@ -70,25 +70,25 @@ def load():
 
     fire = QuestDoor('fire', None)
     fire.set_description('door of fire', 'This door is warm, and has a large label above it reading "Fire". ')
-    fire.set_view('Through this door you see a circular room with a firepit in the middle.')
+    fire.set_view('a circular room with a firepit in the middle')
     fire.set_dest('domains.school.elementQuest.firepit')
     path_choice.insert(fire)
 
     water = QuestDoor('water', None)
     water.set_description('door of water', 'This door is cool, and has a large label above it reading "Water". ')
-    water.set_view('Through this door you see a rowboat and a lake.')
+    water.set_view('a rowboat and a lake')
     water.set_dest('domains.school.elementQuest.dock')
     path_choice.insert(water)
 
     earth = QuestDoor('earth', None)
     earth.set_description('door of earth', 'This door is made of rock, and is very hard. It has a large label above it reading "Earth". ')
-    earth.set_view('Through this door there is a steep staircase leading underground.')
+    earth.set_view('a steep staircase leading underground')
     earth.set_dest('domains.school.elementQuest.staircase')
     path_choice.insert(earth)
 
     air = QuestDoor('air', None)
     air.set_description('door of air', 'This door is as light as a feather. It has a large label over it reading "Air". ')
-    air.set_view('Through this door you see a blustery autumn day in some woods.')
+    air.set_view('a blustery autumn day in some woods')
     air.set_dest('domains.school.elementQuest.autumn_forest')
     path_choice.insert(air)
     return path_choice

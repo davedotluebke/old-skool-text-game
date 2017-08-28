@@ -7,7 +7,9 @@ def load():
     if exists: return exists
 
     great_hall = room.Room('great hall', safe=True, pref_id=roomPath)
-    great_hall.set_description('Great Hall', 'This is the biggest room in the entire school, and it is enormous. It is made of ancient stones. To the east a grand staircase rises to an elevated landing.')
+    great_hall.set_description('Great Hall', 'This is the biggest room in the entire school, '
+        'and it is enormous. It is made of ancient stones. A giant banquet table fills the room. '
+        'To the east a grand staircase rises to an elevated landing.')
     great_hall.add_names('hall', 'chamber')
     great_hall.add_adjectives('grand', 'enormous')
     great_hall.add_exit('west', 'domains.school.school.grand_entry')
