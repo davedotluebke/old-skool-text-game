@@ -1,6 +1,15 @@
 import room
 import gametools
-import scenery
+import thing
+import container
+
+class Shaft(thing.Thing):
+    def hold(self, p, cons, oDO, oIDO):
+    # Idea: for any object held in the shaft of sunlight, test if it is a see-through container holding 
+    # "liquid fire" potion. If so, the potion alights!
+    # Should work for 'hold x in shaft', 'wave x in shaft of sunlight', 'wave x through shaft', etc. 
+        pass
+
 
 def load():
     roomPath = gametools.findGamePath(__file__)

@@ -24,9 +24,12 @@ class LiquidFire(liquid.Liquid):
             if isinstance(loc, room.Room):
                 break
             loc = loc.location
-        if not loc.indoor or self.location == 'domains.school.elementQuest.shaft_obj':
-            self.emit('The luminous red liquid bursts into flames and quickly burns away.')
-            self.move_to(thing.Thing.ID_dict['nulspace'])
+        if not loc.indoor:
+            self.burn_up()
+    
+    def burn_up(self)
+        self.emit('The luminous red liquid in the %s bursts into flames and quickly burns away.' % self.location)
+        self.move_to(thing.Thing.ID_dict['nulspace'])
 
 def clone():
     f = LiquidFire('liquid', 'luminous red liquid', 'This luminous red liquid shimmers, almost as if it were in flames.')

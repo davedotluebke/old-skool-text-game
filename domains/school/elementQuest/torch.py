@@ -19,11 +19,22 @@ class Torch(thing.Thing):
                 return "You are already holding the torch!"
             return "I'm not quite sure what you meant."
         if oIDO.names[0] == 'shaft':
-            if self.soaked and not self.lit:
-                cons.write('The liquid fire in the cloth bursts into flame, and starts the torch burning brightly.')
+            if self.lit: 
+                cons.write('You %s the burning torch in the shaft of sunlight, but nothing '
+                            'further happens.' % p.words[0])
+                self.emit("%s %ss the burning torch in the shaft of sunlight." % (cons.user, p.words[0]), 
+                            [cons.user])
+                return True
+            if self.soaked:
+                cons.write('The luminous red liquid in the cloth bursts into flame, and starts the torch burning brightly.')
                 self.emit('%s holds the torch in the shaft of sunlight and it suddenly bursts into flames!' % cons.user, [cons.user])
                 self.light()
                 return True
+            else:  # unlit torch is not soaked
+                cons.write('You %s the torch in the shaft of sunlight, but nothing happens.' % p.words[0])
+                self.emit("%s %ss the torch in the shaft of sunlight." % (cons.user, p.words[0]), [cons.user])
+                return True
+                
         if oIDO.names[0] == 'door':
             if self.lit:
                 cons.write('You hold the torch on the door, setting it into flames.')
