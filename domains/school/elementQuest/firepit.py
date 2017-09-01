@@ -43,6 +43,7 @@ def load():
     if exists: return exists
     
     firepit_room = room.Room('fireQuest1', roomPath)
+    firepit_room.indoor = True
     firepit_room.set_description('large room with a firepit in the middle', 'This large domed room has paintings '
         'of dancing flames on the walls. It has a firepit in the center, currently unlit and filled with sturdy oak '
         'branches. The doorway through which you entered is to the northwest. ')

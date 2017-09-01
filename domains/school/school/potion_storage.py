@@ -7,6 +7,7 @@ def load():
     if exists: return exists
     
     potion_storage = room.Room('potion storage', safe=True, pref_id=roomPath)
+    potion_storage.indoor = True
     potion_storage.set_description('potion storage room', 'This is a stonewalled potion storage room, dimly lit. It has many cauldrons on a open shelf, and many burners for stirring cauldrons. It has many ingredients in a different open shelf across the room.'
     'You have to step carefully here, as the floor is covered in shards of broken glass.')
     potion_storage.add_names('potion', 'storage')

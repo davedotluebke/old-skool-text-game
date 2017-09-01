@@ -7,6 +7,7 @@ def load():
     if exists: return exists
     
     gallery = room.Room('gallery', safe=True, pref_id=roomPath)
+    gallery.indoor = True
     gallery.set_description('portrait gallery', "This gradiose portrait gallery overlooks the Great Hall through a pillared colonade.")
     gallery.add_exit('east', 'domains.school.school.landing')
     gallery.add_exit('north', 'domains.school.school.hmasters_office')

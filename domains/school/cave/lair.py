@@ -9,6 +9,7 @@ def load():
     if exists: return exists
 
     lair = cave_mod.Lair('lair', roomPath)
+    lair.indoor = True
     lair.set_description('monster\'s lair', 'This is a lair where the terrible monster hides. It has a wall with clubs hanging on it. There is a crawlway to the northwest.')
     lair.add_adjectives("monster's")
     lair.add_exit('east', 'domains.school.cave.cave')

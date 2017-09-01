@@ -8,6 +8,7 @@ def load():
     # Room does not yet exist, create it
 
     grand_entry = room.Room('grand entry', safe=True, pref_id=roomPath)
+    grand_entry.indoor = True
     grand_entry.set_description('grand school entryway', 'This is the most magnificent entryway you have ever seen. The enormous front door is at the top of the marble staircase, with huge pillars on either side.')
     grand_entry.add_names('entry', 'entryway')
     grand_entry.add_adjectives('grand', 'magnificent')

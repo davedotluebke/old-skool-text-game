@@ -7,6 +7,7 @@ def load():
     if exists: return exists
     
     trap = room.Room('gold room', roomPath)
+    trap.indoor = True
     trap.set_description('room with gold in the center', 'You are in a large room. In the center of the room is a big pile of gold coins.')
     trap.add_exit('east', 'domains.school.dungeon.small_tunnel')
     trap.add_names('room', 'trap')

@@ -15,7 +15,7 @@ def check_loaded(roomPath):
             return False
 
 class Room(Container):
-    def __init__(self, default_name, pref_id, light=1, safe=False):
+    def __init__(self, default_name, pref_id, light=1, safe=False, indoor=False):
         """Initialize the room. Set <light> level to 0 for a dark room."""
         Container.__init__(self, default_name, path=pref_id, pref_id=pref_id)
         self.exits = {}
@@ -27,6 +27,7 @@ class Room(Container):
         self.closable = False
         self.default_light = light  # Can see and perceive emits when light level > 0
         self.monster_safe = safe
+        self.indoor = indoor
 
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room

@@ -24,27 +24,6 @@ nulspace.add_exit('west', 'nulspace')
 game.events.schedule(game.time+5, game.clear_nulspace)
 game.nulspace = nulspace
 
-try:
-    pass
-    #import domains.wizardry.galsbilly
-
-
-    #import home.owen.house
-except:
-    dbg.debug(traceback.format_exc())
-    try:
-        import domains.school
-    except:
-        game.user.cons.write('The game is broken, sorry! Error below:')
-        game.user.cons.write(traceback.format_exc())
-        dbg.debug(traceback.format_exc())
-        cons.write('\nDue to the problem with the above error, the game is closing.')
-        try:
-            game.user.move_to(nulspace)
-        except:
-            dbg.debug(traceback.format_exc())
-            cons.write('NOTHING IS WORKING. THE GAME IS BROKEN. PLEASE COME AGAIN LATER AFTER THIS ISSUE IS RESOLVED.')
-
 start_room_mod = importlib.import_module('domains.school.school.great_hall')
 start_room = start_room_mod.load()
 start_room.insert(game.user)

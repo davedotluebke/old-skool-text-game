@@ -10,6 +10,7 @@ class PitRoom(Room):
     def __init__(self, default_name, pref_id):
         Room.__init__(self, default_name, pref_id=pref_id)
         self.set_description('crude pit', 'This is a crude pit. It is about 1/10 filled with water.')
+        self.indoor = True
         self.has_player = False
         self.water_level_den = 10
         Thing.ID_dict['nulspace'].game.register_heartbeat(self)

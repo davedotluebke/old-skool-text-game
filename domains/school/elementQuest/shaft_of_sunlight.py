@@ -8,6 +8,7 @@ def load():
     if exists: return exists
     
     r = room.Room('sunlit room', roomPath)
+    r.indoor = True
     r.set_description('small sunlit room', 'This circular room is lit by a shaft of sunlight in the center. The walls here are made of clay, baked like bricks by a fire.')
     r.add_names('room')
     r.add_adjectives('sunlit', 'circular', 'round')

@@ -8,6 +8,7 @@ def load():
     if exists: return exists
 
     bedroom = room.Room('bedroom', roomPath)
+    bedroom.indoor = True
     bedroom.set_description('dusty bedroom', 'The bare board walls of this bedroom are dusty. A musty smell fills the air.')
     bedroom.add_exit('northwest', 'domains.school.forest.hallway')
     bed = scenery.Scenery('bed','decrepit old bed', 'This decrepit bed supports a bare stained mattress and is covered with a thick layer of dust.')

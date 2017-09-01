@@ -10,6 +10,7 @@ def load():
 
     lair = gametools.load_room('domains.school.cave.lair')
     cave = cave_mod.CaveRoom('cave', roomPath, lair)
+    cave.indoor = True
     cave.set_description('terrifying dark cave', 'This is one of the most scary caves you have ever been in. You are anxiousley looking around to see if there are any monsters.')
     cave.add_adjectives('scary', 'dark', 'terrifying')
     cave.add_exit('west', 'domains.school.cave.lair')

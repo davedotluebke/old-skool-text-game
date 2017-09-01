@@ -8,6 +8,7 @@ def load():
     if exists: return exists
 
     entryway = room.Room('entryway', roomPath)
+    entryway.indoor = True
     entryway.set_description('barren entryway', 'The dusty entryway has one chandelier hanging from the celing.')
     entryway.add_exit('east', 'domains.school.forest.woods')
     entryway.add_exit('southwest', 'domains.school.forest.kitchen')

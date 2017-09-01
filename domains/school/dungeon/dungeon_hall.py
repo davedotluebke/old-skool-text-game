@@ -7,6 +7,7 @@ def load():
     if exists: return exists
     
     dungeon_hall = room.Room('dungeon hall', pref_id=roomPath)
+    dungeon_hall.indoor = True
     dungeon_hall.set_description('dungeon hall', 'This is a old cave which has moss growing on the damp walls. It seems like it was made for a purpouse. There are tunnels to the north, south, and west, and a crawlway to the east.')
     dungeon_hall.add_exit('east', 'domains.school.dungeon.crawlway')
     dungeon_hall.add_exit('west', 'domains.school.dungeon.great_cavern')

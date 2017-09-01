@@ -8,6 +8,7 @@ def load():
     if exists: return exists
     
     r = room.Room('tapestries', roomPath)
+    r.indoor = True
     r.set_description('room with many tapestries hanging', 'This smaller circular room has many tapestries hanging around it.')
     r.add_exit('northwest', 'domains.school.elementQuest.firepit')
     r.add_exit('south', 'domains.school.elementQuest.shaft_of_sunlight')
