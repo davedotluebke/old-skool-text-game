@@ -12,7 +12,7 @@ def light(p, cons, oDO, oIDO):
     self.emit('%s lights the firepit, sending it into flames.' % cons.user)
     (head, sep, tail) = oDO.long_desc.partition('It is unlit.')
     oDO.long_desc = head + 'It is lit.'
-    thing.Thing.ID_dict['nulspace'].game.events.schedule(Thing.ID_dict['nulspace'].game.time+20, go_out, oDO)
+    thing.Thing.game.events.schedule(Thing.game.time+20, go_out, oDO)
     return True
 
 def go_out(firepit):

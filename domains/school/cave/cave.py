@@ -15,6 +15,6 @@ def load():
     cave.add_adjectives('scary', 'dark', 'terrifying')
     cave.add_exit('west', 'domains.school.cave.lair')
     cave.add_exit('east', 'domains.school.forest.forest3')
-    thing.Thing.ID_dict['nulspace'].game.register_heartbeat(cave)
+    thing.Thing.game.register_heartbeat(cave)
     cave.attach_monster(lair.monster)
     return cave

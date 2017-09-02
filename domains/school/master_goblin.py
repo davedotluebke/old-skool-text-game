@@ -13,7 +13,7 @@ class PitRoom(Room):
         self.indoor = True
         self.has_player = False
         self.water_level_den = 10
-        Thing.ID_dict['nulspace'].game.register_heartbeat(self)
+                Thing.game.register_heartbeat(self)
         self.player_done = False
 
     def heartbeat(self):
@@ -84,7 +84,7 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
         self.approached = []
         self.complete_message = []
         self.talk_counter = 0
-        Thing.ID_dict['nulspace'].game.register_heartbeat(self)
+        Thing.game.register_heartbeat(self)
 
     def heartbeat(self):
         if not self.location:

@@ -2,7 +2,7 @@ import creature
 import thing
 
 def clone():
-    goblin = creature.NPC('goblin', __file__, thing.Thing.ID_dict['nulspace'].game, 1)
+    goblin = creature.NPC('goblin', __file__, 1)
     goblin.set_description('green goblin', 'This green goblin is staring at you. It keeps staring at you, then looks around the room.')
     goblin.add_adjectives('horrid', 'creepy', 'mean', 'green')
     goblin.set_weight(200/2.2)

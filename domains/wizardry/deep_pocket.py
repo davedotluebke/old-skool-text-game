@@ -22,7 +22,7 @@ class DeepPocket(Container):
 
 class DeepPocketSignUpWizard(NPC):
     def __init__(self, vault):
-        super().__init__("Silemon", Thing.ID_dict['nulspace'].game, pref_id="DeepPocketSignUpWizard")
+        super().__init__("Silemon", Thing.game, pref_id="DeepPocketSignUpWizard")
         self.set_description("Silemon Deplintere", "Silemon Deplintare is an older wizard and is wearing a blue cape. He is standing uniformly in front of you.")
         self.deep_pockets = []
         for i in Thing.ID_dict:
@@ -68,7 +68,7 @@ class DeepPocketSignUpWizard(NPC):
         new_pocket.set_description('deep pocket', 'This is a magical deep pocket. Putting things in the pocket transports them to an infinite space vault.')
         new_pocket.move_to(customer)
         customer.cons.write('Just a moment, please...')
-        Thing.ID_dict['nulspace'].game.events.schedule(Thing.ID_dict['nulspace'].game.time+2, self.finish_pocket, customer)
+        Thing.game.events.schedule(Thing.game.time+2, self.finish_pocket, customer)
         self.in_process = True
         self.deep_pockets.append(new_pocket)
     def finish_pocket(self, customer):

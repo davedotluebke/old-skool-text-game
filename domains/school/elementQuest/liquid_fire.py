@@ -35,5 +35,5 @@ def clone():
     f = LiquidFire('liquid', 'luminous red liquid', 'This luminous red liquid shimmers, almost as if it were in flames.')
     f.path = 'domains.school.elementQuest.liquid_fire'
     f.add_adjectives('luminous', 'red')
-    thing.Thing.ID_dict['nulspace'].game.register_heartbeat(f)
+    thing.Thing.game.register_heartbeat(f)
     return f

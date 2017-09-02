@@ -78,10 +78,12 @@ class Player(Creature):
     def detach(self):
         self.cons.detach(self)
         self.cons = None
-        Thing.ID_dict['nulspace'].game.deregister_heartbeat(self)
+        Thing.game.deregister_heartbeat(self)
 
     def heartbeat(self):
         cmd = self.cons.take_input('-> ')
+        if cmd == '__return__':
+            return
         keep_going = self.cons.parser.parse(self, self.cons, cmd)
         if not keep_going:
             self.cons.game.keep_going = keep_going

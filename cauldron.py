@@ -25,9 +25,9 @@ class Cauldron(Container):
             ingredients = {x.names[0] for x in self.contents}
             if i[0] == ingredients:  # set comparison
                 if i[1] == 'explode':
-                    Thing.ID_dict['nulspace'].game.events.schedule(Thing.ID_dict['nulspace'].game.time+1, self.explode)
+                    Thing.game.events.schedule(Thing.game.time+1, self.explode)
                 else:
-                    Thing.ID_dict['nulspace'].game.events.schedule(Thing.ID_dict['nulspace'].game.time+3, self.create_potion, i)
+                    Thing.game.events.schedule(Thing.game.time+3, self.create_potion, i)
         return False
     
     def explode(self, none=None):

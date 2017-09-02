@@ -5,6 +5,7 @@ import gametools
 
 class Thing(object):
     ID_dict = {}
+    game = None
 
     def _add_ID(self, preferred_id):
         """Add object to Thing.ID_dict (the dictionary mapping IDs to objects).
@@ -74,7 +75,9 @@ class Thing(object):
                 state['location'] = self.location.id
         if self.contents != None: 
             # replace with new list of id strings, or leave as None (not [])
-            state['contents'] = [(x if isinstance(x, str) else x.id) for x in self.contents] 
+            state['contents'] = [(x if isinstance(x, str) else x.id) for x in self.contents]
+        if self in Thing.game.heartbeat_users:
+            state['has_beat'] = True
         return state
 
     def __setstate__(self, state):
@@ -95,6 +98,8 @@ class Thing(object):
             dbg.debug("Note: %s already in Thing.ID_dict, maps to %s" % (state['id'], obj))
         except KeyError:  # Not already in dict
             Thing.ID_dict[state['id']] = self
+        if 'has_beat' in state:
+            Thing.game.register_heartbeat(self)
         self.__dict__.update(state)
 
     def _restore_objs_from_IDs(self):

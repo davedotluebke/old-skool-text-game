@@ -2,7 +2,7 @@ import creature
 import thing
 
 def clone():
-    bird = creature.NPC('bird', __file__, thing.Thing.ID_dict['nulspace'].game)
+    bird = creature.NPC('bird', __file__)
     bird.set_description('bluebird', 'A nice looking little bluebird.')
     bird.set_weight(200)
     bird.set_volume(0.2)

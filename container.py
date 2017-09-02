@@ -30,14 +30,14 @@ class Container(Thing):
         self.insert_prepositions = list(preps)
 
     def set_spawn(self, path, interval):
-        g = Thing.ID_dict['nulspace'].game
+        g = Thing.game
         g.events.schedule(g.time+interval, self.spawn_obj, (path, interval, g))
 
     def spawn_obj(self, info):
         path = info[0]
         interval = info[1]
         game = info[2]
-        g = Thing.ID_dict['nulspace'].game
+        g = Thing.game
         g.events.schedule(game.time+interval, self.spawn_obj, (path, interval, game))
         for i in self.contents:
             if i.path == path:

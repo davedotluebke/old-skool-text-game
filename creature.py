@@ -159,7 +159,7 @@ class Creature(Container):
             self.attack_now += 1
 
 class NPC(Creature):
-    def __init__(self, ID, path, g, aggressive=0, pref_id=None):
+    def __init__(self, ID, path, aggressive=0, pref_id=None):
         Creature.__init__(self, ID, path)
         self.aggressive = aggressive
         self.act_frequency = 3  # how many heartbeats between NPC actions
@@ -174,7 +174,7 @@ class NPC(Creature):
         self.attack_now = 0
         self.attacking = False
 
-        g.register_heartbeat(self)
+        Thing.game.register_heartbeat(self)
     
     def add_script(self, s):
         self.scripts.append(s)

@@ -7,7 +7,7 @@ class TransportRoom(Room):
         super().__init__('spiraling confusion', pref_id=ID)
         self.set_description('spiraling confusion', "This is a confusing method of magical transport. You seem to be spinning through the air in a wind spiral. You're going so fast, however, that you can't quite make out anything you see along the way.")
         self.dest = transport_dest
-        Thing.ID_dict['nulspace'].game.register_heartbeat(self)
+        Thing.game.register_heartbeat(self)
 
     def heartbeat(self):
         for i in self.contents:

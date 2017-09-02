@@ -57,15 +57,17 @@ class Game():
         try:
             backup_ID_dict = Thing.ID_dict.copy()
             Thing.ID_dict.clear()  # unpickling will re-create Thing.ID_dict
+            backup_heartbeat_users = self.heartbeat_users.copy()
+            self.heartbeat_users.clear()
             saved = pickle.load(f)
             new_ID_dict, newgame = saved
         except pickle.PickleError:
             self.cons.write("Encountered error while loading from file %s, game not loaded." % filename)
             Thing.ID_dict = backup_ID_dict
+            self.heartbeat_users = backup_heartbeat_users
             f.close()
             return
         del backup_ID_dict
-        
         # TODO: move below code for deleting player to Player.__del__()
         # Unlink player object from room, contents:
         if self.user.location.extract(self.user):
@@ -80,8 +82,10 @@ class Game():
         self.cons.user = self.user  # update backref from cons
 
         for o in Thing.ID_dict: 
-            Thing.ID_dict[o]._restore_objs_from_IDs()
-            
+            Thing.ID_dict[o]._restore_objs_from_IDs()            
+
+        self.cons.change_players = True
+
         self.cons.write("Restored game state from file %s" % filename)
     
         f.close()
@@ -196,9 +200,6 @@ class Game():
             del Thing.ID_dict[o.id]
             (head, sep, tail) = o.id.partition('-saveplayer')
             o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
-
-        for o in l:
-            self.heartbeat_users.append(o) #XXX temp, replace with detection system to detect if o.heartbeat() is empty (aka pass)
 
         room = self.user.location
         room.insert(self.user)  # insert() does some necessary bookkeeping

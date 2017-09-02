@@ -24,6 +24,8 @@ nulspace.add_exit('west', 'nulspace')
 game.events.schedule(game.time+5, game.clear_nulspace)
 game.nulspace = nulspace
 
+Thing.game = game
+
 start_room_mod = importlib.import_module('domains.school.school.great_hall')
 start_room = start_room_mod.load()
 start_room.insert(game.user)

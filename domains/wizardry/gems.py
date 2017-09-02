@@ -69,7 +69,7 @@ class Jade(Gem):
     def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
         super().__init__(path, default_name, short_desc, long_desc+' It seems as almost as if it were somewhere else.', power_num, pref_id)
         self.add_names('jade')
-        Thing.ID_dict['nulspace'].game.register_heartbeat(self)
+        Thing.game.register_heartbeat(self)
 
     def heartbeat(self):
         if self.power_num > 0:
@@ -111,7 +111,7 @@ class Ruby(Gem):
         super().__init__(path, default_name, short_desc, long_desc+' It almost seems to glow, as if light was trapped inside.', power_num, pref_id)
         self.add_names('ruby')
         self.light = 0
-        Thing.ID_dict['nulspace'].game.register_heartbeat(self)
+        Thing.game.register_heartbeat(self)
 
     def heartbeat(self):
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
@@ -134,7 +134,7 @@ class Diamond(Gem):
         self.add_names('diamond')
         self.hiding_user = False
         self.user = None
-        Thing.ID_dict['nulspace'].game.register_heartbeat(self)
+        Thing.game.register_heartbeat(self)
 
     def heartbeat(self):
         if self.power_num > 0:
@@ -159,7 +159,7 @@ class Opal(Gem):
         super().__init__(path, default_name, short_desc, long_desc+' It is a swirl of colors that seem to draw light inside it.', power_num, pref_id=None)
         self.add_names('opal')
         self.light = 0  # light is negative if powered, 0 otherwise (default 0)
-        Thing.ID_dict['nulspace'].game.register_heartbeat(self)
+        Thing.game.register_heartbeat(self)
 
     def heartbeat(self):
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0

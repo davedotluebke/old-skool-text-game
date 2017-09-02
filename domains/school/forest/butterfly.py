@@ -2,7 +2,7 @@ import creature
 import thing
 
 def clone():
-    butterfly = creature.NPC('butterfly', __file__, thing.Thing.ID_dict['nulspace'].game)
+    butterfly = creature.NPC('butterfly', __file__)
     butterfly.set_description('butterfly', 'A pretty monarch butterfly')
     butterfly.add_script("""wh""")
     return butterfly
