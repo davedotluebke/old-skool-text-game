@@ -33,13 +33,14 @@ if __name__ == "__main__":
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
     server = socketserver.TCPServer((HOST, PORT), MyTCPHandler)
+    server.socket.setblocking(0)
     
     num = 0
     while True:
         num += 1
         server.handle_request()
         print('handled request # %s' % num)
-        time.sleep(1)
+        time.sleep(3)
         if MyTCPHandler.quit_soon:
             print("quitting now")
             break
