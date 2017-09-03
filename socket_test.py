@@ -1,4 +1,5 @@
 import socketserver
+import time
 
 class MyTCPHandler(socketserver.StreamRequestHandler):
     '''
@@ -38,6 +39,7 @@ if __name__ == "__main__":
         num += 1
         server.handle_request()
         print('handled request # %s' % num)
+        time.sleep(1)
         if MyTCPHandler.quit_soon:
             print("quitting now")
             break
