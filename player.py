@@ -84,11 +84,12 @@ class Player(Creature):
         cmd = self.cons.take_input('-> ')
         if cmd == '__return__':
             return
-        keep_going = self.cons.parser.parse(self, self.cons, cmd)
-        if not keep_going:
-            self.cons.game.keep_going = keep_going
-            self.move_to(Thing.ID_dict['nulspace'])
-            self.detach()
+        if cmd != '__noparse__':
+            keep_going = self.cons.parser.parse(self, self.cons, cmd)
+            if not keep_going:
+                self.cons.game.keep_going = keep_going
+                self.move_to(Thing.ID_dict['nulspace'])
+                self.detach()
 
         if self.auto_attack:            # TODO: Player Prefrences
             if self.attacking:

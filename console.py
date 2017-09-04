@@ -30,6 +30,7 @@ class Console:
     def __init__(self, game = None):
         self.game = game
         self.parser = Parser()
+        self.raw_input = ''
         self.change_players = False
         self.handle_exceptions = False
         self.width = Console.default_width
@@ -155,7 +156,7 @@ class Console:
         self.tw.initial_indent = indent * ' '
         self.tw.subsequent_indent = indent * ' '
         for l in lines:
-            print(self.tw.fill(l))
+            self.game.output(self.tw.fill(l))
         dbg.debug('cons.write wrote %s!' % text, 4)
 
     def new_user(self):
@@ -177,15 +178,16 @@ class Console:
         self.game.user = new_user
 
     def take_input(self, prompt):
-        self.command = input(prompt)
+        self.command = self.raw_input
+        self.raw_input = ''
         self.words = self.command.split()
         # if user types a console command, handle it and start over unless the player that called this is deactive
-        while (self._handle_console_commands() == True):
-            if self.change_players:
-                self.change_players = False
-                return "__return__" #deletes other player so new one can start
-            self.command = input(prompt)
-            self.words = self.command.split()
+        internal = self._handle_console_commands()
+        if self.change_players:
+            self.change_players = False
+            return "__return__" #deletes other player so new one can start
+        if internal:
+            return "__noparse__"
         # replace any aliases with their completed version
         self.final_command = self._replace_aliases()
         return self.final_command
