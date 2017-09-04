@@ -288,7 +288,7 @@ class Game():
         self.output_text += '\n'
 
     def send(self):
-        GameTCPHandler.next_output += str(self.time) + self.output_text
+        GameTCPHandler.next_output += self.output_text
         self.output_text = ''
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
@@ -306,16 +306,16 @@ class GameTCPHandler(socketserver.StreamRequestHandler):
     next_output = ''
     data = ''
     def handle(self):
-        # self.wfile is a file-like object used to write
-        # to the client
-        print("writing %s to client" % GameTCPHandler.next_output)
-        self.wfile.write(bytes(GameTCPHandler.next_output, "utf-8"))
-        GameTCPHandler.next_output = ''
         # self.rfile is a file-like object created by the handler;
         # we can now use e.g. readline() instead of raw recv() calls
         GameTCPHandler.data = self.rfile.readline()
-        print("{} wrote:".format(self.client_address[0]))
-        print(GameTCPHandler.data)
+        dbg.debug("{} wrote:".format(self.client_address[0]))
+        dbg.debug(GameTCPHandler.data)
         if str(GameTCPHandler.data, "utf-8").strip() == "quit":
             GameTCPHandler.quit_soon = True
         Game.cons.raw_input = str(GameTCPHandler.data, "utf-8")
+        # self.wfile is a file-like object used to write
+        # to the client
+        dbg.debug("writing %s to client" % GameTCPHandler.next_output)
+        self.wfile.write(bytes(GameTCPHandler.next_output, "utf-8"))
+        GameTCPHandler.next_output = ''
