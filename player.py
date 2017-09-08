@@ -99,7 +99,7 @@ class Player(Creature):
                     self.attack_enemy(self.attacking)
             for i in self.location.contents:
                 if i in self.enemies:
-                    self.cons.write('You attack your enemy %s' % i.short_desc)
+                    self.cons.write('You attack your enemy %s.' % i.short_desc)
                     self.attacking = i
                     self.attack_enemy(i)
             

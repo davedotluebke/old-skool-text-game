@@ -118,12 +118,12 @@ class Parser:
             try:
                 level = int(self.words[1])
             except IndexError:
-                console.write(self._set_verbosity())
+                console.write(self._set_verbosity()+'__parser__')
                 return True
             except ValueError:
-                console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>")
+                console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>__parser__")
                 return True
-            console.write(self._set_verbosity(level))
+            console.write(self._set_verbosity(level)+'__parser__')
             return True
         
         # remove articles and convert to lowercase, unless the command 
@@ -132,7 +132,7 @@ class Parser:
             command = command.lower()   
             self.words = [w for w in self.words if w not in ['a', 'an', 'the']]
             if len(self.words) == 0:
-                console.write("Please specify more than just articles!")
+                console.write("Please specify more than just articles!__parser__")
                 return True
 
         sV = None            # verb as string
@@ -161,9 +161,9 @@ class Parser:
                         possible_verb_actions.append(act)
         if (not possible_verb_objects): 
             if sDO == None:
-                console.write("Parse error: can't find any object supporting intransitive verb %s!" % sV)
+                console.write("Parse error: can't find any object supporting intransitive verb %s!__parser__" % sV)
             else:
-                console.write("Parse error: can't find any object supporting transitive verb %s!" % sV)
+                console.write("Parse error: can't find any object supporting transitive verb %s!__parser__" % sV)
             # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
             return True
         dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
@@ -195,13 +195,15 @@ class Parser:
             if (console.handle_exceptions):
                 try:
                     result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
+                    console.write('__parser__')
                 except Exception as isnt:
-                    console.write('An error has occured. Please try a different action until the problem is resolved.')
+                    console.write('An error has occured. Please try a different action until the problem is resolved.__parser__')
                     dbg.debug(traceback.format_exc(), 0)
                     dbg.debug("Error caught!", 0)
                     result = True       # we don't want the parser to go and do an action they probably didn't
             else:
                 result = act.func(self, console, oDO, oIDO)  # <-- ENACT THE VERB
+                console.write('__parser__')
             if result == True:      # mean to do if there is a bug in the one they did mean to do
                 break               # verb has been enacted, all done!
             if err_msg == None: 
@@ -211,6 +213,6 @@ class Parser:
             return True
 
         # no objects handled the verb; print the first error message 
-        console.write(err_msg if err_msg else "No objects handled verb, but no error message defined!")
+        console.write(err_msg+'__parser__' if err_msg else "No objects handled verb, but no error message defined!__parser__")
         return True
 

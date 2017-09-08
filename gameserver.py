@@ -314,6 +314,7 @@ class GameTCPHandler(socketserver.StreamRequestHandler):
         if str(GameTCPHandler.data, "utf-8").strip() == "quit":
             GameTCPHandler.quit_soon = True
         Game.cons.raw_input = str(GameTCPHandler.data, "utf-8")
+        GameTCPHandler.data = ''
         # self.wfile is a file-like object used to write
         # to the client
         dbg.debug("writing %s to client" % GameTCPHandler.next_output)
