@@ -3,7 +3,7 @@ import io
 import traceback
 import random
 import time
-import socketserver
+import connections
 
 import gametools
 
@@ -12,6 +12,7 @@ from thing import Thing
 from player import Player
 from console import Console
 from event_nsl import EventQueue
+from parse import Parser
 
 class Game():
     """The Game class contains a console and associated game state (e.g. player object for the console).
@@ -26,15 +27,14 @@ class Game():
         self.events = EventQueue()  # events to occur in future 
 
         self.cons = Console(game = self)
+        self.parser = Parser()
         Game.cons = self.cons
         self.user = Player("Joe Test", None, self.cons)
-        self.cons.set_user(self.user)
+        self.cons.set_user(self.user, b"JoeTest1000")
         
         self.user.set_description('Joe Test', 'Our test player named Joe')
         self.user.set_max_weight_carried(750000)
         self.user.set_max_volume_carried(2000)
-
-        self.output_text = ''
 
     def save_game(self, filename):
         if not filename.endswith('.OAD'): 
@@ -234,8 +234,6 @@ class Game():
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
 
-        self.server.handle_request()
-
         current_events = self.events.check_for_event(self.time)            
         for event in current_events:
             if (self.cons.handle_exceptions):
@@ -262,7 +260,6 @@ class Game():
         self.send()
 
     def loop(self):
-        self.setupClientConnections()
         while self.keep_going:
             start = time.time()
             self.beat()
@@ -271,52 +268,10 @@ class Game():
             wait = 1 - time_taken
             if wait >= 0:
                 time.sleep(wait)
-        self.shutdownClientConnections()
         dbg.shut_down()
-
-    def setupClientConnections(self, HOST="localhost", PORT=9999):
-        """Create the server, binding to localhost on port 9999.
-        Then activate the server; it will handle requests every heartbeat"""
-        self.server = socketserver.TCPServer((HOST, PORT), GameTCPHandler)
-        self.server.socket.setblocking(0)
-
-    def shutdownClientConnections(self):
-        self.server.server_close()
-
-    def output(self, text):
-        self.output_text += text
-        self.output_text += '\n'
-
-    def send(self):
-        GameTCPHandler.next_output += self.output_text
-        self.output_text = ''
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
         for i in self.nulspace.contents:
             if not hasattr(i, 'cons'): #if it is not player
                 i.delete()
         self.events.schedule(self.time+5, self.clear_nulspace)
-
-
-class GameTCPHandler(socketserver.StreamRequestHandler):
-    """A class designed to handle connections between the Console objects and the Clients.
-
-    Eventually theese connection will be made with multiple useres between computers."""
-    quit_soon = False
-    next_output = ''
-    data = ''
-    def handle(self):
-        # self.rfile is a file-like object created by the handler;
-        # we can now use e.g. readline() instead of raw recv() calls
-        GameTCPHandler.data = self.rfile.readline()
-        dbg.debug("{} wrote:".format(self.client_address[0]))
-        dbg.debug(GameTCPHandler.data)
-        if str(GameTCPHandler.data, "utf-8").strip() == "quit":
-            GameTCPHandler.quit_soon = True
-        Game.cons.raw_input = str(GameTCPHandler.data, "utf-8")
-        GameTCPHandler.data = ''
-        # self.wfile is a file-like object used to write
-        # to the client
-        dbg.debug("writing %s to client" % GameTCPHandler.next_output)
-        self.wfile.write(bytes(GameTCPHandler.next_output, "utf-8"))
-        GameTCPHandler.next_output = ''

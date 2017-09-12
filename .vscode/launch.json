@@ -19,12 +19,12 @@
             ]
         },
         {
-            "name": "Socket Testing",
+            "name": "Network Testing",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/socket_test.py",
+            "program": "${workspaceRoot}/connections.py",
             "cwd": "",
             "console": "integratedTerminal",
             "env": {},

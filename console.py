@@ -26,11 +26,13 @@ class Console:
                more details. Type 'width' to change the console's text width. 
                Type 'quit' to save your progress and leave 
                the game (NOTE: saving is not yet implemented)."""
+    username_to_cons = {}
 
     def __init__(self, game = None):
         self.game = game
-        self.parser = Parser()
+        self.username = None
         self.raw_input = ''
+        self.final_output = ''
         self.change_players = False
         self.handle_exceptions = False
         self.width = Console.default_width
@@ -50,9 +52,12 @@ class Console:
                           'x':       'execute'
                           }
     
-    def set_user(self, self_user):
+    def set_user(self, self_user, username):
         """Set the Player object associated with this console."""
         self.user = self_user
+        self.username = username
+        Console.username_to_cons[username] = self
+        print(Console.username_to_cons)
 
     def detach(self, user):
         if self.user == user:
@@ -156,8 +161,11 @@ class Console:
         self.tw.initial_indent = indent * ' '
         self.tw.subsequent_indent = indent * ' '
         for l in lines:
-            self.game.output(self.tw.fill(l))
+            self.final_output += l
+            self.final_output += '/n'
         dbg.debug('cons.write wrote %s!' % text, 4)
+        self.connection.sendLine(self.final_output)
+        self.final_output = ''
 
     def new_user(self):
         self.write("Create your new user.")
