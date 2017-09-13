@@ -6,6 +6,7 @@ from player import Player
 
 class Console:
     default_width = 75
+    prompt = "--> "
     help_msg = """Your goal is to explore the world around you, solve puzzles,
                fight monsters, complete quests, and eventually become a
                Sorcerer capable of changing and adding to the very fabric 
@@ -26,15 +27,14 @@ class Console:
                more details. Type 'width' to change the console's text width. 
                Type 'quit' to save your progress and leave 
                the game (NOTE: saving is not yet implemented)."""
-    username_to_cons = {}
 
-    def __init__(self, game = None):
+    def __init__(self, net_conn, game = None):
         self.game = game
+        self.user = None
         self.username = None
-        self.raw_input = ''
-        self.final_output = ''
+        self.raw_input = b''
         self.change_players = False
-        self.handle_exceptions = False
+        self.connection = net_conn
         self.width = Console.default_width
         self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = True, tabsize = 4) 
         self.alias_map = {'n':       'go north',
@@ -51,13 +51,7 @@ class Console:
                           'l':       'look',
                           'x':       'execute'
                           }
-    
-    def set_user(self, self_user, username):
-        """Set the Player object associated with this console."""
-        self.user = self_user
-        self.username = username
-        Console.username_to_cons[username] = self
-        print(Console.username_to_cons)
+
 
     def detach(self, user):
         if self.user == user:
@@ -136,15 +130,14 @@ class Console:
                 return True
 
             if cmd == 'debug':
-                self.handle_exceptions = not self.handle_exceptions
-                self.write("Toggle debug exception handling to %s" % ("on" if self.handle_exceptions else "off"))
+                self.game.handle_exceptions = not self.game.handle_exceptions
+                self.write("Toggle debug exception handling to %s" % ("on" if self.game.handle_exceptions else "off"))
                 return True
             
             file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game,
                          'save':self.game.save_player,
-                         'load':self.game.load_player,
-                         'reload':self.game.reload}
+                         'load':self.game.load_player}
             if cmd in file_cmds:
                 if (len(self.words) == 2):
                     filename = self.words[1]
@@ -157,16 +150,13 @@ class Console:
 
     def write(self, text, indent=0):
         str_text = str(text)
-        lines = str_text.splitlines()
         self.tw.initial_indent = indent * ' '
         self.tw.subsequent_indent = indent * ' '
+        wrapped = self.tw.fill(str_text)
+        lines = wrapped.splitlines()
         for l in lines:
-            self.final_output += l
-            self.final_output += '/n'
-        dbg.debug('cons.write wrote %s!' % text, 4)
-        self.connection.sendLine(self.final_output)
-        self.final_output = ''
-
+            self.connection.sendLine(bytes(l, "utf-8"))
+    '''
     def new_user(self):
         self.write("Create your new user.")
         user_default_name = input("User default name: ")    #TODO: Simplify and make text more user-friendly.
@@ -184,16 +174,15 @@ class Console:
         self.user.cons = None
         self.set_user(new_user)
         self.game.user = new_user
-
-    def take_input(self, prompt):
-        self.command = self.raw_input
-        self.raw_input = ''
+    '''
+    def take_input(self):
+        if (self.raw_input == b''):
+            return None
+        self.command = str(self.raw_input, "utf-8")
+        self.raw_input = b''
         self.words = self.command.split()
         # if user types a console command, handle it and start over unless the player that called this is deactive
         internal = self._handle_console_commands()
-        if self.change_players:
-            self.change_players = False
-            return "__return__" #deletes other player so new one can start
         if internal:
             return "__noparse__"
         # replace any aliases with their completed version

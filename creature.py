@@ -224,7 +224,7 @@ class NPC(Creature):
             exit_list = list(self.location.exits)
             exit = random.choice(exit_list)
         except (AttributeError, IndexError):
-            dbg.debug('no exits, returning' % self.id)
+            dbg.debug('NPC %s sees no exits, returning from move_around()' % self.id)
             return
 
         dbg.debug("Trying to move to the %s exit!" % (exit))

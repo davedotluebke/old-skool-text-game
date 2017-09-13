@@ -3,9 +3,11 @@ import io
 import traceback
 import random
 import time
-import connections
+from twisted.internet import task
+from twisted.internet import reactor
 
 import gametools
+import connections
 
 from debug import dbg
 from thing import Thing
@@ -15,26 +17,23 @@ from event_nsl import EventQueue
 from parse import Parser
 
 class Game():
-    """The Game class contains a console and associated game state (e.g. player object for the console).
-    
-    Eventually this will grow to include a list of players, associated consoles, etc."""
-    cons = None
+    """
+        The Game class contains a parser, a list of players, a time counter, 
+        a list of objects that have a heartbeat (a function that runs 
+        periodically). It should also probably house the Twisted event loop 
+        and associated factory for creating protocols (connections to clients)
+    """
     def __init__(self):
         self.keep_going = True  # game ends when set to False
+        self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
         self.time = 0  # number of heartbeats since game began
         self.events = EventQueue()  # events to occur in future 
 
-        self.cons = Console(game = self)
         self.parser = Parser()
-        Game.cons = self.cons
-        self.user = Player("Joe Test", None, self.cons)
-        self.cons.set_user(self.user, b"JoeTest1000")
+        self.users = []
         
-        self.user.set_description('Joe Test', 'Our test player named Joe')
-        self.user.set_max_weight_carried(750000)
-        self.user.set_max_volume_carried(2000)
 
     def save_game(self, filename):
         if not filename.endswith('.OAD'): 
@@ -212,10 +211,6 @@ class Game():
         room.report_arrival(self.user)
         room.emit("%s suddenly appears, as if by sorcery!" % self.user, [self.user])
 
-    def reload(self, filename):
-        pass
-        #filename
-
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""
         if obj not in self.heartbeat_users:
@@ -233,10 +228,11 @@ class Game():
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-
+        print("Beat! Time = %s" % self.time)
+        
         current_events = self.events.check_for_event(self.time)            
         for event in current_events:
-            if (self.cons.handle_exceptions):
+            if (self.handle_exceptions):
                 try:
                     event.callback(event.payload)
                 except Exception as inst:
@@ -247,7 +243,7 @@ class Game():
                 event.callback(event.payload)
 
         for h in self.heartbeat_users:
-            if (self.cons.handle_exceptions):
+            if (self.handle_exceptions):
                 try:
                     h.heartbeat()
                 except Exception as inst:
@@ -257,21 +253,41 @@ class Game():
             else:
                 h.heartbeat()
         
-        self.send()
+        if not self.keep_going:
+            self.loop.stop()
 
-    def loop(self):
-        while self.keep_going:
-            start = time.time()
-            self.beat()
-            end = time.time()
-            time_taken = end - start
-            wait = 1 - time_taken
-            if wait >= 0:
-                time.sleep(wait)
+    def cbLoopDone(result):
+        """
+        Called when loop was stopped with success.
+        """
+        print("Loop done.")
         dbg.shut_down()
+        reactor.stop()
+
+    def ebLoopFailed(failure):
+        """
+        Called when loop execution failed.
+        """
+        print(failure.getBriefTraceback())
+        reactor.stop()
+
+    def start_loop(self):
+        print("Starting game...")
+        reactor.listenTCP(9123, connections.NetConnFactory())
+        print ("Listening on port 9123...")
+        self.loop = task.LoopingCall(self.beat)
+        loopDeferred = self.loop.start(1.0)
+        loopDeferred.addCallback(self.cbLoopDone)
+        loopDeferred.addErrback(self.ebLoopFailed)
+        print("Entering main game loop!")
+        reactor.run()
+        print("Exiting main game loop!")
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
+        print("Game.clear_nulspace() called! Currently does nothing.")
+        '''
         for i in self.nulspace.contents:
             if not hasattr(i, 'cons'): #if it is not player
                 i.delete()
         self.events.schedule(self.time+5, self.clear_nulspace)
+        '''

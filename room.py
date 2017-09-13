@@ -73,6 +73,7 @@ class Room(Container):
     def report_arrival(self, user):
         loc = user.location
         cons = user.cons
+        user.emit("%s arrives." % user, [user])
         if loc.is_dark():
             cons.write("It's too dark to see anything here.")
             return True

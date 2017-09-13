@@ -40,7 +40,7 @@ class Player(Creature):
         self.hitpoints = 20
         self.health = 20
         self.terse = False  # True -> show short description when entering room
-        self.cons.game.register_heartbeat(self)
+        self.game.register_heartbeat(self)
 
     def __getstate__(self):
         """Custom pickling code for Player. 
@@ -81,15 +81,14 @@ class Player(Creature):
         Thing.game.deregister_heartbeat(self)
 
     def heartbeat(self):
-        cmd = self.cons.take_input('-> ')
-        if cmd == '__return__':
-            return
-        if cmd != '__noparse__':
-            keep_going = Thing.game.parser.parse(self, self.cons, cmd)
-            if not keep_going:
-                self.cons.game.keep_going = keep_going
-                self.move_to(Thing.ID_dict['nulspace'])
-                self.detach()
+        cmd = self.cons.take_input()
+        if cmd:
+            if cmd != '__noparse__':
+                keep_going = Thing.game.parser.parse(self, self.cons, cmd)
+                if not keep_going:
+                    self.cons.game.keep_going = keep_going
+                    self.move_to(Thing.ID_dict['nulspace'])
+                    self.detach()
 
         if self.auto_attack:            # TODO: Player Prefrences
             if self.attacking:

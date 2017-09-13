@@ -100,12 +100,10 @@ class Parser:
             return matched_objects[0]
 
     def parse(self, user, console, command):
-        """Parse and enact the user's command. Return False to quit game."""     
+        """Parse and enact the user's command. Return False to quit game."""
+        print("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
         if command == 'quit': 
             return False
-        if command == "new user" or command == "add user":
-            console.new_user()
-            return True
         
         self.words = command.split()
         if len(self.words) == 0:
@@ -118,12 +116,12 @@ class Parser:
             try:
                 level = int(self.words[1])
             except IndexError:
-                console.write(self._set_verbosity()+'__parser__')
+                console.write(self._set_verbosity())
                 return True
             except ValueError:
-                console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>__parser__")
+                console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>")
                 return True
-            console.write(self._set_verbosity(level)+'__parser__')
+            console.write(self._set_verbosity(level))
             return True
         
         # remove articles and convert to lowercase, unless the command 
@@ -132,7 +130,7 @@ class Parser:
             command = command.lower()   
             self.words = [w for w in self.words if w not in ['a', 'an', 'the']]
             if len(self.words) == 0:
-                console.write("Please specify more than just articles!__parser__")
+                console.write("Please specify more than just articles!")
                 return True
 
         sV = None            # verb as string
@@ -148,7 +146,7 @@ class Parser:
         possible_objects = [user.location] 
         for obj in user.contents + user.location.contents:
             possible_objects += [obj]
-            if isinstance(obj, Container) and obj.see_inside and obj is not console.user:
+            if isinstance(obj, Container) and obj.see_inside and obj is not user:
                 possible_objects += obj.contents
         
         possible_verb_objects = []  # list of objects supporting the verb
@@ -161,9 +159,9 @@ class Parser:
                         possible_verb_actions.append(act)
         if (not possible_verb_objects): 
             if sDO == None:
-                console.write("Parse error: can't find any object supporting intransitive verb %s!__parser__" % sV)
+                console.write("Parse error: can't find any object supporting intransitive verb %s!" % sV)
             else:
-                console.write("Parse error: can't find any object supporting transitive verb %s!__parser__" % sV)
+                console.write("Parse error: can't find any object supporting transitive verb %s!" % sV)
             # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
             return True
         dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
@@ -192,18 +190,16 @@ class Parser:
         result = False
         err_msg = None
         for act in possible_verb_actions:
-            if (console.handle_exceptions):
+            if (user.game.handle_exceptions):
                 try:
                     result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
-                    console.write('__parser__')
                 except Exception as isnt:
-                    console.write('An error has occured. Please try a different action until the problem is resolved.__parser__')
+                    console.write('An error has occured. Please try a different action until the problem is resolved.')
                     dbg.debug(traceback.format_exc(), 0)
                     dbg.debug("Error caught!", 0)
-                    result = True       # we don't want the parser to go and do an action they probably didn't
+                    result = True       # we don't want the parser to go and do an action they probably didn't intend
             else:
                 result = act.func(self, console, oDO, oIDO)  # <-- ENACT THE VERB
-                console.write('__parser__')
             if result == True:      # mean to do if there is a bug in the one they did mean to do
                 break               # verb has been enacted, all done!
             if err_msg == None: 
@@ -213,6 +209,6 @@ class Parser:
             return True
 
         # no objects handled the verb; print the first error message 
-        console.write(err_msg+'__parser__' if err_msg else "No objects handled verb, but no error message defined!__parser__")
+        console.write(err_msg if err_msg else "No objects handled verb, but no error message defined!")
         return True
 

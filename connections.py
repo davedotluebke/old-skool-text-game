@@ -3,22 +3,28 @@ from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineReceiver
 from twisted.internet import reactor
 
+import gametools
+
 from thing import Thing
 from console import Console
+from player import Player
 
 class NetworkConnection(LineReceiver):
 
     def __init__(self, users):
         self.users = users
+        self.user = None
         self.name = None
+        self.cons = None
         self.state = "GETNAME"
-        self.setLineMode()
 
     def connectionMade(self):
         self.sendLine(b'Username: ')
 
     def connectionLost(self, reason):
+        print("ConnectionLost called for %s's connection!" % self.name)
         if self.name in self.users:
+            print("    Deleting '%s' from self.users dictionary %s" % (self.name, self.users))
             del self.users[self.name]
 
     def lineReceived(self, line):
@@ -31,26 +37,44 @@ class NetworkConnection(LineReceiver):
         else:
             self.handle_COMMAND(line)
 
-    def handle_GETNAME(self, name):
+    def handle_GETNAME(self, namebytes):
+        name = str(namebytes, "utf-8")
         if name in self.users:
             self.sendLine(b"Username already in use! Please log on as another user.")
             return
-        print(name)
-        print(Console.username_to_cons)
-        if name not in Console.username_to_cons:
-            self.sendLine(b"There is no user with that username. Would you like to create one?")
-            self.state = "CONFIRM"
-            return
-        self.cons = Console.username_to_cons[name]
-        self.cons.connection = self
-        self.sendLine(b"Welcome, %s!" % (name,))
+        self.sendLine(b"Welcome, %s!" % (namebytes))
+        # if name not in Console.username_to_cons:
+        #    self.sendLine(b"There is no user with that username. Would you like to create one?")
+        #    self.state = "CONFIRM"
+        #    return
+        self.cons = Console(self, Thing.game)
+        self.user = Player(name, None, self.cons)
+        self.cons.user = self.user
+        self.user.set_description(name, 'A player named %s' % name)
+        self.user.set_max_weight_carried(750000)
+        self.user.set_max_volume_carried(2000)
+
+        start_room = gametools.load_room('domains.school.school.great_hall')
+        start_room.insert(self.user)
+
+        scroll = gametools.clone('domains.school.scroll')
+        scroll.move_to(self.user)
+        Thing.game.register_heartbeat(scroll)
+        self.user.set_start_loc = start_room
+        self.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
+        "Type 'look' to examine your surroundings or an object, "
+        "'inventory' to see what you are carrying, " 
+        "'quit' to end the game, and 'help' for more information.")
+
+
         self.name = name
         self.users[name] = self
         self.state = "COMMAND"
 
     def handle_COMMAND(self, message):
-        g = Thing.game
-        g.cons.raw_input = message
+        self.user.cons.raw_input = message
+        print("handling user command (user %s, console %s):" % (self.name, self.cons))
+        print(message)
 
  #       message = b"<%s> %s" % (self.name, message)
  #       for name, protocol in self.users.items():
@@ -75,16 +99,7 @@ class NetworkConnection(LineReceiver):
 class NetConnFactory(Factory):
 
     def __init__(self):
-        self.users = {} # maps user names to Chat instances
+        self.users = {} # maps user names to NetworkConnection instances
 
     def buildProtocol(self, addr):
         return NetworkConnection(self.users)
-
-#XXX not sure how to use deffereds with reactor
-class DefferedReactor(reactor):
-    def run():
-        d = twisted.internet.defer.Deferred()
-        super().run()
-
-DefferedReactor.listenTCP(9123, NetConnFactory())
-DefferedReactor.run()
