@@ -9,6 +9,8 @@ from thing import Thing
 from console import Console
 from player import Player
 
+from debug import dbg
+
 class NetworkConnection(LineReceiver):
 
     def __init__(self, users):
@@ -22,9 +24,9 @@ class NetworkConnection(LineReceiver):
         self.sendLine(b'Username: ')
 
     def connectionLost(self, reason):
-        print("ConnectionLost called for %s's connection!" % self.name)
+        dbg.debug("ConnectionLost called for %s's connection!" % self.name)
         if self.name in self.users:
-            print("    Deleting '%s' from self.users dictionary %s" % (self.name, self.users))
+            dbg.debug("    Deleting '%s' from self.users dictionary %s" % (self.name, self.users))
             del self.users[self.name]
 
     def lineReceived(self, line):
@@ -73,8 +75,8 @@ class NetworkConnection(LineReceiver):
 
     def handle_COMMAND(self, message):
         self.user.cons.raw_input = message
-        print("handling user command (user %s, console %s):" % (self.name, self.cons))
-        print(message)
+        dbg.debug("handling user command (user %s, console %s):" % (self.name, self.cons))
+        dbg.debug(message)
 
  #       message = b"<%s> %s" % (self.name, message)
  #       for name, protocol in self.users.items():

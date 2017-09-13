@@ -228,7 +228,7 @@ class Game():
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-        print("Beat! Time = %s" % self.time)
+        dbg.debug("Beat! Time = %s" % self.time)
         
         current_events = self.events.check_for_event(self.time)            
         for event in current_events:
@@ -260,7 +260,7 @@ class Game():
         """
         Called when loop was stopped with success.
         """
-        print("Loop done.")
+        dbg.debug("Loop done.")
         dbg.shut_down()
         reactor.stop()
 
@@ -268,7 +268,7 @@ class Game():
         """
         Called when loop execution failed.
         """
-        print(failure.getBriefTraceback())
+        dbg.debug(failure.getBriefTraceback())
         reactor.stop()
 
     def start_loop(self):
@@ -279,12 +279,12 @@ class Game():
         loopDeferred = self.loop.start(1.0)
         loopDeferred.addCallback(self.cbLoopDone)
         loopDeferred.addErrback(self.ebLoopFailed)
-        print("Entering main game loop!")
+        dbg.debug("Entering main game loop!")
         reactor.run()
-        print("Exiting main game loop!")
+        dbg.debug("Exiting main game loop!")
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
-        print("Game.clear_nulspace() called! Currently does nothing.")
+        dbg.debug("Game.clear_nulspace() called! Currently does nothing.")
         '''
         for i in self.nulspace.contents:
             if not hasattr(i, 'cons'): #if it is not player

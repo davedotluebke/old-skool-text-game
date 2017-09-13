@@ -101,7 +101,7 @@ class Parser:
 
     def parse(self, user, console, command):
         """Parse and enact the user's command. Return False to quit game."""
-        print("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
+        dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
         if command == 'quit': 
             return False
         

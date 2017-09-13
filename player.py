@@ -126,6 +126,8 @@ class Player(Creature):
     # ACTION FUNCTIONS (verbs):
     # 
     def inventory(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "You can't look at another player's inventory!"
         cons.write("You are carrying:")
         if not self.contents:
             cons.write('\tnothing')
@@ -140,6 +142,8 @@ class Player(Creature):
         return True
     
     def toggle_terse(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "I don't quite get what you mean."
         try: 
             if p.words[1] == "on": 
                 self.terse = True
@@ -159,6 +163,8 @@ class Player(Creature):
     
     
     def execute(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "I don't quite get what you mean."
         cmd = ' '.join(p.words[1:])
         cons.write("Executing command: '%s'" % cmd)
         try: 
@@ -170,6 +176,8 @@ class Player(Creature):
 
     def fetch(self, p, cons, oDO, oIDO):
         '''Find an in-game object by ID and bring it to the player.'''
+        if cons.user != self:
+            return "I don't quite get what you mean."
         if len(p.words) < 2: 
             cons.write("Usage: 'fetch <id>', where id is an entry in Thing.ID_dict[]")
             return True
@@ -191,6 +199,8 @@ class Player(Creature):
 
     def clone(self, p, cons, oDO, oIDO):
         '''Clone a new copy of an object specified by ID or by module path, and bring it to the player.'''
+        if cons.user != self:
+            return "I don't quite get what you mean."
         if len(p.words) < 2: 
             cons.write("Usage:\n\t'clone <id>', where id is an entry in Thing.ID_dict[]"
                        "\n\t'clone <path>', where path is of the form 'domains.school.test_object'")
@@ -217,6 +227,8 @@ class Player(Creature):
 
     
     def apparate(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "I don't quite get what you mean."
         if len(p.words) < 2: 
             cons.write("Usage: 'apparate <id>', where id is the entry of a Room in Thing.ID_dict[] or a path to it's module")
             return True
@@ -239,6 +251,8 @@ class Player(Creature):
 
     
     def engage(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "I don't quite get what you mean."
         if not oDO:
             return "Who do you intend to engage in combat?"
         self.attacking = oDO
@@ -246,6 +260,8 @@ class Player(Creature):
         return True
 
     def disengage(self, p, cons, oDO, oIDO):        #TODO: Finish up.
+        if cons.user != self:
+            return "I don't quite get what you mean."
         self.attacking = 'quit'
         return True
 
