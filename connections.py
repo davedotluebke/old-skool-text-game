@@ -12,7 +12,7 @@ from player import Player
 from debug import dbg
 
 class NetworkConnection(LineReceiver):
-
+    keep_going = True
     def __init__(self, users):
         self.users = users
         self.user = None

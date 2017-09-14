@@ -262,6 +262,7 @@ class Game():
         """
         dbg.debug("Loop done.")
         dbg.shut_down()
+        NetworkConnection.keep_going = False
         reactor.stop()
 
     def ebLoopFailed(failure):
