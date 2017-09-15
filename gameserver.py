@@ -12,6 +12,7 @@ import connections
 from debug import dbg
 from thing import Thing
 from player import Player
+from parse import Parser
 from console import Console
 from event_nsl import EventQueue
 from parse import Parser
@@ -24,6 +25,7 @@ class Game():
         and associated factory for creating protocols (connections to clients)
     """
     def __init__(self):
+        Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         

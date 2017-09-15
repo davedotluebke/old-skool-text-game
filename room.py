@@ -70,10 +70,11 @@ class Room(Container):
     def move_to(self, p, cons, oDO, oIDO):
         cons.write('rooms cannot be moved!')
     
-    def report_arrival(self, user):
+    def report_arrival(self, user, silent=False):
         loc = user.location
         cons = user.cons
-        user.emit("%s arrives." % user, [user])
+        if not silent: 
+            user.emit("%s arrives." % user, [user])
         if loc.is_dark():
             cons.write("It's too dark to see anything here.")
             return True

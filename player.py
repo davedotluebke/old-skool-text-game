@@ -245,7 +245,7 @@ class Player(Creature):
         self.move_to(room)
         self.emit("%s arrives suddenly, as if by magic!" % self.names[0], [self])
         cons.write("You perform a magical incantation and are suddenly in a new place!")
-        room.report_arrival(self)
+        room.report_arrival(self, silent=True)
         return True
 
     
