@@ -50,6 +50,7 @@ def load():
     firepit_room.add_exit('northwest', 'domains.school.elementQuest.path_choice')
     firepit_room.add_exit('southeast', 'domains.school.elementQuest.tapestries')
 
+    global firepit
     firepit = scenery.Scenery('firepit', 'copper firepit', 'This copper firepit is filled with sturdy oak branches. It is unlit.')
     firepit.actions.append(room.Action(light, ['light', 'hold', 'touch', 'put'], True, False))
     firepit.actions.append(room.Action(take, ['take', 'get'], True, False))
