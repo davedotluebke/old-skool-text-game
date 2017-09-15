@@ -206,7 +206,7 @@ class Thing(object):
     def take(self, p, cons, oDO, oIDO):
         if oDO == None: return "I don't know what you're trying to take!"
         if oDO != self: return "You can't take the %s!" % oDO.short_desc
-        if self.fixed:  return self.fixed 
+        if self.fixed:  return self.fixed
         if self.location == cons.user: return "You are already holding the %s!" % self.short_desc
         if self.move_to(cons.user):
             cons.write("You take the %s." % self)

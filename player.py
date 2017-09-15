@@ -86,7 +86,6 @@ class Player(Creature):
             if cmd != '__noparse__':
                 keep_going = Thing.game.parser.parse(self, self.cons, cmd)
                 if not keep_going:
-                    self.cons.game.keep_going = keep_going
                     self.move_to(Thing.ID_dict['nulspace'])
                     self.detach()
 

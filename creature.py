@@ -65,6 +65,9 @@ class Creature(Container):
         """Emit a message to the room "The <creature> says: <speech>". """
         self.emit("The %s says: %s" % (self, speech))
 
+    def take(self, p, cons, oDO, oIDO):
+        return "You can't take creatures (or players, for that matter!)"
+
     def get_armor_class(self):
         return self.armor_class + (0 if not self.armor_worn else self.armor_worn.bonus)
     

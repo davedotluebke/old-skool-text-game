@@ -1,6 +1,7 @@
 import room
 import gametools
 import thing
+import scenery
 import container
 
 class Shaft(thing.Thing):

@@ -104,6 +104,9 @@ class Parser:
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
         if command == 'quit': 
             return False
+
+        if command == 'quit game':
+            console.game.keep_going = False
         
         self.words = command.split()
         if len(self.words) == 0:
