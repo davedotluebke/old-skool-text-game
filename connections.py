@@ -2,6 +2,7 @@ import twisted.internet.defer
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineReceiver
 from twisted.internet import reactor
+import os.path
 
 import gametools
 
@@ -50,6 +51,14 @@ class NetworkConnection(LineReceiver):
         #    self.state = "CONFIRM"
         #    return
         self.cons = Console(self, Thing.game)
+        try:
+            Thing.game.load_player(os.path.join(gametools.PLAYER_DIR, name), self.cons)
+            self.user = self.cons.user
+            self.state = "COMMAND"
+        except gametools.PlayerLoadError:
+            self.create_new_player(name)
+
+    def create_new_player(self, name):
         self.user = Player(name, None, self.cons)
         self.cons.user = self.user
         self.user.set_description(name, 'A player named %s' % name)

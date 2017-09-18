@@ -5,6 +5,14 @@ from debug import dbg
 # the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
 gameroot = os.path.dirname(__file__) 
 
+PLAYER_DIR = os.path.join(gameroot, "saved_players")
+
+class PlayerSaveError(Exception):
+    pass
+
+class PlayerLoadError(Exception):
+    pass
+
 def clone(obj_module):
     '''Load specified module, call its clone() method, and return the resulting object.
     The object's module should be specified in python package format relative to the

@@ -1,5 +1,8 @@
 import sys
 import traceback
+import os.path
+
+import gametools
 
 from debug import dbg
 from container import Container
@@ -102,7 +105,8 @@ class Parser:
     def parse(self, user, console, command):
         """Parse and enact the user's command. Return False to quit game."""
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
-        if command == 'quit': 
+        if command == 'quit':
+            console.game.save_player(os.path.join(gametools.PLAYER_DIR, user.names[0]), user)
             return False
 
         if command == 'quit game':

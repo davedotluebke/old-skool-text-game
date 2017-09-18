@@ -96,10 +96,10 @@ class Game():
     
         f.close()
     
-    def save_player(self, filename):
+    def save_player(self, filename, player):
         # Uniquify the ID string of every object carried by the player
         tag = '-saveplayer'+str(random.randint(100000,999999))
-        l = [self.user] 
+        l = [player] 
         for obj in l:
             # change object ID and corresponding entry in ID_dict
             del Thing.ID_dict[obj.id]
@@ -125,12 +125,12 @@ class Game():
                 obj._change_objs_to_IDs()
             pickle.dump(l, f, pickle.HIGHEST_PROTOCOL)
             Thing.ID_dict = backup_ID_dict
-            self.cons.write("Saved player data to file %s" % filename)
+            player.cons.write("Saved player data to file %s" % filename)
             f.close()
         except IOError:
-            self.cons.write("Error writing to file %s" % filename)
+            player.cons.write("Error writing to file %s" % filename)
         except pickle.PickleError:
-            self.cons.write("Error pickling when saving to file %s" % filename)
+            player.cons.write("Error pickling when saving to file %s" % filename)
         # restore location & contents etc to obj references:
         for obj in l:
             obj._restore_objs_from_IDs()
@@ -142,7 +142,7 @@ class Game():
             obj._add_ID(obj.id)  # re-create original entry in ID_dict
         
 
-    def load_player(self, filename):
+    def load_player(self, filename, cons, oldplayer=None):
         """Unpickle a single player and his/her inventory from a saved file.
 
         Objects in the player's inventory (and their contents, recursively) 
@@ -156,8 +156,8 @@ class Game():
         try:
             f = open(filename, 'r+b')
         except FileNotFoundError:
-            self.cons.write("Error, couldn't find file named %s" % filename)
-            return
+            cons.write("Error, couldn't find file named %s" % filename)
+            raise gametools.PlayerLoadError
         try:
             # l is the list of objects (player + recursive inventory). Note that 
             # unpickling calls init() which creates new entries in ID_dict for objects in l,
@@ -165,38 +165,39 @@ class Game():
             l = pickle.load(f)  
             f.close()
         except pickle.PickleError:
-            self.cons.write("Encountered error while pickling to file %s, player not saved." % filename)
+            cons.write("Encountered error while pickling to file %s, player not loaded." % filename)
             f.close()
-            return
+            raise gametools.PlayerLoadError
         except EOFError:
-            self.cons.write("The file you are trying to load appears to be courrupt.")
+            cons.write("The file you are trying to load appears to be corrupt.")
+            raise gametools.PlayerLoadError
         newplayer = l[0]  # first object pickled is the player
 
-        # TODO: move below code for deleting player to Player.__del__()
-        # Unlink player object from room; delete player along with recursive inventory
-        eraselist = [self.user]
-        for o in eraselist:
-            if o.contents:
-                eraselist += o.contents
-            if o.location.extract(o):
-                dbg.debug("Error deleting player or inventory during load_game(): object %s contained in %s " % (o, o.location))
-            if o in self.heartbeat_users:
-                self.deregister_heartbeat(o)
-            del Thing.ID_dict[o.id]
-            # o.__del__()  # XXX probably doesn't truly delete the object; needs more research
-        self.cons.user = None
+        if oldplayer:
+            # TODO: move below code for deleting player to Player.__del__()
+            # Unlink player object from room; delete player along with recursive inventory
+            eraselist = [oldplayer]
+            for o in eraselist:
+                if o.contents:
+                    eraselist += o.contents
+                if o.location.extract(o):
+                    dbg.debug("Error deleting player or inventory during load_game(): object %s contained in %s " % (o, o.location))
+                if o in self.heartbeat_users:
+                    self.deregister_heartbeat(o)
+                del Thing.ID_dict[o.id]
+                # o.__del__()  # XXX probably doesn't truly delete the object; needs more research
+            cons.user = None
         
-        self.user = newplayer
-        self.user.cons = self.cons  # custom pickling code for Player doesn't save console
-        self.cons.user = self.user  # update backref from cons
+        newplayer.cons = cons  # custom pickling code for Player doesn't save console
+        cons.user = newplayer  # update backref from cons
 
-        self.cons.change_players = True
+        cons.change_players = True
 
-        self.user.location = gametools.load_room(self.user.location) 
-        if self.user.location == None: 
-            dbg.debug("Saved location for player %s no longer exists; using default location" % self.user, 0)
-            self.cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
-            self.user.location = gametools.load_room('domains.school.school.great_hall')
+        newplayer.location = gametools.load_room(newplayer.location) 
+        if newplayer.location == None: 
+            dbg.debug("Saved location for player %s no longer exists; using default location" % newplayer, 0)
+            cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
+            newplayer.location = gametools.load_room('domains.school.school.great_hall')
         
         # Now fix up location & contents[] to list object refs, not ID strings
         for o in l:
@@ -207,11 +208,11 @@ class Game():
             (head, sep, tail) = o.id.partition('-saveplayer')
             o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
 
-        room = self.user.location
-        room.insert(self.user)  # insert() does some necessary bookkeeping
-        self.cons.write("Restored game state from file %s" % filename)
-        room.report_arrival(self.user)
-        room.emit("%s suddenly appears, as if by sorcery!" % self.user, [self.user])
+        room = newplayer.location
+        room.insert(newplayer)  # insert() does some necessary bookkeeping
+        cons.write("Restored game state from file %s" % filename)
+        room.report_arrival(newplayer)
+        room.emit("%s suddenly appears, as if by sorcery!" % newplayer, [newplayer])
 
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""

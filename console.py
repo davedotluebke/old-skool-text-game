@@ -134,17 +134,33 @@ class Console:
                 self.write("Toggle debug exception handling to %s" % ("on" if self.game.handle_exceptions else "off"))
                 return True
             
-            file_cmds = {'savegame':self.game.save_game,
-                         'loadgame':self.game.load_game,
-                         'save':self.game.save_player,
-                         'load':self.game.load_player}
-            if cmd in file_cmds:
+            game_file_cmds = {'savegame':self.game.save_game,
+                         'loadgame':self.game.load_game}
+            if cmd in game_file_cmds:
                 if (len(self.words) == 2):
                     filename = self.words[1]
-                    file_cmds[cmd](filename)
+                    game_file_cmds[cmd](filename)
                 else:
                     self.write("Usage: %s <filename>" % cmd)
                 return True
+            if cmd == 'save':
+                if (len(self.words) == 2):
+                    filename = self.words[1]
+                    self.game.save_player(filename, self.user)
+                else:
+                    self.write("Usage: save <filename>")
+                return True
+            if cmd == 'load':
+                if (len(self.words) == 2):
+                    filename = self.words[1]
+                    try:
+                        self.game.load_player(filename, self.user, self)
+                    except gametools.PlayerLoadError:
+                        self.write("Encountered an error trying to load from file.")
+                else:
+                    self.write("Usage: load <filename>")
+                return True
+
             
         return False
 
