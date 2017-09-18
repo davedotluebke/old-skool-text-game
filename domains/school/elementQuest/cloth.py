@@ -2,8 +2,8 @@ import thing
 import gametools
 
 class FireQuestCloth(thing.Thing):
-    def wrap(p, cons, oDO, oIDO):
-        if oDO != self:
+    def wrap(self, p, cons, oDO, oIDO):
+        if p.words[1] not in self.names[0]:
             return "Did you mean to wrap the cloth around something?"
         if oIDO.names[0] != 'branch':
             cons.write('You wrap the cloth around the %s, and it falls off.' % oIDO.short_desc)
@@ -20,7 +20,7 @@ def clone():
     cloth = FireQuestCloth('torn tapestry', __file__)
     cloth.set_description('torn bit of tapestry', 'This is a torn swath of tapestry, strewn on the ground. It doesn\'t seem to match any of the tapestries hanging in any rooms you have seen.')
     cloth.add_adjectives('torn')
-    cloth.add_names('tapestry', 'swath')
+    cloth.add_names('tapestry', 'swath', 'cloth')
     cloth.actions.append(thing.Action(cloth.wrap, ['wrap'], True, False))
     cloth.soaked = False
     return cloth

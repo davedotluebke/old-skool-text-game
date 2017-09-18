@@ -27,7 +27,7 @@ class LiquidFire(liquid.Liquid):
         if not loc.indoor:
             self.burn_up()
     
-    def burn_up(self)
+    def burn_up(self):
         self.emit('The luminous red liquid in the %s bursts into flames and quickly burns away.' % self.location)
         self.move_to(thing.Thing.ID_dict['nulspace'])
 
