@@ -1,4 +1,5 @@
 import sys
+import gametools
 from action import Action
 from thing import Thing
 from container import Container
@@ -7,8 +8,8 @@ from player import Player
 from room import Room
 
 class DeepPocket(Container):
-    def __init__(self, default_name, exit_loc, user, pref_id=None):
-        super().__init__(default_name, pref_id)
+    def __init__(self, default_name, exit_loc, user, path, pref_id=None):
+        super().__init__(default_name, path, pref_id)
         self.set_max_volume_carried(sys.maxsize)
         self.set_max_weight_carried(sys.maxsize)
         self.exit_loc = exit_loc
@@ -21,15 +22,15 @@ class DeepPocket(Container):
         self.exit_loc.report_arrival(cons.user)
 
 class DeepPocketSignUpWizard(NPC):
-    def __init__(self, vault):
-        super().__init__("Silemon", Thing.game, pref_id="DeepPocketSignUpWizard")
+    def __init__(self, path):
+        super().__init__("Silemon", path, pref_id="DeepPocketSignUpWizard")
         self.set_description("Silemon Deplintere", "Silemon Deplintare is an older wizard and is wearing a blue cape. He is standing uniformly in front of you.")
         self.deep_pockets = []
         for i in Thing.ID_dict:
             if isinstance(i, DeepPocket):
                 self.deep_pockets.append(i)
         self.serving_customer = False
-        self.vault_room = vault
+        self.vault_room = gametools.clone('domains.wizardry.deep_pocket.vaults')
         self.in_process = False
 
     def heartbeat(self):
@@ -64,18 +65,22 @@ class DeepPocketSignUpWizard(NPC):
                 self.serving_customer.cons.write('Did you mean "yes" or "no"?')
 
     def create_new_pocket(self, customer):
-        new_pocket = DeepPocket('pocket', self.vault_room, customer)
-        new_pocket.set_description('deep pocket', 'This is a magical deep pocket. Putting things in the pocket transports them to an infinite space vault.')
+        DeepPocket.vault_room = self.vault_room
+        DeepPocket.customer = customer
+        new_pocket = gametools.clone('domains.wizardry.deep_pocket.pocket')
+        DeepPocket.customer = None
         new_pocket.move_to(customer)
         customer.cons.write('Just a moment, please...')
         Thing.game.events.schedule(Thing.game.time+2, self.finish_pocket, customer)
         self.in_process = True
         self.deep_pockets.append(new_pocket)
+
     def finish_pocket(self, customer):
         customer.cons.write('Silemon takes a jade out of his pocket, makes some strange motions, and puts it back.')
         customer.cons.write('Silemon says: "Your deep pocket is ready! Enjoy!"')
         self.serving_customer = False
         self.in_process = False
+
 
 class VaultRoom(Room):
     def heartbeat(self):
@@ -84,6 +89,4 @@ class VaultRoom(Room):
                 for l in self.vaults:
                     if l.user == i:
                         i.move_to(l)
-vaults = VaultRoom("Vaults")
-vaults.set_description("vault entrance", "This small room serves as the entrence to all of the vaults.")
 
