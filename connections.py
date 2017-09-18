@@ -83,6 +83,8 @@ class NetworkConnection(LineReceiver):
         self.state = "COMMAND"
 
     def handle_COMMAND(self, message):
+        if self.user.cons == None:
+            raise gametools.ConnectionQuitError
         self.user.cons.raw_input = message
         dbg.debug("handling user command (user %s, console %s):" % (self.name, self.cons))
         dbg.debug(message)

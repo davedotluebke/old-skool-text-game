@@ -13,6 +13,9 @@ class PlayerSaveError(Exception):
 class PlayerLoadError(Exception):
     pass
 
+class ConnectionQuitError(Exception):
+    pass
+
 def clone(obj_module):
     '''Load specified module, call its clone() method, and return the resulting object.
     The object's module should be specified in python package format relative to the

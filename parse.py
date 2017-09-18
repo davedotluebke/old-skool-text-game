@@ -158,7 +158,7 @@ class Parser:
         
         possible_verb_objects = []  # list of objects supporting the verb
         possible_verb_actions = []  # corresponding list of actions 
-        used = possible_objects{:}
+        used = possible_objects[:]
         for obj in possible_objects:
             del used[used.index(obj)]
             for act in obj.actions:

@@ -211,7 +211,7 @@ class Game():
         room = newplayer.location
         room.insert(newplayer)  # insert() does some necessary bookkeeping
         cons.write("Restored game state from file %s" % filename)
-        room.report_arrival(newplayer)
+        room.report_arrival(newplayer, silent=True)
         room.emit("%s suddenly appears, as if by sorcery!" % newplayer, [newplayer])
 
     def register_heartbeat(self, obj):
@@ -231,7 +231,7 @@ class Game():
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-        dbg.debug("Beat! Time = %s" % self.time)
+        dbg.debug("Beat! Time = %s" % self.time, 4)
         
         current_events = self.events.check_for_event(self.time)            
         for event in current_events:
