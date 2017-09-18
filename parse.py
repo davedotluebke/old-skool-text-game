@@ -133,7 +133,7 @@ class Parser:
         
         # remove articles and convert to lowercase, unless the command 
         # requires the exact user text:
-        if self.words[0] not in ['execute', 'say', 'shout']:
+        if self.words[0] not in ['execute', 'say', 'shout', 'whisper', 'mutter', 'emote']:
             command = command.lower()   
             self.words = [w for w in self.words if w not in ['a', 'an', 'the']]
             if len(self.words) == 0:

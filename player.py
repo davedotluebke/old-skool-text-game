@@ -24,6 +24,7 @@ class Player(Creature):
         self.actions.append(Action(self.fetch, "fetch", True, True))
         self.actions.append(Action(self.clone, "clone", True, True))
         self.actions.append(Action(self.apparate, "apparate", True, True))
+        self.actions.append(Action(self.say, ["say", "shout", "mutter", "whisper"], True, True))
         self.actions.append(Action(self.engage, "engage", True, False))
         self.actions.append(Action(self.disengage, "disengage", False, True))
         self.aggressive = 1         #TODO: Specilized individual stats
@@ -248,6 +249,14 @@ class Player(Creature):
         room.report_arrival(self, silent=True)
         return True
 
+    def say(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "I don't quite get what you are trying to say."
+        if len(p.words) < 2:
+            return "What do you want to say?"
+        self.emit("%s %ss: %s." % (self.names[0], p.words[0], " ".join(p.words[1:])), ignore = [self])
+        cons.write("You %s: %s." % (p.words[0], " ".join(p.words[1:])))
+        return True
     
     def engage(self, p, cons, oDO, oIDO):
         if cons.user != self:
