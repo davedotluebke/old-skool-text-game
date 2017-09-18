@@ -71,7 +71,6 @@ class Player(Creature):
         contents field, and call move_to() to update the room."""
         super(Player, self).__setstate__(state) # updates Thing.ID_dict
         # Restore instance attributes
-        self.short_desc = "Clone of " + self.short_desc # XXX temp for debugging
 
     def set_start_loc(self, startroom):
         self.start_loc_id = startroom.id
