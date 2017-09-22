@@ -1,6 +1,12 @@
 import domains.wizardry.deep_pocket.classes as classes
+import room
+import gametools
 
-def clone():
-    vaults = classes.VaultRoom("Vaults")
+def load():
+    roomPath = gametools.findGamePath(__file__)
+    exists = room.check_loaded(roomPath)
+    if exists: return exists
+    
+    vaults = classes.VaultRoom("Vaults", pref_id=roomPath)
     vaults.set_description("vault entrance", "This small room serves as the entrence to all of the vaults.")
     return vaults

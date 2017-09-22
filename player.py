@@ -183,7 +183,7 @@ class Player(Creature):
         id = " ".join(p.words[1:])
         try:
             obj = Thing.ID_dict[id]
-            if obj.move_to(self) == False:
+            if isinstance(obj, Creature) or obj.move_to(self) == False:
                 if obj.move_to(self.location) == False:
                     cons.write("You attempt to fetch the %s but somehow cannot bring it to this place." % obj.names[0])
                 else:
@@ -213,7 +213,7 @@ class Player(Creature):
         obj = gametools.clone(objpath)
         if obj == None:
             return "There seems to be no object with true name '%s'!" % id
-        if obj.move_to(self) == False:
+        if isinstance(obj, Creature) or obj.move_to(self) == False:
             if obj.move_to(self.location) == False:
                 cons.write("You attempt to clone the %s but somehow cannot bring it to this place." % obj.names[0])
             else:

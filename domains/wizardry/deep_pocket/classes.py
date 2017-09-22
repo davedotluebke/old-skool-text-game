@@ -30,16 +30,21 @@ class DeepPocketSignUpWizard(NPC):
             if isinstance(i, DeepPocket):
                 self.deep_pockets.append(i)
         self.serving_customer = False
-        self.vault_room = gametools.clone('domains.wizardry.deep_pocket.vaults')
+        self.vault_room = gametools.load_room('domains.wizardry.deep_pocket.vaults')
         self.in_process = False
 
     def heartbeat(self):
+        if not self.location:
+            return
         customers = []
         for p in self.location.contents:
             if isinstance(p, Player):
                 prev = False
                 for d in self.deep_pockets:
                     if d.user == p:
+                        prev = True
+                for i in p.contents:
+                    if isinstance(i, DeepPocket):
                         prev = True
                 if not prev and p != self.serving_customer:
                     customers.append(p)
@@ -48,21 +53,23 @@ class DeepPocketSignUpWizard(NPC):
         if not self.serving_customer:
             self.emit('Silemon says: "Next up is %s!"' % customers[0])
             self.serving_customer = customers[0]
-        if self.in_process == True:
-            return
-        self.serving_customer.cons.write('Silemon says to you: "I\'m just double-checking - you\'re here for a deep pocket, right?"')
-        while True: #XXX replace with system that will work with multiplayer
-            self.serving_customer.cons.write('Type "yes" to answer yes to the question, and "no" to answer no to it.')
-            reply = self.serving_customer.cons.take_input(':')
-            if reply.lower() == 'yes':
-                self.create_new_pocket(self.serving_customer)
-                break
-            elif reply.lower() == 'no':
-                self.serving_customer.cons.write('Silemon says: "Ok, if that\'s what you want."')
-                self.serving_customer = False
-                break
-            else:
-                self.serving_customer.cons.write('Did you mean "yes" or "no"?')
+            self.serving_customer.cons.write('Silemon says to you: "I\'m just double-checking - you\'re here for a deep pocket, right?"')
+            self.actions.append(Action(self.reply, ['yes', 'no'], False, True))
+        if not self.serving_customer.cons:
+            self.serving_customer = None
+
+    def reply(self, p, cons, oDO, oIDO):
+        if cons.user != self.serving_customer:
+            return "It's not your turn yet!"
+        reply = p.words[0]
+        if not reply:
+            return "Were you trying to reply to Silemon?"
+        if reply.lower() == 'yes':
+            self.create_new_pocket(self.serving_customer)
+        elif reply.lower() == 'no':
+            self.serving_customer.cons.write('Silemon says: "Ok, if that\'s what you want."')
+            self.serving_customer = False
+        return True
 
     def create_new_pocket(self, customer):
         DeepPocket.vault_room = self.vault_room
@@ -70,8 +77,8 @@ class DeepPocketSignUpWizard(NPC):
         new_pocket = gametools.clone('domains.wizardry.deep_pocket.pocket')
         DeepPocket.customer = None
         new_pocket.move_to(customer)
-        customer.cons.write('Just a moment, please...')
-        Thing.game.events.schedule(Thing.game.time+2, self.finish_pocket, customer)
+        customer.cons.write('Silemon says: Ok, this will just take a second...')
+        Thing.game.events.schedule(Thing.game.time+3, self.finish_pocket, customer)
         self.in_process = True
         self.deep_pockets.append(new_pocket)
 
