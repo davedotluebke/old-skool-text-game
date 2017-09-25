@@ -5,17 +5,17 @@ from thing import Thing
 from container import Container
 from action import Action
 
-def check_loaded(roomPath):
-        '''Check whether a room exists (i.e., has been created and inserted into Thing_ID.dict[]).
-        Takes roomPath, the file of the room module as returned by gametools.findGamePath().
-        Returns a reference to the room, or False if the room does not yet exist.'''
-        if roomPath in Thing.ID_dict:
-            return Thing.ID_dict[roomPath]
-        else:
-            return False
+def check_loaded(room_path):
+    '''Check whether a room exists (i.e., has been created and inserted into Thing_ID.dict[]).
+    Takes roomPath, the file of the room module as returned by gametools.findGamePath().
+    Returns a reference to the room, or False if the room does not yet exist.'''
+    if room_path in Thing.ID_dict:
+        return Thing.ID_dict[room_path]
+    else:
+        return False
 
 class Room(Container):
-    def __init__(self, default_name, pref_id, light=1, safe=False, indoor=False):
+    def __init__(self, default_name, pref_id, light=1, safe=False, indoor=False, mod=None):
         """Initialize the room. Set <light> level to 0 for a dark room."""
         Container.__init__(self, default_name, path=pref_id, pref_id=pref_id)
         self.exits = {}
@@ -28,6 +28,23 @@ class Room(Container):
         self.default_light = light  # Can see and perceive emits when light level > 0
         self.monster_safe = safe
         self.indoor = indoor
+        self.mod = mod
+
+    def detach(self, room_path):
+        '''Remove the room from Thing.ID_dict[] and moves all objects in the room 
+        to nulspace (this removes references to the room instance, specifically 
+        the location field of contained objects). This should be called preparatory
+        to deleting or reloading the room.
+        
+        Returns True for success or False if the room is not in Thing.ID_dict[]'''
+        try:
+            room = Thing.ID_dict[room_path]
+            for o in room.contents:
+                o.move_to(Thing.ID_dict['nulspace'], force_move=True)
+            del Thing.ID_dict[room_path]
+            return True
+        except KeyError:
+            return False
 
     def add_exit(self, exit_name, exit_room):
         self.exits[exit_name] = exit_room

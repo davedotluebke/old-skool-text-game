@@ -46,8 +46,9 @@ class Container(Thing):
         obj = obj_file.clone()
         self.insert(obj)
 
-    def insert(self, obj):
-        """Put obj into this Container object, returning True if the operation failed"""
+    def insert(self, obj, force_insert=False):
+        """Put obj into this Container object, returning True if the operation failed. 
+        If <force_insert> is True, ignore weight and volume limits."""
         # error checking for max weight etc goes here
         if obj == self:
             dbg.debug('Trying to insert into self - not allowed!', 0)
@@ -61,7 +62,7 @@ class Container(Thing):
             contents_weight = contents_weight + w.weight
             contents_volume = contents_volume + w.volume
         dbg.debug("insert(): %s currently carrying %d weight and %d volume" % (self.id, contents_weight, contents_volume), 3)
-        if self.max_weight_carried >= contents_weight+obj.weight and self.max_volume_carried >= contents_volume+obj.volume:
+        if (force_insert == True) or (self.max_weight_carried >= contents_weight+obj.weight and self.max_volume_carried >= contents_volume+obj.volume):
             dbg.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.weight, obj.volume), 3)
             obj.set_location(self)   # make this container the location of obj
             self.contents.append(obj)
