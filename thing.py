@@ -182,12 +182,13 @@ class Thing(object):
         for recipient in recipients:
             recipient.perceive(message)
 
-    def move_to(self, dest):
+    def move_to(self, dest, force_move=False):
         """Extract this object from its current location and insert into dest. 
         Returns True if the move succeds. If the insertion fails, attempts to 
-        re-insert into the original location and returns False."""
+        re-insert into the original location and returns False.  
+        If <force_move> is True, ignores the <fixed> attribute."""
         origin = self.location
-        if self.fixed:
+        if self.fixed and force_move == False:
             if hasattr(self, 'is_liquid'):
                 if not dest.liquid:
                     return False
@@ -196,11 +197,12 @@ class Thing(object):
         if origin:
             origin.extract(self)
         # if cannot insert into destination, return to where it came from
-        if not dest.insert(self):  # dest.insert returns True if insertion fails
+        # (dest.insert returns True if insertion fails)
+        if not dest.insert(self, force_insert=force_move):  
             return True
         else:
             if (origin):
-                origin.insert(self)
+                origin.insert(self, force_insert=True)
             return False
 
     def take(self, p, cons, oDO, oIDO):

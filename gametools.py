@@ -40,6 +40,7 @@ def load_room(modpath):
     try: 
         mod = importlib.import_module(modpath)
         room = mod.load()  # TODO: allow pass-through parameters
+        room.mod = mod # store the module to allow for reloading later
     except ImportError:
         dbg.debug("Error importing room module %s" % modpath, 0)
         return None
@@ -47,7 +48,7 @@ def load_room(modpath):
         dbg.debug("Error loading from room module %s: no load() method" % modpath, 0)
         return None
     if room == None:
-        dbg.debug("Error cloning from room module %s:load() returned None" % modpath, 0)
+        dbg.debug("Error loading from room module %s:load() returned None" % modpath, 0)
     return room
     
 def findGamePath(filepath):

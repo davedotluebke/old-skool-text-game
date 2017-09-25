@@ -1,5 +1,6 @@
 import pickle
 import sys
+import importlib
 
 import gametools
 from debug import dbg
@@ -24,6 +25,7 @@ class Player(Creature):
         self.actions.append(Action(self.fetch, "fetch", True, True))
         self.actions.append(Action(self.clone, "clone", True, True))
         self.actions.append(Action(self.apparate, "apparate", True, True))
+        self.actions.append(Action(self.reload, "reload", True, True))
         self.actions.append(Action(self.say, ["say", "shout", "mutter", "whisper"], True, True))
         self.actions.append(Action(self.engage, "engage", True, False))
         self.actions.append(Action(self.disengage, "disengage", False, True))
@@ -223,8 +225,33 @@ class Player(Creature):
         self.emit("%s performs a magical incantation. You sense something has changed." % self.names[0], [self])
         
         return True                    
-
     
+    def reload(self, p, cons, oDO, oIDO):
+        '''Reloads the specified room, or the room containing the player if none is given.
+        First moves all objects out of the room into nulspace, then re-imports the room 
+        module, calls `load()` in the new module, then finally moves any creatures including
+        players back to the new room.'''
+        room = None
+        if len(p.words) < 2: 
+            room = self.location
+        elif len(p.words) == 2:
+            room = gametools.load_room(p.words[1])
+            if room == None: 
+                return "Error, room '%s' doesn't seem to exist!" % p.words[1]
+        else: 
+            return "Usage: 'reload' [room path]\n\t<room path> is optional, if none is given will reload the current room."
+
+        alive = [x for x in room.contents if isinstance(x, Creature)] # all Creatures incl NPCs & players
+        if room.detach(room.path) == False:
+            return "Error while detaching room %s!" % room.path
+        mod = importlib.reload(room.mod)
+        newroom = mod.load()  # TODO: store and re-use parameters of original load() call?
+        newroom.mod = mod
+        for c in alive: 
+            c.move_to(newroom, force_move = True)
+        del room  # XXX unclear if this will do anything
+        return True
+
     def apparate(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
