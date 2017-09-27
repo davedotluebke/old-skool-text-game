@@ -152,9 +152,30 @@ class Thing(object):
         self.long_desc = l_desc
         self.unlisted = unlisted
 
-    def new_verb(self, verb, func):
-        self.verb_dict[verb] = func
-    
+    def indefinite(self):
+        """Return the appropriate indefinite article ('a' or 'an') to use with
+        the object, based on starting character of self.short_desc. Overload  
+        for objects not starting with a vowel that should still use 'an'"""
+        return "an" if self.short_desc[0] in 'aeiou' else "a"
+
+    def get_short_desc(self, perceiver=None, definite=False, indefinite=False):
+        '''Return the short description of this object, optionally prepended
+        by an article. Prepends with 'the' if <definite> is True, or with 'a'
+        or 'an' if indefinite is true. Only one of definite/indefinite should 
+        be set to true. The <perceiver> is the Creature (usually a Player) 
+        for whom the description is intended. This allows the function to be
+        overloaded for objects whose description depends on who is observing 
+        it. For example, Creatures (like NPCs and Players) may have proper 
+        names that will be used instead of a short description once the 
+        Creature is introduced.'''
+        if definite: 
+            article = "the "
+        elif indefinite:
+            article = self.indefinite() + " "
+        else:
+            article = ""
+        return article + self.short_desc
+
 #    def conjugate(self, verb_infinitive, cons):
 #        for i in self.conjugations:
 #            if hasattr(i, 'cons'):

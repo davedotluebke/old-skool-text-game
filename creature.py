@@ -27,9 +27,12 @@ class Creature(Container):
         self.closed_err = "You can't put things in creatures!"
         self.visible_inventory = []     #Things the creature is holding, you can see them.
         self.invisible = False
+        self.introduced = set()
+        self.proper_name = default_name.capitalize()
 
     def set_default_weapon(self, name, damage, accuracy, unwieldiness):
         self.default_weapon = Weapon(name, damage, accuracy, unwieldiness)
+
     def set_default_armor(self, name, bonus, unwieldiness):
         self.default_armor = Armor(name, bonus, unwieldiness)
 
@@ -39,8 +42,23 @@ class Creature(Container):
         self.strength = strength
         self.dexterity = dexterity
 
+    def get_short_desc(self, perceiver=None, definite=False, indefinite=False):
+        '''Overloads `Thing.get_short_desc()` to return short description of
+        the creature, optionally prepended by a definite or indefinite article
+        ('a', 'an', 'the', etc.), OR to return the creature's proper name if
+        this creature has introduced itself to <perceiver> (usually the 
+        player for whom the description is intended).'''
+        if perceiver == None:
+            dbg.debug("%s.get_short_desc() called with no perceiver specified" % self)
+            return "<Error: no perceiver>" + self.short_desc
+        if self.id in perceiver.introduced:
+            return self.proper_name
+        else:
+            return super().get_short_desc(perceiver, definite, indefinite)
+
     def look_at(self, p, cons, oDO, oIDO):
-        '''Print out the long description of the creature, as well as any Weapons it is wielding and any armor it is wearing.'''
+        '''Print out the long description of the creature, as well as any 
+        Weapons it is wielding and any armor it is wearing.'''
         self.viewed = cons.user
         if self == oDO or self == oIDO:
             cons.write(self.long_desc)
@@ -63,7 +81,7 @@ class Creature(Container):
 
     def say(self, speech):
         """Emit a message to the room "The <creature> says: <speech>". """
-        self.emit("The %s says: %s" % (self, speech))
+        self.emit("&nd%s says: %s" % (self, speech))
 
     def take(self, p, cons, oDO, oIDO):
         return "You can't take creatures (or players, for that matter!)"
@@ -101,16 +119,16 @@ class Creature(Container):
             d = self.weapon_wielding.damage
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
             enemy.take_damage(damage_done)
-            self.emit('The %s attacks the %s with its %s!' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
-            self.perceive('You attack the %s with your %s!' % (enemy, self.weapon_wielding))
-            enemy.perceive('The %s attacks you with its %s' % (self, self.weapon_wielding))
+            self.emit('&nd%s attacks &n%s with its %s!' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
+            self.perceive('You attack &nd%s with your %s!' % (enemy, self.weapon_wielding))
+            enemy.perceive('&nd%s attacks you with its %s' % (self, self.weapon_wielding))
             #TODO: Proper names and introductions: The monster attacks you with its sword, Cedric attacks you with his sword, Madiline attacks you with her sword.
             if self not in enemy.enemies:
                 enemy.enemies.append(self)
         else:
-            self.emit('The %s attacks the %s with its %s, but misses.' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
-            self.perceive('You attack the %s with your %s, but miss.' % (enemy, self.weapon_wielding))
-            enemy.perceive('The %s attacks you, but misses %s.' % (self, self.weapon_wielding))
+            self.emit('&nd%s attacks &nd%s with its %s, but misses.' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
+            self.perceive('You attack &nd%s with your %s, but miss.' % (enemy, self.weapon_wielding))
+            enemy.perceive('&nd%s attacks you, but misses %s.' % (self, self.weapon_wielding))
 
     def attack_freq(self):
         try:

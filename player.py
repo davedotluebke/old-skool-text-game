@@ -24,9 +24,10 @@ class Player(Creature):
         self.actions.append(Action(self.execute, "execute", True, True))
         self.actions.append(Action(self.fetch, "fetch", True, True))
         self.actions.append(Action(self.clone, "clone", True, True))
-        self.actions.append(Action(self.apparate, "apparate", True, True))
+        self.actions.append(Action(self.apparate, "apparate", False, True))
         self.actions.append(Action(self.reload, "reload", True, True))
         self.actions.append(Action(self.say, ["say", "shout", "mutter", "whisper"], True, True))
+        self.actions.append(Action(self.introduce, "introduce", True, True))
         self.actions.append(Action(self.engage, "engage", True, False))
         self.actions.append(Action(self.disengage, "disengage", False, True))
         self.aggressive = 1         #TODO: Specilized individual stats
@@ -116,8 +117,56 @@ class Player(Creature):
             self.cons.write("Uh-oh! You don't have a starting location. You are in a great void...")
 
     def perceive(self, message):
+        '''Parse a string passed to `emit()` and customize it for this
+        player. Searches the string for special tags (indicated with the '&'
+        symbol) and replaces the substring following that tag (up to a 
+        whitespace character) with a customized substring. Currently supports
+        the following tags, in which <id> is the ID attribute of an object O:
+            tag      description
+            -------  --------------------------------------------------------
+            &nd<id>: 'name-definite': replace with the proper name of O, if O
+                     has been introduced to this player, else the short
+                     description of O preceeded by the definite article 'the'
+            &nD<id>: 'name-capitalized-definite': replace with the proper name
+                     of O, if O has been introduced to this player, else the
+                     short description of O proceeded by the capitalized 
+                     definite article 'The'
+            &ni<id>: 'name-indefinite': replace with O.proper_name if O has 
+                     been introduced, else O.short_desc preceeded by the 
+                     indefinite article ('a' or 'an')
+            &nI<id>: 'name-indefinite-capitalized': replace with O.proper_name
+                     if O has been introduced, else 'A' or 'An' + O.short_desc
+            &nn<id>: 'name-no-article': replace with O.proper_name if O has 
+                     been introduced, else O.short_desc with no article.
+        '''
         if not self.location.is_dark():
-            Creature.perceive(self, message)
+            # replace any & tags in the message 
+            while True:
+                (m1, sep, m2) = message.partition('&')  
+                if not sep:    # partition() sets sep to '' if '&' not found
+                    break
+                tag = m2.split()[0]  # split() separates on whitespace
+                subject = ""
+                try:
+                    tag_type = tag[0:2]
+                    idstr = tag[2:]
+                except IndexError:
+                    subject = "<error: can't parse tag &%s>" % tag
+                except KeyError:
+                    subject = "<error: can't find object %s>" % idstr
+                O = Thing.ID_dict[idstr]
+                if tag_type[0] == 'n':
+                    subject = O.get_short_desc(self)
+                    if tag_type[1] in ('d','D'):
+                        subject = O.get_short_desc(self, definite=True)
+                    if tag_type[1] in ('i','I'):
+                        subject = O.get_short_desc(self, indefinite=True)
+                    if tag_type[1] in ('N','D','I'):
+                        subject = subject[0].upper() + subject[1:]  # capitalize
+                m2 = subject + m2.partition(tag)[2]
+                message = m1 + m2
+
+            super().perceive(message)
             self.cons.write(message) 
                    
     def hold_object(self, obj):
@@ -280,10 +329,23 @@ class Player(Creature):
             return "I don't quite get what you are trying to say."
         if len(p.words) < 2:
             return "What do you want to say?"
-        self.emit("%s %ss: %s." % (self.names[0], p.words[0], " ".join(p.words[1:])), ignore = [self])
+        self.emit("&nD%s %ss: %s." % (self.names[0], p.words[0], " ".join(p.words[1:])), ignore = [self])
         cons.write("You %s: %s." % (p.words[0], " ".join(p.words[1:])))
         return True
     
+    def introduce(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "I'm not sure who's introducing whom."
+        if len(p.words) < 2:
+            return "Usage: 'introduce myself' or 'introduce <name>' with <name> of somebody present."
+        if p.words[1] != 'myself':
+            return "Introducing anybody other than 'myself' is not yet supported."
+        self.emit("&nD%s introduces himself as '%s'." % (self, self.proper_name))
+        for obj in self.location.contents:
+            if isinstance(obj, Creature) and obj != self:
+                obj.introduced.add(self.id)
+        return True
+
     def engage(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."

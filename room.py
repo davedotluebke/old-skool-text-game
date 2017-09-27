@@ -77,9 +77,9 @@ class Room(Container):
             cons.write("Exits are:")
             for w in self.exits:
                 cons.write('\t' + w)
-            local_objects = ["a " + o.short_desc for o in self.contents if o is not cons.user and not o.unlisted]
+            local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.unlisted]
             if local_objects:
-                cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
+                cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))
         else:
             cons.write("There are no obvious exits.")
         return True
@@ -91,7 +91,7 @@ class Room(Container):
         loc = user.location
         cons = user.cons
         if not silent: 
-            user.emit("%s arrives." % user, [user])
+            user.emit("&nI%s arrives." % user, [user])
         if loc.is_dark():
             cons.write("It's too dark to see anything here.")
             return True
@@ -103,9 +103,9 @@ class Room(Container):
             cons.write("Exits are:")
             for w in loc.exits:
                 cons.write('\t' + w)
-            local_objects = ["a " + o.short_desc for o in loc.contents if o is not user and not o.unlisted]
+            local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.unlisted]
             if local_objects:
-                cons.write("Here you see:\n\t" + '\n\t'.join(local_objects))
+                cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))
         else:
             cons.write("There are no obvious exits.")
 

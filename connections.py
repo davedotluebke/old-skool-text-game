@@ -3,6 +3,7 @@ from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineReceiver
 from twisted.internet import reactor
 import os.path
+import random
 
 import gametools
 
@@ -61,7 +62,9 @@ class NetworkConnection(LineReceiver):
     def create_new_player(self, name):
         self.user = Player(name, None, self.cons)
         self.cons.user = self.user
-        self.user.set_description(name, 'A player named %s' % name)
+        adjective = random.choice(('tall', 'short', 'dark', 'pale', 'swarthy', 'thin', 'heavyset'))
+        species = random.choice(('human', 'elf', 'dwarf', 'gnome'))
+        self.user.set_description(adjective + ' ' + species, 'A player named %s' % name)
         self.user.set_max_weight_carried(750000)
         self.user.set_max_volume_carried(2000)
 
