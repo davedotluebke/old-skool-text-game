@@ -57,6 +57,7 @@ class Player(Creature):
         # all our instance attributes. Always use the dict.copy()
         # method to avoid modifying the original state.
         state = super().__getstate__()
+        state['set_start_loc'] = state['set_start_loc'].id
         # Remove the unpicklable entries.
         del state['cons']
         return state
