@@ -194,11 +194,15 @@ class NPC(Creature):
         self.current_script_idx = 0
         self.attack_now = 0
         self.attacking = False
+        self.forbidden_rooms = []
 
         Thing.game.register_heartbeat(self)
     
     def add_script(self, s):
         self.scripts.append(s)
+
+    def forbid_room(self, r):
+        self.forbidden_rooms.append(r)
 
     def heartbeat(self):
         self.act_soon += 1
@@ -255,6 +259,9 @@ class NPC(Creature):
         if new_room.monster_safe:
             dbg.debug('Can\'t go to %s; monster safe room!' % new_room_string)
             return
+
+        if new_room_string in self.forbidden_rooms:
+            dbg.debug('Can\'t go to %s: forbidden to %s!' % (new_room_string, self))
  
         self.emit("The %s goes %s." % (self, exit))
         self.move_to(new_room)

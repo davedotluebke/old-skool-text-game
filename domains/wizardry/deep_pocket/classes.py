@@ -32,6 +32,7 @@ class DeepPocketSignUpWizard(NPC):
         self.serving_customer = False
         self.vault_room = gametools.load_room('domains.wizardry.deep_pocket.vaults')
         self.in_process = False
+        self.said_nos = []
 
     def heartbeat(self):
         if not self.location:
@@ -40,6 +41,8 @@ class DeepPocketSignUpWizard(NPC):
         for p in self.location.contents:
             if isinstance(p, Player):
                 prev = False
+                if p in self.said_nos:
+                    prev = True
                 for d in self.deep_pockets:
                     if d.user == p:
                         prev = True

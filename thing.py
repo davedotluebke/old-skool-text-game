@@ -108,6 +108,8 @@ class Thing(object):
             self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet? 
         if self.contents != None:
             self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
+        if hasattr(self, 'set_start_loc'):
+            self.set_start_loc = gametools.load_room(self.set_start_loc)
 
     def _change_objs_to_IDs(self):
         """Replace object references with ID strings, in preparation for pickling."""

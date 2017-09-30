@@ -13,7 +13,7 @@ class PitRoom(Room):
         self.indoor = True
         self.has_player = False
         self.water_level_den = 10
-                Thing.game.register_heartbeat(self)
+        Thing.game.register_heartbeat(self)
         self.player_done = False
 
     def heartbeat(self):
@@ -103,7 +103,7 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
                             elif i.wizardry_element == 'water':
                                 self.dunk_in_water(i)
                                 return
-                            elif i.wizardry_element == 'plant':
+                            elif i.wizardry_element == 'air':
                                 self.throw_in_root_room(i)
                                 return
                 if i not in self.approached:
@@ -118,26 +118,40 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
     def throw_fireball(self, player):
         self.emit('The goblin yells "You kept the emerald for yourself! I will punish you!"')
         self.emit('The old goblin makes a fireball in his hands, and prepares to throw it.')
+        Thing.game.events.schedlue(Thing.game.time+2, self.throw_fireball_two, player)
+
+    def throw_fireball_two(self, player)
         self.emit('The old goblin throws the fireball at the %s!' % player.short_desc, ignore=[player])
         player.cons.write('The old goblin throws the fireball at you! But for some reason the fireball does not feel hot. It feels warm, and you notice you are not burned.')
-        player.cons.write('You feel an urge to find out more about this power, why it exits, and what it does for you.')
         self.emit('The fireball seemingly shatters at %s' % player.short_desc, ignore=[player])
-        self.emit('The goblin screams in rage.')
+        Thing.game.events.schedlue(Thing.game.time+2, self.throw_fireball_three, player)
+
+    def throw_fireball_three(self, player):
+        self.emit('The goblin smiles. "Correct! A new fire wizard!"')
+        player.cons.write('The goblin says to you: Congratulations on becoming a fire wizard. It shall serve you well.')
         self.complete_players.append(player)
-        self.move_player_to_waterfall(player)
+        player.cons.write('The goblin motions for you to walk past him.')
+        player.move_to(Thing.ID_dict['domains.school.forest.crimpson'])
     
     def throw_boulder(self, player):
         self.emit('The goblin yells "You kept the emerald for yourself! I will punish you!"')
         self.emit('The old goblin picks up a huge rock and prepares to throw it.')
+        Thing.game.events.schedlue(Thing.game.time+2, self.throw_boulder_two, player)
+
+    def throw_boulder_two(self, player):
         self.emit('The old goblin throws the huge rock at the %s!' % player.short_desc, ignore=[player])
         player.cons.write('You see a huge boulder flying at you. You instinctively put your hands out in front of you to stop it.')
         self.emit('The %s stops the rock in front of them with their bare hands!' % player.short_desc, ignore = [player])
         player.cons.write('You stop the rock in front of you with just your bare hands!')
         player.strength += 1
-        player.cons.write('You feel an urge to find out more about this power, why it exits, and what it does for you.')
-        self.emit('The goblin screams in rage.')
+        Thing.game.events.schedlue(Thing.game.time+2, self.throw_boulder_three, player)
+
+    def throw_boulder_three(self, player):
+        self.emit('The goblin smiles. "Correct! A new earth wizard!"')
+        player.cons.write('The goblin says to you: Congratulations on becoming an earth wizard. It shall serve you well.')
         self.complete_players.append(player)
-        self.move_player_to_waterfall(player)
+        player.cons.write('The goblin motions for you to walk past him.')
+        player.move_to(Thing.ID_dict['domains.school.forest.crimpson'])
 
     def dunk_in_water(self, player):
         self.emit('The goblin screams: "You kept the emerald for yourself! I will punish you!"')
