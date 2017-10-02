@@ -56,6 +56,7 @@ class Console:
     def detach(self, user):
         if self.user == user:
             self.user = None
+        self.connection.transport.write(b'Press Enter to continue . . . ')
 
     def set_width(self, w):
         self.width = w
