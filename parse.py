@@ -110,8 +110,8 @@ class Parser:
                 return False
         dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects), 3)        
         if len(matched_objects) > 1:
-            candidates = ", or ".join(o.short_desc for o in matched_objects)
-            cons.write("By '%s', do you mean %s?" % (sObj, candidates))
+            candidates = ", or the ".join(o.short_desc for o in matched_objects)
+            cons.write("By '%s', do you mean the %s? Please provide more adjectives, or specify 'first', 'second', 'third', etc." % (sObj, candidates))
             return False
         elif len(matched_objects) == 0:
             # user typed a direct object that doesn't match any objects. Could be 
