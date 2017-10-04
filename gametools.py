@@ -13,8 +13,16 @@ class PlayerSaveError(Exception):
 class PlayerLoadError(Exception):
     pass
 
-class ConnectionQuitError(Exception):
-    pass
+def validate_func(modpath, func):
+    try:
+        mod = importlib.import_module(modpath)
+        if hasattr(mod, func):
+            return True
+        else:
+            return False
+    except ImportError:
+        dbg.debug("Error checking load on module %s: no module with path" % modpath)
+        return False
 
 def clone(obj_module):
     '''Load specified module, call its clone() method, and return the resulting object.

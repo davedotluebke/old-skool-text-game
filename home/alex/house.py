@@ -1,79 +1,7 @@
-import time
-
 from debug import dbg
 
-from gameserver import Game
 from action import Action
 from thing import Thing
-from container import Container
-from room import Room  
-from creature import Creature 
-from creature import NPC
-from player import Player
-from console import Console
-from scenery import Scenery
-from liquid import Liquid
-from weapon import Weapon
-from armor import Armor
-from book import Book
-
-from domains.school.bookcase import Bookcase
-from domains.school.sink import Sink
-from domains.school.flower import Flower
-
-class Bed(Container):
-	def __init__(self, default_name):
-		super().__init__(default_name)
-		self.actions.append(Action(self.lay, ["lay", "sleep"], True, True))
-		self.actions.append(Action(self.stand, ['stand'], True, True))
-		self.closable = False
-		self.fix_in_place('Moving the bed would require a lot of effort.')
-		self.set_prepositions('on', 'onto', 'atop')
-	
-	def lay(self, p, cons, oDO, oIDO):
-		(sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
-		if sV == 'sleep':
-			cons.user.move_to(self)
-			cons.write('You lie down on the bed and fall fast asleep.')
-			time.sleep(1)
-			cons.write('You wake up.')
-			return True
-		if sV == 'lay' and sIDO == 'bed':
-			cons.user.move_to(self)
-			cons.write('You lay down on the bed and relax.')
-			return True
-		return "Did you mean to lay down on the bed?"
-	
-	def stand(self, p, cons, oDO, oIDO):
-		(sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
-		if sV == 'stand':
-			cons.user.move_to(self.location)
-			cons.write('You stand up.')
-			return True
-		return 'Did you intend to stand up?'
-
-class Couch(Container):
-	def __init__(self, default_name):
-		super().__init__(default_name)
-		self.actions.append(Action(self.sit, ["sit"], True, True))
-		self.actions.append(Action(self.stand, ['stand'], True, True))
-		self.closable = False
-		self.fix_in_place('Moving the couch would require a lot of effort.')
-		self.set_prepositions('on', 'onto')
-
-	def sit(self, p, cons, oDO, oIDO):
-		if oIDO == self:
-			cons.write('You sit on the couch.')
-			return True
-		return 'Not quite sure what you ment.'
-	
-	def stand(self, p, cons, oDO, oIDO):
-		(sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
-		if sV == 'stand':
-			cons.user.move_to(self.location)
-			cons.write('You stand up.')
-			return True
-		return 'Did you intend to stand up?'
 
 class FaucetThing(Thing):
 	def __init__(self, ID, short_desc, long_desc, TYPE):
@@ -148,66 +76,24 @@ class FaucetThing(Thing):
 		obj.move_to(Thing.ID_dict['nulspace'])
 		return True
 
-class PlaceChooser(Thing):
-	def __init__(self, ID, fixed_to):
-		super().__init__(ID)
-		self.written_on = 'woods'
-		self.actions.append(Action(self.write, ['write'], True, False))
-		self.fix_in_place('This paper is fixed to the %s with sorcery.' % fixed_to)
-		self.set_description('magical piece of paper', 'This magical paper says "woods" on it.')
-		self.add_names('paper')
-		self.add_adjectives('magical')
-
-	def write(self, p, cons, oDO, oIDO):
-		try:
-			self.written_on = " ".join(p.words[1:])
-		except IndexError:
-			return 'Did you mean to write something on the paper?'
-		cons.write('You write %s on the paper and feel a magical shift occur.' % self.written_on)
-		del self.location.exits['west']
-		try:
-			self.location.exits['west'] = Thing.ID_dict[self.written_on]
-		except KeyError:
-			cons.write('The text on the paper morphs back into the words "woods".')
-			self.written_on = 'woods'
-			self.location.exits['west'] = Thing.ID_dict[self.written_on]
-		self.long_desc = 'This magical paper says "%s" on it.' % self.written_on
-		return True
-
-living_room = Room('living room', pref_id='lr31795')
 bathroom = Room('bathroom', pref_id='btr31795')
 bedroom = Room('bedroom', pref_id='br31795')
 magic_room = Room('magical room', pref_id='mr31795')
 
-living_room.set_description('well-kept living room', 'This is a comfortable living room, while quite small. It has a couch on one wall.')
 bathroom.set_description('modern bathroom', 'This small bathroom has a bathtub, a shower, and a sink.')
 bedroom.set_description('normal bedroom', 'This bedroom is small but nice. There are bookshelves on the walls and a great big window overlooking Firlefile sorcery school. ')
 magic_room.set_description('magical room', 'This room has a lot of magical supplies. It also has a door on the west side of the room with a piece of paper above it.')
 
-living_room.add_exit('west', bathroom.id)
-living_room.add_exit('up', bedroom.id)
-living_room.add_exit('south', magic_room.id)
 bathroom.add_exit('east', living_room.id)
 bedroom.add_exit('down', living_room.id)
 magic_room.add_exit('north', living_room.id)
 magic_room.add_exit('west', 'woods')
 
-living_room.add_names('room', 'space')
-living_room.add_adjectives('living', 'well-kept', 'comfortable')
 bathroom.add_adjectives('modern')
 bedroom.add_adjectives('small', 'comfortable')
 magic_room.add_names('room')
 magic_room.add_adjectives('magic', 'magical')
 
-#in magical room
-
-magical_paper = PlaceChooser('magical paper', 'wall')
-magical_paper.move_to(magic_room)
-
-# in bedroom
-bed = Bed('bed')
-bed.set_description('soft, comfortable bed', 'This bed is soft and comfortable. It has white sheets on it.')
-bed.move_to(bedroom)
 # in bathroom
 bathtub = FaucetThing('bathtub', 'white bathtub', 'This bathtub is white. It has a faucet on one end of the tub and a shower above.', 'bathtub')
 bathtub.add_adjectives('modern', 'white')
@@ -237,10 +123,6 @@ bookshelf.closable = False
 bookshelf.add_adjectives('oak')
 bookshelf.add_names('shelf')
 bookshelf.move_to(living_room)
-
-couch = Couch('couch')
-couch.set_description('nice leather couch', 'This is a nice leather couch. You want to sit on it.')
-couch.move_to(living_room)
 
 blue_book = Book("blue book", "newer light blue book", "This book is newer, sky blue, and says \"Dragonsky\" on the cover.")
 blue_book.add_names("book", "Dragonsky")
