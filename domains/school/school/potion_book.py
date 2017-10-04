@@ -2,7 +2,7 @@ import book
 import gametools
 
 def clone():
-    potion_book = book.Book("leather book", __file__, "leather-bound tome", "This is an old leather-bound book titled \"Potion Recipies for the Beggining and Intermediate Sorcerer (First Edition).\"")
+    potion_book = book.Book("leather book", __file__, "leather-bound tome", "This is an old leather-bound book titled \"Potion Recipies for the Beggining and Intermediate Sorcerer (First Edition).\"", pref_id="potion_book")
     potion_book.add_names("tome", "book")
     potion_book.add_adjectives("leather-bound", "leather")
     potion_book.set_message('''

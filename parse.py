@@ -9,6 +9,7 @@ from container import Container
 from player import Player
 
 class Parser:
+    ordinals = {"first":1, "second":2, "third":3, "fourth":4, "fifth":5, "sixth":6, "seventh":7, "eighth":8, "ninth":9, "tenth":10}
     def _set_verbosity(self, level=-1):
         if level != -1:
             dbg.verbosity = level
@@ -77,19 +78,36 @@ class Parser:
         Returns False after writing an error message to Console <cons> if more than 1 object matches. """
         matched_objects = []
         sNoun = sObj.split()[-1]  # noun is final word in sObj (after adjectives)
-        sAdjectives_list = sObj.split()[:-1]  # all words preceeding noun 
+        sAdjectives_list = sObj.split()[:-1]  # all words preceeding noun
+        # In case multiple objects match the noun and adjectives given, 
+        # player may specify an ordinal adjective ('first', 'second', ..). 
+        ord_number = 0  # which ordinal (first=1,second=2,..), 0 if none specified
+        ord_str = ""    # actual string used to specify ordinal ('first', '3rd', etc)
         for obj in objs:
             match = True
             if sNoun in obj.names:
                 for adj in sAdjectives_list:
-                    if adj not in obj.adjectives:
-                        match = False
+                    if adj in Parser.ordinals:  # dict mapping ordinals->ints
+                        if ord_str and ord_str != adj: 
+                            cons.write("I'm confused: you specified both %s and %s!" % (ord_str, adj))
+                            return False
+                        ord_number = Parser.ordinals[adj]
+                        ord_str = adj
+                    elif adj not in obj.adjectives:
+                        match = False  # found an invalid adjective
                         break
-            else:               # sNoun doesn't match any obj.names
-                match = False
+            else: 
+                match = False  # sNoun doesn't match any obj.names
 
-            if match:   # name & all adjectives match
+            # if name & all adjectives match, add to list of matching objects
+            if match: 
                 matched_objects.append(obj)
+        if ord_number:  
+            try:
+                matched_objects = [matched_objects[ord_number - 1]]
+            except IndexError:
+                cons.write("You specified '%s' but I only see %d objects matching %s %s!" % (ord_str, len(matched_objects), ' '.join(x for x in sAdjectives_list if x not in Parser.ordinals), sNoun))
+                return False
         dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects), 3)        
         if len(matched_objects) > 1:
             candidates = ", or ".join(o.short_desc for o in matched_objects)
@@ -158,9 +176,7 @@ class Parser:
         
         possible_verb_objects = []  # list of objects supporting the verb
         possible_verb_actions = []  # corresponding list of actions 
-        used = possible_objects[:]
         for obj in possible_objects:
-            del used[used.index(obj)]
             for act in obj.actions:
                 if sV in act.verblist:
                     if (act.intransitive and not sDO) or (act.transitive): 

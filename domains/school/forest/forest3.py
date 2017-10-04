@@ -10,8 +10,9 @@ def load():
     forest_three = room.Room('forest', roomPath)
     forest_three.set_description('ancient forest', 'This is an ancient forest with towering trees. They must be hundreds of years old at least. The trees seem gloomy here. There is a small dark cave to the west.')
     forest_three.add_adjectives('ancient','towering','gloomy')
-    forest_three.add_exit('southeast', 'domains.school.forest.forest1')
+    forest_three.add_exit('southeast', 'domains.school.forest.forest1' )
     forest_three.add_exit('west', 'domains.school.cave.cave_entry')
+    forest_three.add_exit('southeast', 'domains.school.forest.dark_forest' )
 
     oak = scenery.Scenery('oak', 'menacing old oak', 'This is an old oak that is leaning over the trail. It seems to be scowling at you. You see some truffles at the base.')
     oak.add_adjectives('menacing', 'old', 'oak')

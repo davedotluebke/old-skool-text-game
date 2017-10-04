@@ -24,7 +24,7 @@ class Player(Creature):
         self.actions.append(Action(self.execute, "execute", True, True))
         self.actions.append(Action(self.fetch, "fetch", True, True))
         self.actions.append(Action(self.clone, "clone", True, True))
-        self.actions.append(Action(self.apparate, "apparate", False, True))
+        self.actions.append(Action(self.apparate, "apparate", True, True))
         self.actions.append(Action(self.reload, "reload", True, True))
         self.actions.append(Action(self.say, ["say", "shout", "mutter", "whisper"], True, True))
         self.actions.append(Action(self.introduce, "introduce", True, True))
@@ -299,6 +299,8 @@ class Player(Creature):
         newroom.mod = mod
         for c in alive: 
             c.move_to(newroom, force_move = True)
+        cons.write('You make a magical gesture and scene around you suddenly changes.')
+        self.emit('&nD makes a magical gesture, and you sense something has changed.')
         del room  # XXX unclear if this will do anything
         return True
 

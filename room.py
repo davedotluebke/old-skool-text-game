@@ -1,4 +1,4 @@
-import importlib
+import gametools
 
 from debug import dbg
 from thing import Thing
@@ -115,9 +115,8 @@ class Room(Container):
         sExit = words[1]  
         if sExit in list(self.exits):
             try:
-                destFile = self.exits[sExit]  # filename of the destination room module
-                destMod = importlib.import_module(destFile)  # python module of the destination room
-                dest = destMod.load()
+                destPath = self.exits[sExit]  # filename of the destination room module
+                dest = gametools.load_room(destPath)
             except KeyError:
                 dbg.debug("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]), 0)
                 cons.write("There was an internal error with the exit. ")
