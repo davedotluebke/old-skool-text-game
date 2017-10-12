@@ -27,6 +27,7 @@ class Thing(object):
         self.weight = 0.0
         self.volume = 0.0
         self.emits_light = False
+        self.flammable = 0
         self.location = None
         self.fixed = False          # False if unfixed, error message if fixed 
         self.short_desc = 'need_short_desc'
@@ -182,6 +183,12 @@ class Thing(object):
 #        for i in self.conjugations:
 #            if hasattr(i, 'cons'):
 #                pass
+    
+    def set_flammable(self, f):
+        """Set flammability. 0 == non-flammable, 10 == very flammable."""
+        self.flammable = f
+    
+    # XXX implement set_fire so flammable objects can be set on fire with e.g. a fireball
 
     def heartbeat(self):
         pass
@@ -234,9 +241,10 @@ class Thing(object):
         if self.fixed:  return self.fixed
         if self.location == cons.user: return "You are already holding the %s!" % self.short_desc
         if self.move_to(cons.user):
-            cons.write("You take the %s." % self)
+            cons.user.perceive("You take &nd%s." % self.id)
+            self.emit('&nD%s takes %nds.' % (cons.user, self.is), cons.user)
         else:
-            cons.write("You cannot take the %s." % self)
+            cons.user.perceive("You cannot take &nd%s." % self.id)
         return True
 
     def drop(self, p, cons, oDO, oIDO):
