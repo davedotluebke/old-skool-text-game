@@ -18,7 +18,7 @@ def load():
     oak.add_adjectives('menacing', 'old', 'oak')
     oak.add_names('tree')
     oak.add_response(['climb'], "The towering oak looks climbable, but it is a menacing old tree, the most so you have ever seen, so you decide to look around for other trees.", emit_message='%s looks up at the tree.')
-    oak.add_response(['grab', 'hold', 'touch', 'hug'], "To touch the scary old tree for no reson seems silly, and slightly scary, so you decide not to. You think that if you saw a nice tree you would hug it.", emit_message='%s looks at the tree trunk.')
+    oak.add_response(['grab', 'hold', 'touch', 'hug'], "To touch the scary old tree for no reason seems silly, and slightly scary, so you decide not to. You think that if you saw a nice tree you would hug it.", emit_message='%s looks at the tree trunk.')
     forest_three.insert(oak)
 
     willow = scenery.Scenery('willow', 'sad weeping willow', 'This is the most mournful weeping willow you have ever seen. You almost cry from looking at it.')
