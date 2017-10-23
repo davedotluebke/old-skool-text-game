@@ -242,7 +242,7 @@ class Player(Creature):
                     cons.write("You perform a magical incantation and bring the %s to this place!" % obj.names[0])
             else:
                 cons.write("You perform a magical incantation and the %s appears in your hands!" % obj.names[0])
-            self.emit("%s performs a magical incantation, and you sense something has changed." % self.names[0], [self])
+            self.emit("&nD%s performs a magical incantation, and you sense something has changed." % self.id, [self])
         except KeyError: 
             return "There seems to be no object with true name '%s'!" % id
         
@@ -272,7 +272,7 @@ class Player(Creature):
                 cons.write("You perform a magical incantation and bring the %s to this place!" % obj.names[0])
         else:
             cons.write("You perform a magical incantation and the %s appears in your hands!" % obj.names[0])
-        self.emit("%s performs a magical incantation. You sense something has changed." % self.names[0], [self])
+        self.emit("&nD%s performs a magical incantation. You sense something has changed." % self.id, [self])
         
         return True                    
     
@@ -300,7 +300,7 @@ class Player(Creature):
         for c in alive: 
             c.move_to(newroom, force_move = True)
         cons.write('You make a magical gesture and scene around you suddenly changes.')
-        self.emit('&nD makes a magical gesture, and you sense something has changed.')
+        self.emit('&nD%s makes a magical gesture, and you sense something has changed.' % self.id)
         del room  # XXX unclear if this will do anything
         return True
 
@@ -320,10 +320,10 @@ class Player(Creature):
         if isinstance(room, Room) == False:
                 cons.write("You cannot apparate to %s; that is not a place!" % room.names[0])
                 return True
-        self.emit("%s performs a magical incantation, and vanishes!" % self.names[0], [self])
+        self.emit("&nD%s performs a magical incantation, and vanishes!" % self.id, [self])
         self.move_to(room)
-        self.emit("%s arrives suddenly, as if by magic!" % self.names[0], [self])
-        cons.write("You perform a magical incantation and are suddenly in a new place!")
+        self.emit("&nD%s arrives suddenly, as if by magic!" % self.id, [self])
+        self.perceive("You perform a magical incantation and are suddenly in a new place!")
         room.report_arrival(self, silent=True)
         return True
 
@@ -344,6 +344,7 @@ class Player(Creature):
         if p.words[1] != 'myself':
             return "Introducing anybody other than 'myself' is not yet supported."
         self.emit("&nD%s introduces himself as '%s'." % (self, self.proper_name))
+        self.perceive("You introduce yourself to all.")
         for obj in self.location.contents:
             if isinstance(obj, Creature) and obj != self:
                 obj.introduced.add(self.id)
