@@ -202,10 +202,13 @@ class Thing(object):
         if not holder: 
             #  this Thing is a room, pass message to all creatures in the room
             holder = self
-        if holder not in ignore and hasattr(holder, 'perceive'):
-            # immediate container can see messages, probably a creature/player
-            dbg.debug("creature holding this object is: " + holder.id, 3)
-            holder.perceive(message)
+        try:
+            if holder not in ignore and hasattr(holder, 'perceive'):
+                # immediate container can see messages, probably a creature/player
+                dbg.debug("creature holding this object is: " + holder.id, 3)
+                holder.perceive(message)
+        except TypeError:
+            dbg.debug("Warning, emit() called with non-list ignore parameter!", level=0)
         # now get list of recipients (usually creatures) contained by holder (usually a Room)
         recipients = [x for x in holder.contents if hasattr(x, 'perceive') and (x is not self) and (x not in ignore)]
         dbg.debug("other creatures in this room include: " + str(recipients), 3)
@@ -242,7 +245,7 @@ class Thing(object):
         if self.location == cons.user: return "You are already holding the %s!" % self.short_desc
         if self.move_to(cons.user):
             cons.user.perceive("You take &nd%s." % self.id)
-            self.emit('&nD%s takes %nds.' % (cons.user, self.id), cons.user)
+            self.emit('&nD%s takes &nd%s.' % (cons.user.id, self.id), [cons.user])
         else:
             cons.user.perceive("You cannot take &nd%s." % self.id)
         return True

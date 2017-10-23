@@ -1,11 +1,12 @@
 import thing
 import player
+import action
 
 class Door(thing.Thing):
     def __init__(self):
         super().__init__('door', __file__)
         self.set_description('wooden door', 'This thick wooden door is made of strong wood. There is no handle.')
-        self.actions.append(thing.Action(self.open, ['open'], True, False))
+        self.actions.append(action.Action(self.open, ['open'], True, False))
         self.add_adjectives('wooden', 'thick')
 
     def open(self, p, cons, oDO, oIDO):

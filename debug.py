@@ -29,7 +29,7 @@ class DebugLog():
             class_name = stack[1].frame.f_locals["self"].__class__.__name__
             func_name = class_name + '.' + stack[1].function + ":" + str(stack[1].lineno)
             for f in stack[2:]:         
-                if f.function == "loop": break
+                if f.function == "beat": break
                 try:
                     caller_class = f.frame.f_locals["self"].__class__
                     class_name = caller_class.__name__ + '.' if caller_class else ''

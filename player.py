@@ -148,14 +148,16 @@ class Player(Creature):
                     break
                 tag = m2.split()[0]  # split() separates on whitespace
                 subject = ""
+                O = None
                 try:
                     tag_type = tag[0:2]
                     idstr = tag[2:]
+                    idstr = idstr.rstrip('.,!?;:\'"')  # remove any punctuation
+                    O = Thing.ID_dict[idstr]
                 except IndexError:
                     subject = "<error: can't parse tag &%s>" % tag
                 except KeyError:
                     subject = "<error: can't find object %s>" % idstr
-                O = Thing.ID_dict[idstr]
                 if tag_type[0] == 'n':
                     subject = O.get_short_desc(self)
                     if tag_type[1] in ('d','D'):

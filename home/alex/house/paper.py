@@ -1,11 +1,12 @@
 import thing
+import action
 import gametools
 
 class PlaceChooser(Thing):
 	def __init__(self, ID, path, fixed_to):
 		super().__init__(ID, path)
 		self.written_on = 'domains.school.forest.woods'
-		self.actions.append(thing.Action(self.write, ['write'], True, False))
+		self.actions.append(action.Action(self.write, ['write'], True, False))
 		self.fix_in_place('This paper is fixed to the %s with sorcery.' % fixed_to)
 		self.set_description('magical piece of paper', 'This magical paper says "woods" on it.')
 		self.add_names('paper')

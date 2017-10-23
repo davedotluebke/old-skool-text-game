@@ -1,15 +1,21 @@
 import thing
+import action
 
 class Torch(thing.Thing):
     def __init__(self):
         super().__init__('torch', __file__)
-        self.set_description('makeshift torch', 'This wooden torch is made of an oak branch with a cloth wrapped around the end.')
+        self.set_description('makeshift torch', 'This makeshift wooden torch is made of an oak branch with a cloth wrapped around the end.')
         self.add_adjectives('makeshift', 'wooden')
         self.add_names('branch', 'cloth')
+        self.actions.append(action.Action(self.hold, ['hold', 'wave', 'thrust'], True, False))
         self.lit = False
         self.soaked = False
     
-    def light(self):
+    def soak_torch(self):
+        self.soaked = True
+        self.set_description('makeshift torch, soaked with a red liquid', 'This makeshift wooden torch is made of an oak branch, with a cloth wrapped around the end and soaked with a red liquid.')
+
+    def light_torch(self):
         self.lit = True
         self.set_description('makeshift torch, burning brightly', 'This wooden torch is made of an oak branch with a cloth wrapped around the end. It is burning brightly.')
 
@@ -28,7 +34,7 @@ class Torch(thing.Thing):
             if self.soaked:
                 cons.write('The luminous red liquid in the cloth bursts into flame, and starts the torch burning brightly.')
                 self.emit('%s holds the torch in the shaft of sunlight and it suddenly bursts into flames!' % cons.user, [cons.user])
-                self.light()
+                self.light_torch()
                 return True
             else:  # unlit torch is not soaked
                 cons.write('You %s the torch in the shaft of sunlight, but nothing happens.' % p.words[0])

@@ -123,7 +123,7 @@ class Console:
                         self.width = self.default_width
                     self.tw.width = self.width
                 else:
-                    self.write("The console width is currently %d. Type 'console <width>' to change it." % self.width)
+                    self.write("The console width is currently %d. Type 'width <width>' to change it." % self.width)
                 return True
             
             if cmd == 'help':
@@ -169,10 +169,13 @@ class Console:
         str_text = str(text)
         self.tw.initial_indent = indent * ' '
         self.tw.subsequent_indent = indent * ' '
-        wrapped = self.tw.fill(str_text)
-        lines = wrapped.splitlines()
-        for l in lines:
-            self.connection.sendLine(bytes(l, "utf-8"))
+        lines = str_text.splitlines()
+        for l in lines: 
+            wrapped = self.tw.fill(l)
+            wrapped_lines = wrapped.splitlines()
+            for wl in wrapped_lines:
+                self.connection.sendLine(bytes(wl, "utf-8"))
+
     '''
     def new_user(self):
         self.write("Create your new user.")

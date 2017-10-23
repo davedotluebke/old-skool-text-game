@@ -5,7 +5,7 @@ import scenery
 import thing
 import gametools
 
-def light(p, cons, oDO, oIDO):
+def light_firepit(p, cons, oDO, oIDO):
     if oDO.names[0] != 'firepit':
         return "I'm not quite sure what you are trying to light..."
     cons.write('You light the firepit, sending it into flames.')
@@ -52,7 +52,7 @@ def load():
 
     global firepit
     firepit = scenery.Scenery('firepit', 'copper firepit', 'This copper firepit is filled with sturdy oak branches. It is unlit.')
-    firepit.actions.append(room.Action(light, ['light', 'hold', 'touch', 'put'], True, False))
+    firepit.actions.append(room.Action(light_firepit, ['light', 'hold', 'touch', 'put'], True, False))
     firepit.actions.append(room.Action(take, ['take', 'get'], True, False))
     firepit.lit = False
     firepit_room.insert(firepit)
