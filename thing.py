@@ -242,7 +242,7 @@ class Thing(object):
         if self.location == cons.user: return "You are already holding the %s!" % self.short_desc
         if self.move_to(cons.user):
             cons.user.perceive("You take &nd%s." % self.id)
-            self.emit('&nD%s takes %nds.' % (cons.user, self.is), cons.user)
+            self.emit('&nD%s takes %nds.' % (cons.user, self.id), cons.user)
         else:
             cons.user.perceive("You cannot take &nd%s." % self.id)
         return True
