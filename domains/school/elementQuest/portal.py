@@ -20,7 +20,7 @@ class Portal(thing.Thing):
                                'tingling warmth. The flames surround you, and suddenly disappear as '
                                'if your body had extinguished--no, ABSORBED--the fire.  You suddenly '
                                'realize you are in a different place...')
-            lounge = gametools.load_room('domains.school.fire_lounge')
+            lounge = gametools.load_room('domains.school.school.fire_lounge')
             if lounge and cons.user.move_to(lounge):
                     self.emit('&nD%s enters the firey portal, and disappears in a burst of flame!', cons.user.id)
             else:
