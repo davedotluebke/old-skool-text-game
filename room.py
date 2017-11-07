@@ -91,7 +91,7 @@ class Room(Container):
         loc = user.location
         cons = user.cons
         if not silent: 
-            user.emit("&nI%s arrives." % user, [user])
+            user.emit("&In%s arrives." % user.id, [user])
         if loc.is_dark():
             cons.write("It's too dark to see anything here.")
             return True
@@ -126,7 +126,7 @@ class Room(Container):
                 verb = words[0]
                 conjugated = "goes" if verb == "go" else verb + 's'
                 cons.write("You %s to the %s." % (verb, sExit))
-                self.emit("%s %s to the %s." % (str(user), conjugated, sExit))
+                self.emit("&Dn%s %s to the %s." % (user.id, conjugated, sExit))
                 loc.report_arrival(user)
                 return True
             else:

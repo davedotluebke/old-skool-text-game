@@ -22,7 +22,7 @@ class Portal(thing.Thing):
                                'realize you are in a different place...')
             lounge = gametools.load_room('domains.school.fire_lounge')
             if lounge and cons.user.move_to(lounge):
-                    self.emit('&Dn%s enters the firey portal, and disappears in a burst of flame!', cons.user.id)
+                    self.emit('&nD%s enters the firey portal, and disappears in a burst of flame!', cons.user.id)
             else:
                 cons.user.perceive('...and just as quickly, you feel yourself return! But something has changed...')
             return True
