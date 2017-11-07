@@ -195,6 +195,7 @@ class Console:
         self.set_user(new_user)
         self.game.user = new_user
     '''
+
     def take_input(self):
         if (self.raw_input == b''):
             return None

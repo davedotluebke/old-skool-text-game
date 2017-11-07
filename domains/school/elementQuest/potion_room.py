@@ -35,4 +35,7 @@ def load():
 
     cauldron = gametools.clone('domains.school.elementQuest.cauldron')
     r.insert(cauldron)
+
+    door = gametools.clone('domains.school.elementQuest.wooden_door')
+    r.insert(door)
     return r
