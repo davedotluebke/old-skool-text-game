@@ -24,7 +24,7 @@ class Weapon(Thing):
                 return "You need to be holding the %s to wield it." % self
             cons.user.weapon_wielding = self
             cons.write("You wield the %s." % self)
-            cons.user.emit('%s wields the %s.' % (cons.user, self), ignore=[cons.user])
+            cons.user.emit('&nD%s wields the %s.' % (cons.user, self), ignore=[cons.user])
             return True
         else:
             return "Did you mean to wield a specific weapon, such as the %s?" % self
@@ -36,7 +36,7 @@ class Weapon(Thing):
             return "But you aren't currently wielding the %s!" % self
         cons.user.weapon_wielding = cons.user.default_weapon
         cons.write("You cease wielding the %s." % self)
-        cons.user.emit("%s puts away the %s." % (cons.user, self), ignore=[cons.user])
+        cons.user.emit("&nD%s puts away the %s." % (cons.user, self), ignore=[cons.user])
         return True
 
     def weapon_drop(self, p, cons, oDO, oIDO): 

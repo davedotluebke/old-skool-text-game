@@ -59,7 +59,7 @@ class FaucetThing(Thing):
 			cons.write('The water leaves the %s and goes down the drain in the %s.' % (filling, self.type))
 			return True
 		cons.write('Water comes out of the faucet and fills your %s.' % filling)
-		self.emit('The %s is filled with water at the %s.' % (filling, self.type))
+		self.emit('&nD%s fills a %s with water at the %s.' % (cons.user.id, filling, self.type))
 		water = Liquid('water', 'some normal water', 'This is some normal clear water.')
 		water.add_response(['drink'], 'You take a big drink of the water, and your thirst is quenched.')
 		oDO.insert(water)

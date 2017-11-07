@@ -56,7 +56,7 @@ class DeepPocketSignUpWizard(NPC):
         if not self.serving_customer:
             self.emit('Silemon says: "Next up is %s!"' % customers[0])
             self.serving_customer = customers[0]
-            self.serving_customer.cons.write('Silemon says to you: "I\'m just double-checking - you\'re here for a deep pocket, right?"')
+            self.serving_customer.perceive('Silemon says to you: "I\'m just double-checking - you\'re here for a deep pocket, right?"')
             self.actions.append(Action(self.reply, ['yes', 'no'], False, True))
         if not self.serving_customer.cons:
             self.serving_customer = None

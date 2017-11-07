@@ -78,7 +78,7 @@ test_o.move_to(central_fountain)
             if cons.user.move_to(dest):
                 loc = cons.user.location
                 cons.write("You enter %s" % sEnter.capitalize())
-                self.emit("%s enters %s" % (str(cons.user), sEnter.capitalize()))
+                self.emit("&nD%s enters %s" % (cons.user.id, sEnter.capitalize()))
                 loc.report_arrival(cons.user)
                 return True
             else:

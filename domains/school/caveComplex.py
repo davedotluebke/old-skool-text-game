@@ -68,7 +68,7 @@ class CaveRoom(Room):
                 if self.monster.location == self.monster_storage:
                     self.monster_storage.extract(self.monster)
                     self.insert(self.monster)
-                    self.monster.emit('A %s arrives!' % self.monster.short_desc)
+                    self.monster.emit('&nI%s arrives!' % self.monster.id)
                     self.released_monster == True
                     self.counter = 10
                     for m in self.contents:
@@ -102,7 +102,7 @@ class CaveEntry(Room):
             if cons != None:
                 self.last_cons = cons
             cons.write('You convince yourself to enter the scary cave.')
-            cons.user.emit('%s slowly enters the cave, visibly shaking.' % cons.user)
+            cons.user.emit('&nD%s slowly enters the cave, visibly shaking.' % cons.user.id)
             Room.go_to(self, p, cons, oDO, oIDO)
             return True
         else:

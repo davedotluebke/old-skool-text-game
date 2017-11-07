@@ -54,7 +54,7 @@ class QuestDoor(thing.Thing):
         if cons.user.move_to(dest):
             cons.write('With a sense of making a momentous decision, you step through the doorway.')
             dest.report_arrival(cons.user)
-            self.emit('%s walks through the doorway to the path of %s.' % (cons.user, self.names[0]))
+            self.emit('&nD%s walks through the doorway to the path of %s.' % (cons.user.id, self.names[0]))
         return True
 
 def load():

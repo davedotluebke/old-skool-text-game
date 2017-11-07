@@ -18,13 +18,13 @@ class InvisibilityPotion(Liquid):
             return "Did you meant to drink the %s?" % self.short_desc
         cons.user.invisible = True      #TODO: Cleanup
         cons.game.events.schedule(cons.game.time+10, self.reappear, cons.user)
-        self.emit('%s drinks a potion and fades from sight.' % cons.user, [cons.user])
+        self.emit('&nD%s drinks a potion and fades from sight.' % cons.user, [cons.user])
         cons.user.perceive('You drink the potion, and notice yourself fading away.')
         return True
 
     def reappear(self, user):
         user.invisible = False
-        self.emit('%s suddenly fades into sight, appearing as if out of thin air!' % user, [user])
+        self.emit('&nI%s suddenly fades into sight, appearing as if out of thin air!' % user, [user])
         user.perceive('You notice you are now fading back into visibility.')
         
 class StrengthPotion(Liquid):

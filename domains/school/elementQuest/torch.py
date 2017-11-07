@@ -20,30 +20,33 @@ class Torch(thing.Thing):
         self.set_description('makeshift torch, burning brightly', 'This wooden torch is made of an oak branch with a cloth wrapped around the end. It is burning brightly.')
 
     def hold(self, p, cons, oDO, oIDO):
+        u = cons.user
+        verb = p.words[0]
         if oIDO == None:
-            if self.location == cons.user and oDO == self:
+            if self.location == u and oDO == self:
                 return "You are already holding the torch!"
             return "I'm not quite sure what you meant."
         if oIDO.names[0] == 'shaft':
             if self.lit: 
                 cons.write('You %s the burning torch in the shaft of sunlight, but nothing '
-                            'further happens.' % p.words[0])
-                self.emit("%s %ss the burning torch in the shaft of sunlight." % (cons.user, p.words[0]), 
-                            [cons.user])
+                            'further happens.' % verb)
+                self.emit("&nD%s %ss the burning torch in the shaft of sunlight." % (u.id, verb),
+                            [u])
                 return True
             if self.soaked:
                 cons.write('The luminous red liquid in the cloth bursts into flame, and starts the torch burning brightly.')
-                self.emit('%s holds the torch in the shaft of sunlight and it suddenly bursts into flames!' % cons.user, [cons.user])
+                self.emit('&nD%s %ss the torch in the shaft of sunlight and it suddenly bursts into flames!' % (u.id, verb), [u])
                 self.light_torch()
                 return True
             else:  # unlit torch is not soaked
-                cons.write('You %s the torch in the shaft of sunlight, but nothing happens.' % p.words[0])
-                self.emit("%s %ss the torch in the shaft of sunlight." % (cons.user, p.words[0]), [cons.user])
+                cons.write('You %s the torch in the shaft of sunlight, but nothing happens.' % verb)
+                self.emit("&nD%s %ss the torch in the shaft of sunlight." % (u.id, verb), [u])
                 return True
                 
         if oIDO.names[0] == 'door':
             if self.lit:
-                cons.write('You hold the torch on the door, setting it into flames.')
+                cons.write('You %ss the torch to the door, setting it aflame.')
+                self.location.emit('&nD%s %ss the torch to the door, quickly setting it aflame.' % (u.id, verb))
                 oIDO.burn(self)
                 return True
         return "I'm not quite sure what you meant."

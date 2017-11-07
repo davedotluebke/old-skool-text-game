@@ -145,12 +145,12 @@ class Diamond(Gem):
                     self.user = self.location
                     self.hiding_user = True
                     self.user.cons.write("You notice yourself fading. ")
-                    self.user.emit("%s suddenly dissapears!" % self.user, ignore=[self.user])
+                    self.user.emit("&nD%s suddenly dissapears!" % self.user.id, ignore=[self.user])
         else:
             if self.hiding_user:
                 self.user.invisible = False
                 self.user.cons.write("You notice yourself fading back into visibility.")
-                self.user.emit("%s suddenly appears!" % self.user, ignore=[self.user])
+                self.user.emit("&nI%s suddenly appears!" % self.user.id, ignore=[self.user])
                 self.hiding_user = False
                 self.user = None
 

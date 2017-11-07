@@ -213,7 +213,7 @@ class Game():
         room.insert(newplayer)  # insert() does some necessary bookkeeping
         cons.write("Restored game state from file %s" % filename)
         room.report_arrival(newplayer, silent=True)
-        room.emit("%s suddenly appears, as if by sorcery!" % newplayer, [newplayer])
+        room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
 
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""

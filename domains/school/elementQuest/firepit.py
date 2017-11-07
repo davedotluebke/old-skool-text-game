@@ -9,7 +9,7 @@ def light_firepit(p, cons, oDO, oIDO):
     if oDO.names[0] != 'firepit':
         return "I'm not quite sure what you are trying to light..."
     cons.write('You light the firepit, sending it into flames.')
-    self.emit('%s lights the firepit, sending it into flames.' % cons.user)
+    self.emit('&nD%s lights the firepit, sending it into flames.' % cons.user.id)
     (head, sep, tail) = oDO.long_desc.partition('It is unlit.')
     oDO.long_desc = head + 'It is lit.'
     thing.Thing.game.events.schedule(Thing.game.time+20, go_out, oDO)
@@ -34,7 +34,7 @@ def take(p, cons, oDO, oIDO):
     branch = gametools.clone('domains.school.elementQuest.branch')
     cons.user.insert(branch)
     cons.write("You take a sturdy oak branch from the firepit.")
-    cons.user.emit("%s takes a sturdy oak branch from the firepit." % cons.user, [cons.user])
+    cons.user.emit("&nD%s takes a sturdy oak branch from the firepit." % cons.user.id, [cons.user])
     return True
 
 def load():

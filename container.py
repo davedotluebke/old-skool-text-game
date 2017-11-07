@@ -128,7 +128,7 @@ class Container(Thing):
             cons.write("The %s is already closed!" % self.short_desc)
         else:
             cons.write("You close the %s." % self.short_desc)
-            self.emit("%s closes the %s." % (cons.user.short_desc, self.short_desc), [cons.user])
+            self.emit("&nD%s closes the %s." % (cons.user.id, self.short_desc), [cons.user])
             self.close()
         return True
     
@@ -150,7 +150,7 @@ class Container(Thing):
                 (head, sep, tail) = self.short_desc.partition("closed ")
                 self.short_desc = head + tail
             cons.write("You open the %s." % self.short_desc)
-            self.emit("%s opens the %s." % (cons.user.short_desc, self.short_desc), [cons.user])
+            self.emit("&nD%s opens the %s." % (cons.user.id, self.short_desc), [cons.user])
             self.closed = False
             self.see_inside = True
         else: 
@@ -173,7 +173,7 @@ class Container(Thing):
             return True
         if oDO.move_to(self): 
             cons.write("You put the %s %s the %s." % (oDO.short_desc, sPrep, self.short_desc))
-            cons.user.emit("%s puts a %s %s a %s." % (cons.user.short_desc, oDO.short_desc, sPrep, self.short_desc))
+            cons.user.emit("&nD%s puts a %s %s a %s." % (cons.user.id, oDO.short_desc, sPrep, self.short_desc))
         else:
             cons.write("You cannot put the %s %s the %s.", (oDO.short_desc, sPrep, self.short_desc))
         return True            
@@ -206,7 +206,7 @@ class Container(Thing):
             cons.write(self.closed_err if self.closed_err else "The %s is closed; you can't remove the %s." % (self.short_desc, oDO.short_desc))
         if oDO.move_to(cons.user): 
             cons.write("You remove the %s from the %s." % (oDO.short_desc, self.short_desc))
-            cons.user.emit("%s removes a %s from a %s" % (cons.user.short_desc, oDO.short_desc, self.short_desc))
+            cons.user.emit("&nD%s removes a %s from a %s" % (cons.user.id, oDO.short_desc, self.short_desc))
         else:
             cons.write("You cannot remove the %s from the %s" % (oDO.short_desc, self.short_desc))
         return True

@@ -41,7 +41,7 @@ class Liquid(Scenery):
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO: 
             return "Did you meant to drink the %s?" % self.short_desc
-        self.emit("%s drinks something." % cons.user, [cons.user])
+        self.emit("&nD%s drinks something." % cons.user.id, [cons.user])
         cons.user.perceive("You drink the %s." % self.short_desc)
         self.move_to(Thing.ID_dict['nulspace'])
         return True

@@ -138,10 +138,10 @@ class Creature(Container):
     
     def die(self, message=None):
         #What to do when 0 health
-        self.emit("The %s dies!" % self, [self])
-        corpse = Container("corpse of %s" % (self))
+        self.emit("&nD%s dies!" % self.id, [self])
+        corpse = Container("corpse of &ni%s" % (self.id))
         corpse.add_names("corpse")
-        corpse.set_description('corpse of a %s' % (self.short_desc), 'This is a foul-smelling corpse of a %s. It looks nasty.' % (self.short_desc))
+        corpse.set_description('corpse of a %s' % (self.short_desc), 'This is the foul-smelling corpse of a %s. It looks nasty.' % (self.short_desc))
         corpse.set_weight(self.weight)
         corpse.set_volume(self.volume)
         corpse.set_max_weight_carried(self.max_weight_carried)
@@ -263,10 +263,10 @@ class NPC(Creature):
         if new_room_string in self.forbidden_rooms:
             dbg.debug('Can\'t go to %s: forbidden to %s!' % (new_room_string, self))
  
-        self.emit("The %s goes %s." % (self, exit))
+        self.emit("&nD%s goes %s." % (self.id, exit))
         self.move_to(new_room)
-        self.emit("The %s arrives." % self)
-        dbg.debug("Moved to new room %s" % (new_room_string))
+        self.emit("&nI%s arrives." % self.id)
+        dbg.debug("Creature %s moved to new room %s" % (self.names[0], new_room_string), 1)
         return
 
     def talk(self):

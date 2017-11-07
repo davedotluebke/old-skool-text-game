@@ -18,7 +18,7 @@ class FireQuestPotionRoom(room.Room):
             if cons.user.insert(f):
                 return "You fail to take a flask from the shelf."
             cons.write('You take a flask from the shelf.')
-            self.emit('%s takes a flask from the open shelf.' % cons.user.names[0], [cons.user])
+            self.emit('&nD%s takes a flask from the open shelf.' % cons.user.id, [cons.user])
             return True
         return super().take(p, cons, oDO, oIDO)
 

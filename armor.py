@@ -23,7 +23,7 @@ class Armor(Thing):
                 return "You need to be holding the %s to put it on." % self
             cons.user.armor_worn = self
             cons.write("You put on the %s." % self)
-            cons.user.emit('%s puts on the %s.' % (cons.user, self), ignore=[cons.user])
+            cons.user.emit('&nD%s puts on the %s.' % (cons.user.id, self), ignore=[cons.user])
             return True
         else:
             return "Did you mean to wear a specific piece of armor, such as the %s?" % self
@@ -35,7 +35,7 @@ class Armor(Thing):
             return "But you aren't currently wearing the %s!" % self
         cons.user.armor_worn = cons.user.default_armor
         cons.write("You take off the %s." % self)
-        cons.user.emit("%s takes off the %s." % (cons.user, self), ignore=[cons.user])
+        cons.user.emit("&nD%s takes off the %s." % (cons.user.id, self), ignore=[cons.user])
         return True
 
     def armor_drop(self, p, cons, oDO, oIDO): 
