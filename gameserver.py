@@ -193,9 +193,10 @@ class Game():
 
         cons.change_players = True
 
-        newplayer.location = gametools.load_room(newplayer.location) 
+        loc_str = newplayer.location
+        newplayer.location = gametools.load_room(loc_str) 
         if newplayer.location == None: 
-            dbg.debug("Saved location for player %s no longer exists; using default location" % newplayer, 0)
+            dbg.debug("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer), 0)
             cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
             newplayer.location = gametools.load_room('domains.school.school.great_hall')
         
