@@ -1,4 +1,4 @@
-import book.Book as Book
+from book import Book
 
 def clone():
     blue_book = Book("blue book", None, "newer light blue book", "This book is newer, sky blue, and says \"Dragonsky\" on the cover.", pref_id="blue_book")
