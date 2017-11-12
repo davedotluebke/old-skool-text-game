@@ -5,7 +5,7 @@ class Fireplace(thing.Thing):
     def __init__(self):
         super().__init__('fireplace', __file__)
         self.set_description('enourmous fireplace', 'This enourmous fireplace is filled with logs that are slowly burning. '
-        'It almost seems as if there were another room also facing this fireplace, but you can\'t be sure.')
+        'It almost seems as if there were another room also facing this fireplace, but you can\'t be sure.', unlisted=True)
         self.add_adjectives('enourmous', 'huge')
         self.actions.append(thing.Action(self.enter, ['enter'], True, False))
         self.dest = 'domains.school.school.fire_lounge'
