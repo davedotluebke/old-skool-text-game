@@ -15,7 +15,7 @@ class Chair(thing.Thing):
         self.actions.append(action.Action(self.sit, ['sit', 'relax'], True, True))
         self.actions.append(action.Action(self.stand, ['stand'], False, True))
         self.color = color
-        gameserver.Game.register_heartbeat(self)
+        thing.Thing.game.register_heartbeat(self)
 
     def sit(self, p, cons, oDO, oIDO):
         if self.sitting == cons.user:
@@ -32,8 +32,10 @@ class Chair(thing.Thing):
         return True
 
     def heartbeat(self):
-        if i.sitting.location != self.location:
-            self.sitting_in = None
+        if self.sitting == None:
+            return
+        if self.sitting.location != self.location:
+            self.sitting = None
 
     def stand(self, p, cons, oDO, oIDO):
         if self.sitting != cons.user:

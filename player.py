@@ -58,6 +58,7 @@ class Player(Creature):
         # method to avoid modifying the original state.
         state = super().__getstate__()
         state['set_start_loc'] = state['set_start_loc'].id
+        del state['enemies'] #TODO: Make saving and loading of this attribute work
         # Remove the unpicklable entries.
         del state['cons']
         return state
@@ -75,6 +76,7 @@ class Player(Creature):
         contents field, and call move_to() to update the room."""
         super(Player, self).__setstate__(state) # updates Thing.ID_dict
         # Restore instance attributes
+        self.enemies = [] #XXX fix problem with enemies
 
     def set_start_loc(self, startroom):
         self.start_loc_id = startroom.id

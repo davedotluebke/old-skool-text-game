@@ -20,6 +20,8 @@ class Fireplace(thing.Thing):
                 cons.user.perceive("You pass through the fireplace into the Great Hall.")
                 self.emit('&d%s passes through the fireplace to a room on the other side. ' % cons.user, ignore = [cons.user])
             dest = gametools.load_room(self.dest)
+            if not dest:
+                return "Whoops! There isn't actually a room on the other side!"
             cons.user.move_to(dest)
             dest.report_arrival(cons.user)
             return True
