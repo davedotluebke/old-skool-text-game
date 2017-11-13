@@ -1,4 +1,4 @@
-import lake_room
+import domains.school.elementQuest.lake_room as lake_room
 import room
 
 def load():
