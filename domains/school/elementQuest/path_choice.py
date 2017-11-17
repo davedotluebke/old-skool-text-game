@@ -80,7 +80,7 @@ def load():
     water = QuestDoor('water', None)
     water.set_description('door of water', 'This door is cool, and has a large label above it reading "Water". ')
     water.set_view('a penisula sticking out onto a lake')
-    water.set_dest('domains.school.elementQuest.dock')
+    water.set_dest('domains.school.elementQuest.peninsula')
     path_choice.insert(water)
 
     earth = QuestDoor('earth', None)

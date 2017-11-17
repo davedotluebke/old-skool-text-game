@@ -32,14 +32,14 @@ class LakeRoom_underwater(room.Room):
         if user not in self.contents:
             return
         user.perceive('You find that you are out of air and must resurface.')
-        user.emit('&nd%s swims upward and disappears from sight.' % cons.user)
+        user.emit('&nD%s swims upward and disappears from sight.' % user)
         loc = gametools.load_room(self.surface_loc)
         user.move_to(loc)
-        user.emit('&nd%s surfaces.' % user)
+        user.emit('&nD%s surfaces.' % user)
 
     def surface(self, p, cons, oDO, oIDO):
         cons.user.perceive('You swim upwards and resurface.')
-        cons.user.emit('&nd%s swims upwards and dissappears from sight.')
-        loc = gametools.load_room(self.underwater_loc)
+        cons.user.emit('&nD%s swims upwards and dissappears from sight.')
+        loc = gametools.load_room(self.surface_loc)
         cons.user.move_to(loc)
         return True

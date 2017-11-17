@@ -1,5 +1,6 @@
 import domains.school.elementQuest.lake_room as lake_room
 import room
+import gametools
 
 def load():
     roomPath = gametools.findGamePath(__file__)
