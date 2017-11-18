@@ -194,7 +194,8 @@ class Thing(object):
         pass
 
     def emit(self, message, ignore = []):
-        """Write a message to be seen by creatures holding this Thing or in the same room, skipping creatures in the list <ignore>"""
+        """Write a message to be seen by creatures holding this Thing or in the same  
+        room, skipping creatures in the list <ignore>."""
         if hasattr(self, 'invisible') and self.invisible == True:
             return
         # pass message to containing object, if it can receive messages
@@ -256,6 +257,7 @@ class Thing(object):
         if self.location != cons.user: return "You aren't holding the %s!" % self.short_desc
         if self.move_to(cons.user.location):
             cons.write("You drop the %s." % self)
+            cons.user.emit("&nD%s drops the %s." % cons.user.id, self)
         else:
             cons.write("You cannot drop the %s" % self)
         return True

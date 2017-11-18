@@ -127,10 +127,11 @@ class CaveEntry(Room):
         elif self.in_entry_user > 0 and contents_question:
             for i in self.contents:
                 if isinstance(i, Player):
-                    i.cons.write('You step back from the cave mouth into the gloomy forest.')
+                    i.perceive('You step back from the cave mouth into the gloomy forest.')
+                    i.emit("&nD%s steps back from the cave mouth into the gloomy forest." % i.id)
                 dbg.debug('extracting %s!' % i, 2)
-                self.extract(i)
                 going_to_loc = gametools.load_room(self.escape_room)
-                going_to_loc.insert(i)
+                i.move_to(going_to_loc)
+                going_to_loc.report_arrival(i)
             self.in_entry_user = 0
 #        if (Thing.ID_dict['cave moss'] or Thing.ID_dict['gold']) not in self.exits['in'].contents:

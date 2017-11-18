@@ -66,21 +66,18 @@ class Book(Thing):
             if self.what_you_read and (case == 1):
                 cons.write("You read:"+str(self.what_you_read[self.index]), 8)
                 cons.user.reading = True
-                return True
             elif self.what_you_read and (case == 2):
                 self.index = int(pagenum)-1
                 cons.write('You flip to page '+str(self.index+1)+'.')
                 cons.write("You read:"+str(self.what_you_read[self.index]), 8)
                 cons.user.reading = True
-                return True
             elif self.what_you_read and (case == 3):
                 self.index += 1
                 cons.write("You read:"+str(self.what_you_read[self.index]), 8)
                 cons.user.reading = True
-                return True
             else:
                 cons.write("A problem occured!")
-                return True
+            cons.user.emit("&nD%s reads from the %s." %(cons.user.id, self.s_desc))
         except IndexError:
             cons.write('The book does not have a page numbered %s!' % str(self.index+1))
-            return True
+        return True

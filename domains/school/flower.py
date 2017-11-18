@@ -25,6 +25,7 @@ class Flower(Thing):
                 petal = gametools.clone("domains.school.forest.petal")
                 petal.move_to(cons.user)
                 cons.write('You pick a petal from the %s.' % self.type)
+                cons.user.emit("&nD%s picks a petal from a %s.", (cons.user.id, self.type))
                 return True
             else:
                 return "I'm not sure what you are trying to pick from the %s...a petal perhaps?" % self.names[0]
@@ -38,6 +39,7 @@ class Flower(Thing):
                     return True
         if self.type in ['poppy']:
             cons.write('You shake the flower, and collect some %s seeds.' % self.names[0])
+            cons.user.emit("&nD%s shakes a flower and collects some seeds." % cons.user.id)
             seed = gametools.clone('domains.school.forest.seed')
             seed.move_to(cons.user)
             return True

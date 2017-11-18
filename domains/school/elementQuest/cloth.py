@@ -9,7 +9,7 @@ class FireQuestCloth(thing.Thing):
         if oIDO.names[0] != 'branch':
             cons.write('You wrap the cloth around the %s, and it falls off.' % oIDO.short_desc)
             return True
-        cons.write('You wrap the cloth around the branch, creating a makeshift torch.')
+        cons.user.perceive('You wrap the cloth around the branch, creating a makeshift torch.')
         torch = gametools.clone('domains.school.elementQuest.torch')
         torch.soaked = oDO.soaked
         torch.move_to(oIDO.location)

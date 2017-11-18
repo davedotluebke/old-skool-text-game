@@ -13,6 +13,7 @@ class Couch(Container):
 	def sit(self, p, cons, oDO, oIDO):
 		if oIDO == self:
 			cons.write('You sit on the couch.')
+			self.emit('&nD%s sits on the couch.' % cons.user.id)
 			return True
 		return 'Not quite sure what you ment.'
 	
@@ -21,6 +22,7 @@ class Couch(Container):
 		if sV == 'stand':
 			cons.user.move_to(self.location)
 			cons.write('You stand up.')
+			self.emit('&nD%s stands up.' % cons.user.id)
 			return True
 		return 'Did you intend to stand up?'
 

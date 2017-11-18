@@ -18,6 +18,7 @@ class Bookcase(Thing):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sDO in ['tattered book', 'old book']:
             cons.write('You pull on a book. ')
+            self.emit("&nD%s does something to the bookcase." % cons.user.id)
             self.emit('The bookcase shakes, and swings open, revealing a secret staircase leading down.')
             self.location.add_exit('down', self.hidden_room)
             self.set_description('a bookcase door wide open to a secret staircase', 'This door is cleverly disguised as a bookcase. It is open, revealing a secret staircase leading down.')
