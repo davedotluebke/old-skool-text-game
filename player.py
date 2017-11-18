@@ -123,6 +123,7 @@ class Player(Creature):
         symbol) and replaces the substring following that tag (up to a 
         whitespace character) with a customized substring. Currently supports
         the following tags, in which <id> is the ID attribute of an object O:
+
             tag      description
             -------  --------------------------------------------------------
             &nd<id>: 'name-definite': replace with the proper name of O, if O
@@ -139,6 +140,12 @@ class Player(Creature):
                      if O has been introduced, else 'A' or 'An' + O.short_desc
             &nn<id>: 'name-no-article': replace with O.proper_name if O has 
                      been introduced, else O.short_desc with no article.
+        
+        In general, a creature mentioned 'by name' in the message probably will 
+        get a custom message and shouldn't get the default 'perceive' message.  
+        So for convenience `perceive()` will silently return if this player is
+        one of the creatures named using the &n semantics above, effectively 
+        ignoring any creatures named in the `emit()` message.
         '''
         if not self.location.is_dark():
             # replace any & tags in the message 
@@ -154,18 +161,23 @@ class Player(Creature):
                     idstr = tag[2:]
                     idstr = idstr.rstrip('.,!?;:\'"')  # remove any punctuation
                     O = Thing.ID_dict[idstr]
+                    if O == self: 
+                        return      # ignore messages that mention self by name
                 except IndexError:
                     subject = "<error: can't parse tag &%s>" % tag
                 except KeyError:
                     subject = "<error: can't find object %s>" % idstr
                 if tag_type[0] == 'n':
-                    subject = O.get_short_desc(self)
-                    if tag_type[1] in ('d','D'):
-                        subject = O.get_short_desc(self, definite=True)
-                    if tag_type[1] in ('i','I'):
-                        subject = O.get_short_desc(self, indefinite=True)
-                    if tag_type[1] in ('N','D','I'):
-                        subject = subject[0].upper() + subject[1:]  # capitalize
+                    if O == None:
+                        subject = '[Error: no object matching idstr %s]' % idstr
+                    else:
+                        subject = O.get_short_desc(self)
+                        if tag_type[1] in ('d','D'):
+                            subject = O.get_short_desc(self, definite=True)
+                        if tag_type[1] in ('i','I'):
+                            subject = O.get_short_desc(self, indefinite=True)
+                        if tag_type[1] in ('N','D','I'):
+                            subject = subject[0].upper() + subject[1:]  # capitalize
                 m2 = subject + m2.partition(tag)[2]
                 message = m1 + m2
 
