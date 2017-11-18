@@ -205,7 +205,7 @@ class Player(Creature):
         if self.weapon_wielding != self.default_weapon: 
             cons.write('You are wielding a %s.' % self.weapon_wielding.short_desc)
         if self.armor_worn != self.default_armor:
-            cons.write('You are wearing a %s.' % self.armor_worn)
+            cons.write('You are wearing a %s.' % self.armor_worn.short_desc)
         return True
     
     def toggle_terse(self, p, cons, oDO, oIDO):
