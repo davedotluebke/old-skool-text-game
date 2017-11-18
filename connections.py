@@ -60,27 +60,7 @@ class NetworkConnection(LineReceiver):
             self.create_new_player(name)
 
     def create_new_player(self, name):
-        self.user = Player(name, None, self.cons)
-        self.cons.user = self.user
-        adjective = random.choice(('tall', 'short', 'dark', 'pale', 'swarthy', 'thin', 'heavyset'))
-        species = random.choice(('human', 'elf', 'dwarf', 'gnome'))
-        self.user.set_description(adjective + ' ' + species, 'A player named %s' % name)
-        self.user.set_max_weight_carried(750000)
-        self.user.set_max_volume_carried(2000)
-
-        start_room = gametools.load_room('domains.school.school.great_hall')
-        start_room.insert(self.user)
-
-        scroll = gametools.clone('domains.school.scroll')
-        scroll.move_to(self.user)
-        Thing.game.register_heartbeat(scroll)
-        self.user.set_start_loc = start_room
-        self.cons.write("\nWelcome to Firlefile Sorcery School!\n\n"
-        "Type 'look' to examine your surroundings or an object, "
-        "'inventory' to see what you are carrying, " 
-        "'quit' to end the game, and 'help' for more information.")
-
-
+        self.user = Thing.game.create_new_player(name, self.cons)
         self.name = name
         self.users[name] = self
         self.state = "COMMAND"
@@ -90,13 +70,8 @@ class NetworkConnection(LineReceiver):
             self.transport.loseConnection()
             return
         self.user.cons.raw_input = message
-        dbg.debug("handling user command (user %s, console %s):" % (self.name, self.cons))
-        dbg.debug(message)
-
- #       message = b"<%s> %s" % (self.name, message)
- #       for name, protocol in self.users.items():
- #           if protocol != self:
- #               protocol.sendLine(message)
+#        dbg.debug("handling user command (user %s, console %s):" % (self.name, self.cons))
+#        dbg.debug(message)
     
     def handle_CONFIRM(self, confirm):
         if confirm.lower() != b'yes':
