@@ -52,6 +52,8 @@ class QuestDoor(thing.Thing):
         return True
 
     def enter(self, p, cons, oDO, oIDO):
+        if not self.opened:
+            return "You must open the door before you can pass through it."
         dest = gametools.load_room(self.destination)
         if cons.user.move_to(dest):
             cons.write('With a sense of making a momentous decision, you step through the doorway.')
@@ -79,8 +81,8 @@ def load():
 
     water = QuestDoor('water', None)
     water.set_description('door of water', 'This door is cool, and has a large label above it reading "Water". ')
-    water.set_view('a rowboat and a lake')
-    water.set_dest('domains.school.elementQuest.dock')
+    water.set_view('a penisula sticking out onto a lake')
+    water.set_dest('domains.school.elementQuest.peninsula')
     path_choice.insert(water)
 
     earth = QuestDoor('earth', None)

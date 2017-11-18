@@ -120,7 +120,7 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
         self.emit('The old goblin makes a fireball in his hands, and prepares to throw it.')
         Thing.game.events.schedlue(Thing.game.time+2, self.throw_fireball_two, player)
 
-    def throw_fireball_two(self, player)
+    def throw_fireball_two(self, player):
         self.emit('The old goblin throws the fireball at the %s!' % player.short_desc, ignore=[player])
         player.cons.write('The old goblin throws the fireball at you! But for some reason the fireball does not feel hot. It feels warm, and you notice you are not burned.')
         self.emit('The fireball seemingly shatters at %s' % player.short_desc, ignore=[player])
