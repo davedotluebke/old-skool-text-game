@@ -16,6 +16,7 @@ class Bed(Container):
 		if sV == 'sleep':
 			cons.user.move_to(self)
 			cons.write('You lie down on the bed and fall fast asleep.')
+			self.emit('&nD%s lies down on the bed and falls asleep.' % cons.user.id)
 			cons.user.move_to(gametools.load_room(self.dreamland))
 			Thing.game.events.schedule(5, self.wake_up, cons)
 			return True
@@ -27,6 +28,7 @@ class Bed(Container):
 	
 	def wake_up(self, cons):
 		cons.write('You wake up.')
+		self.emit('&nD%s wakes up.', cons.user.id)
 		cons.user.move_to(self.location)
 
 	def stand(self, p, cons, oDO, oIDO):
@@ -34,6 +36,7 @@ class Bed(Container):
 		if sV == 'stand':
 			cons.user.move_to(self.location)
 			cons.write('You stand up.')
+			self.emit('&nD%s stands up.', cons.user.id)
 			return True
 		return 'Did you intend to stand up?'
 

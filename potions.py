@@ -9,7 +9,7 @@ class PinkPotion(Liquid):
         if self != oDO: 
             return "Did you meant to drink the %s?" % self.short_desc
         cons.user.perceive('You drink the potion, and turn hot pink!')
-        cons.user.emit('%s drinks the potion and turns bright pink!' % cons.user, ignore=[cons.user])
+        cons.user.emit('&nD%s drinks a potion and turns bright pink!' % cons.user, ignore=[cons.user])
         return True
 
 class InvisibilityPotion(Liquid):
@@ -32,9 +32,10 @@ class StrengthPotion(Liquid):
         if self != oDO: 
             return "Did you meant to drink the %s?" % self.short_desc
         cons.user.perceive("You drink the potion, and feel stronger than you did before.")
+        cons.user.emit('&nD%s drinks a potion. Nothing obvious happens...' % cons.user, ignore=[cons.user])
         cons.user.strength += 70
         cons.game.events.schedule(cons.game.time+15, self.wear_off, cons.user)
     
     def wear_off(self, user):
         user.strength -= 70
-        cons.user.perceive("You feel like you could colapse in exaustion now.")
+        cons.user.perceive("You feel like you could collapse in exhaustion now.")

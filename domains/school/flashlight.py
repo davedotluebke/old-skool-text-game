@@ -43,6 +43,8 @@ class Flashlight(Thing):
             self.light = 1 if self.light == 0 else 0
             cons.write("You hit the switch on the flashlight, turning it %s." % 
                 ("on" if self.light else "off"))
+            self.emit("&nD%s turns %s a flashlight." % (cons.user.id,
+                "on" if self.light else "off"))
             self._adjust_descriptions()
             return True
         if sV == "turn":
@@ -54,6 +56,7 @@ class Flashlight(Thing):
                     if self.light == 0:
                         self.light = 1
                         cons.write("You turn on the flashlight.")
+                        self.emit("&nD%s turns on a flashlight." % cons.user.id)
                     else: 
                         cons.write("The flashlight is already on!")
                 elif sPrep == "off":
@@ -62,6 +65,7 @@ class Flashlight(Thing):
                     else:
                         self.light = 0
                         cons.write("You turn off the flashlight.")
+                        self.emit("&nD%s turns off the flashlight." % cons.user.id)
                 else: # sPrep is some other preposition
                     return "I'm not sure what you mean."
                 self._adjust_descriptions()

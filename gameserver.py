@@ -215,6 +215,28 @@ class Game():
         room.report_arrival(newplayer, silent=True)
         room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
 
+    def create_new_player(self, name, cons):
+        user = Player(name, None, cons)
+        cons.user = user
+        adjective = random.choice(('tall', 'short', 'dark', 'pale', 'swarthy', 'thin', 'heavyset'))
+        species = random.choice(('human', 'elf', 'dwarf', 'gnome'))
+        user.set_description(adjective + ' ' + species, 'A player named %s' % name)
+        user.set_max_weight_carried(750000)
+        user.set_max_volume_carried(2000)
+
+        start_room = gametools.load_room('domains.school.school.great_hall')
+        start_room.insert(user)
+
+        scroll = gametools.clone('domains.school.scroll')
+        scroll.move_to(user)
+        self.register_heartbeat(scroll)
+        user.set_start_loc = start_room
+        user.perceive("\nWelcome to Firlefile Sorcery School!\n\n"
+        "Type 'look' to examine your surroundings or an object, "
+        "'inventory' to see what you are carrying, " 
+        "'quit' to end the game, and 'help' for more information.")
+        return user
+
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""
         if obj not in self.heartbeat_users:

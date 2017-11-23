@@ -23,7 +23,7 @@ class Gem(Thing):
 
 class Emerald(Gem):
     def __init__(self, path, default_name, short_desc, long_desc, power_num=10, pref_id=None):
-        super().__init__(path, default_name, short_desc, long_desc+' It is about %s milimeters in all dimentions.' % power_num, power_num, pref_id)
+        super().__init__(path, default_name, short_desc, long_desc+' It is about %s milimeters in all dimensions.' % power_num, power_num, pref_id)
         self.add_names('emerald')
         self.actions.append(Action(self.move_power, ['power'], True, False))
     
@@ -36,7 +36,7 @@ class Emerald(Gem):
 
     def adjust_description(self):
         (head, sep, tail) = self.long_desc.partition(' It is about')
-        self.long_desc = head + ' It is about %s milimeters in all dimentions.' % self.power_num
+        self.long_desc = head + ' It is about %s milimeters in all dimensions.' % self.power_num
         if self.power_num <= 0:
             self.emit('The emerald shrinks and vanishes!')
             self.move_to(Thing.ID_dict['nulspace'])

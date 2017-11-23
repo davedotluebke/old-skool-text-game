@@ -73,6 +73,7 @@ class FaucetThing(Thing):
 		if obj == self or obj == None:
 			return "Imposible to pour out a %s in a %s." % (self.type, self.type)
 		cons.write('You pour the %s into the %s, and it goes down the drain.' % (obj, self.type))
+		self.emit('&nD%s pours the %s into the %s, and it goes down the drain.' % (cons.user.id, obj, self.type))
 		obj.move_to(Thing.ID_dict['nulspace'])
 		return True
 
@@ -107,8 +108,8 @@ toilet = Scenery('toilet', 'ordinary toilet', 'This is an ordinary toilet.')
 toilet.add_response(['flush'], 'You flush the toilet.')
 toilet.move_to(bathroom)
 
-cabnet = Container('cabnet')
-cabnet.set_description('small cabnet', 'This is a small cabnet above the sink.')
+cabnet = Container('cabinet')
+cabnet.set_description('small cabinet', 'This is a small cabinet above the sink.')
 cabnet.add_adjectives('small')
 cabnet.close()
 cabnet.closable = True

@@ -35,6 +35,7 @@ class Sink(Thing):
         if obj == self or obj == None:
             return "Imposible to pour out a sink in a sink."
         cons.write('You pour the %s into the sink, and it goes down the drain.' % obj)
+        self.emit("&nD%s pours something into the sink." % cons.user.id)
         obj.move_to(Thing.ID_dict['nulspace'])
         return True
         #TODO: Acctually delete the object

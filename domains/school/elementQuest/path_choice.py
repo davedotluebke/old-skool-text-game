@@ -32,11 +32,12 @@ class QuestDoor(thing.Thing):
             return True
         self.opened = True
         cons.write('You open the door, and see %s.' % self.view_through_door)
+        self.emit("&nD%s opens the door to the path of %s." % (cons.user.id, self.names[0]))
         self.long_desc += self.view_through_door
         for i in self.location.contents:
             if isinstance(i, QuestDoor) and i.opened and i != self:
                 i.opened = False
-                cons.write('The doorway to the path of %s slams closed!' % i.names[0])
+                self.emit('The doorway to the path of %s slams closed!' % i.names[0])
         return True
     
     def close(self, p, cons, oDO, oIDO):
@@ -45,6 +46,7 @@ class QuestDoor(thing.Thing):
             return True
         self.opened = False
         cons.write('You close the door.')
+        self.emit("&nD%s closes the door to the path of %s." % (cons.user.id, self.names[0]))
         (head, sep, tail) = self.long_desc.partition(self.view_through_door)
         self.long_desc = head
         return True

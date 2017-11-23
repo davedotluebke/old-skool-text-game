@@ -22,6 +22,7 @@ class Liquid(Scenery):
             if (oDO, oIDO) == (self, None) or (oDO, oIDO) == (None, self):
                 # e.g. "pour out potion" or "pour potion out"
                 cons.write("You pour out the %s on the ground." % self)
+                cons.user.emit("&nD%s pours something on the ground." % cons.user.id)
                 self.move_to(Thing.ID_dict['nulspace'])
                 # TODO: actually delete the object
                 return True
