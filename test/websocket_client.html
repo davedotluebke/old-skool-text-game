@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebSocket demo</title>
+    </head>
+    <body>
+        <script>
+            var ws = new WebSocket("ws://127.0.0.1:8765/"),
+                messages = document.createElement('ul');
+            ws.onopen = function (event) {
+                console.log('About to send some text.')
+                ws.send("Here's some text that the server is urgently awaiting!"); 
+                console.log('Finished sending some text.')
+            };
+            ws.onmessage = function (event) {
+                var messages = document.getElementsByTagName('ul')[0],
+                    message = document.createElement('li'),
+                    content = document.createTextNode(event.data);
+                console.log('Received message from server:' + content)
+                message.appendChild(content);
+                messages.appendChild(message);
+            };
+            document.body.appendChild(messages);
+        </script>
+    </body>
+</html>

@@ -15,22 +15,6 @@
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [
                 "WaitOnAbnormalExit",
-                "WaitOnNormalExit"
-            ]
-        },
-        {
-            "name": "Network Testing",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/webserver.py",
-            "cwd": "",
-            "console": "integratedTerminal",
-            "env": {},
-            "envFile": "${workspaceRoot}/.env",
-            "debugOptions": [
-                "WaitOnAbnormalExit"
             ]
         },
         {
@@ -45,11 +29,25 @@
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [
+                "WaitOnAbnormalExit"
+            ]
+        },
+        {
+            "name": "Test websock.py",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceRoot}/test/websock.py",
+            "cwd": "",
+            "console": "integratedTerminal",
+            "env": {},
+            "envFile": "${workspaceRoot}/.env",
+            "debugOptions": [
                 "WaitOnAbnormalExit",
                 "WaitOnNormalExit"
             ]
-        },
-
+        },        
         {
             "name": "Python",
             "type": "python",
