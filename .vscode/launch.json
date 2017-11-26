@@ -24,14 +24,13 @@
             "request": "launch",
             "stopOnEntry": false,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/connections.py",
+            "program": "${workspaceRoot}/webserver.py",
             "cwd": "",
             "console": "integratedTerminal",
             "env": {},
             "envFile": "${workspaceRoot}/.env",
             "debugOptions": [
-                "WaitOnAbnormalExit",
-                "WaitOnNormalExit"
+                "WaitOnAbnormalExit"
             ]
         },
         {
