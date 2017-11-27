@@ -6,7 +6,7 @@ class Bookcase(Thing):
     def __init__(self, ID, path, hidden_room):
         Thing.__init__(self, ID, path)
         self.set_description('bookcase full of books', \
-        'This bookcase is a hodge-podge of books, some are newer, but a lot of old ones are scattered around them.')
+        'This bookcase is a hodgepodge of books; some are newer, but a lot of old ones are scattered around them.')
         # we want this to trigger if they type, for example, "take old book"
         self.add_names("book")
         self.add_adjectives("old", "new")

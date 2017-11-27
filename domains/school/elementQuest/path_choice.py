@@ -6,7 +6,7 @@ import action
 class QuestDoor(thing.Thing):
     def __init__(self, default_name, path):
         super().__init__(default_name, path)
-        self.fix_in_place('The door is strongly secured in place, you can\'t take it.')
+        self.fix_in_place('The door is strongly secured in place. You can\'t take it.')
         self.opened = False
         self.view_through_door = None
         self.destination = None
@@ -68,25 +68,25 @@ def load():
     
     path_choice = room.Room('circular room', roomPath)
     path_choice.indoor = True
-    path_choice.set_description('circular room with four doors', 'You are in a circular room with four doors and a staircase down. Each of the doors has a sign above it. ' \
+    path_choice.set_description('circular room with four doors', 'You are in a circular room with four doors and a ladder down. Each of the doors has a sign above it. ' \
     'The one farthest left says "Path of Fire", the one to the right of that says "Path of Water", the second farthest right says "Path of Earth", and the one to the right of that says "Path of Air". ' \
     'There is a ladder in the center of the room leading down.')
     path_choice.add_exit('down', 'domains.school.dungeon.entrance')
 
     fire = QuestDoor('fire', None)
-    fire.set_description('door of fire', 'This door is warm, and has a large label above it reading "Fire". ')
+    fire.set_description('door of fire', 'This door is warm and has a large label above it reading "Fire". ')
     fire.set_view('a circular room with a firepit in the middle')
     fire.set_dest('domains.school.elementQuest.firepit')
     path_choice.insert(fire)
 
     water = QuestDoor('water', None)
-    water.set_description('door of water', 'This door is cool, and has a large label above it reading "Water". ')
-    water.set_view('a penisula sticking out onto a lake')
+    water.set_description('door of water', 'This door is cool and has a large label above it reading "Water". ')
+    water.set_view('a peninsula sticking out into a lake')
     water.set_dest('domains.school.elementQuest.peninsula')
     path_choice.insert(water)
 
     earth = QuestDoor('earth', None)
-    earth.set_description('door of earth', 'This door is made of rock, and is very hard. It has a large label above it reading "Earth". ')
+    earth.set_description('door of earth', 'This door is made of rock and is very hard. It has a large label above it reading "Earth". ')
     earth.set_view('a steep staircase leading underground')
     earth.set_dest('domains.school.elementQuest.staircase')
     path_choice.insert(earth)

@@ -9,7 +9,7 @@ def load():
     
     root_room = room.Room('roots', roomPath)
     root_room.indoor = True
-    root_room.set_description('crude dungeon', 'This is a crude dungeon with a shaft of light coming throgh some tree roots in a corner.')
+    root_room.set_description('crude dungeon', 'This is a crude dungeon with a shaft of light coming through some tree roots in a corner.')
 
     roots = gametools.clone('domains.school.dungeon.roots')
     root_room.insert(roots)

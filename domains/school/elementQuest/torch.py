@@ -13,7 +13,7 @@ class Torch(thing.Thing):
     
     def soak_torch(self):
         self.soaked = True
-        self.set_description('makeshift torch, soaked with a red liquid', 'This makeshift wooden torch is made of an oak branch, with a cloth wrapped around the end and soaked with a red liquid.')
+        self.set_description('makeshift torch soaked with a red liquid', 'This makeshift wooden torch is made of an oak branch with a cloth wrapped around the end and soaked with a red liquid.')
 
     def light_torch(self):
         self.lit = True
@@ -34,8 +34,8 @@ class Torch(thing.Thing):
                             [u])
                 return True
             if self.soaked:
-                cons.write('The luminous red liquid in the cloth bursts into flame, and starts the torch burning brightly.')
-                self.emit('&nD%s %ss the torch in the shaft of sunlight and it suddenly bursts into flames!' % (u.id, verb), [u])
+                cons.write('The luminous red liquid in the cloth bursts into flame and starts the torch burning brightly.')
+                self.emit('&nD%s %ss the torch in the shaft of sunlight, and it suddenly bursts into flames!' % (u.id, verb), [u])
                 self.light_torch()
                 return True
             else:  # unlit torch is not soaked
@@ -45,7 +45,7 @@ class Torch(thing.Thing):
                 
         if oIDO.names[0] == 'door':
             if self.lit:
-                cons.write('You %ss the torch to the door, setting it aflame.')
+                cons.write('You %s the torch to the door, setting it aflame.' % verb)
                 self.location.emit('&nD%s %ss the torch to the door, quickly setting it aflame.' % (u.id, verb))
                 oIDO.burn(self)
                 return True

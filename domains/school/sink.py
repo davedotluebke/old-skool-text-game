@@ -7,7 +7,7 @@ from liquid import Liquid
 class Sink(Thing):
     def __init__(self, ID, path):
         Thing.__init__(self, ID, path)
-        self.set_description('metal sink', 'This is an old metal sink, probably from the 1960s and nothing seems wrong with it.')
+        self.set_description('metal sink', "This is an old metal sink, probably from the 1960's, and nothing seems wrong with it.")
         self.fix_in_place("You can't take the sink!")
         self.actions.append(Action(self.fill_container, ["fill"], True, False))
         self.actions.append(Action(self.pour_out_in_sink, ['pour'], True, False))
@@ -22,7 +22,7 @@ class Sink(Thing):
             return True
         cons.write('Water comes out of the sink, and fills your %s' % filling)
         self.emit('&nD%s fills a %s with water at the sink.' % (cons.user.id, filling)
-        water = Liquid('water', 'some normal water', 'This is some normal clear water.')
+        water = Liquid('water', 'some normal water', 'This is some normal, clear water.')
         water.add_response(['drink'], 'You take a big drink of the water, and your thirst is quenched.')
         oDO.insert(water)
         return True
@@ -33,9 +33,9 @@ class Sink(Thing):
         else:
             obj = oIDO
         if obj == self or obj == None:
-            return "Imposible to pour out a sink in a sink."
+            return "It is impossible to pour out a sink in a sink."
         cons.write('You pour the %s into the sink, and it goes down the drain.' % obj)
         self.emit("&nD%s pours something into the sink." % cons.user.id)
         obj.move_to(Thing.ID_dict['nulspace'])
         return True
-        #TODO: Acctually delete the object
+        #TODO: Actually delete the object
