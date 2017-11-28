@@ -13,9 +13,9 @@ restraunt_one = Room('gathernia', safe=True)
 wizardry_transporter = TransportRoom('learn wizardry', central_fountain)
 
 central_fountain.set_description('central square', 'This is a central square at the intersection of two major roads. You see stores to the south, government buildings to the north, houses to the east, and a sign for a wizardry school to the west.')
-government_entrences.set_description('cobbled street', 'This is a cobbled street with many government buildings on the side. There are many doors to a variety of buildings. To the south you see the central fountain, to the north the street continues.')
-south_shopping_one.set_description('street covered with shops', 'This is a street covered with shops on two stories - ground floor and the floor above. To get to the higher shops you must fly, which can be done because of saphires you see mounted in the roadway. A restraunt called "Gathernia" catches your eye.') #TODO: Auto generate more shops (like books on the bookshelf)
-restraunt_one.set_description('busy restraunt named Gathernia', 'This is a busy restrant named "Gathernia". Here you see many people eating and talking.')
+government_entrences.set_description('cobbled street', 'This is a cobbled street with many government buildings on the side. There are many doors to a variety of buildings. To the south you see the central fountain, while to the north the street continues.')
+south_shopping_one.set_description('street covered with shops', 'This is a street covered with shops on two stories--ground floor and the floor above. To get to the higher shops you must fly, which is made possible by the sapphires you see mounted in the roadway. A restaurant called "Gathernia" catches your eye.') #TODO: Auto generate more shops (like books on the bookshelf)
+restraunt_one.set_description('busy restaurant named Gathernia', 'This is a busy restaurant named "Gathernia". Here you see many people eating and talking.')
 
 central_fountain.add_exit('north', government_entrences.id)
 central_fountain.add_exit('south', south_shopping_one.id)

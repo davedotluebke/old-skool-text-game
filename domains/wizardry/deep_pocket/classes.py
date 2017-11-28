@@ -24,7 +24,7 @@ class DeepPocket(Container):
 class DeepPocketSignUpWizard(NPC):
     def __init__(self, path):
         super().__init__("Silemon", path, pref_id="DeepPocketSignUpWizard")
-        self.set_description("Silemon Deplintere", "Silemon Deplintare is an older wizard and is wearing a blue cape. He is standing uniformly in front of you.")
+        self.set_description("Silemon Deplintere", "Silemon Deplintere is an older wizard and is wearing a blue cape. He is standing uniformly in front of you.")
         self.deep_pockets = []
         for i in Thing.ID_dict:
             if isinstance(i, DeepPocket):

@@ -3,7 +3,7 @@ import container
 
 def clone():
     table = container.Container('table', __file__)
-    table.set_description("kitchen table", "This dated-looking kitchen table has chrome edging and a formica top.")
+    table.set_description("kitchen table", "This dated-looking kitchen table has chrome edging and a Formica top.")
     table.fix_in_place("The table is too heavy and awkward to move.")
     table.add_adjectives("kitchen", "dated", "formica")
     table.set_prepositions("on", "onto")
