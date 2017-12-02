@@ -28,5 +28,5 @@ def load():
     obj = Statue('statue', 'statue', 'This giant stone statue solemnly stands in the middle of the room. It is missing a pearl in its left eye. ')
     obj.add_adjectives('giant', 'stone')
     obj.move_to(r)
-
+    
     return r
