@@ -21,7 +21,8 @@ class Mirror(thing.Thing):
 
     def enter(self, p, cons, oDO, oIDO):
         dest = gametools.load_room(self.dest)
-        cons.user.move_to(dest)
+        if cons.user.move_to(dest) == False:
+            return "Error! You attempt to enter the mirror but encounter a glitch in the space-time continuum. Please report an error."
 
         label = ""  # construct a label, e.g. "swarthy young male gnome"
         if self.adj1:
