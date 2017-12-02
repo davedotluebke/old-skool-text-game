@@ -162,9 +162,10 @@ class Player(Creature):
                     tag_type = tag[0:2]
                     idstr = tag[2:]
                     idstr = idstr.rstrip('.,!?;:\'"')  # remove any punctuation
+                    if idstr[0] == '&':
+                        if idstr[1] == 'u':   # replace '&u' with user's id
+                            idstr = self.id
                     O = Thing.ID_dict[idstr]
-                    if O == self: 
-                        return      # ignore messages that mention self by name
                 except IndexError:
                     subject = "<error: can't parse tag &%s>" % tag
                 except KeyError:
@@ -172,14 +173,20 @@ class Player(Creature):
                 if tag_type[0] == 'n':
                     if O == None:
                         subject = '[Error: no object matching idstr %s]' % idstr
+                    if O == self: 
+                        return      # ignore messages that mention self by name
                     else:
                         subject = O.get_short_desc(self)
                         if tag_type[1] in ('d','D'):
                             subject = O.get_short_desc(self, definite=True)
                         if tag_type[1] in ('i','I'):
                             subject = O.get_short_desc(self, indefinite=True)
-                        if tag_type[1] in ('N','D','I'):
+                        if tag_type[1] in ('N','D','I', 'R'):
                             subject = subject[0].upper() + subject[1:]  # capitalize
+                if tag_type[0] == 's':
+                    subject = O.species
+                if tag_type[0] == 'S':
+                    subject = O.species[0].upper() + O.species[1:]
                 m2 = subject + m2.partition(tag)[2]
                 message = m1 + m2
 
