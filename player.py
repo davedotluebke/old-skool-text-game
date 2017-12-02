@@ -152,6 +152,12 @@ class Player(Creature):
         if not self.location.is_dark():
             # replace any & tags in the message 
             while True:
+                # first, replace any occurrence of '&u' with the user's ID
+                (m1, sep, m2) = message.partition('&u')  
+                if not sep:    # partition() sets sep to '' if '&u' not found
+                    break
+                message = m1 + self.id + m2
+            while True:
                 (m1, sep, m2) = message.partition('&')  
                 if not sep:    # partition() sets sep to '' if '&' not found
                     break
@@ -159,12 +165,12 @@ class Player(Creature):
                 subject = ""
                 O = None
                 try:
-                    tag_type = tag[0:2]
-                    idstr = tag[2:]
+                    tag_type = tag[0:1]
+                    idstr = tag[1:]
+                    if tag_type in ('n', 'N'):  # some tag types use 2 letters
+                        tag_type = tag[0:2]
+                        idstr = tag[2:]
                     idstr = idstr.rstrip('.,!?;:\'"')  # remove any punctuation
-                    if idstr[0] == '&':
-                        if idstr[1] == 'u':   # replace '&u' with user's id
-                            idstr = self.id
                     O = Thing.ID_dict[idstr]
                 except IndexError:
                     subject = "<error: can't parse tag &%s>" % tag
