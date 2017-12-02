@@ -45,7 +45,7 @@ class PitRoom(Room):
 
     def ability_realize(self, player):
         player.cons.write('You are now underwater. But you are breathing fine. You begin to realize that you are able to breathe underwater wherever you are.')
-        player.cons.write('You feel an urge to find out more about this power, why it exits, and what it does for you.')
+        player.cons.write('You feel an urge to find out more about this power, why it exists and what it does for you.')
         player.cons.write('You notice that now you can reach the trapdoor the goblin closed.')
 
 class Roots(Thing):
@@ -59,8 +59,8 @@ class Roots(Thing):
     def move_roots(self, p, cons, oDO, oIDO):
         if cons.user.wizardry_element == 'plant':
             self.open = True
-            cons.write('To your suprise, when you put your hands on the roots you find you can make them part and open up in front of you.')
-            cons.write('You feel an urge to find out more about this power, why it exits, and what it does for you.')
+            cons.write('To your surprise, when you put your hands on the roots you find you can make them part and open up in front of you.')
+            cons.write('You feel an urge to find out more about this power, why it exists and what it does for you.')
             cons.write('You can now go west towards a waterfall.')
             self.location.add_exit('west', 'waterfall')
             return True
@@ -73,9 +73,9 @@ class MasterGoblin(NPC):
         NPC.__init__(self, 'goblin', path, Thing.ID_dict['nulspace'].game)
         self.set_description('old mean goblin', 'This goblin is standing straight in front of the passage west. He is holding a piece of paper in his hand.')
         self.add_adjectives('old', 'horrid', 'mean')
-        self.add_script('''Listen. If you intend to walk straight past here invisible I tell you that you will not get away with it. 
+        self.add_script('''Listen. If you intend to walk straight past here invisible, I tell you that you will not get away with it.
 I am the only one who can let you past and I'm not going to let you get past.
-And to pass you must pay me with a gem - an emerald, I think - and give it to me. 
+And to pass you must acquire a gem--an emerald, I think--and give it to me.
 If you do not give me the emerald, however, but keep it, you will be severely punished.''')
         self.pit = gametools.load_room('domains.school.dungeon.pit')
         self.root_room = gametools.load_room('domains.school.dungeon.root_room')
@@ -107,7 +107,7 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
                                 self.throw_in_root_room(i)
                                 return
                 if i not in self.approached:
-                    i.cons.write('The old goblin approaces you.')
+                    i.cons.write('The old goblin approaches you.')
                     self.approached.append(i)
                 if i not in self.complete_message:
                     self.talk()
@@ -116,7 +116,7 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
                         self.complete_message.append(i)
                         self.talk_counter = 0
     def throw_fireball(self, player):
-        self.emit('The goblin yells "You kept the emerald for yourself! I will punish you!"')
+        self.emit('The goblin yells, "You kept the emerald for yourself! I will punish you!"')
         self.emit('The old goblin makes a fireball in his hands, and prepares to throw it.')
         Thing.game.events.schedlue(Thing.game.time+2, self.throw_fireball_two, player)
 
@@ -128,13 +128,13 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
 
     def throw_fireball_three(self, player):
         self.emit('The goblin smiles. "Correct! A new fire wizard!"')
-        player.cons.write('The goblin says to you: Congratulations on becoming a fire wizard. It shall serve you well.')
+        player.cons.write('The goblin says to you, "Congratulations on becoming a fire wizard. It shall serve you well."')
         self.complete_players.append(player)
         player.cons.write('The goblin motions for you to walk past him.')
         player.move_to(Thing.ID_dict['domains.school.forest.crimpson'])
     
     def throw_boulder(self, player):
-        self.emit('The goblin yells "You kept the emerald for yourself! I will punish you!"')
+        self.emit('The goblin yells, "You kept the emerald for yourself! I will punish you!"')
         self.emit('The old goblin picks up a huge rock and prepares to throw it.')
         Thing.game.events.schedlue(Thing.game.time+2, self.throw_boulder_two, player)
 
@@ -148,28 +148,28 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
 
     def throw_boulder_three(self, player):
         self.emit('The goblin smiles. "Correct! A new earth wizard!"')
-        player.cons.write('The goblin says to you: Congratulations on becoming an earth wizard. It shall serve you well.')
+        player.cons.write('The goblin says to you, "Congratulations on becoming an earth wizard. It shall serve you well."')
         self.complete_players.append(player)
         player.cons.write('The goblin motions for you to walk past him.')
         player.move_to(Thing.ID_dict['domains.school.forest.crimpson'])
 
     def dunk_in_water(self, player):
-        self.emit('The goblin screams: "You kept the emerald for yourself! I will punish you!"')
+        self.emit('The goblin screams, "You kept the emerald for yourself! I will punish you!"')
         self.emit('The goblin takes %s to a pit.' % player.short_desc, ignore=[player])
-        player.cons.write('The goblin opens a trap door below you to a pit and you fall in. You land in water at the bottom of the pit. Unfortunately, it seems it is slowly getting higher and higher.')
+        player.cons.write('The goblin opens a trapdoor below you to a pit and you fall in. You land in water at the bottom of the pit. Unfortunately, it seems it is slowly getting higher and higher.')
         player.move_to(self.pit)
         self.emit('The goblin says "They will die! Ha Ha Ha!"')
         self.complete_players.append(player)
 
     def throw_in_root_room(self, player):
-        self.emit('The goblin screams: "You kept the emerald for yourself! I will punish you!"')
+        self.emit('The goblin screams, "You kept the emerald for yourself! I will punish you!"')
         self.emit('The goblin throws %s in a dungeon room.' % player.short_desc)
-        player.cons.write('The goblin throws you into a dungeon room. You see light through a wall covered in tree roots, but no way out.')
+        player.cons.write('The goblin throws you into a dungeon room. You see light through a wall covered in tree roots but no way out.')
         player.move_to(self.root_room)
-        self.emit('The goblin says "They will sit there for a long time! Ha Ha Ha!"')
+        self.emit('The goblin says, "They will sit there for a long time! Ha Ha Ha!"')
         self.complete_players.append(player)
 
     def move_player_to_waterfall(self, player):
-        player.cons.write("All of the sudden the world shifts around you. The dark walls of the room blur into green and blue. They start fading into something. You start sliding forward.")
+        player.cons.write("All of a sudden the world shifts around you. The dark walls of the room blur into green and blue. They start fading into something. You start sliding forward.")
         player.move_to(Thing.ID_dict['waterfall'])
         Thing.ID_dict['waterfall'].report_arrival(player)

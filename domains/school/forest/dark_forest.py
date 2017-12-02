@@ -8,7 +8,7 @@ def load():
     if exists: return exists
 
     dark_forest = room.Room('darkforest' , roomPath)
-    dark_forest.set_description('scary dark forest', 'This is a scary dark forest you want to leave. Soon!')
+    dark_forest.set_description('scary, dark forest', 'This is a scary, dark forest that you want to leave...soon!')
     dark_forest.add_exit("south", "domains.school.forest.forest3")
     dark_forest.add_exit("north", "domains.school.forest.gloomy_forest")
 

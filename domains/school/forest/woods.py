@@ -8,7 +8,7 @@ def load():
     if exists: return exists
 
     woods = room.Room('woods', pref_id=roomPath)
-    woods.set_description('bright and cheerful woods', 'Theese woods have happy birdsongs and pretty trees. They are bright.')
+    woods.set_description('bright and cheerful woods', 'These woods have happy birdsongs and pretty trees. They are bright.')
     woods.add_exit('west', 'domains.school.forest.entryway')
     woods.add_exit('north', 'domains.school.forest.forest1')
     woods.add_exit('south', 'domains.school.forest.clearing')

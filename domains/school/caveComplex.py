@@ -85,7 +85,7 @@ class CaveRoom(Room):
 class CaveEntry(Room):
     def __init__(self, ID, path):
         Room.__init__(self, ID, path)
-        self.set_description('terrifying dark cave mouth', 'This is one of the most scary caves you have ever been seen. You are anxiously looking around to see if there are any monsters.')
+        self.set_description('terrifying dark cave mouth', 'This is one of the most scary caves you have ever been in. You are anxiously looking around to see if there are any monsters.')
         self.add_adjectives('scary', 'dark', 'terrifying')
         self.in_entry_user = 0
         self.last_cons = None

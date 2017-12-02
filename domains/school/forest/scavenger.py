@@ -13,7 +13,7 @@ def take_stuff(horster):
 
 def clone():
     scavenger = creature.NPC('horster', __file__, 1)
-    scavenger.set_description('large red horster', 'This is a bright red horster. It scans the ground, carefully, looking for things. It has a huge pile of things in an old bag it has.')
+    scavenger.set_description('large red horster', 'This is a bright red horster. It scans the ground carefully, looking for things. It keeps a huge pile of things in an old bag it has.')
     scavenger.add_adjectives('large', 'red')
     scavenger.choices.append(take_stuff)
     scavenger.act_frequency = 2

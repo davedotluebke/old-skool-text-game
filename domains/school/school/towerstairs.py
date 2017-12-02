@@ -8,7 +8,7 @@ def load():
     
     towerstairs = room.Room('towerstairs', roomPath, safe=True)
     towerstairs.indoor = True
-    towerstairs.set_description('spiral staircase leading up the tower', 'You find yourself in a enormous tower, with winding stairs leading up it. There is a small door to the east.')
+    towerstairs.set_description('spiral staircase leading up the tower', 'You find yourself in an enormous tower with winding stairs leading up it. There is a small door to the east.')
     towerstairs.add_names('stairs')
     towerstairs.add_adjectives('tower', 'spiral')
     towerstairs.add_exit('down', 'domains.school.school.library')

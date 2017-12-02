@@ -39,7 +39,7 @@ class LakeRoom_underwater(room.Room):
 
     def surface(self, p, cons, oDO, oIDO):
         cons.user.perceive('You swim upwards and resurface.')
-        cons.user.emit('&nD%s swims upwards and dissappears from sight.')
+        cons.user.emit('&nD%s swims upwards and disappears from sight.')
         loc = gametools.load_room(self.surface_loc)
         cons.user.move_to(loc)
         return True

@@ -8,7 +8,7 @@ def load():
     
     crawlway = room.Room('crawlway', roomPath)
     crawlway.indoor = True
-    crawlway.set_description('tight crawlway', 'This crawlway is a tight squeze, but you fit through. The monster would not, however.')
+    crawlway.set_description('tight crawlway', 'This crawlway is a tight squeeze, but you fit through. The monster would not, however.')
     crawlway.add_exit('north', 'domains.school.dungeon.dungeon_hall')
     crawlway.add_exit('southeast', 'domains.school.cave.lair')
     crawlway.add_adjectives('tight')

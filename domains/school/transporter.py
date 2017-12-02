@@ -5,7 +5,7 @@ from thing import Thing
 class TransportRoom(Room):
     def __init__(self, ID, transport_dest):
         super().__init__('spiraling confusion', pref_id=ID)
-        self.set_description('spiraling confusion', "This is a confusing method of magical transport. You seem to be spinning through the air in a wind spiral. You're going so fast, however, that you can't quite make out anything you see along the way.")
+        self.set_description('spiraling confusion', "This is a confusing method of magical transport. You seem to be spinning through the air in a whirlwind. You're going so fast, however, that you can't quite make out anything you see along the way.")
         self.dest = transport_dest
         Thing.game.register_heartbeat(self)
 
