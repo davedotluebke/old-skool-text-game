@@ -4,9 +4,17 @@
         <title>WebSocket demo</title>
     </head>
     <body>
+        <!--
+        <iframe id="messageFrame" width="100%" height="70%"></iframe>
+        !-->
+        <form>
+            <input type="text" id="inputLine">
+            <button type="button" onclick="sendLine()">Send Line</button>
+        </form>
         <script>
             var ws = new WebSocket("ws://127.0.0.1:9124/"),
-                messages = document.createElement('ul');
+                messages = document.getElementById('messageFrame');
+            messages = document.createElement('ul');
             ws.onopen = function (event) {
                 console.log('About to send some text.')
                 ws.send("Here's some text that the server is urgently awaiting!"); 
@@ -20,6 +28,10 @@
                 message.appendChild(content);
                 messages.appendChild(message);
             };
+            function sendLine () {
+                console.log(document.getElementById("inputLine").value)
+                ws.send(document.getElementById("inputLine").value)
+            }
             document.body.appendChild(messages);
         </script>
     </body>
