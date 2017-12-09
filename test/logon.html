@@ -3,19 +3,35 @@
         <title>Log On page</title>
     </head>
     <body>
-        <form method="POST">
+        <script type="text/javascript">
+        function sendRequest() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState === 4 && this.status === 200) {
+                    document.cookie = "code='" + this.response + "'"
+                }
+            }
+            xhttp.open("POST", "connections.py", true, )
+            xhttp.send()
+        }
+        </script>
+        <form name="login" method="POST">
             Username:
             <br>
-            <input type="text">
+            <input name="username" type="text">
             <br>
             Password:
             <br>
-            <input type="password">
+            <input name="password" type="password">
             <br>
-            <button type="submit">Log On</button>
+            <button type="submit" onclick="sendRequest()">Log On</button>
         </form>
         <a href="#" onclick="alert('Please contact for more information.'); history.back(-10)">Create an Account</a>
         <br>
-        <button type="button" onclick="window.open('websocket_client.html', 'newwindow', 'width=1000.5px, height=658.5px', false)">See an example</button>
+        <button type="button" onclick="var focuser = window.open('websocket_client.html', 'newwindow', 'width=666px, height=438px', false); document.getElementById('windowTracker').value = focuser; ">See an example</button>
+        <input type="hidden" id="windowTracker" value="null">
+        <br>
+        <button type="button" onclick="document.getElementById('windowTracker').value.focus()">Where did my window go?</button>
+        <!--<button type="button" onclick="document.cookie = 'code=761067160167; expires=Thu, 18 Dec 2013 12:00:00 UTC'">Set cookie</button>-->
     </body>
 </html>
