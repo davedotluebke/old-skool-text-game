@@ -3,7 +3,7 @@
     "configurations": [
 
         {
-            "name": "Integrated Terminal/Console",
+            "name": "Gameserver (Twisted/telnet)",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
@@ -18,7 +18,7 @@
             ]
         },
         {
-            "name": "Test testing.py",
+            "name": "Run testing.py (throwaway test code)",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
@@ -33,12 +33,12 @@
             ]
         },
         {
-            "name": "Test websock.py",
+            "name": "Gameserver (websockets)",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/test/websock.py",
+            "program": "${workspaceRoot}/webclient/connections_websock.py",
             "cwd": "",
             "console": "integratedTerminal",
             "env": {},
