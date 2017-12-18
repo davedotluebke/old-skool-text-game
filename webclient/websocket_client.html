@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebSocket demo</title>
+        <style>
+        input {
+            font-family:'Monaco','Consolas',monospace;
+            font-size:15px;
+            margin:0px;
+            padding:0px;
+            border-top:1px solid black;
+            border-bottom:1px solid black;
+            border-left:0px;
+            border-right:0px 
+        }
+        input:focus {
+            outline-width: 0;
+        }
+        div {
+            font-family:'Monaco','Consolas',monospace;
+            font-size:15px;
+        }
+        </style>
+    </head>
+    <body style="margin:0px">
+        <!--
+        <iframe id="messageFrame" width="100%" height="70%"></iframe>
+        !-->
+        <div class="messageOutput"><div>Your incoming data will appear here.</div></div>
+        <form id="messageInput" width=100%>
+            <input size="74" width="100%" type="text" id="inputLine">
+        </form>
+        <script>
+            document.getElementById("messageInput").onkeypress = function(e) {
+                var key = e.charCode || e.keyCode || 0;     
+                if (key == 13) {
+                    sendLine()
+                    document.getElementById("inputLine").value = ''
+                    e.preventDefault();
+                }
+            }
+            var ws = new WebSocket("ws://127.0.0.1:9124/"),
+            messages = document.getElementsByTagName('div')[0];
+            //ws.onopen = function (event) {};
+            ws.onmessage = function (event) {
+                var messages = document.getElementsByTagName('div')[0],
+                    message = document.createElement('div'),
+                    content = document.createTextNode(event.data);
+                console.log('Received message from server:' + content)
+                if (event.data === '#quit') {
+                    window.close();
+                }
+                message.appendChild(content);
+                messages.appendChild(message);
+                window.scrollTo(0,document.body.scrollHeight);
+            };
+            function sendLine () {
+                console.log(document.getElementById("inputLine").value);
+                var messages = document.getElementsByTagName('div')[0],
+                    message = document.createElement('div'),
+                    contentBlock = document.createElement('b'),
+                    content = document.createTextNode(document.getElementById('inputLine').value);
+                ws.send(document.getElementById("inputLine").value);
+                contentBlock.appendChild(content);
+                message.appendChild(contentBlock);
+                messages.appendChild(message);
+            }
+            window.onresize = function(e) {
+                window.resizeTo(666, 438);
+            }
+        </script>
+    </body>
+</html>
