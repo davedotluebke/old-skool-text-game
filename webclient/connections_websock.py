@@ -11,16 +11,17 @@ logger.setLevel(logging.ERROR)
 logger.addHandler(logging.StreamHandler())   
 
 # The callback that does everything in the webserver:
-async def echo(websocket, path):
+async def handler_callback(websocket, path):
     async for message in websocket:
         print("received message '%s'" % message)
-        message = "my reply: " + message
+        message = "I, the server, reply: " + message
         await websocket.send(message)
+        websocket.
         print("Sent message '%s'" % message)
 
 
 
 asyncio.get_event_loop().run_until_complete(
-    websockets.serve(echo, '127.0.0.1', 9124))
+    websockets.serve(handler_callback, '127.0.0.1', 9124))
 asyncio.get_event_loop().run_forever()
 
