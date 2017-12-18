@@ -34,10 +34,6 @@ class NetworkConnection(LineReceiver):
     def lineReceived(self, line):
         if self.state == "GETNAME":
             self.handle_GETNAME(line)
-        elif self.state == "CONFIRM":
-            self.handle_CONFIRM(line)
-        elif self.state == "CREATE":
-            self.handle_CREATE(line)
         else:
             self.handle_COMMAND(line)
 
@@ -70,22 +66,7 @@ class NetworkConnection(LineReceiver):
             self.transport.loseConnection()
             return
         self.user.cons.raw_input = message
-#        dbg.debug("handling user command (user %s, console %s):" % (self.name, self.cons))
-#        dbg.debug(message)
-    
-    def handle_CONFIRM(self, confirm):
-        if confirm.lower() != b'yes':
-            self.sendLine(b"Not creating a new user. Type a username to log in.")
-            self.state = "GETNAME"
-            return
-        self.sendLine(b"New username: ")
-        self.state = "CREATE"
-    
-    def handle_CREATE(self, username):
-        self.username = username
-        self.name = username
-        self.users[username] = self
-        self.state = "COMMAND"
+
 
 
 class NetConnFactory(Factory):
