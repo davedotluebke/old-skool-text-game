@@ -1,0 +1,15 @@
+<html>
+    <head>
+        <title>Firfile Scorcery School - An interactive text adventure</title>
+    </head>
+    <body>
+        <script>
+            document.write(`
+            <p id="info">Firefile Scorcery School is an online text adventure MUD game written in Python.</p><br>
+            <button type="button" onclick="var focuser = window.open('websocket_client.html', 'newwindow','width=666px, height=438px', false); document.getElementById('windowTracker').value = focuser; ">Begin Playing</button><br>
+            <div id="wizardPortal"><button type="button" onclick="var FRAME = \`<iframe src='https://github.com/davedotluebke/old-skool-text-game/'></iframe>\`; document.getElementById('wizardPortal').innerHtml = FRAME">Wizard Portal</button></div>
+            `);
+        </script>
+        <noscript><p>Javascript has been disabled in your browser. Please enable Javascript to load the page.</p></noscript>
+    </body>
+</html>
