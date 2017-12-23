@@ -38,7 +38,7 @@
             "request": "launch",
             "stopOnEntry": false,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/webclient/connections_websock.py",
+            "program": "${workspaceRoot}/connections_websock.py",
             "cwd": "",
             "console": "integratedTerminal",
             "env": {},
