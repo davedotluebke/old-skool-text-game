@@ -9,7 +9,7 @@ def load():
 
     kitchen = room.Room('kitchen', roomPath)
     kitchen.indoor = True
-    kitchen.set_description('dusty kitchen with 50-year old apliences and decorations', 'This kitchen looks about 50 years old, and is very dusty but apears still useable.')
+    kitchen.set_description('dusty kitchen with 50-year-old appliances and decorations', 'This kitchen looks about 50 years old and is very dusty, but it appears to still be usable.')
     kitchen.add_exit('northeast', 'domains.school.forest.entryway')
     kitchen.add_exit('southeast', 'domains.school.forest.hallway')
 

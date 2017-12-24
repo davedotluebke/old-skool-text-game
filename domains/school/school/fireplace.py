@@ -4,9 +4,9 @@ import gametools
 class Fireplace(thing.Thing):
     def __init__(self):
         super().__init__('fireplace', __file__)
-        self.set_description('enourmous fireplace', 'This enourmous fireplace is filled with logs that are slowly burning. '
+        self.set_description('enormous fireplace', 'This enormous fireplace is filled with logs that are slowly burning. '
         'It almost seems as if there were another room also facing this fireplace, but you can\'t be sure.', unlisted=True)
-        self.add_adjectives('enourmous', 'huge')
+        self.add_adjectives('enormous', 'huge')
         self.actions.append(thing.Action(self.enter, ['enter'], True, False))
         self.dest = 'domains.school.school.fire_lounge'
 
@@ -15,7 +15,7 @@ class Fireplace(thing.Thing):
             return "What do you intend to enter?"
         if cons.user.wizardry_element == 'fire':
             if self.dest == 'domains.school.school.fire_lounge':
-                cons.user.perceive("You stealthily pass through the fireplace, and find yourself in another room.")
+                cons.user.perceive("You stealthily pass through the fireplace and find yourself in another room.")
             else:
                 cons.user.perceive("You pass through the fireplace into the Great Hall.")
                 self.emit('&d%s passes through the fireplace to a room on the other side. ' % cons.user, ignore = [cons.user])

@@ -31,7 +31,7 @@ class LiquidFire(liquid.Liquid):
     def heartbeat(self):
         loc = self.location
         while loc.location:
-            if loc.path == 'domians.school.elementQuest':
+            if loc.path == 'domains.school.elementQuest':
                 break
             if isinstance(loc, room.Room):
                 break

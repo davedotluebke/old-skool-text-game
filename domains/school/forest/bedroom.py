@@ -13,8 +13,8 @@ def load():
     bedroom.add_exit('northwest', 'domains.school.forest.hallway')
     bed = scenery.Scenery('bed','decrepit old bed', 'This decrepit bed supports a bare stained mattress and is covered with a thick layer of dust.')
     bed.add_adjectives('old', 'decrepit')
-    bed.add_response(['sleep'], 'You briefly consider sleeping on the dusty soiled mattress, and quickly think better of it.', True, True)
-    bed.add_response(['make'], 'You look around for sheets or blankets, but see nothing suitable with which to make the bed.', emit_message='%s looks around the room.')
+    bed.add_response(['sleep'], 'You briefly consider sleeping on the dusty, soiled mattress but quickly think better of it.', True, True)
+    bed.add_response(['make'], 'You look around for sheets or blankets but see nothing suitable with which to make the bed.', emit_message='%s looks around the room.')
     bedroom.insert(bed)
 
     sword = gametools.clone('domains.school.forest.sword')

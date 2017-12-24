@@ -54,8 +54,11 @@ class Simple(resource.Resource):
         return bytes("<html>Handled. Waiting for server...<form method='POST'><input type='hidden' value='__donotsend__' name='line_to_send'><button>Check for response</button></html>","utf-8")
 
 site = server.Site(Simple())
-endpoint = endpoints.TCP4ServerEndpoint(reactor, 9124)
-endpoint.listen(site)
-reactor.connectTCP("localhost", 9123, SendToWebFactory())
-reactor.run()
 
+def setup(port):
+    endpoint = endpoints.TCP4ServerEndpoint(reactor, port)
+    endpoint.listen(site)
+    reactor.connectTCP("localhost", 9123, SendToWebFactory())
+
+def run():
+    reactor.run()
