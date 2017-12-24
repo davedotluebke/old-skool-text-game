@@ -6,9 +6,39 @@
         <script>
             document.write(`
             <p id="info">Firefile Scorcery School is an online text adventure MUD game written in Python.</p><br>
-            <button type="button" onclick="var focuser = window.open('websocket_client.html', 'newwindow','width=666px, height=438px', false); document.getElementById('windowTracker').value = focuser; ">Begin Playing</button><br>
-            <div id="wizardPortal"><button type="button" onclick="var FRAME = \`<iframe src='https://github.com/davedotluebke/old-skool-text-game/'></iframe>\`; document.getElementById('wizardPortal').innerHtml = FRAME">Wizard Portal</button></div>
+            <button title="Begin Playing Firefile Scorcery School" id="gameOpen" type="button" onclick="openGame()">Begin Playing</button><br>
+            <button title="Open the Wizard Portal (wizards only)" id="wizardPortal" type="button" onclick="openPortal()">Wizard Portal</button>
             `);
+
+            function closePortal () {
+                document.getElementById('wizardPortal').disabled = "";
+                document.getElementById('wizardPortal').title = "Open the Wizard Portal (wizards only)";
+                return null;
+            }
+
+            function openPortal () {
+                var focuser = window.open('https://www.github.com/davedotluebke/old-skool-text-game/', 'newwindow', 'width=1029px, height=739px', false);
+                focuser.unload = closePortal();
+                focuser.resizeTo(1030, 739);
+                document.getElementById('wizardPortal').disabled = 'disabled';
+                document.getElementById('wizardPortal').title = "The Wizard Portal is already open!";
+                return focuser;
+            }
+
+            function closeGame () {
+                document.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
+                document.getElementById('gameOpen').disabled = "";
+                return null;
+            }
+
+            function openGame () {
+                var focuser = window.open('websocket_client.html', 'newwindow','width=666px, height=438px', false);
+                focuser.unload = closeGame()
+                focuser.resizeTo(666, 438);
+                document.getElementById('gameOpen').disabled = 'disabled';
+                document.getElementById('gameOpen').title = "The game is already open!";
+                return focuser;
+            }
         </script>
         <noscript><p>Javascript has been disabled in your browser. Please enable Javascript to load the page.</p></noscript>
     </body>
