@@ -64,3 +64,6 @@ def findGamePath(filepath):
     (head, sep, tail) = gamePath.partition(".py")
     gamePath = head
     return gamePath
+
+def request_all_inputs(player, dest):
+    Thing.ID_dict[player].cons.
