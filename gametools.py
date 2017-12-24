@@ -66,4 +66,4 @@ def findGamePath(filepath):
     return gamePath
 
 def request_all_inputs(player, dest):
-    Thing.ID_dict[player].cons.
+    Thing.ID_dict[player].cons.request_input(dest)

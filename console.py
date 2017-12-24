@@ -138,10 +138,11 @@ class Console:
 
             if cmd == "escape":
                 if self.input_redirect != None:
-                    self.input_redirect == None
+                    self.input_redirect = None
                     self.write("Sucessfully escaped from the redirect. ")
                 else:
                     self.write("You cannot escape from a redirect, as there is none.")
+                return True
             
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
