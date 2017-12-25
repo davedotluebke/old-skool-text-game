@@ -1,3 +1,5 @@
+import asyncio
+import connections_websock
 from textwrap import TextWrapper
 
 from debug import dbg
@@ -32,7 +34,8 @@ class Console:
         self.game = game
         self.user = None
         self.username = None
-        self.raw_input = b''
+        self.raw_input = ''
+        self.raw_output = ''
         self.change_players = False
         self.connection = net_conn
         self.width = Console.default_width
@@ -56,7 +59,7 @@ class Console:
     def detach(self, user):
         if self.user == user:
             self.user = None
-        self.connection.transport.write(b'Press Enter to continue . . . ')
+        self.connection.send(b'Press Enter to continue . . . ')
 
     def set_width(self, w):
         self.width = w
@@ -165,6 +168,10 @@ class Console:
             
         return False
 
+    async def producer(self, line):
+        '''Send a single line to the websocket associated with this console.'''
+        await self.connection.send(line)
+
     def write(self, text, indent=0):
         str_text = str(text)
         self.tw.initial_indent = indent * ' '
@@ -172,9 +179,9 @@ class Console:
         lines = str_text.splitlines()
         for l in lines: 
             wrapped = self.tw.fill(l)
-            wrapped_lines = wrapped.splitlines()
-            for wl in wrapped_lines:
-                self.connection.sendLine(bytes(wl, "utf-8"))
+            self.raw_output += wrapped
+        asyncio.ensure_future(connections_websock.producer(self))
+
 
     '''
     def new_user(self):
@@ -197,10 +204,9 @@ class Console:
     '''
 
     def take_input(self):
-        if (self.raw_input == b''):
+        if (self.raw_input == ''):
             return None
-        self.command = str(self.raw_input, "utf-8")
-        self.raw_input = b''
+        (self.command, sep, self.raw_input) = self.raw_input.partition('\n')
         self.words = self.command.split()
         # if user types a console command, handle it and start over unless the player that called this is deactive
         internal = self._handle_console_commands()

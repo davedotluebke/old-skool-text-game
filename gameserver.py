@@ -3,11 +3,11 @@ import io
 import traceback
 import random
 import time
-from twisted.internet import task
-from twisted.internet import reactor
+import asyncio
+import websockets
+import connections_websock
 
 import gametools
-import connections
 
 from debug import dbg
 from thing import Thing
@@ -278,9 +278,8 @@ class Game():
                     dbg.debug('Error caught!', 0)
             else:
                 h.heartbeat()
-        
-        if not self.keep_going:
-            self.loop.stop()
+        # schedule the next heartbeat:
+        asyncio.get_event_loop().call_later(1,self.beat)
 
     def cbLoopDone(result):
         """
@@ -300,15 +299,14 @@ class Game():
 
     def start_loop(self):
         print("Starting game...")
-        reactor.listenTCP(9123, connections.NetConnFactory())
-        print ("Listening on port 9123...")
-        self.loop = task.LoopingCall(self.beat)
-        loopDeferred = self.loop.start(1.0)
-        loopDeferred.addCallback(self.cbLoopDone)
-        loopDeferred.addErrback(self.ebLoopFailed)
-        dbg.debug("Entering main game loop!")
-        reactor.run()
+        asyncio.get_event_loop().run_until_complete(
+            websockets.serve(connections_websock.ws_handler, '127.0.0.1', 9124))
+        print ("Listening on port 9124...")
+        asyncio.get_event_loop().call_later(1,self.beat)
+        asyncio.get_event_loop().run_forever()
+        # XXX add callbacks to handle game exit? 
         dbg.debug("Exiting main game loop!")
+        dbg.shut_down()
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
         dbg.debug("Game.clear_nulspace() called! Currently does nothing.")

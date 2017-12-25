@@ -1,4 +1,4 @@
-import twisted.internet.defer
+''''import twisted.internet.defer
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineReceiver
 from twisted.internet import reactor
@@ -76,3 +76,5 @@ class NetConnFactory(Factory):
 
     def buildProtocol(self, addr):
         return NetworkConnection(self.users)
+'''
+raise
