@@ -51,6 +51,8 @@
                     content = document.createTextNode(event.data);
                 console.log('Received message from server:' + content)
                 if (event.data === '#quit') {
+                    window.parent.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
+                    window.parent.getElementById('gameOpen').disabled = "";
                     window.close();
                 }
                 message.appendChild(content);
