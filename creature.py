@@ -128,7 +128,7 @@ class Creature(Container):
         else:
             self.emit('&nd%s attacks &nd%s with its %s, but misses.' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
             self.perceive('You attack &nd%s with your %s, but miss.' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nd%s attacks you, but misses %s.' % (self, self.weapon_wielding))
+            enemy.perceive('&nD%s attacks you, but misses with its %s.' % (self, self.weapon_wielding))
 
     def attack_freq(self):
         try:
@@ -139,7 +139,7 @@ class Creature(Container):
     def die(self, message=None):
         #What to do when 0 health
         self.emit("&nD%s dies!" % self.id, [self])
-        corpse = Container("corpse of &ni%s" % (self.id))
+        corpse = Container("corpse of &ni%s" % (self.id), None)
         corpse.add_names("corpse")
         corpse.set_description('corpse of a %s' % (self.short_desc), 'This is the foul-smelling corpse of a %s. It looks nasty.' % (self.short_desc))
         corpse.set_weight(self.weight)
@@ -149,7 +149,8 @@ class Creature(Container):
         corpse.add_names('corpse')
         self.location.insert(corpse)
         for i in self.contents:
-            self.move_to(corpse)      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+            i.move_to(corpse) 
+        self.move_to(Thing.ID_dict[self.start_loc if self.start_loc else 'domains.school.school.great_hall'])     #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
         if message:
             self.emit(message)
 
