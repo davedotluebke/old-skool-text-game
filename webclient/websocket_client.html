@@ -42,13 +42,15 @@
                     e.preventDefault();
                 }
             }
-            var ws = new WebSocket("ws://127.0.0.1:9124/"),
+            var ws = new WebSocket("ws://192.168.1.16:9124/"),
             messages = document.getElementsByTagName('div')[0];
-            //ws.onopen = function (event) {};
+            ws.onopen = function (event) {
+                ws.send('PING!');
+            };
             ws.onmessage = function (event) {
                 var messages = document.getElementsByTagName('div')[0],
-                    message = document.createElement('div'),
-                    content = document.createTextNode(event.data);
+                    message = document.createElement('p'),
+                    content = document.createElementNode(event.data);
                 console.log('Received message from server:' + content)
                 if (event.data === '#quit') {
                     window.parent.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
@@ -71,7 +73,9 @@
                 messages.appendChild(message);
             }
             window.onresize = function(e) {
-                window.resizeTo(666, 438);
+                document.getElementById("inputLine").value = "width " + window.innerWidth/8.325;
+                sendLine()
+                document.getElementById("inputLine").value = ''
             }
         </script>
     </body>

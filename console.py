@@ -7,7 +7,7 @@ from parse import Parser
 from player import Player
 
 class Console:
-    default_width = 75
+    default_width = 80
     prompt = "--> "
     help_msg = """Your goal is to explore the world around you, solve puzzles,
                fight monsters, complete quests, and eventually become a
@@ -176,7 +176,7 @@ class Console:
         for l in lines: 
             wrapped = self.tw.fill(l)
             self.raw_output += wrapped
-        self.raw_output.replace('/n','<br>')
+        self.raw_output = self.raw_output.replace('\n','<br>') + '<br>'
         asyncio.ensure_future(connections_websock.ws_send(self))
 
     '''
@@ -211,4 +211,5 @@ class Console:
         # replace any aliases with their completed version
         self.final_command = self._replace_aliases()
         return self.final_command
+
 
