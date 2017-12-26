@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import os.path
 import random
+import functools
 
 from thing import Thing
 from console import Console
@@ -16,6 +17,39 @@ logger = logging.getLogger('websockets.server')
 logger.setLevel(logging.ERROR)
 logger.addHandler(logging.StreamHandler())   
 
+conn_to_client = {}
+
+async def ws_handler(websocket, path):
+    async for message in websocket:
+        try:
+            conn_to_client[websocket].raw_input += message
+        except KeyError:
+            cons = Console(websocket, Thing.game)
+            conn_to_client[websocket] = cons
+            # XXX temporary hack to postpone hooking up login code to Console
+            if len(conn_to_client) == 1:
+                name = 'cedric'
+            elif len(conn_to_client) == 2:
+                name = 'alex'
+            else:
+                name = 'randomplayer' + random.randint(10, 99)
+            try:
+                Thing.game.load_player(os.path.join(gametools.PLAYER_DIR, name), cons)
+            except gametools.PlayerLoadError:
+                Thing.game.create_new_player(name, cons)
+            #XXX temp hack ends
+    
+
+async def ws_send(cons):
+    await cons.connection.send(cons.raw_output)
+    
+
+
+
+
+
+
+'''
 clients = dict()  # dictionary mapping client consoles to their websockets
 
 # The callback that does everything in the webserver:
@@ -50,6 +84,8 @@ async def ws_handler(websocket, path):
     for task in pending:
         task.cancel()
 
+    asyncio.get_event_loop().call_later(ws_handler(functools.partial(ws_handler, websocket, path)))
+
 
 # The callback that consumes messages from the client:
 async def ws_consumer_handler(websocket, user_cons):
@@ -58,11 +94,12 @@ async def ws_consumer_handler(websocket, user_cons):
         user_cons.raw_input += (message + '\n')
 
 async def ws_producer_handler(websocket, user_cons): 
-    while True: 
-        message = await producer(user_cons)
+    message = await producer(user_cons)
+    if message != '':
         await websocket.send(message)
 
 async def producer(user_cons):
     output = user_cons.raw_output
     user_cons.raw_output = ''
     return output
+'''

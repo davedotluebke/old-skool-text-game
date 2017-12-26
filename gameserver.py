@@ -281,27 +281,11 @@ class Game():
         # schedule the next heartbeat:
         asyncio.get_event_loop().call_later(1,self.beat)
 
-    def cbLoopDone(result):
-        """
-        Called when loop was stopped with success.
-        """
-        dbg.debug("Loop done.")
-        dbg.shut_down()
-        NetworkConnection.keep_going = False
-        reactor.stop()
-
-    def ebLoopFailed(failure):
-        """
-        Called when loop execution failed.
-        """
-        dbg.debug(failure.getBriefTraceback())
-        reactor.stop()
-
     def start_loop(self):
         print("Starting game...")
         asyncio.get_event_loop().run_until_complete(
             websockets.serve(connections_websock.ws_handler, '127.0.0.1', 9124))
-        print ("Listening on port 9124...")
+        print("Listening on port 9124...")
         asyncio.get_event_loop().call_later(1,self.beat)
         asyncio.get_event_loop().run_forever()
         # XXX add callbacks to handle game exit? 

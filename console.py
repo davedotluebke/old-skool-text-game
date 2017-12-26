@@ -168,10 +168,6 @@ class Console:
             
         return False
 
-    async def producer(self, line):
-        '''Send a single line to the websocket associated with this console.'''
-        await self.connection.send(line)
-
     def write(self, text, indent=0):
         str_text = str(text)
         self.tw.initial_indent = indent * ' '
@@ -180,8 +176,7 @@ class Console:
         for l in lines: 
             wrapped = self.tw.fill(l)
             self.raw_output += wrapped
-        asyncio.ensure_future(connections_websock.producer(self))
-
+        asyncio.ensure_future(connections_websock.ws_send(self))
 
     '''
     def new_user(self):
