@@ -176,6 +176,7 @@ class Console:
         for l in lines: 
             wrapped = self.tw.fill(l)
             self.raw_output += wrapped
+        self.raw_output.replace('/n','<br>')
         asyncio.ensure_future(connections_websock.ws_send(self))
 
     '''

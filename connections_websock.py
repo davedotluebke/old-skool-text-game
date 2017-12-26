@@ -42,6 +42,7 @@ async def ws_handler(websocket, path):
 
 async def ws_send(cons):
     await cons.connection.send(cons.raw_output)
+    cons.raw_output = ''
     
 
 
