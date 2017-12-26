@@ -3,7 +3,7 @@
     "configurations": [
 
         {
-            "name": "Gameserver (Twisted/telnet)",
+            "name": "Webserving Game",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
@@ -17,37 +17,6 @@
                 "WaitOnAbnormalExit",
             ]
         },
-        {
-            "name": "Run testing.py (throwaway test code)",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/testing.py",
-            "cwd": "",
-            "console": "integratedTerminal",
-            "env": {},
-            "envFile": "${workspaceRoot}/.env",
-            "debugOptions": [
-                "WaitOnAbnormalExit"
-            ]
-        },
-        {
-            "name": "Gameserver (websockets)",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/connections_websock.py",
-            "cwd": "",
-            "console": "integratedTerminal",
-            "env": {},
-            "envFile": "${workspaceRoot}/.env",
-            "debugOptions": [
-                "WaitOnAbnormalExit",
-                "WaitOnNormalExit"
-            ]
-        },        
         {
             "name": "Python",
             "type": "python",
