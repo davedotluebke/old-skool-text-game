@@ -50,7 +50,7 @@
             ws.onmessage = function (event) {
                 var messages = document.getElementsByTagName('div')[0],
                     message = document.createElement('p'),
-                    content = document.createElementNode(event.data);
+                    content = document.createTextNode(event.data);
                 console.log('Received message from server:' + content)
                 if (event.data === '#quit') {
                     window.parent.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
