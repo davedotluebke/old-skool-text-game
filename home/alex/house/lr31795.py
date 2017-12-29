@@ -17,4 +17,7 @@ def load():
     bookshelf = gametools.clone('home.alex.house.bookshelf')
     bookshelf.move_to(living_room, True)
 
+    couch = gametools.clone('home.alex.house.couch')
+    couch.move_to(living_room, True)
+
     return living_room

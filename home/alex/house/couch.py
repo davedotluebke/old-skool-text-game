@@ -1,5 +1,6 @@
 from thing import Thing
 from container import Container
+from action import Action
 
 class Couch(Container):
 	def __init__(self, default_name, path):
