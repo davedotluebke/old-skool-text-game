@@ -16,6 +16,7 @@ def clone():
     scavenger.set_description('large red horster', 'This is a bright red horster. It scans the ground carefully, looking for things. It keeps a huge pile of things in an old bag it has.')
     scavenger.add_adjectives('large', 'red')
     scavenger.choices.append(take_stuff)
+    scavenger.set_combat_vars(30, 30, 40, 40)
     scavenger.act_frequency = 2
 
     bag = gametools.clone('domains.school.forest.bag')

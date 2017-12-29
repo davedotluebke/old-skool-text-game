@@ -95,14 +95,14 @@ class Creature(Container):
             self.die('default message')
 
     def weapon_and_armor_grab(self):
-        if not self.weapon_wielding:
+        if not self.weapon_wielding or self.weapon_wielding == self.default_weapon:
             for w in self.contents:
                 if isinstance(w, Weapon):
                     self.weapon_wielding = w
                     dbg.debug("weapon chosen: %s" % self.weapon_wielding)
                     self.visible_inventory.append(self.weapon_wielding)
                     break
-        if not self.armor_worn:
+        if not self.armor_worn or self.armor_worn == self.default_armor:
             for a in self.contents:
                 if isinstance(a, Armor):
                     self.armor_worn = a
@@ -149,8 +149,11 @@ class Creature(Container):
         corpse.add_names('corpse')
         self.location.insert(corpse)
         for i in self.contents:
-            i.move_to(corpse) 
-        self.move_to(Thing.ID_dict[self.start_loc if self.start_loc else 'domains.school.school.great_hall'])     #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+            i.move_to(corpse)
+        if hasattr(self, 'cons'):
+            self.move_to(Thing.ID_dict[self.start_loc if self.start_loc else 'domains.school.school.great_hall'])     #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+        else:
+            self.move_to(Thing.ID_dict['nulspace'])
         if message:
             self.emit(message)
 
@@ -207,7 +210,7 @@ class NPC(Creature):
 
     def heartbeat(self):
         self.act_soon += 1
-        if self.act_soon >= self.act_frequency or (set(self.enemies) & set(self.location.contents)) or self.attacking:
+        if self.act_soon >= self.act_frequency or (set(self.enemies) and set(self.location.contents)) or self.attacking:
             acting = False
             self.act_soon = 0
             if self.current_script:  # if currently reciting, continue
