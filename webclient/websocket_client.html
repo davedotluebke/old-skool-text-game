@@ -32,6 +32,8 @@
         <div class="messageOutput"><div>Your incoming data will appear here.</div></div>
         <form id="messageInput" width=100%>
             <input size="74" width="100%" type="text" id="inputLine">
+            <input type="hidden" id="resizeValidate">
+            <input type="hidden" id="width" value="666">
         </form>
         <script>
             document.getElementById("messageInput").onkeypress = function(e) {
@@ -48,18 +50,24 @@
                 ws.send('PING!');
             };
             ws.onmessage = function (event) {
-                var messages = document.getElementsByTagName('div')[0],
-                    message = document.createElement('p'),
-                    content = document.createTextNode(event.data);
-                console.log('Received message from server:' + content)
-                if (event.data === '#quit') {
-                    window.parent.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
-                    window.parent.getElementById('gameOpen').disabled = "";
-                    window.close();
+                console.log('Recived some message text!')
+                var data = '';
+                var num = 0;
+                while (num < event.data.split("<br>").length) {
+                    var messages = document.getElementsByTagName('div')[0],
+                        message = document.createElement('div'),
+                        content = document.createTextNode(data);
+                    console.log('Received message from server:' + content)
+                    if (data === '#quit') {
+                        window.parent.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
+                        window.parent.getElementById('gameOpen').disabled = "";
+                        window.close();
+                    }
+                    message.appendChild(content);
+                    messages.appendChild(message);
+                    window.scrollTo(0,document.body.scrollHeight);
+                    num += 1;
                 }
-                message.appendChild(content);
-                messages.appendChild(message);
-                window.scrollTo(0,document.body.scrollHeight);
             };
             function sendLine () {
                 console.log(document.getElementById("inputLine").value);
@@ -71,11 +79,20 @@
                 contentBlock.appendChild(content);
                 message.appendChild(contentBlock);
                 messages.appendChild(message);
+                if (document.getElementById('inputLine').value.split(" ")[0] == 'width') {
+                    document.getElementById('resizeValidate').value = 'true';
+                    window.resizeTo(Math.round(document.getElementById('inputLine').value.split(" ")[1]*8.325), 438);
+                    document.getElementById('width').value = Math.round(document.getElementById('inputLine').value.split(" "));
+                    document.getElementById('inputLine').size = document.getElementById('inputLine').value.split(" ")[1];
+                    document.title = 'Gameclient - ' + document.getElementById('inputLine').value.split(" ")[1] + ' x 24'
+                }
             }
             window.onresize = function(e) {
-                document.getElementById("inputLine").value = "width " + window.innerWidth/8.325;
-                sendLine()
-                document.getElementById("inputLine").value = ''
+                if (document.getElementById('resizeValidate').value != 'true') {
+                    console.log('Fixing!')
+                    window.resizeTo(document.getElementById('width').value, 438);
+                }
+                document.getElementById('resizeValidate').value = '';
             }
         </script>
     </body>
