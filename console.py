@@ -139,7 +139,7 @@ class Console:
             if cmd == "escape":
                 if self.input_redirect != None:
                     self.input_redirect = None
-                    self.write("Sucessfully escaped from the redirect. ")
+                    self.write("Successfully escaped from the redirect. ")
                 else:
                     self.write("You cannot escape from a redirect, as there is none.")
                 return True
@@ -180,8 +180,21 @@ class Console:
         self.tw.subsequent_indent = indent * ' '
         lines = str_text.splitlines()
         for l in lines: 
-            wrapped = self.tw.fill(l)
-            wrapped_lines = wrapped.splitlines()
+            if l:
+                block_indent = 0
+                if l[0] == '>':
+                    l = l.replace('>',' ', 1)
+                    block_indent = len(l) - len(l.lstrip())
+                    l = l.lstrip()
+        
+                self.tw.initial_indent = (indent + block_indent) * ' '
+                self.tw.subsequent_indent = (indent + block_indent) * ' '
+
+                wrapped = self.tw.fill(l)
+                wrapped_lines = wrapped.splitlines()
+            else:
+                # line was blank, so we submit a <space> so telnet will send a "blank" line
+                wrapped_lines = " "
             for wl in wrapped_lines:
                 self.connection.sendLine(bytes(wl, "utf-8"))
 
@@ -218,14 +231,14 @@ class Console:
         internal = self._handle_console_commands()
         if internal:
             return "__noparse__"
-        # replace any aliases with their completed version
-        self.final_command = self._replace_aliases()
         if self.input_redirect != None:
             try:
-                self.input_redirect.console_recv(self.final_command)
+                self.input_redirect.console_recv(self.command)
                 return "__noparse__"
             except AttributeError:
                 dbg.debug('Error! Input redirect is not valid!')
                 self.input_redirect = None
+        # replace any aliases with their completed version
+        self.final_command = self._replace_aliases()
         return self.final_command
 
