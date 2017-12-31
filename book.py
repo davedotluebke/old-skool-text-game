@@ -9,75 +9,144 @@ class Book(Thing):
         self.what_you_read = list()
         self.index = 0
         self.actions.append(Action(self.read, ['read'], True, False))
+        self.actions.append(Action(self.close, ['close'], True, False))
         self.add_names('book')
 
+    def drop(self, p, cons, oDO, oIDO):
+        # make it so the next person to pick up the book doesn't start 
+        # reading where the last left off
+        self.index = 0
+
+        return super(Book, self).drop(p, cons, oDO, oIDO)
+
     def set_message(self, message):
-        page_num = 0
-        c = 0
-        page = '\n'
-        for i in message.splitlines(True):
-            if i == "#*\n":
-                page_num += 1
-                c = 0
-                try:
-                    self.what_you_read[page_num] = page
-                except IndexError:
-                    self.what_you_read.append(page)
-                page = '\n'
+        self.what_you_read = list()
+        page_text = '\n'
+
+        for line_text in message.splitlines(True):
+            if line_text.strip(' \t\r\n') == "#*": 
+                ## page break ##
+                self.what_you_read.append(page_text)
+                page_text = '\n'
                 continue
-            page += i
-            c += 1
-            # #* means page break
-        try:
-            self.what_you_read[page_num] = (page + '\n\n')
-        except IndexError:
-            self.what_you_read.append(page + '\n\n')
+            page_text += line_text 
+
+        self.what_you_read.append(page_text + '\n\n')
 
     def read(self, p, cons, oDO, oIDO):
+        if self is not oDO:
+            # wrong book
+            return False
+
         if self not in cons.user.contents:
             cons.write('You need to take the book before reading it!')
             return True
+
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
+
+        if sDO == None:
+            sDO = ""
+
         case = None
-        if oDO == self:
-            if cons.user.reading:
-                case = 3
-            else:
-                case = 1
-        # see if they typed "read page #" 
+        # case constants for clarity
+        CURRENT_PAGE  = 1
+        SPECIFIC_PAGE = 2
+        NEXT_PAGE     = 3
+        PREVIOUS_PAGE = 4
+
+        if cons.user.reading and (self is not cons.user.reading_object):
+            # close the book you were reading so you can open this one
+            cons.user.reading_object.close(p, cons, cons.user.reading_object, None)
+
+        # search the direct object string (sDO) to determine which page to read
         match = re.search(r'page (\d+)', sDO)
         if match:
+            # >read page #
             pagenum = match.group(1)
-            case = 2
-        if not case:
-            match = re.search(r'next page', sDO)
-            if match:
-                case = 3
-            if not case:
-                match = re.search(r'page', sDO)
-                if match:
-                    case = 1
-                if not case:
-                    match = re.search(r'(\S+)', sDO)
-                    if match:
-                        if match.group(1) in self.names:
-                            case = 1
+            case = SPECIFIC_PAGE
+        elif re.search(r'next', sDO):
+            # >read next page
+            case = NEXT_PAGE
+        elif re.search(r'prev', sDO):
+            # >read previous page
+            case = PREVIOUS_PAGE
+        elif re.search(r'page', sDO):
+            # >read page
+            case = CURRENT_PAGE
+        elif not cons.user.reading:
+            # default while not already reading
+            case = CURRENT_PAGE
+        else:
+            # default while reading
+            case = NEXT_PAGE
+
         try:
-            if self.what_you_read and (case == 1):
-                cons.write("You read:"+str(self.what_you_read[self.index]), 8)
+            can_read = True
+
+            # select the appropriate page to read
+            if not self.what_you_read:
+                # there's nothing to read
+                can_read = False
+                cons.write("It appears to be blank...")
+                cons.user.emit("&nD%s stares confusedly at the %s." %(cons.user.id, self.short_desc))
+            elif (case == SPECIFIC_PAGE):
+                if 0 < int(pagenum) <= len(self.what_you_read):
+                    if (self.index == int(pagenum)-1):
+                        # prevent emitting that you have flipped the page
+                        case = CURRENT_PAGE
+                    else:
+                        # not the same page as last time
+                        self.index = int(pagenum)-1
+                else:
+                    raise IndexError
+            elif (case == NEXT_PAGE):
+                # read next page
+                if (self.index+1 == len(self.what_you_read)):
+                    can_read = False
+                else: 
+                    self.index += 1
+            elif (case == PREVIOUS_PAGE):
+                # read previous page
+                if (self.index == 0):
+                    can_read = False
+                else: 
+                    self.index -= 1
+
+            if can_read:
+                if not cons.user.reading:
+                    cons.write('You open the %s to page %s and read:%s' %(self.short_desc, str(self.index+1), str(self.what_you_read[self.index])), 8)
+                    cons.user.emit("&nD%s opens the %s and starts to read." %(cons.user.id, self.short_desc))
+                elif case != CURRENT_PAGE:
+                    cons.write('You flip to page %s and read:%s' %(str(self.index+1), str(self.what_you_read[self.index])), 8)
+                    cons.user.emit("&nD%s flips through the pages of the %s thoughtfully." %(cons.user.id, self.short_desc))
+                else:
+                    cons.write("You read:" + str(self.what_you_read[self.index]), 8)
+
                 cons.user.reading = True
-            elif self.what_you_read and (case == 2):
-                self.index = int(pagenum)-1
-                cons.write('You flip to page '+str(self.index+1)+'.')
-                cons.write("You read:"+str(self.what_you_read[self.index]), 8)
-                cons.user.reading = True
-            elif self.what_you_read and (case == 3):
-                self.index += 1
-                cons.write("You read:"+str(self.what_you_read[self.index]), 8)
-                cons.user.reading = True
+                cons.user.reading_object = self
+            elif not self.what_you_read:
+                # blank book
+                cons.write("It appears to be blank...")
+                cons.user.emit("&nD%s stares confusedly at the %s." %(cons.user.id, self.short_desc))
             else:
-                cons.write("A problem occured!")
-            cons.user.emit("&nD%s reads from the %s." %(cons.user.id, self.s_desc))
+                # reached the end or beginning of the book
+                cons.write("There's nothing left to read.")
+
         except IndexError:
-            cons.write('The book does not have a page numbered %s!' % str(self.index+1))
+            cons.write("You can't seem to find that page...")
         return True
+
+    def close(self, p, cons, oDO, oIDO):
+        
+        if oDO is not self:
+            return False
+
+        if self is cons.user.reading_object:
+            cons.write("You close the %s" % cons.user.reading_object.short_desc)
+            cons.user.emit("&nD%s closes the %s" %(cons.user.id, cons.user.reading_object.short_desc))
+            cons.user.reading = False
+            cons.user.reading_object = None
+        else:
+            cons.write("It's already closed.")
+        return True
+
