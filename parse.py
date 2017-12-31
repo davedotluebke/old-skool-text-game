@@ -132,10 +132,7 @@ class Parser:
         
         self.words = command.split()
         if len(self.words) == 0:
-            if user.reading == True:
-                self.words = ["read", "next", "page"]
-            else:
-                return True
+            return True
 
         if self.words[0] == 'verbose':
             try:
@@ -175,10 +172,6 @@ class Parser:
         sPrep = None         # Preposition as string
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
-        if console.user.reading and (sV != "read") and (sV != "close"):
-            # stop reading if any other action is performed
-            console.user.reading_object.close(user, console, console.user.reading_object, None);
-
         # FIRST, search for objects that support the verb the user typed
             # TODO: only include room contents if room is not dark (but always include user)
         possible_objects = [user.location] 
@@ -211,10 +204,6 @@ class Parser:
             oIDO = self._find_matching_objects(sIDO, possible_objects, console)
         if oDO == False or oIDO == False: 
             return True     # ambiguous user input; >1 object matched 
-
-        # to avoid reading the wrong book, use the last read book when not specified         
-        if (sV == "read") and not oDO and console.user.reading_object:
-            oDO = console.user.reading_object
 
         # If direct or indirect object supports the verb, try first in that order
         initial_actions = []

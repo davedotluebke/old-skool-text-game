@@ -6,147 +6,197 @@ class Book(Thing):
     def __init__(self, default_name, path, s_desc, l_desc, pref_id=None):
         super().__init__(default_name, path, pref_id)
         self.set_description(s_desc, l_desc)
-        self.what_you_read = list()
-        self.index = 0
-        self.actions.append(Action(self.read, ['read'], True, False))
+        self.book_pages = dict()
+        self.actions.append(Action(self.read, ['read','open'], True, False))
         self.actions.append(Action(self.close, ['close'], True, False))
         self.add_names('book')
+        self.cons = None
+        self.COVER_INDEX = -1
+        self.TOC_INDEX = 0
+        # books always open on cover the first time and toc or bookmark afterwards
+        self.index = self.COVER_INDEX 
+        self.bookmark = None
 
     def drop(self, p, cons, oDO, oIDO):
         # make it so the next person to pick up the book doesn't start 
         # reading where the last left off
-        self.index = 0
+        self.index = self.COVER_INDEX
+        self.bookmark = None
 
         return super(Book, self).drop(p, cons, oDO, oIDO)
 
+    def set_index(self, new_index):
+        if int(new_index) in self.book_pages:
+            self.index = int(new_index)
+            return True
+
+        return False
+    
+    def adjust_index(self, adjustment):
+        return self.set_index(self.index + adjustment)
+
     def set_message(self, message):
-        self.what_you_read = list()
+        self.book_pages = {self.COVER_INDEX:"", self.TOC_INDEX:""}
         page_text = '\n'
+        index = self.COVER_INDEX
 
         for line_text in message.splitlines(True):
             if line_text.strip(' \t\r\n') == "#*": 
                 ## page break ##
-                self.what_you_read.append(page_text)
+                page_text += '\n\n'
+                self.book_pages[int(index)] = page_text
                 page_text = '\n'
+                index += 1
                 continue
             page_text += line_text 
-
-        self.what_you_read.append(page_text + '\n\n')
+        
+        page_text += '\n\n'
+        self.book_pages[index] = page_text
 
     def read(self, p, cons, oDO, oIDO):
-        if self is not oDO:
-            # wrong book
-            return False
+        '''
+        This function is only executed when reading starts. All subsequent actions are sent 
+        directly to self.console_recv() via the input takeover system
+        '''
 
         if self not in cons.user.contents:
             cons.write('You need to take the book before reading it!')
             return True
 
-        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
-
-        if sDO == None:
-            sDO = ""
-
-        case = None
-        # case constants for clarity
-        CURRENT_PAGE  = 1
-        SPECIFIC_PAGE = 2
-        NEXT_PAGE     = 3
-        PREVIOUS_PAGE = 4
-
-        if cons.user.reading and (self is not cons.user.reading_object):
-            # close the book you were reading so you can open this one
-            cons.user.reading_object.close(p, cons, cons.user.reading_object, None)
-
-        # search the direct object string (sDO) to determine which page to read
-        match = re.search(r'page (\d+)', sDO)
-        if match:
-            # >read page #
-            pagenum = match.group(1)
-            case = SPECIFIC_PAGE
-        elif re.search(r'next', sDO):
-            # >read next page
-            case = NEXT_PAGE
-        elif re.search(r'prev', sDO):
-            # >read previous page
-            case = PREVIOUS_PAGE
-        elif re.search(r'page', sDO):
-            # >read page
-            case = CURRENT_PAGE
-        elif not cons.user.reading:
-            # default while not already reading
-            case = CURRENT_PAGE
+        # take over user input
+        cons.request_input(self)
+        self.cons = cons
+        
+        if self.index == self.COVER_INDEX:
+            self.cons.user.emit("&nD%s takes out a %s and looks at the cover." %(self.cons.user.id, self.short_desc))
         else:
-            # default while reading
-            case = NEXT_PAGE
+            self.cons.user.emit("&nD%s opens a %s and starts reading." %(self.cons.user.id, self.short_desc))
 
-        try:
-            can_read = True
+        # show the last page read when book is opened
+        self.console_recv("")
 
-            # select the appropriate page to read
-            if not self.what_you_read:
-                # there's nothing to read
-                can_read = False
-                cons.write("It appears to be blank...")
-                cons.user.emit("&nD%s stares confusedly at the %s." %(cons.user.id, self.short_desc))
-            elif (case == SPECIFIC_PAGE):
-                if 0 < int(pagenum) <= len(self.what_you_read):
-                    if (self.index == int(pagenum)-1):
-                        # prevent emitting that you have flipped the page
-                        case = CURRENT_PAGE
-                    else:
-                        # not the same page as last time
-                        self.index = int(pagenum)-1
-                else:
-                    raise IndexError
-            elif (case == NEXT_PAGE):
-                # read next page
-                if (self.index+1 == len(self.what_you_read)):
-                    can_read = False
-                else: 
-                    self.index += 1
-            elif (case == PREVIOUS_PAGE):
-                # read previous page
-                if (self.index == 0):
-                    can_read = False
-                else: 
-                    self.index -= 1
+        return True
 
-            if can_read:
-                if not cons.user.reading:
-                    cons.write('You open the %s to page %s and read:%s' %(self.short_desc, str(self.index+1), str(self.what_you_read[self.index])), 8)
-                    cons.user.emit("&nD%s opens the %s and starts to read." %(cons.user.id, self.short_desc))
-                elif case != CURRENT_PAGE:
-                    cons.write('You flip to page %s and read:%s' %(str(self.index+1), str(self.what_you_read[self.index])), 8)
-                    cons.user.emit("&nD%s flips through the pages of the %s thoughtfully." %(cons.user.id, self.short_desc))
-                else:
-                    cons.write("You read:" + str(self.what_you_read[self.index]), 8)
+    def console_recv(self, input_string):
 
-                cons.user.reading = True
-                cons.user.reading_object = self
-            elif not self.what_you_read:
-                # blank book
-                cons.write("It appears to be blank...")
-                cons.user.emit("&nD%s stares confusedly at the %s." %(cons.user.id, self.short_desc))
+        command = input_string.lower().strip()
+
+        cover_vocab = ["c", "cover", "front", "sleeve", "title", "author"]
+        toc_vocab = ["toc", "table", "contents", "table of contents", "chapters", "index", "list"]
+        next_vocab = ["n", "next", "next page", "turn page", "forward", "right", "continue", "go ahead", "go forward"]
+        prev_vocab = ["p", "prev", "previous", "go back", "back", "backward", "left"]
+        bookmark_vocab = ["b", "bookmark", "bookmark page", "mark", "mark page", "tag", "tag page", "fold", "fold corner", "earmark", "earmark page", "dogear", "dogear page", "dog-ear", "dog-ear page"]
+        quit_vocab = ["q", "quit", "quit reading", "end", "stop", "stop reading", "exit", "leave", "close", "close book", "shut", "shut book", "put away"]
+
+        # perform requested command
+        if command in cover_vocab:
+            # view cover
+            self.set_index(self.COVER_INDEX)
+
+            if not self.book_pages[self.COVER_INDEX]:
+                self.cons.user.perceive("The cover is blank")
+                return False
+
+            self.cons.user.emit("&nD%s closes the %s and gazes at the cover." %(self.cons.user.id, self.short_desc))
+
+        elif command in toc_vocab:
+            # view table of contents
+            last_index = self.index
+            self.set_index(self.TOC_INDEX)
+
+            if not self.book_pages[self.TOC_INDEX]:
+                self.cons.user.perceive("This book has no table of contents.")
+                return False
+
+            if last_index == self.COVER_INDEX:
+                self.cons.user.emit("&nD%s opens the %s and starts reading." %(self.cons.user.id, self.short_desc))
             else:
-                # reached the end or beginning of the book
-                cons.write("There's nothing left to read.")
+                self.cons.user.emit("&nD%s flips through the pages of the %s with a thoughtful expression." %(self.cons.user.id, self.short_desc))
 
-        except IndexError:
-            cons.write("You can't seem to find that page...")
+        elif command in next_vocab:
+            # view next page
+            if not self.adjust_index(1):
+                self.cons.user.perceive("You've reached the end.")
+                return False
+
+            if self.index == self.TOC_INDEX:
+                self.cons.user.emit("&nD%s opens the %s and starts reading." %(self.cons.user.id, self.short_desc))
+            else:
+                self.cons.user.emit("&nD%s turns the page." %(self.cons.user.id))
+
+        elif command in prev_vocab:
+            # view next page
+            if not self.adjust_index(-1):
+                self.cons.user.perceive("You've reached the beginning.")
+                return False
+
+            if self.index == self.COVER_INDEX:
+                self.cons.user.emit("&nD%s closes the %s and gazes at the cover." %(self.cons.user.id, self.short_desc))
+            else:
+                self.cons.user.emit("&nD%s turns back a page." %(self.cons.user.id))
+        
+        elif command in bookmark_vocab:
+            # toggle bookmark
+            if self.bookmark == self.index:
+                if self.bookmark == self.COVER_INDEX:
+                    self.cons.user.perceive("You decide that the cover isn't so important after all.")
+                else:
+                    self.cons.user.perceive("You unmark the page.")
+                    self.cons.user.emit("&nD%s smooths out the page." %(self.cons.user.id))
+
+                self.bookmark = None
+            else:
+                self.bookmark = self.index
+                
+                if self.bookmark == self.COVER_INDEX:         
+                    self.cons.user.perceive("You make a mental note to examine this cover later.")
+                    self.cons.user.emit("&nD%s stares intently at the cover." %(self.cons.user.id))
+                else:
+                    self.cons.user.perceive("You dog-ear the page for later.")
+                    self.cons.user.emit("&nD%s dog-ears the page." %(self.cons.user.id))
+            
+        elif command in quit_vocab: 
+            # stop input_takeover
+            self.index = self.bookmark or self.TOC_INDEX
+            self.cons.input_redirect = None
+            self.cons.user.perceive("You put the %s away." %(self.short_desc))
+            self.cons.user.emit("&nD%s puts the %s away." %(self.cons.user.id, self.short_desc))
+            self.cons = None
+            return False
+
+        elif command.isdigit():
+            # select page by number
+            if not self.set_index(command):
+                self.cons.user.perceive("You can't find that page.")
+                return False
+
+            self.cons.user.emit("&nD%s flips through the pages of the %s with a thoughtful expression." %(self.cons.user.id, self.short_desc))
+
+        else:
+            self.cons.user.perceive("Other actions are blocked while reading; type 'quit' to exit reading mode.")
+
+        # output selected page and available commands
+        if self.index == self.COVER_INDEX:
+            self.cons.write("\nThe cover reads:", 4)
+        elif self.index == self.TOC_INDEX:
+            self.cons.write("\nTable of Contents:", 4)
+        else:
+            self.cons.write("\nPage %s:" %self.index, 4)
+
+        command_list = "Commands: (C)over  (TOC)  (N)ext  (P)revious  (B)ookmark  (Q)uit"
+        if self.index == self.bookmark:
+            command_list = command_list.replace("(B)", "<B>");
+
+        self.cons.write("%s" % self.book_pages[self.index], 8)
+        ##self.cons.user.perceive("\nYou are reading the &nd%s...\n\n" %self.id)
+        self.cons.user.perceive("%s" %command_list)
+        self.cons.user.perceive("          [Type a page number to read it.]\n\n")
+
         return True
 
     def close(self, p, cons, oDO, oIDO):
-        
-        if oDO is not self:
-            return False
-
-        if self is cons.user.reading_object:
-            cons.write("You close the %s" % cons.user.reading_object.short_desc)
-            cons.user.emit("&nD%s closes the %s" %(cons.user.id, cons.user.reading_object.short_desc))
-            cons.user.reading = False
-            cons.user.reading_object = None
-        else:
-            cons.write("It's already closed.")
+        # the book is always closed because this verb action is 
+        # unavailable while in takeover reading mode
+        cons.write("It's already closed.")
         return True
 
