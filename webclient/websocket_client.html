@@ -21,7 +21,7 @@
             font-size:15px;
         }
         b {
-            color: #000066
+            color: #0421f5
         }
         </style>
     </head>
@@ -31,7 +31,7 @@
         !-->
         <div class="messageOutput"><div>Your incoming data will appear here.</div></div>
         <form id="messageInput" width=100%>
-            <input size="80" width="100%" type="text" id="inputLine">
+            <input size="80" width="100%" type="text" id="inputLine" autocomplete="off" autofocus="autofocus">
             <input type="hidden" id="resizeValidate">
             <input type="hidden" id="width" value="720">
         </form>
@@ -44,7 +44,7 @@
                     e.preventDefault();
                 }
             }
-            var ws = new WebSocket("ws://192.168.1.16:9124/"),
+            var ws = new WebSocket("ws://192.168.1.10:9124/"),
             messages = document.getElementsByTagName('div')[0];
             ws.onopen = function (event) {
                 ws.send('PING!');
@@ -62,21 +62,32 @@
                 window.scrollTo(0,document.body.scrollHeight);
             }
             function sendLine () {
-                console.log(document.getElementById("inputLine").value);
-                var messages = document.getElementsByTagName('div')[0],
+                var user_input = document.getElementById("inputLine").value,
+                    messages = document.getElementsByTagName('div')[0],
                     message = document.createElement('div'),
                     contentBlock = document.createElement('b'),
-                    content = document.createTextNode(document.getElementById('inputLine').value);
-                ws.send(document.getElementById("inputLine").value);
+                    content = document.createTextNode("> " + user_input);
+                console.log("user: " + user_input);
+                ws.send(user_input);
                 contentBlock.appendChild(content);
                 message.appendChild(contentBlock);
                 messages.appendChild(message);
-                if (document.getElementById('inputLine').value.split(" ")[0] == 'width') {
+                if (user_input.split(" ")[0] == 'width') {
+                    /*
+                     * If user typed a width command, resize the window appropriately
+                     */
+                    var new_width_chars = user_input.split(" ")[1],
+                        char_width = 9,
+                        new_width_pixels = new_width_chars * char_width + 1
+                        new_height_pixels = 438
+                    // Set window width to new_width * char_width plus 1 pixel padding
+                    // XXX hardcoded width of characters to 9 for now, instead should
+                    // build a span of 1 character and directly measure it. Same w/ height.
                     document.getElementById('resizeValidate').value = 'true';
-                    window.resizeTo(Math.round(document.getElementById('inputLine').value.split(" ")[1]*9+30), 438);
-                    document.getElementById('width').value = Math.round(document.getElementById('inputLine').value.split(" ")[1]+30);
-                    document.getElementById('inputLine').size = document.getElementById('inputLine').value.split(" ")[1];
-                    document.title = 'Gameclient - ' + document.getElementById('inputLine').value.split(" ")[1] + ' x 24'
+                    window.resizeTo(Math.round(new_width_pixels), new_height_pixels);
+                    document.getElementById('width').value = Math.round(new_width_pixels);
+                    document.getElementById('inputLine').size = new_width_chars;
+                    document.title = 'Gameclient - ' + new_width_chars + ' x 24'
                 }
             }
             window.onresize = function(e) {
