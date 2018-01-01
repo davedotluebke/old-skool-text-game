@@ -50,27 +50,17 @@
                 ws.send('PING!');
             };
             ws.onmessage = function (event) {
-                console.log('Recived some message text!');
-                var data = '';
-                var num = 0;
-                var numlines = event.data.split("<br>").length;
-                while (num < numlines) {
-                    data = event.data.split("<br>")[num];
-                    var messages = document.getElementsByTagName('div')[0],
-                        message = document.createElement('div'),
-                        content = document.createTextNode(data);
-                    console.log('Received message from server:' + content)
-                    if (data === '#quit') {
-                        window.parent.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
-                        window.parent.getElementById('gameOpen').disabled = "";
-                        window.close();
-                    }
-                    message.appendChild(content);
-                    messages.appendChild(message);
-                    window.scrollTo(0,document.body.scrollHeight);
-                    num += 1;
+                var messages = document.getElementsByTagName('div')[0],
+                    message = document.createElement('div');
+                message.innerHTML = event.data
+                if (event.data === '#quit') {
+                    window.parent.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
+                    window.parent.getElementById('gameOpen').disabled = "";
+                    window.close();
                 }
-            };
+                messages.appendChild(message);
+                window.scrollTo(0,document.body.scrollHeight);
+            }
             function sendLine () {
                 console.log(document.getElementById("inputLine").value);
                 var messages = document.getElementsByTagName('div')[0],
