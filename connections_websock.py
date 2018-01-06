@@ -20,25 +20,19 @@ logger.addHandler(logging.StreamHandler())
 conn_to_client = {}
 
 async def ws_handler(websocket, path):
-    async for message in websocket:
-        try:
-            conn_to_client[websocket].raw_input += message
-        except KeyError:
-            cons = Console(websocket, Thing.game)
-            conn_to_client[websocket] = cons
-            # XXX temporary hack to postpone hooking up login code to Console
-            if len(conn_to_client) == 1:
-                name = 'cedric'
-            elif len(conn_to_client) == 2:
-                name = 'alex'
-            else:
-                name = 'randomplayer' + str(random.randint(10, 99))
+    try: 
+        async for message in websocket:
             try:
-                Thing.game.load_player(os.path.join(gametools.PLAYER_DIR, name), cons)
-            except gametools.PlayerLoadError:
-                Thing.game.create_new_player(name, cons)
-            #XXX temp hack ends
-    
+                conn_to_client[websocket].raw_input += message
+            except KeyError:
+                cons = Console(websocket, Thing.game)
+                conn_to_client[websocket] = cons
+                try:
+                    Thing.game.login_player(cons)
+                except gametools.PlayerLoadError:
+                    Thing.game.create_new_player(name, cons)
+    except websockets.exceptions.ConnectionClosed:
+        websocket.close()
 
 async def ws_send(cons):
     output = cons.raw_output

@@ -141,6 +141,21 @@ class Game():
             obj.id = head  
             obj._add_ID(obj.id)  # re-create original entry in ID_dict
         
+    def login_player(self, cons):
+        """Create a new player object and put it in "login state", which
+        doesn't do anything but request the username and password. If the
+        username matches a player file, ask for the password, and if they 
+        match, load that player. If this is a new username, have them create
+        a new password and verify it, then put them in the new character 
+        creation room where they will select gender, species, etc. """
+        tmp_name = "login_player%d" % random.randint(10000, 99999)
+        user = Player(tmp_name, None, cons)
+        user.set_description("formless soul", "A formless player without a name")
+        user.set_max_weight_carried(750000)
+        user.set_max_volume_carried(2000)
+        cons.user = user
+        cons.write("Please enter your username: ")
+        user.login_state = "AWAITING_USERNAME"
 
     def load_player(self, filename, cons, oldplayer=None):
         """Unpickle a single player and his/her inventory from a saved file.
@@ -214,7 +229,8 @@ class Game():
         cons.write("Restored game state from file %s" % filename)
         room.report_arrival(newplayer, silent=True)
         room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
-
+        return newplayer
+    
     def create_new_player(self, name, cons):
         user = Player(name, None, cons)
         cons.user = user
@@ -230,7 +246,7 @@ class Game():
         scroll = gametools.clone('domains.school.scroll')
         scroll.move_to(user)
         self.register_heartbeat(scroll)
-        user.set_start_loc = start_room
+        user.set_start_loc(start_room)
         user.perceive("\nWelcome to Firlefile Sorcery School!\n\n"
         "Type 'look' to examine your surroundings or an object, "
         "'inventory' to see what you are carrying, " 
@@ -284,7 +300,7 @@ class Game():
     def start_loop(self):
         print("Starting game...")
         asyncio.get_event_loop().run_until_complete(
-            websockets.serve(connections_websock.ws_handler, '192.168.1.16', 9124))
+            websockets.serve(connections_websock.ws_handler, '192.168.1.10', 9124))
         print("Listening on port 9124...")
         asyncio.get_event_loop().call_later(1,self.beat)
         asyncio.get_event_loop().run_forever()
