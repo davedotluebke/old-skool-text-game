@@ -53,7 +53,7 @@
                 var messages = document.getElementsByTagName('div')[0],
                     message = document.createElement('div');
                 message.innerHTML = event.data
-                if (event.data === '#quit') {
+                if (event.data === '#quit<br>') {
                     window.parent.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
                     window.parent.getElementById('gameOpen').disabled = "";
                     window.close();
