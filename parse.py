@@ -125,6 +125,7 @@ class Parser:
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
         if command == 'quit':
             console.game.save_player(os.path.join(gametools.PLAYER_DIR, user.names[0]), user)
+            console.write("#quit")
             return False
 
         if command == 'quit game':

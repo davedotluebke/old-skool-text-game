@@ -1,6 +1,7 @@
 import pickle
 import sys
 import importlib
+import os
 
 import gametools
 from debug import dbg
@@ -16,6 +17,7 @@ class Player(Creature):
         """Initialize the Player object and attach a console"""
         Creature.__init__(self, ID, path)
         self.cons = console
+        self.login_state = None
         self.start_loc_id = None
         self.set_weight(175/2.2)
         self.set_volume(66)
@@ -57,7 +59,6 @@ class Player(Creature):
         # all our instance attributes. Always use the dict.copy()
         # method to avoid modifying the original state.
         state = super().__getstate__()
-        state['set_start_loc'] = state['set_start_loc'].id
         del state['enemies'] #TODO: Make saving and loading of this attribute work
         # Remove the unpicklable entries.
         del state['cons']
@@ -86,16 +87,91 @@ class Player(Creature):
         self.cons = None
         Thing.game.deregister_heartbeat(self)
 
+    def _handle_login(self, cmd):
+        state = self.login_state
+        if state == 'AWAITING_USERNAME':
+            if  len(cmd.split()) != 1:
+                self.cons.write("Usernames must be a single word with no spaces.<br>"
+                                "Please enter your username:")
+                return
+            self.names[0] = cmd.split()[0]  # strips any trailing whitespace
+            filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+            try:
+                f = open(filename, 'r+b')
+                f.close()  # success, player exists, so close file for now & check password
+                self.cons.write("Welcome back, %s!<br>Please enter your password: " % self.names[0])
+                self.login_state = 'AWAITING_PASSWORD'
+            except FileNotFoundError:
+                self.cons.write("No player named "+self.names[0]+" found. "
+                            "Would you like to create a new player? (yes/no)<br>")
+                self.login_state = 'AWAITING_CREATE_CONFIRM'
+            return
+        elif state == 'AWAITING_CREATE_CONFIRM':
+            if cmd == "yes": 
+                self.cons.write("Welcome, %s!<br>Please create a password:" % self.names[0])
+                self.login_state = 'AWAITING_NEW_PASSWORD'
+                return
+            elif cmd == "no":
+                self.cons.write("Okay, please enter your username: ")
+                self.login_state = 'AWAITING_USERNAME'
+                return
+            else:
+                self.cons.write("Please answer yes or no: ")
+                return
+        elif state == 'AWAITING_NEW_PASSWORD':
+            passwd = cmd
+            # XXX ignoring for now. 
+            # TODO secure password authentication goes here
+            self.id = self._add_ID(self.names[0])            
+            self.proper_name = self.names[0].capitalize()
+            dbg.debug("Creating player id %s with default name %s" % (self.id, self.names[0]), 0)
+            start_room = gametools.load_room(gametools.START_LOC)
+            start_room.insert(self)
+            # XXX below code should be moved to the end of the 
+            # character creation room sequence when it is finished
+            scroll = gametools.clone('domains.school.scroll')
+            scroll.move_to(self)
+            self.game.register_heartbeat(scroll)
+            self.set_start_loc(start_room)
+            self.perceive("\nWelcome to Firlefile Sorcery School!\n\n"
+            "Type 'look' to examine your surroundings or an object, "
+            "'inventory' to see what you are carrying, " 
+            "'quit' to end the game, and 'help' for more information.")
+            self.login_state = None
+            return
+        elif state == 'AWAITING_PASSWORD':
+            passwd = cmd
+            # XXX ignoring for now. 
+            # TODO secure password authentication goes here
+            filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+            try:
+                newuser = self.game.load_player(filename, self.cons)
+                dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]), 0)
+                newuser.login_state = None
+                self.login_state = None
+                self.game.deregister_heartbeat(self)
+                del Thing.ID_dict[self.id]
+            except gametools.PlayerLoadError:
+                self.cons.write("Error loading data for player %s from file %s. <br>"
+                                "Please try again.<br>Please enter your username: " % (self.names[0], filename))
+                self.login_state = "AWAITING_USERNAME"
+            return
+        
     def heartbeat(self):
         cmd = self.cons.take_input()
+        if self.login_state != None:
+            if cmd != None:
+                self._handle_login(cmd)
+            return
         if cmd:
             if cmd != '__noparse__':
                 keep_going = Thing.game.parser.parse(self, self.cons, cmd)
                 if not keep_going:
                     self.move_to(Thing.ID_dict['nulspace'])
                     self.detach()
+           
 
-        if self.auto_attack:            # TODO: Player Prefrences
+        if self.auto_attack:            # TODO: Player Preferences
             if self.attacking:
                 if self.attacking == 'quit':
                     return

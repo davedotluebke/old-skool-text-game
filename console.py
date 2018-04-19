@@ -164,8 +164,6 @@ class Console:
                 else:
                     self.write("Usage: load <filename>")
                 return True
-
-            
         return False
 
     def write(self, text, indent=0):
@@ -211,5 +209,3 @@ class Console:
         # replace any aliases with their completed version
         self.final_command = self._replace_aliases()
         return self.final_command
-
-

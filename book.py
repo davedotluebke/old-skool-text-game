@@ -77,7 +77,7 @@ class Book(Thing):
                 cons.user.reading = True
             else:
                 cons.write("A problem occured!")
-            cons.user.emit("&nD%s reads from the %s." %(cons.user.id, self.s_desc))
+            cons.user.emit("&nD%s reads from the %s." %(cons.user.id, self.short_desc))
         except IndexError:
             cons.write('The book does not have a page numbered %s!' % str(self.index+1))
         return True
