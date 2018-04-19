@@ -300,7 +300,7 @@ class Game():
     def start_loop(self):
         print("Starting game...")
         asyncio.get_event_loop().run_until_complete(
-            websockets.serve(connections_websock.ws_handler, '192.168.1.10', 9124))
+            websockets.serve(connections_websock.ws_handler, '192.168.1.16', 9124))
         print("Listening on port 9124...")
         asyncio.get_event_loop().call_later(1,self.beat)
         asyncio.get_event_loop().run_forever()

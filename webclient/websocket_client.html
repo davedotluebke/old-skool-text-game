@@ -3,6 +3,10 @@
     <head>
         <title>Gameclient - 80 x 24</title>
         <style>
+        body {
+            margin: 0px;
+            margin-bottom: 19px;
+        }
         input {
             font-family:'Monaco','Consolas',monospace;
             font-size:15px;
@@ -11,7 +15,10 @@
             border-top:1px solid black;
             border-bottom:1px solid black;
             border-left:0px;
-            border-right:0px 
+            border-right:0px;
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
         }
         input:focus {
             outline-width: 0;
@@ -25,7 +32,7 @@
         }
         </style>
     </head>
-    <body style="margin:0px">
+    <body>
         <!--
         <iframe id="messageFrame" width="100%" height="70%"></iframe>
         !-->
@@ -44,7 +51,7 @@
                     e.preventDefault();
                 }
             }
-            var ws = new WebSocket("ws://192.168.1.10:9124/"),
+            var ws = new WebSocket("ws://192.168.1.16:9124/"),
             messages = document.getElementsByTagName('div')[0];
             ws.onopen = function (event) {
                 ws.send('PING!');
@@ -53,9 +60,9 @@
                 var messages = document.getElementsByTagName('div')[0],
                     message = document.createElement('div');
                 message.innerHTML = event.data
-                if (event.data === '#quit<br>') {
-                    window.parent.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
-                    window.parent.getElementById('gameOpen').disabled = "";
+                if (message.innerHTML.indexOf('#quit') > -1) {
+                    window.parent.focus();
+                    window.parent.location.reload();
                     window.close();
                 }
                 messages.appendChild(message);
@@ -86,7 +93,7 @@
                     document.getElementById('resizeValidate').value = 'true';
                     window.resizeTo(Math.round(new_width_pixels), new_height_pixels);
                     document.getElementById('width').value = Math.round(new_width_pixels);
-                    document.getElementById('inputLine').size = new_width_chars - 2;
+                    document.getElementById('inputLine').size = new_width_chars;
                     document.title = 'Gameclient - ' + new_width_chars + ' x 24'
                 }
             }
