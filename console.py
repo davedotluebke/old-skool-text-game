@@ -173,8 +173,8 @@ class Console:
         lines = str_text.splitlines()
         for l in lines: 
             wrapped = self.tw.fill(l)
-            self.raw_output += wrapped
-        self.raw_output = self.raw_output.replace('\n','<br>') + '<br>'
+            self.raw_output += wrapped + '\n'
+        self.raw_output = self.raw_output.replace('\n','<br>').replace('\t', '&nbsp&nbsp&nbsp&nbsp')
         asyncio.ensure_future(connections_websock.ws_send(self))
 
     '''
