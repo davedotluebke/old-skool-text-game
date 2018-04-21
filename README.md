@@ -10,4 +10,4 @@ The world consists of a scorcery school, where you are assigned quests with a ma
 Players play the game by typing commands such as `take the rusty sword` and `go north`. Their command is parsed and the text result is printed to their console.
 
 ## Coding
-The coding of the game is primarily in python 3, and hosts a server that players can log onto using telnet. The server is writen using twisted (twistedmatrix.com) and allows multiple players to log on and interact using asynchronous operation. 
+The coding of the game is primarily in python 3, and hosts a server that players can log onto using a web interface. The server is writen using websockets and allows multiple players to log on and interact using asynchronous operation. 
