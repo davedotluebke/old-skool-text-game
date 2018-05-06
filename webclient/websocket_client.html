@@ -6,6 +6,7 @@
         body {
             margin: 0px;
             margin-bottom: 19px;
+            overflow: hidden;
         }
         input {
             font-family:'Monaco','Consolas',monospace;
@@ -40,15 +41,34 @@
         <form id="messageInput" width=100%>
             <input size="80" width="100%" type="text" id="inputLine" autocomplete="off" autofocus="autofocus">
             <input type="hidden" id="resizeValidate">
-            <input type="hidden" id="width" value="720">
+            <input type="hidden" id="width" value="721">
         </form>
         <script>
-            document.getElementById("messageInput").onkeypress = function(e) {
+            var cmd_history = [''];
+            var current_cmd = 0;
+            document.getElementById("messageInput").onkeydown = function(e) {
                 var key = e.charCode || e.keyCode || 0;     
                 if (key == 13) {
-                    sendLine()
-                    document.getElementById("inputLine").value = ''
+                    cmd_history[cmd_history.length-1] = document.getElementById('inputLine').value;
+                    cmd_history.push('')
+                    current_cmd = cmd_history.length - 1;
+                    sendLine();
+                    document.getElementById("inputLine").value = cmd_history[current_cmd];
                     e.preventDefault();
+                }
+                if (key == 38) {
+                    if (current_cmd > 0) {
+                        cmd_history[current_cmd] = document.getElementById('inputLine').value;
+                        current_cmd--;
+                        document.getElementById('inputLine').value = cmd_history[current_cmd];
+                    }
+                }
+                if (key == 40) {
+                    if (current_cmd < cmd_history.length - 1) {
+                        cmd_history[current_cmd] = document.getElementById('inputLine').value;
+                        current_cmd ++;
+                        document.getElementById('inputLine').value = cmd_history[current_cmd]
+                    }
                 }
             }
             var ws = new WebSocket("ws://192.168.1.16:9124/"),
