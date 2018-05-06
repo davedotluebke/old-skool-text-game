@@ -46,6 +46,10 @@
         <script>
             var cmd_history = [''];
             var current_cmd = 0;
+            var mode = 0;
+            var document_style_modes = ['','background-color: #000000; color: #00ff00; cursor:none'];
+            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none'];
+            var b_style_modes = ['', 'color:#00ff00']
             document.getElementById("messageInput").onkeydown = function(e) {
                 var key = e.charCode || e.keyCode || 0;     
                 if (key == 13) {
@@ -69,6 +73,19 @@
                         current_cmd ++;
                         document.getElementById('inputLine').value = cmd_history[current_cmd]
                     }
+                }
+                if (key == 27) {
+                    mode += 1;
+                    if (mode == document_style_modes.length) {
+                        mode = 0;
+                    }
+                    document.body.style = document_style_modes[mode];
+                    document.getElementById('inputLine').style = input_style_modes[mode];
+                    var b_elements = document.getElementsByTagName('b');
+                    for (i = 0; i < b_elements.length; i++) {
+                        b_elements[i].style = b_style_modes[mode];
+                    }
+                    e.preventDefault();
                 }
             }
             var ws = new WebSocket("ws://192.168.1.16:9124/"),
@@ -94,6 +111,7 @@
                     message = document.createElement('div'),
                     contentBlock = document.createElement('b'),
                     content = document.createTextNode("> " + user_input);
+                contentBlock.style = b_style_modes[mode];
                 console.log("user: " + user_input);
                 ws.send(user_input);
                 contentBlock.appendChild(content);
