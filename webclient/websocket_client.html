@@ -31,6 +31,20 @@
         b {
             color: #0421f5
         }
+        #box_caret_el {
+            display: none;
+            position: fixed;
+            top: 371px;
+            left: 0px;
+            width: 9px;
+            height: 15px;
+        }
+        .onCaret {
+            background-color: #00ff00;
+        }
+        .offCaret {
+            background-color: #00000000
+        }
         </style>
     </head>
     <body>
@@ -39,20 +53,53 @@
         !-->
         <div class="messageOutput"><div>Your incoming data will appear here.</div></div>
         <form id="messageInput" width=100%>
-            <input size="80" width="100%" type="text" id="inputLine" autocomplete="off" autofocus="autofocus">
+            <input size="80" width="100%" type="text" id="inputLine" autocomplete="off" autofocus="autofocus" autocorrect="off" autocapitalize="off" spellcheck="false">
             <input type="hidden" id="resizeValidate">
             <input type="hidden" id="width" value="721">
         </form>
+        <span id='box_caret_el' class="onCaret"></span>
         <script>
             var cmd_history = [''];
             var current_cmd = 0;
             var mode = 0;
-            var document_style_modes = ['','background-color: #000000; color: #00ff00; cursor:none'];
-            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none'];
-            var b_style_modes = ['', 'color:#00ff00']
+            var document_style_modes = ['','background-color: #000000; color: #00ff00; cursor:none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;'];
+            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none; caret-color: black'];
+            var allow_right_clicks = [true, false];
+            var box_caret = [false, true];
+            var b_style_modes = ['', 'color:#00ff00'];
+            var left_offset = 0;
+            var caret_on = true;
+            function updateCaret() {
+                var caret = document.getElementById('box_caret_el');
+                if (caret_on) {
+                    caret.className = 'offCaret';
+                    caret_on = false;
+                    setTimeout(updateCaret, 500);
+                }
+                else {
+                    caret.className = 'onCaret';
+                    caret_on = true;
+                    setTimeout(updateCaret, 500);                
+                }
+            }
+            setTimeout(updateCaret, 500);
             document.getElementById("messageInput").onkeydown = function(e) {
-                var key = e.charCode || e.keyCode || 0;     
+                var key = e.charCode || e.keyCode || 0;
+                if (box_caret[mode]) {
+                    if (key == 8 || key == 37) {
+                        moveCursorBack(key);
+                    }
+                    else {
+                        if (!(key == 38 || key == 40)) {
+                            moveCursorForward(key);
+                        }
+                    }
+                } 
                 if (key == 13) {
+                    if (box_caret[mode]) {
+                        left_offset = 0;
+                        document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_offset}px`;
+                    }
                     cmd_history[cmd_history.length-1] = document.getElementById('inputLine').value;
                     cmd_history.push('')
                     current_cmd = cmd_history.length - 1;
@@ -85,10 +132,25 @@
                     for (i = 0; i < b_elements.length; i++) {
                         b_elements[i].style = b_style_modes[mode];
                     }
+                    if (box_caret[mode]) {
+                        document.getElementById('box_caret_el').style = 'display:block';
+                    }
+                    else {
+                        document.getElementById('box_caret_el').style = '';
+                    }
                     e.preventDefault();
                 }
             }
-            var ws = new WebSocket("ws://192.168.1.16:9124/"),
+            document.addEventListener("contextmenu", function(e){
+                if (!allow_right_clicks[mode]) {
+                    e.preventDefault();
+                }
+            }, false);
+            var ip_address = window.prompt('IP Address: ');
+            while (ip_address == null) {
+                ip_address = window.prompt('IP Address: ');
+            }
+            var ws = new WebSocket("ws://" + ip_address + ":9124/"),
             messages = document.getElementsByTagName('div')[0];
             ws.onopen = function (event) {
                 ws.send('PING!');
@@ -139,8 +201,21 @@
                 if (document.getElementById('resizeValidate').value != 'true') {
                     console.log('Fixing!')
                     window.resizeTo(document.getElementById('width').value, 438);
+                    window.scrollTo(0,document.body.scrollHeight);
                 }
                 document.getElementById('resizeValidate').value = '';
+            }
+            function moveCursorForward(key) {
+                if (!(left_offset/9 > document.getElementById('inputLine').value.length) && !((left_offset/9 == document.getElementById('inputLine').value.length) && key == 39)) {
+                    left_offset += 9;
+                    document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_offset}px`;
+                }
+            }
+            function moveCursorBack(key) {
+                if (!(left_offset == 0)) {
+                    left_offset -= 9;
+                    document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_offset}px`;
+                }
             }
         </script>
     </body>
