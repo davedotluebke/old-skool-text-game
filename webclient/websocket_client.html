@@ -9,11 +9,6 @@
             overflow: hidden;
             background: white;
         }
-        body:-webkit-full-screen {
-            width: 100%;
-            height: 100%;
-            background: white;
-        }
         input {
             font-family:'Monaco','Consolas',monospace;
             font-size:15px;
@@ -80,15 +75,13 @@
                 if (caret_on) {
                     caret.className = 'offCaret';
                     caret_on = false;
-                    setTimeout(updateCaret, 500);
                 }
                 else {
                     caret.className = 'onCaret';
                     caret_on = true;
-                    setTimeout(updateCaret, 500);                
                 }
             }
-            setTimeout(updateCaret, 500);
+            setInterval(updateCaret, 500);
             document.getElementById("messageInput").onkeydown = function(e) {
                 var key = e.charCode || e.keyCode || 0;
                 if (box_caret[mode]) {
@@ -174,40 +167,6 @@
                 window.scrollTo(0,document.body.scrollHeight);
             }
             function sendLine () {
-                if (document.getElementById('inputLine').value == 'width -fullscreen') {
-                    document.getElementById('resizeValidate').value = 'true';
-                    if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
-                        if (document.exitFullscreen) {
-                            document.exitFullscreen()
-                        }      
-                        if (document.webkitExitFullscreen) {
-                            document.webkitExitFullscreen();
-                        }
-                        if (document.mozExitFullScreen) {
-                            document.mozExitFullScreen();
-                        }
-                        if (document.msExitFullscreen) {
-                            document.msExitFullscreen();
-                        }
-                        setTimeout(prepForFullScreen, 1000);
-                    }
-                    else {
-                        if (document.body.requestFullscreen) {
-                            document.body.requestFullscreen();
-                        }
-                        if (document.body.webkitRequestFullscreen) {
-                            document.body.webkitRequestFullscreen();
-                        }
-                        if (document.body.mozRequestFullScreen) {
-                            document.body.mozRequestFullScreen();
-                        }
-                        if (document.body.msRequestFullscreen) {
-                            document.body.msRequestFullscreen();
-                        }
-                        setTimeout(prepForFullScreen, 1000); 
-                    }
-                    return;
-                }
                 var user_input = document.getElementById("inputLine").value,
                     messages = document.getElementsByTagName('div')[0],
                     message = document.createElement('div'),
@@ -230,10 +189,8 @@
                     // Set window width to new_width * char_width plus 1 pixel padding
                     // XXX hardcoded width of characters to 9 for now, instead should
                     // build a span of 1 character and directly measure it. Same w/ height.
-                    if (!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement)) {
-                        document.getElementById('resizeValidate').value = 'true';
-                        window.resizeTo(Math.round(new_width_pixels), new_height_pixels);
-                    }
+                    document.getElementById('resizeValidate').value = 'true';
+                    window.resizeTo(Math.round(new_width_pixels), new_height_pixels);
                     document.getElementById('width').value = Math.round(new_width_pixels);
                     document.getElementById('inputLine').size = new_width_chars;
                     document.title = 'Gameclient - ' + new_width_chars + ' x 24'
@@ -258,11 +215,6 @@
                     left_offset -= 9;
                     document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_offset}px`;
                 }
-            }
-            function prepForFullScreen() {
-                document.getElementById('resizeValidate').value = 'true';
-                document.getElementById('inputLine').value = 'width ' + Math.round(document.body.clientWidth/9);
-                sendLine();
             }
         </script>
     </body>
