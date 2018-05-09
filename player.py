@@ -42,7 +42,6 @@ class Player(Creature):
         self.wizardry_skill = 0
         self.wizardry_element = None
         self.attacking = False
-        self.reading = False
         self.hitpoints = 20
         self.health = 20
         self.terse = False  # True -> show short description when entering room

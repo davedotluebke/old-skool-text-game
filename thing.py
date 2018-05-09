@@ -241,7 +241,7 @@ class Thing(object):
 
     def move_to(self, dest, force_move=False):
         """Extract this object from its current location and insert into dest. 
-        Returns True if the move succeds. If the insertion fails, attempts to 
+        Returns True if the move succeeds. If the insertion fails, attempts to 
         re-insert into the original location and returns False.  
         If <force_move> is True, ignores the <fixed> attribute."""
         origin = self.location
@@ -279,10 +279,10 @@ class Thing(object):
         if self.fixed:      return self.fixed
         if self.location != cons.user: return "You aren't holding the %s!" % self.short_desc
         if self.move_to(cons.user.location):
-            cons.write("You drop the %s." % self)
-            cons.user.emit("&nD%s drops the %s." % cons.user.id, self)
+            cons.write("You drop the %s." % self.short_desc)
+            cons.user.emit("&nD%s drops the %s." % (cons.user.id, self.short_desc))
         else:
-            cons.write("You cannot drop the %s" % self)
+            cons.write("You cannot drop the %s" % self.short_desc)
         return True
 
     def look_at(self, p, cons, oDO, oIDO):  
