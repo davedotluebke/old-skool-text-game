@@ -17,21 +17,21 @@ class PlaceChooser(Thing):
 			self.written_on = " ".join(p.words[1:])
 		except IndexError:
 			return 'Did you mean to write something on the paper?'
-		cons.write('You write %s on the paper and feel a magical shift occur.' % self.written_on)
-		self.emit("&nD%s writes something on the paper, and vanishes before your eyes!" % cons.user.id, cons.user)
+		cons.write('You write "%s" on the paper and feel a magical shift occur.' % self.written_on)
+		self.emit("&nD%s writes something on the paper and vanishes before your eyes!" % cons.user.id, cons.user)
 		del self.location.exits['west']
 		try:
 			self.location.exits['west'] = self.written_on
 		except KeyError:
-			cons.write('The text on the paper morphs back into the words "woods".')
+			cons.write('The text on the paper morphs back into the word "woods".')
 			self.written_on = 'woods'
 			self.location.exits['west'] = Thing.ID_dict[self.written_on]
 		self.long_desc = 'This magical paper says "%s" on it.' % self.written_on
 		return True
 
 waterfall = Room('waterfall')
-waterfall.set_description('beutiful waterfall base', 'This is a beutiful waterfall base. From here you can stand and look at the rushing waterfall. This place makes you feel peaceful inside, and happy. You will always remember this place.')
-waterfall.add_adjectives('waterfall', 'beutiful', 'special')
+waterfall.set_description('beautiful waterfall base', 'This is a beautiful waterfall base. From here you can stand and look at the rushing waterfall. This place makes you feel peaceful inside and happy. You will always remember this place.')
+waterfall.add_adjectives('waterfall', 'beautiful', 'special')
 waterfall.add_names('place', 'base')
 waterfall.add_exit('west', 'woods')
 

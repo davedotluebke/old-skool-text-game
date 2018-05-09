@@ -9,7 +9,7 @@ def load():
 
     entryway = room.Room('entryway', roomPath)
     entryway.indoor = True
-    entryway.set_description('barren entryway', 'The dusty entryway has one chandelier hanging from the celing.')
+    entryway.set_description('barren entryway', 'The dusty entryway has one chandelier hanging from the ceiling.')
     entryway.add_exit('east', 'domains.school.forest.woods')
     entryway.add_exit('southwest', 'domains.school.forest.kitchen')
     entryway.add_exit('south', 'domains.school.forest.hallway')

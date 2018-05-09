@@ -23,7 +23,7 @@ class Gem(Thing):
 
 class Emerald(Gem):
     def __init__(self, path, default_name, short_desc, long_desc, power_num=10, pref_id=None):
-        super().__init__(path, default_name, short_desc, long_desc+' It is about %s milimeters in all dimensions.' % power_num, power_num, pref_id)
+        super().__init__(path, default_name, short_desc, long_desc+' It is about %s millimeters in all dimensions.' % power_num, power_num, pref_id)
         self.add_names('emerald')
         self.actions.append(Action(self.move_power, ['power'], True, False))
     
@@ -36,7 +36,7 @@ class Emerald(Gem):
 
     def adjust_description(self):
         (head, sep, tail) = self.long_desc.partition(' It is about')
-        self.long_desc = head + ' It is about %s milimeters in all dimensions.' % self.power_num
+        self.long_desc = head + ' It is about %s millimeters in all dimensions.' % self.power_num
         if self.power_num <= 0:
             self.emit('The emerald shrinks and vanishes!')
             self.move_to(Thing.ID_dict['nulspace'])
@@ -67,7 +67,7 @@ class Emerald(Gem):
 
 class Jade(Gem):
     def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
-        super().__init__(path, default_name, short_desc, long_desc+' It seems as almost as if it were somewhere else.', power_num, pref_id)
+        super().__init__(path, default_name, short_desc, long_desc+' It seems almost as if it were somewhere else.', power_num, pref_id)
         self.add_names('jade')
         Thing.game.register_heartbeat(self)
 
@@ -117,7 +117,7 @@ class Ruby(Gem):
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
         (head, sep, tail) = self.long_desc.partition(' It ')
         if self.power_num >= 10:
-            self.long_desc = head + ' It is briliantly glowing red.'
+            self.long_desc = head + ' It is brilliantly glowing red.'
             self.light = 2
         elif self.power_num >= 5:
             self.long_desc = head + ' It is brightly glowing red.'
@@ -145,7 +145,7 @@ class Diamond(Gem):
                     self.user = self.location
                     self.hiding_user = True
                     self.user.cons.write("You notice yourself fading. ")
-                    self.user.emit("&nD%s suddenly dissapears!" % self.user.id, ignore=[self.user])
+                    self.user.emit("&nD%s suddenly disappears!" % self.user.id, ignore=[self.user])
         else:
             if self.hiding_user:
                 self.user.invisible = False
@@ -168,7 +168,7 @@ class Opal(Gem):
             self.long_desc = head + ' It is a swirl of colors, spinning and pulling the light into it.'
             self.light = -1
         elif self.power_num >= 2:
-            self.long_desc = head + ' It seems like the surrouning light is going behind the swirl, trapped.'
+            self.long_desc = head + ' It seems like the surrounding light is going behind the swirl, trapped.'
             self.light = 0
         else:
             self.long_desc = head + ' It is a swirl of colors that seem to draw light inside it.'

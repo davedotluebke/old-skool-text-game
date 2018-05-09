@@ -13,8 +13,8 @@ def load():
     
     rake = scenery.Scenery("rake","broken rake", "This rake looks like it broke a long time ago.")
     rake.add_adjectives("broken")
-    rake.add_response(["get","take"], "When you lean down to take it one of the tines pokes you in the eye. Ow! ", emit_message='%s reaches to take the rake, and stops.')
-    rake.add_response(["rake", "use"],"You can not reach the handle.")
+    rake.add_response(["get","take"], "When you lean down to take it, one of the tines pokes you in the eye. Ow! ", emit_message='%s reaches to take the rake and stops.')
+    rake.add_response(["rake", "use"],"You cannot reach the handle.")
     shack.insert(rake)
 
     return shack

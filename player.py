@@ -218,6 +218,19 @@ class Player(Creature):
                      if O has been introduced, else 'A' or 'An' + O.short_desc
             &nn<id>: 'name-no-article': replace with O.proper_name if O has 
                      been introduced, else O.short_desc with no article.
+
+            &s<id>:  'species': replace with species name (`O.species`)
+            &S<id>:  'species-capitalized': replace with capitalized species
+                     name (`O.species.upper()`)
+
+            &p<id>:  'pronoun': replace with 'he', 'she', or 'it'
+            &P<id>:  'pronoun-capitalized': replace with 'He', 'She', or 'It'
+
+            &v<id>:  'possessive': replace with 'his', 'her', or 'its'
+            &V<id>:  'possessive-capitalized': replace with 'His', 'Her', 'Its'      
+
+            &u:      'user-id': replace with the user id of the perceiver, to
+                     be used as the <id> part of the above tags.
         
         In general, a creature mentioned 'by name' in the message probably will 
         get a custom message and shouldn't get the default 'perceive' message.  
@@ -228,6 +241,12 @@ class Player(Creature):
         if not self.location.is_dark():
             # replace any & tags in the message 
             while True:
+                # first, replace any occurrence of '&u' with the user's ID
+                (m1, sep, m2) = message.partition('&u')  
+                if not sep:    # partition() sets sep to '' if '&u' not found
+                    break
+                message = m1 + self.id + m2
+            while True:
                 (m1, sep, m2) = message.partition('&')  
                 if not sep:    # partition() sets sep to '' if '&' not found
                     break
@@ -235,12 +254,13 @@ class Player(Creature):
                 subject = ""
                 O = None
                 try:
-                    tag_type = tag[0:2]
-                    idstr = tag[2:]
+                    tag_type = tag[0:1]
+                    idstr = tag[1:]
+                    if tag_type in ('n', 'N'):  # some tag types use 2 letters
+                        tag_type = tag[0:2]
+                        idstr = tag[2:]
                     idstr = idstr.rstrip('.,!?;:\'"')  # remove any punctuation
                     O = Thing.ID_dict[idstr]
-                    if O == self: 
-                        return      # ignore messages that mention self by name
                 except IndexError:
                     subject = "<error: can't parse tag &%s>" % tag
                 except KeyError:
@@ -248,14 +268,29 @@ class Player(Creature):
                 if tag_type[0] == 'n':
                     if O == None:
                         subject = '[Error: no object matching idstr %s]' % idstr
+                    if O == self: 
+                        return      # ignore messages that mention self by name
                     else:
                         subject = O.get_short_desc(self)
                         if tag_type[1] in ('d','D'):
                             subject = O.get_short_desc(self, definite=True)
                         if tag_type[1] in ('i','I'):
                             subject = O.get_short_desc(self, indefinite=True)
-                        if tag_type[1] in ('N','D','I'):
-                            subject = subject[0].upper() + subject[1:]  # capitalize
+                        if tag_type[1] in ('N','D','I', 'R'):
+                            subject = subject.capitalize()
+                if tag_type[0] == 's':
+                    subject = O.species
+                if tag_type[0] == 'S':
+                    subject = O.species.capitalize()
+                if tag_type[0] == 'p':
+                    subject = O.pronoun()
+                if tag_type[0] == 'P':
+                    subject = O.pronoun().capitalize()
+                if tag_type[0] == 'v': 
+                    subject = O.possessive()
+                if tag_type[0] == 'V':
+                    subject = O.possessive().capitalize()
+                
                 m2 = subject + m2.partition(tag)[2]
                 message = m1 + m2
 

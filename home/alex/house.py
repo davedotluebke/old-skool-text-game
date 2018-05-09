@@ -82,16 +82,13 @@ bedroom = Room('bedroom', pref_id='br31795')
 magic_room = Room('magical room', pref_id='mr31795')
 
 bathroom.set_description('modern bathroom', 'This small bathroom has a bathtub, a shower, and a sink.')
-bedroom.set_description('normal bedroom', 'This bedroom is small but nice. There are bookshelves on the walls and a great big window overlooking Firlefile sorcery school. ')
 magic_room.set_description('magical room', 'This room has a lot of magical supplies. It also has a door on the west side of the room with a piece of paper above it.')
 
 bathroom.add_exit('east', living_room.id)
-bedroom.add_exit('down', living_room.id)
 magic_room.add_exit('north', living_room.id)
 magic_room.add_exit('west', 'woods')
 
 bathroom.add_adjectives('modern')
-bedroom.add_adjectives('small', 'comfortable')
 magic_room.add_names('room')
 magic_room.add_adjectives('magic', 'magical')
 
