@@ -174,7 +174,7 @@
                     content = document.createTextNode("> " + user_input);
                 contentBlock.style = b_style_modes[mode];
                 console.log("user: " + user_input);
-                ws.send(user_input);
+                ws.send(user_input + '\n');
                 contentBlock.appendChild(content);
                 message.appendChild(contentBlock);
                 messages.appendChild(message);
