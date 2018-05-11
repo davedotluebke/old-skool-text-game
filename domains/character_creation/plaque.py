@@ -41,6 +41,7 @@ class Plaque(thing.Thing):
         self.mirror = mirror
         self.number = number
         self.actions.append(action.Action(self.intone, ['intone', 'acquire'], True, False))
+        self.actions.append(action.Action(self.look_at, ['read'], True, False))
 
     def look_at(self, p, cons, oDO, oIDO):
         words_on_plaque = ''

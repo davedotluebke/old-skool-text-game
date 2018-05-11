@@ -26,6 +26,12 @@ class Mirror(thing.Thing):
 
     def enter(self, p, cons, oDO, oIDO):
         dest = gametools.load_room(self.dest)
+        if self.dest == gametools.DEFAULT_START_LOC:
+            scroll = gametools.clone('domains.school.scroll')
+            scroll.move_to(cons.user)
+            thing.Thing.game.register_heartbeat(scroll)
+            cons.user.set_start_loc(dest)
+
         if cons.user.move_to(dest) == False:
             return "Error! You attempt to enter the mirror but encounter a glitch in the space-time continuum. Please report an error."
 
