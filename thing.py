@@ -109,8 +109,6 @@ class Thing(object):
             self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet? 
         if self.contents != None:
             self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
-        if hasattr(self, 'set_start_loc'):
-            self.set_start_loc = gametools.load_room(self.set_start_loc)
 
     def _change_objs_to_IDs(self):
         """Replace object references with ID strings, in preparation for pickling."""
@@ -179,6 +177,24 @@ class Thing(object):
             article = ""
         return article + self.short_desc
 
+    def possessive(self):
+        """Return 'his', 'her', or 'its' as appropriate."""
+        if hasattr(self, 'gender'):
+            if self.gender == 'male': 
+                return 'his'
+            elif self.gender == 'female':
+                return 'her'
+        return 'its'  
+
+    def pronoun(self):
+        """Return 'he', 'she', or 'it' as appropriate."""
+        if hasattr(self, 'gender'):
+            if self.gender == 'male': 
+                return 'he'
+            elif self.gender == 'female':
+                return 'she'
+        return 'it'
+
 #    def conjugate(self, verb_infinitive, cons):
 #        for i in self.conjugations:
 #            if hasattr(i, 'cons'):
@@ -195,7 +211,14 @@ class Thing(object):
 
     def emit(self, message, ignore = []):
         """Write a message to be seen by creatures holding this Thing or in the same  
-        room, skipping creatures in the list <ignore>."""
+        room, skipping creatures in the list <ignore>.  See Player.perceive() for a 
+        list of "perceive semantics" that can be used in emitted messages, for example
+        to specify the species, gender, or proper name of a creature.  
+
+        To avoid printing a message to certain players (for example if that player
+        should receive a custom message), include them in the ignore[] list. Note that
+        `Player.perceive()` will skip printing the message to any Player explicitly  
+        named in the message using the &n tag. """
         if hasattr(self, 'invisible') and self.invisible == True:
             return
         # pass message to containing object, if it can receive messages
@@ -218,7 +241,7 @@ class Thing(object):
 
     def move_to(self, dest, force_move=False):
         """Extract this object from its current location and insert into dest. 
-        Returns True if the move succeds. If the insertion fails, attempts to 
+        Returns True if the move succeeds. If the insertion fails, attempts to 
         re-insert into the original location and returns False.  
         If <force_move> is True, ignores the <fixed> attribute."""
         origin = self.location
@@ -232,12 +255,12 @@ class Thing(object):
             origin.extract(self)
         # if cannot insert into destination, return to where it came from
         # (dest.insert returns True if insertion fails)
-        if not dest.insert(self, force_insert=force_move):  
-            return True
-        else:
+        if dest == None or dest.insert(self, force_insert=force_move):
             if (origin):
                 origin.insert(self, force_insert=True)
             return False
+        else:
+            return True
 
     def take(self, p, cons, oDO, oIDO):
         if oDO == None: return "I don't know what you're trying to take!"
@@ -256,10 +279,10 @@ class Thing(object):
         if self.fixed:      return self.fixed
         if self.location != cons.user: return "You aren't holding the %s!" % self.short_desc
         if self.move_to(cons.user.location):
-            cons.write("You drop the %s." % self)
-            cons.user.emit("&nD%s drops the %s." % cons.user.id, self)
+            cons.write("You drop the %s." % self.short_desc)
+            cons.user.emit("&nD%s drops the %s." % (cons.user.id, self.short_desc))
         else:
-            cons.write("You cannot drop the %s" % self)
+            cons.write("You cannot drop the %s" % self.short_desc)
         return True
 
     def look_at(self, p, cons, oDO, oIDO):  

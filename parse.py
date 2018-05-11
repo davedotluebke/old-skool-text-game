@@ -125,6 +125,7 @@ class Parser:
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
         if command == 'quit':
             console.game.save_player(os.path.join(gametools.PLAYER_DIR, user.names[0]), user)
+            console.write("#quit")
             return False
 
         if command == 'quit game':
@@ -132,10 +133,7 @@ class Parser:
         
         self.words = command.split()
         if len(self.words) == 0:
-            if user.reading == True:
-                self.words = ["read", "next", "page"]
-            else:
-                return True
+            return True
 
         if self.words[0] == 'verbose':
             try:
@@ -207,7 +205,7 @@ class Parser:
             oIDO = self._find_matching_objects(sIDO, possible_objects, console)
         if oDO == False or oIDO == False: 
             return True     # ambiguous user input; >1 object matched 
-         
+
         # If direct or indirect object supports the verb, try first in that order
         initial_actions = []
         for o in (oDO, oIDO):

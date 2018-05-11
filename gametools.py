@@ -6,6 +6,8 @@ from debug import dbg
 gameroot = os.path.dirname(__file__) 
 
 PLAYER_DIR = os.path.join(gameroot, "saved_players")
+NEW_PLAYER_START_LOC = 'domains.character_creation.start_loc'
+DEFAULT_START_LOC = 'domains.school.school.great_hall'
 
 class PlayerSaveError(Exception):
     pass
@@ -64,3 +66,6 @@ def findGamePath(filepath):
     (head, sep, tail) = gamePath.partition(".py")
     gamePath = head
     return gamePath
+
+def request_all_inputs(player, dest):
+    Thing.ID_dict[player].cons.request_input(dest)

@@ -1,3 +1,5 @@
+import asyncio
+import connections_websock
 from textwrap import TextWrapper
 
 from debug import dbg
@@ -5,7 +7,7 @@ from parse import Parser
 from player import Player
 
 class Console:
-    default_width = 75
+    default_width = 80
     prompt = "--> "
     help_msg = """Your goal is to explore the world around you, solve puzzles,
                fight monsters, complete quests, and eventually become a
@@ -32,9 +34,11 @@ class Console:
         self.game = game
         self.user = None
         self.username = None
-        self.raw_input = b''
+        self.raw_input = ''
+        self.raw_output = ''
         self.change_players = False
         self.connection = net_conn
+        self.input_redirect = None
         self.width = Console.default_width
         self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = True, tabsize = 4) 
         self.alias_map = {'n':       'go north',
@@ -56,7 +60,7 @@ class Console:
     def detach(self, user):
         if self.user == user:
             self.user = None
-        self.connection.transport.write(b'Press Enter to continue . . . ')
+        self.connection.send(b'Press Enter to continue . . . ')
 
     def set_width(self, w):
         self.width = w
@@ -134,6 +138,14 @@ class Console:
                 self.game.handle_exceptions = not self.game.handle_exceptions
                 self.write("Toggle debug exception handling to %s" % ("on" if self.game.handle_exceptions else "off"))
                 return True
+
+            if cmd == "escape":
+                if self.input_redirect != None:
+                    self.input_redirect = None
+                    self.write("Successfully escaped from the redirect. ")
+                else:
+                    self.write("You cannot escape from a redirect, as there is none.")
+                return True
             
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
@@ -161,8 +173,6 @@ class Console:
                 else:
                     self.write("Usage: load <filename>")
                 return True
-
-            
         return False
 
     def write(self, text, indent=0):
@@ -172,9 +182,9 @@ class Console:
         lines = str_text.splitlines()
         for l in lines: 
             wrapped = self.tw.fill(l)
-            wrapped_lines = wrapped.splitlines()
-            for wl in wrapped_lines:
-                self.connection.sendLine(bytes(wl, "utf-8"))
+            self.raw_output += wrapped + '\n'
+        self.raw_output = self.raw_output.replace('\n','<br>').replace('\t', '&nbsp&nbsp&nbsp&nbsp')
+        asyncio.ensure_future(connections_websock.ws_send(self))
 
     '''
     def new_user(self):
@@ -195,18 +205,26 @@ class Console:
         self.set_user(new_user)
         self.game.user = new_user
     '''
+    def request_input(self, dest):
+        self.input_redirect = dest
+        dbg.debug("Input from console %s given to %s!" % (self, dest))
 
     def take_input(self):
-        if (self.raw_input == b''):
+        if (self.raw_input == ''):
             return None
-        self.command = str(self.raw_input, "utf-8")
-        self.raw_input = b''
+        (self.command, sep, self.raw_input) = self.raw_input.partition('\n')
         self.words = self.command.split()
         # if user types a console command, handle it and start over unless the player that called this is deactive
         internal = self._handle_console_commands()
         if internal:
             return "__noparse__"
+        if self.input_redirect != None:
+            try:
+                self.input_redirect.console_recv(self.command)
+                return "__noparse__"
+            except AttributeError:
+                dbg.debug('Error! Input redirect is not valid!')
+                self.input_redirect = None
         # replace any aliases with their completed version
         self.final_command = self._replace_aliases()
         return self.final_command
-

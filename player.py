@@ -1,6 +1,7 @@
 import pickle
 import sys
 import importlib
+import os
 
 import gametools
 from debug import dbg
@@ -16,6 +17,7 @@ class Player(Creature):
         """Initialize the Player object and attach a console"""
         Creature.__init__(self, ID, path)
         self.cons = console
+        self.login_state = None
         self.start_loc_id = None
         self.set_weight(175/2.2)
         self.set_volume(66)
@@ -40,9 +42,12 @@ class Player(Creature):
         self.wizardry_skill = 0
         self.wizardry_element = None
         self.attacking = False
-        self.reading = False
         self.hitpoints = 20
         self.health = 20
+        self.species = None
+        self.gender = None
+        self.adj1 = None
+        self.adj2 = None
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
 
@@ -57,7 +62,6 @@ class Player(Creature):
         # all our instance attributes. Always use the dict.copy()
         # method to avoid modifying the original state.
         state = super().__getstate__()
-        state['set_start_loc'] = state['set_start_loc'].id
         del state['enemies'] #TODO: Make saving and loading of this attribute work
         # Remove the unpicklable entries.
         del state['cons']
@@ -86,16 +90,85 @@ class Player(Creature):
         self.cons = None
         Thing.game.deregister_heartbeat(self)
 
+    def _handle_login(self, cmd):
+        state = self.login_state
+        if state == 'AWAITING_USERNAME':
+            if  len(cmd.split()) != 1:
+                self.cons.write("Usernames must be a single word with no spaces.<br>"
+                                "Please enter your username:")
+                return
+            self.names[0] = cmd.split()[0]  # strips any trailing whitespace
+            filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+            try:
+                f = open(filename, 'r+b')
+                f.close()  # success, player exists, so close file for now & check password
+                self.cons.write("Welcome back, %s!<br>Please enter your password: " % self.names[0])
+                self.login_state = 'AWAITING_PASSWORD'
+            except FileNotFoundError:
+                self.cons.write("No player named "+self.names[0]+" found. "
+                            "Would you like to create a new player? (yes/no)<br>")
+                self.login_state = 'AWAITING_CREATE_CONFIRM'
+            return
+        elif state == 'AWAITING_CREATE_CONFIRM':
+            if cmd == "yes": 
+                self.cons.write("Welcome, %s!<br>Please create a password:" % self.names[0])
+                self.login_state = 'AWAITING_NEW_PASSWORD'
+                return
+            elif cmd == "no":
+                self.cons.write("Okay, please enter your username: ")
+                self.login_state = 'AWAITING_USERNAME'
+                return
+            else:
+                self.cons.write("Please answer yes or no: ")
+                return
+        elif state == 'AWAITING_NEW_PASSWORD':
+            passwd = cmd
+            # XXX ignoring for now. 
+            # TODO secure password authentication goes here
+            self.id = self._add_ID(self.names[0])            
+            self.proper_name = self.names[0].capitalize()
+            dbg.debug("Creating player id %s with default name %s" % (self.id, self.names[0]), 0)
+            start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
+            start_room.insert(self)
+            self.perceive("\nWelcome to Firlefile Sorcery School!\n\n"
+            "Type 'look' to examine your surroundings or an object, "
+            "'inventory' to see what you are carrying, " 
+            "'quit' to end the game, and 'help' for more information.")
+            self.login_state = None
+            return
+        elif state == 'AWAITING_PASSWORD':
+            passwd = cmd
+            # XXX ignoring for now. 
+            # TODO secure password authentication goes here
+            filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+            try:
+                newuser = self.game.load_player(filename, self.cons)
+                dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]), 0)
+                newuser.login_state = None
+                self.login_state = None
+                self.game.deregister_heartbeat(self)
+                del Thing.ID_dict[self.id]
+            except gametools.PlayerLoadError:
+                self.cons.write("Error loading data for player %s from file %s. <br>"
+                                "Please try again.<br>Please enter your username: " % (self.names[0], filename))
+                self.login_state = "AWAITING_USERNAME"
+            return
+        
     def heartbeat(self):
         cmd = self.cons.take_input()
+        if self.login_state != None:
+            if cmd != None:
+                self._handle_login(cmd)
+            return
         if cmd:
             if cmd != '__noparse__':
                 keep_going = Thing.game.parser.parse(self, self.cons, cmd)
                 if not keep_going:
                     self.move_to(Thing.ID_dict['nulspace'])
                     self.detach()
+           
 
-        if self.auto_attack:            # TODO: Player Prefrences
+        if self.auto_attack:            # TODO: Player Preferences
             if self.attacking:
                 if self.attacking == 'quit':
                     return
@@ -142,6 +215,19 @@ class Player(Creature):
                      if O has been introduced, else 'A' or 'An' + O.short_desc
             &nn<id>: 'name-no-article': replace with O.proper_name if O has 
                      been introduced, else O.short_desc with no article.
+
+            &s<id>:  'species': replace with species name (`O.species`)
+            &S<id>:  'species-capitalized': replace with capitalized species
+                     name (`O.species.upper()`)
+
+            &p<id>:  'pronoun': replace with 'he', 'she', or 'it'
+            &P<id>:  'pronoun-capitalized': replace with 'He', 'She', or 'It'
+
+            &v<id>:  'possessive': replace with 'his', 'her', or 'its'
+            &V<id>:  'possessive-capitalized': replace with 'His', 'Her', 'Its'      
+
+            &u:      'user-id': replace with the user id of the perceiver, to
+                     be used as the <id> part of the above tags.
         
         In general, a creature mentioned 'by name' in the message probably will 
         get a custom message and shouldn't get the default 'perceive' message.  
@@ -188,11 +274,20 @@ class Player(Creature):
                         if tag_type[1] in ('i','I'):
                             subject = O.get_short_desc(self, indefinite=True)
                         if tag_type[1] in ('N','D','I', 'R'):
-                            subject = subject[0].upper() + subject[1:]  # capitalize
+                            subject = subject.capitalize()
                 if tag_type[0] == 's':
                     subject = O.species
                 if tag_type[0] == 'S':
-                    subject = O.species[0].upper() + O.species[1:]
+                    subject = O.species.capitalize()
+                if tag_type[0] == 'p':
+                    subject = O.pronoun()
+                if tag_type[0] == 'P':
+                    subject = O.pronoun().capitalize()
+                if tag_type[0] == 'v': 
+                    subject = O.possessive()
+                if tag_type[0] == 'V':
+                    subject = O.possessive().capitalize()
+                
                 m2 = subject + m2.partition(tag)[2]
                 message = m1 + m2
 

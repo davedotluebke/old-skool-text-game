@@ -3,7 +3,7 @@
     "configurations": [
 
         {
-            "name": "Integrated Terminal/Console",
+            "name": "Webserving Game",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
@@ -17,37 +17,6 @@
                 "WaitOnAbnormalExit",
             ]
         },
-        {
-            "name": "Test testing.py",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/testing.py",
-            "cwd": "",
-            "console": "integratedTerminal",
-            "env": {},
-            "envFile": "${workspaceRoot}/.env",
-            "debugOptions": [
-                "WaitOnAbnormalExit"
-            ]
-        },
-        {
-            "name": "Test websock.py",
-            "type": "python",
-            "request": "launch",
-            "stopOnEntry": false,
-            "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/test/websock.py",
-            "cwd": "",
-            "console": "integratedTerminal",
-            "env": {},
-            "envFile": "${workspaceRoot}/.env",
-            "debugOptions": [
-                "WaitOnAbnormalExit",
-                "WaitOnNormalExit"
-            ]
-        },        
         {
             "name": "Python",
             "type": "python",
