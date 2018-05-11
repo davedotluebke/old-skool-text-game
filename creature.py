@@ -29,6 +29,7 @@ class Creature(Container):
         self.invisible = False
         self.introduced = set()
         self.proper_name = default_name.capitalize()
+        self.dead = False
 
     def set_default_weapon(self, name, damage, accuracy, unwieldiness):
         self.default_weapon = Weapon(name, damage, accuracy, unwieldiness)
@@ -118,17 +119,17 @@ class Creature(Container):
         if random.randint(1, 100) <= chance_of_hitting:
             d = self.weapon_wielding.damage
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
-            enemy.take_damage(damage_done)
-            self.emit('&nd%s attacks &n%s with its %s!' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
+            self.emit('&nD%s attacks &nd%s with its %s!' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
             self.perceive('You attack &nd%s with your %s!' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nd%s attacks you with its %s' % (self, self.weapon_wielding))
+            enemy.perceive('&nD%s attacks you with its %s!' % (self, self.weapon_wielding))
+            enemy.take_damage(damage_done)
             #TODO: Proper names and introductions: The monster attacks you with its sword, Cedric attacks you with his sword, Madiline attacks you with her sword.
-            if self not in enemy.enemies:
-                enemy.enemies.append(self)
         else:
-            self.emit('&nd%s attacks &nd%s with its %s, but misses.' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
+            self.emit('&nD%s attacks &nd%s with its %s, but misses.' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
             self.perceive('You attack &nd%s with your %s, but miss.' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nD%s attacks you, but misses with its %s.' % (self, self.weapon_wielding))
+            enemy.perceive('&nD%s attacks you with its %s, but misses.' % (self, self.weapon_wielding))
+        if self not in enemy.enemies:
+            enemy.enemies.append(self)
 
     def attack_freq(self):
         try:
@@ -139,21 +140,15 @@ class Creature(Container):
     def die(self, message=None):
         #What to do when 0 health
         self.emit("&nD%s dies!" % self.id, [self])
-        corpse = Container("corpse of &ni%s" % (self.id), None)
-        corpse.add_names("corpse")
-        corpse.set_description('corpse of a %s' % (self.short_desc), 'This is the foul-smelling corpse of a %s. It looks nasty.' % (self.short_desc))
-        corpse.set_weight(self.weight)
-        corpse.set_volume(self.volume)
-        corpse.set_max_weight_carried(self.max_weight_carried)
-        corpse.set_max_volume_carried(self.max_volume_carried)
-        corpse.add_names('corpse')
+        corpse = gametools.clone('corpse', self)
         self.location.insert(corpse)
         for i in self.contents:
             i.move_to(corpse)
         if hasattr(self, 'cons'):
-            self.move_to(Thing.ID_dict[self.start_loc if self.start_loc else 'domains.school.school.great_hall'])     #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+            self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))     #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
         else:
             self.move_to(Thing.ID_dict['nulspace'])
+            self.dead = True
         if message:
             self.emit(message)
 
@@ -173,6 +168,11 @@ class Creature(Container):
         if self.aggressive == 2 and not attacking:
             attacking = random.choice(targets)
             self.enemies.append(attacking)
+        
+        if attacking == None:
+            dbg.debug("%s didn't have anyone to attack!" % self.id, 0)
+            return
+        
         dbg.debug("%s: attacking %s" % (self.id, attacking))
         self.attacking = attacking
         # Figured out who to attack, wield any weapons/armor
@@ -209,6 +209,8 @@ class NPC(Creature):
         self.forbidden_rooms.append(r)
 
     def heartbeat(self):
+        if self.dead:
+            return
         self.act_soon += 1
         if self.act_soon >= self.act_frequency or (set(self.enemies) and set(self.location.contents)) or self.attacking:
             acting = False
