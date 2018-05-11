@@ -44,6 +44,10 @@ class Player(Creature):
         self.attacking = False
         self.hitpoints = 20
         self.health = 20
+        self.species = None
+        self.gender = None
+        self.adj1 = None
+        self.adj2 = None
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
 

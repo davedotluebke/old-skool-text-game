@@ -8,7 +8,7 @@ def load():
 
     great_hall = room.Room('great hall', safe=True, pref_id=roomPath)
     great_hall.indoor = True
-    great_hall.set_description('Great Hall', 'This is the biggest room in the entire school, '
+    great_hall.set_description('Great Hall', 'You stand in the biggest room in the entire school, '
         'and it is enormous. It is made of ancient stones. A giant banquet table fills the room. '
         'To the north there stands a huge fireplace, the logs in it burning slowly. '
         'To the east a grand staircase rises to an elevated landing.')
