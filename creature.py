@@ -93,7 +93,7 @@ class Creature(Container):
     def take_damage(self, damage):
         self.health -= damage
         if self.health <= 0:
-            self.die('default message')
+            self.die('&nD%s dies!' % self.id)
 
     def weapon_and_armor_grab(self):
         if not self.weapon_wielding or self.weapon_wielding == self.default_weapon:
@@ -110,6 +110,22 @@ class Creature(Container):
                     dbg.debug("armor chosen: %s" % self.armor_worn)
                     self.visible_inventory.append(self.armor_worn)
                     break
+    
+    def get_damage_message(self, percent_damage):
+        if percent_damage <= 0.0:
+            message = 'but inflicting no damage'
+        elif percent_damage <= 0.1:
+            message = 'making a small cut'
+        elif percent_damage <= 0.2:
+            message = 'doing minor damage'
+        elif percent_damage <= 0.4:
+            message = 'inflicting a terrible wound'
+        elif percent_damage <= 0.6:
+            message = 'landing a devistating blow'
+        else:
+            message = 'with unimaginable force'
+        return message
+
 
     def attack(self, enemy):
         if (self == enemy):
@@ -119,9 +135,11 @@ class Creature(Container):
         if random.randint(1, 100) <= chance_of_hitting:
             d = self.weapon_wielding.damage
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
-            self.emit('&nD%s attacks &nd%s with its %s!' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
-            self.perceive('You attack &nd%s with your %s!' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nD%s attacks you with its %s!' % (self, self.weapon_wielding))
+            percent_damage = damage_done/enemy.hitpoints
+            message = self.get_damage_message(percent_damage)
+            self.emit('&nD%s attacks &nd%s with its %s, %s!' % (self, enemy, self.weapon_wielding, message), ignore=[self, enemy])
+            self.perceive('You attack &nd%s with your %s, %s!' % (enemy, self.weapon_wielding, message))
+            enemy.perceive('&nD%s attacks you with its %s, %s!' % (self, self.weapon_wielding, message))
             enemy.take_damage(damage_done)
             #TODO: Proper names and introductions: The monster attacks you with its sword, Cedric attacks you with his sword, Madiline attacks you with her sword.
         else:
