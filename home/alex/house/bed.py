@@ -1,11 +1,13 @@
 from container import Container
 from thing import Thing
+import gametools
+import action
 
 class Bed(Container):
 	def __init__(self, default_name, path, dreamland):
 		super().__init__(default_name, path)
-		self.actions.append(Action(self.lay, ["lay", "sleep"], True, True))
-		self.actions.append(Action(self.stand, ['stand'], True, True))
+		self.actions.append(action.Action(self.lay, ["lay", "sleep"], True, True))
+		self.actions.append(action.Action(self.stand, ['stand'], True, True))
 		self.closable = False
 		self.fix_in_place('Moving the bed would require a lot of effort.')
 		self.set_prepositions('on', 'onto', 'atop')
@@ -18,7 +20,7 @@ class Bed(Container):
 			cons.write('You lie down on the bed and fall fast asleep.')
 			self.emit('&nD%s lies down on the bed and falls asleep.' % cons.user.id)
 			cons.user.move_to(gametools.load_room(self.dreamland))
-			Thing.game.events.schedule(5, self.wake_up, cons)
+			Thing.game.events.schedule(30, self.wake_up, cons)
 			return True
 		if sV == 'lay' and sIDO == 'bed':
 			cons.user.move_to(self)
@@ -41,6 +43,6 @@ class Bed(Container):
 		return 'Did you intend to stand up?'
 
 def clone():
-    bed = Bed('bed', __file__)
+    bed = Bed('bed', __file__, 'domains.school.school.forest3')
     bed.set_description('soft, comfortable bed', 'This bed is soft and comfortable. It has white sheets on it.')
     return bed
