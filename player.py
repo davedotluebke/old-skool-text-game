@@ -39,6 +39,7 @@ class Player(Creature):
         self.dexterity = 60
         self.attack_now = 0
         self.auto_attack = True
+        self.engaged = False
         self.wizardry_skill = 0
         self.wizardry_element = None
         self.attacking = False
@@ -180,7 +181,13 @@ class Player(Creature):
                     self.cons.write('You attack your enemy %s.' % i.short_desc)
                     self.attacking = i
                     self.attack_enemy(i)
-            
+        elif self.engaged:
+            if self.attacking:
+                if self.attacking == 'quit':
+                    return
+                else:
+                    self.attack_enemy(self.attacking)
+                    return
 
     def die(self, message):
         Creature.die(self, message)
@@ -482,12 +489,15 @@ class Player(Creature):
             return "Who do you intend to engage in combat?"
         self.attacking = oDO
         self.weapon_and_armor_grab()
+        self.engaged = True
+        self.perceive('You begin attacking &nd%s' % oDO)
         return True
 
     def disengage(self, p, cons, oDO, oIDO):        #TODO: Finish up.
         if cons.user != self:
             return "I don't quite get what you mean."
         self.attacking = 'quit'
+        self.engaged = False
         return True
 
     def attack_enemy(self, enemy):

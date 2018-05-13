@@ -185,7 +185,7 @@ class Book(Thing):
 
         command_list = "Commands: (C)over  (TOC)  (N)ext  (P)revious  (B)ookmark  (Q)uit"
         if self.index == self.bookmark:
-            command_list = command_list.replace("(B)", "<B>");
+            command_list = command_list.replace("(B)", "[B]");
 
         self.cons.write("%s" % self.book_pages[self.index], 8)
         ##self.cons.user.perceive("\nYou are reading the &nd%s...\n\n" %self.id)
