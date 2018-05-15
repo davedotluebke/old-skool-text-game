@@ -1,6 +1,6 @@
 # types of gems:
 # [x] emerald - powers other gems
-# [ ] jade - sends power from emerald long distances
+# [x] jade - sends power from emerald long distances
 # [x] ruby - makes light
 # [x] dimond - makes things invisible
 # [x] opal - makes dark
@@ -26,6 +26,8 @@ class Emerald(Gem):
         super().__init__(path, default_name, short_desc, long_desc+' It is about %s millimeters in all dimensions.' % power_num, power_num, pref_id)
         self.add_names('emerald')
         self.actions.append(Action(self.move_power, ['power'], True, False))
+        self.next_power = None
+        self.cons = None
     
     def power_gem(self, gem, amt):
         if amt > self.power_num:
@@ -56,20 +58,27 @@ class Emerald(Gem):
     
     def find_amount(self, cons, gem):
         cons.write('How much power would you like to move? Type it below:')
-        amt = cons.take_input('-> ') #XXX replace with symilar system that will work in multiplayer
+        cons.request_input(self)
+        self.next_power = gem
+        self.cons = cons
+
+    def console_recv(self, amt):
         try:
             amt = int(amt)
-        except ValueError:
-            cons.parser.parse(cons.user, cons, amt)
-            return
-        self.power_gem(gem, amt)
-        cons.write("You feel the power moving from the emerald to the %s." % gem.short_desc)
+        except:
+            amt = 1
+        self.power_gem(self.next_power, amt)
+        self.cons.write("You feel the power moving from the emerald to the %s." % self.next_power.short_desc)
+        self.cons.input_redirect = None
+        self.next_power = None
+        self.cons = None
 
 class Jade(Gem):
     def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
         super().__init__(path, default_name, short_desc, long_desc+' It seems almost as if it were somewhere else.', power_num, pref_id)
         self.add_names('jade')
         Thing.game.register_heartbeat(self)
+        self.cons = None
 
     def heartbeat(self):
         if self.power_num > 0:
@@ -78,16 +87,20 @@ class Jade(Gem):
             for i in possible_players:
                 if isinstance(i, Player):
                     i.cons.write('Where would you like to send this power? Type the true name of the place you want to send the power below:')
-                    sLoc = i.cons.take_input('-> ')
-                    try:
-                        loc = Thing.ID_dict[sLoc]
-                    except KeyError:
-                        i.cons.parser.parse(sLoc)
-                        return
-                    self.send_power(loc)
+                    i.cons.request_input(self)
+                    self.cons = self
                     return
             loc = random.choice(Thing.ID_dict)
             self.send_power(loc)
+
+    def console_recv(self, message):
+        try:
+            self.send_power(Thing.ID_dict[message])
+        except:
+            loc = random.choice(Thing.ID_dict)
+            self.send_power(loc)
+        self.cons.input_redirect = None
+        self.cons = None
     
     def send_power(self, loc):
         if not loc.contents:
@@ -172,4 +185,3 @@ class Opal(Gem):
             self.light = 0
         else:
             self.long_desc = head + ' It is a swirl of colors that seem to draw light inside it.'
-        

@@ -15,4 +15,14 @@ def load():
 
     paper = gametools.clone('home.alex.house.paper')
     magic_room.insert(paper, True)
+
+    emerald = gametools.clone('home.alex.house.emerald')
+    magic_room.insert(emerald, True)
+
+    ruby = gametools.clone('home.alex.house.ruby')
+    magic_room.insert(ruby, True)
+
+    opal = gametools.clone('home.alex.house.opal')
+    magic_room.insert(opal, True)
+    
     return magic_room
