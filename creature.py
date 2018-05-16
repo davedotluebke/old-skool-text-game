@@ -20,8 +20,10 @@ class Creature(Container):
         self.combat_skill = 0
         self.strength = 0
         self.dexterity = 1
-        self.default_weapon = Weapon("bare hands", None, 1, 5, 1)
+        self.default_weapon = Weapon("bare hands", None, 1, 5, 1, attack_verbs=["hit"])
+        self.default_weapon.set_description("bare hands", "your  bare hands")
         self.default_armor = Armor("skin", path, 0, 0)
+        self.default_armor.set_description("skin", "your tender skin")
         self.weapon_wielding = self.default_weapon
         self.armor_worn = self.default_armor
         self.closed_err = "You can't put things in creatures!"
@@ -98,17 +100,19 @@ class Creature(Container):
     def weapon_and_armor_grab(self):
         if not self.weapon_wielding or self.weapon_wielding == self.default_weapon:
             for w in self.contents:
-                if isinstance(w, Weapon):
+                if isinstance(w, Weapon) and w.damage > self.default_weapon.damage:
                     self.weapon_wielding = w
                     dbg.debug("weapon chosen: %s" % self.weapon_wielding)
                     self.visible_inventory.append(self.weapon_wielding)
+                    self.perceive('You wield the %s, rather than using your %s.' % (self.weapon_wielding.short_desc, self.default_weapon.short_desc))
                     break
         if not self.armor_worn or self.armor_worn == self.default_armor:
             for a in self.contents:
-                if isinstance(a, Armor):
+                if isinstance(a, Armor) and a.bonus > self.default_armor.bonus:
                     self.armor_worn = a
                     dbg.debug("armor chosen: %s" % self.armor_worn)
                     self.visible_inventory.append(self.armor_worn)
+                    self.perceive('You wear the %s, rather than your %s.' % (self.armor_worn.short_desc, self.default_armor.short_desc))
                     break
     
     def get_damage_message(self, percent_damage):
@@ -121,11 +125,10 @@ class Creature(Container):
         elif percent_damage <= 0.4:
             message = 'inflicting a terrible wound'
         elif percent_damage <= 0.6:
-            message = 'landing a devistating blow'
+            message = 'landing a devastating blow'
         else:
             message = 'with unimaginable force'
         return message
-
 
     def attack(self, enemy):
         if (self == enemy):

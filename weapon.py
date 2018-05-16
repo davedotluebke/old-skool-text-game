@@ -49,15 +49,16 @@ class Weapon(Thing):
     def start_attack(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if cons.user.weapon_wielding != self:
-            return "You need to wield the %s before you can use it." % self.names[0]
+            cons.user.weapon_wielding = self
+            cons.user.perceive("You wield the %s." % self.names[0])
         if not oDO or not oIDO:
             return "Try specifying a weapon and target, such as %s %s at [target]." % (sV, self.names[0])
         if oDO == self:
-            if cons.user.attacking != None and cons.user.attacking != 'quit':
+            if cons.user.attacking != None:
                 cons.user.perceive('You switch your attack to &nd%s.' % oIDO)
-                cons.user.attacking = oIDO
             else:
                 cons.user.perceive('You %s the %s at &nd%s.' % (sV, self, oIDO))
+            cons.user.attacking = oIDO
             return True
         elif oIDO == self:
             if cons.user.attacking != None and cons.user.attacking != 'quit':
