@@ -32,7 +32,7 @@ class Player(Creature):
         self.actions.append(Action(self.introduce, "introduce", True, True))
         self.actions.append(Action(self.engage, "engage", True, False))
         self.actions.append(Action(self.disengage, "disengage", False, True))
-        self.aggressive = 1         #TODO: Specilized individual stats
+        self.aggressive = 1         #TODO: Specialized individual stats
         self.armor_class = 10
         self.combat_skill = 40
         self.strength = 20

@@ -124,6 +124,7 @@ class Parser:
         """Parse and enact the user's command. Return False to quit game."""
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
         if command == 'quit':
+            user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (user, user))
             console.game.save_player(os.path.join(gametools.PLAYER_DIR, user.names[0]), user)
             console.write("#quit")
             return False
