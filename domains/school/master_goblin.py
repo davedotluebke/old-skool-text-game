@@ -106,6 +106,10 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
                             elif i.wizardry_element == 'air':
                                 self.throw_in_root_room(i)
                                 return
+                            else:
+                                self.emit('The old goblin yells: "You kept the emerald for yourself! I will punish you!"')
+                                self.attack_enemy(i)
+                                return
                 if i not in self.approached:
                     i.cons.write('The old goblin approaches you.')
                     self.approached.append(i)
