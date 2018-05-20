@@ -4,8 +4,8 @@ from action import Action
 from thing import Thing
 
 class FaucetThing(Thing):
-    def __init__(self, ID, short_desc, long_desc, TYPE):
-        super().__init__(ID)
+    def __init__(self, ID, path, short_desc, long_desc, TYPE):
+        super().__init__(ID, path)
         self.type = TYPE
         self.set_description(short_desc, long_desc)
         self.fix_in_place("You can't take the %s!" % self.type)
@@ -76,46 +76,3 @@ class FaucetThing(Thing):
         self.emit('&nD%s pours the %s into the %s, and it goes down the drain.' % (cons.user.id, obj, self.type))
         obj.move_to(Thing.ID_dict['nulspace'])
         return True
-
-bathroom = Room('bathroom', pref_id='btr31795')
-magic_room = Room('magical room', pref_id='mr31795')
-
-bathroom.set_description('modern bathroom', 'This small bathroom has a bathtub, a shower, and a sink.')
-magic_room.set_description('magical room', 'This room has a lot of magical supplies. It also has a door on the west side of the room with a piece of paper above it.')
-
-bathroom.add_exit('east', living_room.id)
-magic_room.add_exit('north', living_room.id)
-magic_room.add_exit('west', 'woods')
-
-bathroom.add_adjectives('modern')
-magic_room.add_names('room')
-magic_room.add_adjectives('magic', 'magical')
-
-# in bathroom
-bathtub = FaucetThing('bathtub', 'white bathtub', 'This bathtub is white. It has a faucet on one end of the tub and a shower above.', 'bathtub')
-bathtub.add_adjectives('modern', 'white')
-bathtub.move_to(bathroom)
-
-sink = FaucetThing('sink', 'porcelin sink', 'This is a ordinary bathroom sink made of porcelin. It has a clean metal faucet.', 'sink')
-sink.add_adjectives('porcelin', 'metal', 'clean', 'modern')
-sink.move_to(bathroom)
-
-toilet = Scenery('toilet', 'ordinary toilet', 'This is an ordinary toilet.')
-toilet.add_response(['flush'], 'You flush the toilet.')
-toilet.move_to(bathroom)
-
-cabnet = Container('cabinet')
-cabnet.set_description('small cabinet', 'This is a small cabinet above the sink.')
-cabnet.add_adjectives('small')
-cabnet.close()
-cabnet.closable = True
-cabnet.set_max_volume_carried(20)
-cabnet.set_max_weight_carried(1000000)
-cabnet.move_to(bathroom)
-# in living room
-
-scarf = Thing('scarf')
-scarf.set_description('bright pink scarf', 'This bright pink scarf is very clean and soft.')
-scarf.set_weight(200)
-scarf.set_volume(0.1)
-forest_one.insert(scarf)

@@ -15,6 +15,7 @@ def check_loaded(room_path):
         return False
 
 class Room(Container):
+    """Create a room."""
     def __init__(self, default_name, pref_id, light=1, safe=False, indoor=False, mod=None):
         """Initialize the room. Set <light> level to 0 for a dark room."""
         Container.__init__(self, default_name, path=pref_id, pref_id=pref_id)

@@ -44,6 +44,10 @@ class Player(Creature):
         self.attacking = False
         self.hitpoints = 20
         self.health = 20
+        self.species = None
+        self.gender = None
+        self.adj1 = None
+        self.adj2 = None
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
 
@@ -124,14 +128,8 @@ class Player(Creature):
             self.id = self._add_ID(self.names[0])            
             self.proper_name = self.names[0].capitalize()
             dbg.debug("Creating player id %s with default name %s" % (self.id, self.names[0]), 0)
-            start_room = gametools.load_room(gametools.START_LOC)
+            start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
             start_room.insert(self)
-            # XXX below code should be moved to the end of the 
-            # character creation room sequence when it is finished
-            scroll = gametools.clone('domains.school.scroll')
-            scroll.move_to(self)
-            self.game.register_heartbeat(scroll)
-            self.set_start_loc(start_room)
             self.perceive("\nWelcome to Firlefile Sorcery School!\n\n"
             "Type 'look' to examine your surroundings or an object, "
             "'inventory' to see what you are carrying, " 
@@ -267,7 +265,7 @@ class Player(Creature):
                 if tag_type[0] == 'n':
                     if O == None:
                         subject = '[Error: no object matching idstr %s]' % idstr
-                    if O == self: 
+                    elif O == self: 
                         return      # ignore messages that mention self by name
                     else:
                         subject = O.get_short_desc(self)

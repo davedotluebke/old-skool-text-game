@@ -6,7 +6,8 @@ from debug import dbg
 gameroot = os.path.dirname(__file__) 
 
 PLAYER_DIR = os.path.join(gameroot, "saved_players")
-START_LOC = 'domains.school.school.great_hall'
+NEW_PLAYER_START_LOC = 'domains.character_creation.start_loc'
+DEFAULT_START_LOC = 'domains.school.school.great_hall'
 
 class PlayerSaveError(Exception):
     pass
