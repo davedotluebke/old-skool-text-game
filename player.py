@@ -273,7 +273,7 @@ class Player(Creature):
                 if tag_type[0] == 'n':
                     if O == None:
                         subject = '[Error: no object matching idstr %s]' % idstr
-                    if O == self: 
+                    elif O == self: 
                         return      # ignore messages that mention self by name
                     else:
                         subject = O.get_short_desc(self)
