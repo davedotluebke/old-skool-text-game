@@ -18,4 +18,7 @@ def load():
     dead_tree.add_response(['climb'], 'When you try to climb the tree, the branch you grab on to breaks off with an eerie snap.')
     dark_forest.insert(dead_tree)
 
+    rat = gametools.clone('domains.school.forest.rat')
+    rat.move_to(dark_forest)
+
     return dark_forest

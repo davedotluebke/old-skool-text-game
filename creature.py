@@ -33,11 +33,13 @@ class Creature(Container):
         self.proper_name = default_name.capitalize()
         self.dead = False
 
-    def set_default_weapon(self, name, damage, accuracy, unwieldiness):
-        self.default_weapon = Weapon(name, damage, accuracy, unwieldiness)
+    def set_default_weapon(self, name, damage, accuracy, unwieldiness, attack_verbs=["hit"]):
+        self.default_weapon = Weapon(name, None, damage, accuracy, unwieldiness, attack_verbs)
+        self.weapon_wielding = self.default_weapon
 
     def set_default_armor(self, name, bonus, unwieldiness):
-        self.default_armor = Armor(name, bonus, unwieldiness)
+        self.default_armor = Armor(name, None, bonus, unwieldiness)
+        self.armor_worn = self.default_armor
 
     def set_combat_vars(self, armor_class, combat_skill, strength, dexterity):
         self.armor_class = armor_class
