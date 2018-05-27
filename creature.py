@@ -20,8 +20,10 @@ class Creature(Container):
         self.combat_skill = 0
         self.strength = 0
         self.dexterity = 1
-        self.default_weapon = Weapon("bare hands", None, 1, 5, 1)
+        self.default_weapon = Weapon("bare hands", None, 1, 5, 1, attack_verbs=["hit"])
+        self.default_weapon.set_description("bare hands", "your  bare hands")
         self.default_armor = Armor("skin", path, 0, 0)
+        self.default_armor.set_description("skin", "your tender skin")
         self.weapon_wielding = self.default_weapon
         self.armor_worn = self.default_armor
         self.closed_err = "You can't put things in creatures!"
@@ -29,6 +31,7 @@ class Creature(Container):
         self.invisible = False
         self.introduced = set()
         self.proper_name = default_name.capitalize()
+        self.dead = False
 
     def set_default_weapon(self, name, damage, accuracy, unwieldiness):
         self.default_weapon = Weapon(name, damage, accuracy, unwieldiness)
@@ -81,7 +84,7 @@ class Creature(Container):
 
     def say(self, speech):
         """Emit a message to the room "The <creature> says: <speech>". """
-        self.emit("&nd%s says: %s" % (self, speech))
+        self.emit("&nd%s says: %s" % (self.id, speech))
 
     def take(self, p, cons, oDO, oIDO):
         return "You can't take creatures (or players, for that matter!)"
@@ -92,23 +95,40 @@ class Creature(Container):
     def take_damage(self, damage):
         self.health -= damage
         if self.health <= 0:
-            self.die('default message')
+            self.die('&nD%s dies!' % self.id)
 
     def weapon_and_armor_grab(self):
-        if not self.weapon_wielding:
+        if not self.weapon_wielding or self.weapon_wielding == self.default_weapon:
             for w in self.contents:
-                if isinstance(w, Weapon):
+                if isinstance(w, Weapon) and w.damage > self.default_weapon.damage:
                     self.weapon_wielding = w
                     dbg.debug("weapon chosen: %s" % self.weapon_wielding)
                     self.visible_inventory.append(self.weapon_wielding)
+                    self.perceive('You wield the %s, rather than using your %s.' % (self.weapon_wielding.short_desc, self.default_weapon.short_desc))
                     break
-        if not self.armor_worn:
+        if not self.armor_worn or self.armor_worn == self.default_armor:
             for a in self.contents:
-                if isinstance(a, Armor):
+                if isinstance(a, Armor) and a.bonus > self.default_armor.bonus:
                     self.armor_worn = a
                     dbg.debug("armor chosen: %s" % self.armor_worn)
                     self.visible_inventory.append(self.armor_worn)
+                    self.perceive('You wear the %s, rather than your %s.' % (self.armor_worn.short_desc, self.default_armor.short_desc))
                     break
+    
+    def get_damage_message(self, percent_damage):
+        if percent_damage <= 0.0:
+            message = 'but inflicting no damage'
+        elif percent_damage <= 0.1:
+            message = 'making a small cut'
+        elif percent_damage <= 0.2:
+            message = 'doing minor damage'
+        elif percent_damage <= 0.4:
+            message = 'inflicting a terrible wound'
+        elif percent_damage <= 0.6:
+            message = 'landing a devastating blow'
+        else:
+            message = 'with unimaginable force'
+        return message
 
     def attack(self, enemy):
         if (self == enemy):
@@ -118,17 +138,19 @@ class Creature(Container):
         if random.randint(1, 100) <= chance_of_hitting:
             d = self.weapon_wielding.damage
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
+            percent_damage = damage_done/enemy.hitpoints
+            message = self.get_damage_message(percent_damage)
+            self.emit('&nD%s attacks &nd%s with its %s, %s!' % (self.id, enemy, self.weapon_wielding, message), ignore=[self, enemy])
+            self.perceive('You attack &nd%s with your %s, %s!' % (enemy, self.weapon_wielding, message))
+            enemy.perceive('&nD%s attacks you with its %s, %s!' % (self.id, self.weapon_wielding, message))
             enemy.take_damage(damage_done)
-            self.emit('&nd%s attacks &n%s with its %s!' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
-            self.perceive('You attack &nd%s with your %s!' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nd%s attacks you with its %s' % (self, self.weapon_wielding))
             #TODO: Proper names and introductions: The monster attacks you with its sword, Cedric attacks you with his sword, Madiline attacks you with her sword.
-            if self not in enemy.enemies:
-                enemy.enemies.append(self)
         else:
-            self.emit('&nd%s attacks &nd%s with its %s, but misses.' % (self, enemy, self.weapon_wielding), ignore=[self, enemy])
+            self.emit('&nD%s attacks &nd%s with its %s, but misses.' % (self.id, enemy, self.weapon_wielding), ignore=[self, enemy])
             self.perceive('You attack &nd%s with your %s, but miss.' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nd%s attacks you, but misses %s.' % (self, self.weapon_wielding))
+            enemy.perceive('&nD%s attacks you with its %s, but misses.' % (self.id, self.weapon_wielding))
+        if self not in enemy.enemies:
+            enemy.enemies.append(self)
 
     def attack_freq(self):
         try:
@@ -139,17 +161,15 @@ class Creature(Container):
     def die(self, message=None):
         #What to do when 0 health
         self.emit("&nD%s dies!" % self.id, [self])
-        corpse = Container("corpse of &ni%s" % (self.id))
-        corpse.add_names("corpse")
-        corpse.set_description('corpse of a %s' % (self.short_desc), 'This is the foul-smelling corpse of a %s. It looks nasty.' % (self.short_desc))
-        corpse.set_weight(self.weight)
-        corpse.set_volume(self.volume)
-        corpse.set_max_weight_carried(self.max_weight_carried)
-        corpse.set_max_volume_carried(self.max_volume_carried)
-        corpse.add_names('corpse')
+        corpse = gametools.clone('corpse', self)
         self.location.insert(corpse)
         for i in self.contents:
-            self.move_to(corpse)      #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+            i.move_to(corpse)
+        if hasattr(self, 'cons'):
+            self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))     #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+        else:
+            self.move_to(Thing.ID_dict['nulspace'])
+            self.dead = True
         if message:
             self.emit(message)
 
@@ -169,6 +189,11 @@ class Creature(Container):
         if self.aggressive == 2 and not attacking:
             attacking = random.choice(targets)
             self.enemies.append(attacking)
+        
+        if attacking == None:
+            dbg.debug("%s didn't have anyone to attack!" % self.id, 0)
+            return
+        
         dbg.debug("%s: attacking %s" % (self.id, attacking))
         self.attacking = attacking
         # Figured out who to attack, wield any weapons/armor
@@ -205,8 +230,10 @@ class NPC(Creature):
         self.forbidden_rooms.append(r)
 
     def heartbeat(self):
+        if self.dead:
+            return
         self.act_soon += 1
-        if self.act_soon >= self.act_frequency or (set(self.enemies) & set(self.location.contents)) or self.attacking:
+        if self.act_soon >= self.act_frequency or (set(self.enemies) and set(self.location.contents)) or self.attacking:
             acting = False
             self.act_soon = 0
             if self.current_script:  # if currently reciting, continue

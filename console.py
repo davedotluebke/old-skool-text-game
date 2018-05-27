@@ -146,6 +146,11 @@ class Console:
                 else:
                     self.write("You cannot escape from a redirect, as there is none.")
                 return True
+
+            if cmd == 'auto-attack':
+                self.user.auto_attack = True if self.user.auto_attack == False else False
+                self.write("Auto attack toggled to %s." % self.user.auto_attack)
+                return True
             
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}

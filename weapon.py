@@ -3,13 +3,14 @@ from action import Action
 from thing import Thing
 
 class Weapon(Thing):
-    def __init__(self, default_name, path, damage, accuracy, unwieldiness, pref_id=None):
+    def __init__(self, default_name, path, damage, accuracy, unwieldiness, attack_verbs=['swing'], pref_id=None):
         Thing.__init__(self, default_name, path, pref_id)
         self.damage = damage
         self.accuracy = accuracy
         self.unwieldiness = unwieldiness
         self.actions.append(Action(self.wield, ['wield', 'use'], True, False))
         self.actions.append(Action(self.unwield, ['unwield'], True, False))
+        self.actions.append(Action(self.start_attack, attack_verbs, True, False))
         # overwrite default drop action:
         for a in self.actions:
             if 'drop' in a.verblist:
@@ -45,3 +46,26 @@ class Weapon(Thing):
                 cons.user.weapon_wielding = cons.user.default_weapon
         return Thing.drop(self, p, cons, oDO, oIDO)
 
+    def start_attack(self, p, cons, oDO, oIDO):
+        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
+        if cons.user.weapon_wielding != self:
+            cons.user.weapon_wielding = self
+            cons.user.perceive("You wield the %s." % self.names[0])
+        if not oDO or not oIDO:
+            return "Try specifying a weapon and target, such as %s %s at [target]." % (sV, self.names[0])
+        if oDO == self:
+            if cons.user.attacking != None:
+                cons.user.perceive('You switch your attack to &nd%s.' % oIDO)
+            else:
+                cons.user.perceive('You %s the %s at &nd%s.' % (sV, self, oIDO))
+            cons.user.attacking = oIDO
+            return True
+        elif oIDO == self:
+            if cons.user.attacking != None and cons.user.attacking != 'quit':
+                cons.user.perceive('You switch your attack to &nd%s.' % oIDO)
+                cons.user.attacking = oIDO
+            else:
+                cons.user.perceive('You %s &nd%s with the %s.' % (sV, oIDO, self))
+            return True
+
+        return "Did you mean to %s the %s?" % (sV, self.get_short_desc())
