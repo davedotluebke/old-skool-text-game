@@ -94,10 +94,13 @@ class Creature(Container):
     def get_armor_class(self):
         return self.armor_class + (0 if not self.armor_worn else self.armor_worn.bonus)
     
-    def take_damage(self, damage):
+    def take_damage(self, enemy, damage):
         self.health -= damage
         if self.health <= 0:
+            enemy.gain_combat_skill(self)
             self.die('&nD%s dies!' % self.id)
+            return True       # return True if dead, otherwise return False
+        return False
 
     def weapon_and_armor_grab(self):
         if not self.weapon_wielding or self.weapon_wielding == self.default_weapon:
@@ -132,6 +135,12 @@ class Creature(Container):
             message = 'with unimaginable force'
         return message
 
+    def gain_combat_skill(self, enemy):
+        difficulty = enemy.get_armor_class() / 5.0
+        margin_of_victory = self.health / self.hitpoints
+        additional_skill_gained = int(difficulty * margin_of_victory)
+        self.combat_skill += additional_skill_gained
+
     def attack(self, enemy):
         if (self == enemy):
             dbg.debug('Creature tried to attack self!', 0)
@@ -145,7 +154,7 @@ class Creature(Container):
             self.emit('&nD%s attacks &nd%s with its %s, %s!' % (self.id, enemy, self.weapon_wielding, message), ignore=[self, enemy])
             self.perceive('You attack &nd%s with your %s, %s!' % (enemy, self.weapon_wielding, message))
             enemy.perceive('&nD%s attacks you with its %s, %s!' % (self.id, self.weapon_wielding, message))
-            enemy.take_damage(damage_done)
+            enemy.take_damage(self, damage_done)
             #TODO: Proper names and introductions: The monster attacks you with its sword, Cedric attacks you with his sword, Madiline attacks you with her sword.
         else:
             self.emit('&nD%s attacks &nd%s with its %s, but misses.' % (self.id, enemy, self.weapon_wielding), ignore=[self, enemy])
