@@ -89,6 +89,8 @@ class Room(Container):
         cons.write('rooms cannot be moved!')
     
     def report_arrival(self, user, silent=False):
+        if not user.cons:
+            return
         loc = user.location
         cons = user.cons
         if not silent: 

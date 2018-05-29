@@ -47,7 +47,7 @@ class Plaque(thing.Thing):
         words_on_plaque = ''
         for i in self.words:
             words_on_plaque += i + '\n'
-        cons.user.perceive('This plaque has a list of words on it. They read:\n' + words_on_plaque + 'Below the list of words are some instructions. They read:\n' + self.long_desc)
+        cons.user.perceive('This plaque has a list of words on it. They read:\n<div style="column-count:3;column-rule:none">' + words_on_plaque + '</div>Below the list of words are some instructions. They read:\n' + self.long_desc)
         return True
 
     def intone(self, p, cons, oDO, oIDO):
@@ -61,7 +61,7 @@ class Plaque(thing.Thing):
             self.mirror.adj1 = sDO
         elif self.number == 2:
             if cons.user.adj1 == sDO:
-                cons.user.perceive('You try to intone %s, but it\'s already part of you.')
+                cons.user.perceive('You try to intone %s, but it\'s already part of you.' % sDO)
                 return True
             self.mirror.adj2 = sDO
         cons.write('You see the reflection in the mirror change slightly.')
