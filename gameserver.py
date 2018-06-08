@@ -34,6 +34,7 @@ class Game():
         self.events = EventQueue()  # events to occur in future 
 
         self.parser = Parser()
+        self.dbg = dbg
         self.users = []
         
 
