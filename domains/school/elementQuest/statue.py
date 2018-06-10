@@ -5,6 +5,7 @@ import scenery
 import action
 import domains.wizardry.gems as gems
 import thing
+import domains.school.elementQuest.doorway as doorway
 
 class Statue(scenery.Scenery):
     def __init__(self, default_name, short_desc, long_desc):
@@ -18,8 +19,9 @@ class Statue(scenery.Scenery):
             cons.user.emit('&nD%s puts the pearl in the eye of the statue.', ignore=[cons.user])
             cons.user.perceive('You put the pearl in the eye of the statue and see it start to glow.')
             self.long_desc = 'This giant stone statue solemnly stands in the middle of the room. Its eyes are pearls, and they both glow.'
-            oDO.move_to(thing.Thing.ID_dict['nullspace'])
-            #TODO: Add code for opening trapdoor
+            oDO.move_to(thing.Thing.ID_dict['nulspace'])
+            doorway.load()
+            doorway.Doorway.open(doorway.Doorway.instance)
             return True
 
 def load():

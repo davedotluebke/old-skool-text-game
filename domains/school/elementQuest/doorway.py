@@ -4,17 +4,19 @@ import gametools
 import scenery
 
 class Doorway(scenery.Scenery):
+    instance = None
     def __init__(self):
         super().__init__('doorway', 'stone doorway', 'This is a stone doorway, leading to the east. A shimmering surface covers the entrance.')
         self.actions.append(scenery.Action(self.enter, ['enter'], True, False))
         self.state = 'closed'
+        Doorway.instance = self
     
     def open(self):
         self.long_desc = 'This is a stone doorway, leading to the east.'
         self.state = 'open'
 
     def enter(self, p, cons, oDO, oIDO):
-        if self.state = "closed":
+        if self.state == "closed":
             cons.user.perceive('You try to enter the doorway, but something blocks your path.')
             return True
         cons.user.wizardry_element = 'water'
@@ -40,5 +42,7 @@ def load():
     coral_room.add_exit('west', 'domains.school.elementQuest.deep_depths')
     coral_room.add_exit('north', 'domains.school.elementQuest.course_sand')
     coral_room.add_exit('south', 'domains.school.elementQuest.inflow')
+
+    coral_room.insert(Doorway(), True)
     
     return coral_room

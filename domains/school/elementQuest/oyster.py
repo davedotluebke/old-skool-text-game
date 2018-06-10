@@ -7,6 +7,7 @@ class Oyster(container.Container):
         super().__init__('oyster', __file__)
         self.set_description('ordinary oyster', 'This is an ordinary oyster. It seems firmly closed, but you almost think you see a pearl inside.')
         self.closable = True
+        self.close()
         self.actions.append(container.Action(self.open, ['open', 'separate'], True, False))
         self.insert(gametools.clone('domains.school.elementQuest.pearl'))
         

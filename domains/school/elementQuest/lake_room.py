@@ -31,7 +31,7 @@ class LakeRoom_underwater(room.Room):
     def force_surface(self, user):
         if user not in self.contents:
             return
-        if user.wizardry_element = 'water': #if the user is already a water wizard, then they don't have to re-surface
+        if user.wizardry_element == 'water': #if the user is already a water wizard, then they don't have to re-surface
             return
         user.perceive('You find that you are out of air and must resurface.')
         user.emit('&nD%s swims upward and disappears from sight.' % user)
