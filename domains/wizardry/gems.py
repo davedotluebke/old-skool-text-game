@@ -4,7 +4,8 @@
 # [x] ruby - makes light
 # [x] dimond - makes things invisible
 # [x] opal - makes dark
-# [ ] saphire - allows people other than sky wizards to fly in nearby areas
+# [ ] saphire - allows people to fly in nearby areas (hardcode rooms that people can fly in, rather than giving the immobile saphires any power)
+# [x] pearl - tones down the power from an emerald, but makes it last longer
 # note that there are also other unique gems, such as the emerald of life, which have different powers than normal gems and are not listed here.
 
 import random
@@ -185,3 +186,46 @@ class Opal(Gem):
             self.light = 0
         else:
             self.long_desc = head + ' It is a swirl of colors that seem to draw light inside it.'
+
+class Pearl(Gem):
+    def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
+        super().__init__(path, default_name, short_desc, long_desc+' It almosts looks as if it is reflecting you, but softer.')
+        self.add_names('pearl')
+        self.alternator_subtract = False
+        self.powering = None
+        Thing.game.register_heartbeat(self)
+    
+    def heartbeat(self):
+        if not self.powering:
+            if self.power_num > 0:
+                if self.alternator_subtract == True:
+                    self.power_num -= 1
+                    self.alternator_subtract = False
+                else:
+                    self.alternator_subtract = True
+            return
+        if self.alternator_subtract == True:
+            self.power_gem(self.powering)
+            self.alternator_subtract = False
+        else:
+            self.alternator_subtract = True
+        
+    def power_gem(self, gem):
+        gem.power_num += 1
+        self.power_num -= 1
+
+    def move_power(self, gem):
+        self.powering = gem
+
+    def move_power(self, p, cons, oDO, oIDO):
+        if oDO == self and isinstance(oIDO, Gem):
+            self.move_power(oIDO)
+        elif oIDO == self and isinstance(oDO, Gem):
+            self.move_power(oDO)
+        elif oIDO == None and oDO != self and isinstance(oDO, Gem):
+            self.move_power(oDO)
+        elif oIDO == None and oDO == self:
+            return "Did you mean to put power into the pearl?"
+        else:
+            return "I don't quite understand what you meant."
+        return True

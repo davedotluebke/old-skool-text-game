@@ -3,6 +3,7 @@ import room
 import gametools
 import scenery
 import action
+import domains.wizardry.gems as gems
 
 class Statue(scenery.Scenery):
     def __init__(self, default_name, short_desc, long_desc):
@@ -12,7 +13,7 @@ class Statue(scenery.Scenery):
 
     def put_pearl_in_eye(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
-        if sDO == 'pearl' and sIDO == 'eye' and (oDO.names[0] == 'pearl' or oIDO.names[0] == 'pearl'):
+        if sDO == 'pearl' and sIDO == 'eye' and isinstance(oDO, gems.Pearl):
             cons.user.emit('&nD%s puts the pearl in the eye of the statue.', ignore=[cons.user])
             cons.user.perceive('You put the pearl in the eye of the statue and see it start to glow.')
             #TODO: Add code for opening trapdoor
