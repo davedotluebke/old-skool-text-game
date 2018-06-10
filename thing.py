@@ -57,6 +57,27 @@ class Thing(object):
     def __str__(self): 
         return self.names[0]
 
+    def get_saveable(self):
+        """Return dictionary of everything needed to save/restore the object
+
+        Return a "saveable" version of the object: a dictionary containing a
+        list of attributes THAT DIFFER from the default attributes for this 
+        object. This dictionary can be saved to a file and the object can be
+        restored by creating a default object and overwriting any attributes 
+        listed in the saveable. 
+
+        This allows objects to persist across changes to the object code. 
+        """
+        saveable = {}
+        state = self.__dict__.copy()
+        default_obj = gametools.clone(self.path)
+        default_state = default_obj.__dict__
+        for attr in list(state):
+            if state[attr] != default_state[attr]:
+                saveable[attr] = state[attr]
+        return saveable
+
+
     def __getstate__(self): 
         """Custom pickling code for Thing.
         

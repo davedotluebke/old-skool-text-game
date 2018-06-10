@@ -6,6 +6,7 @@ import time
 import asyncio
 import websockets
 import connections_websock
+import json
 
 import gametools
 
@@ -124,7 +125,9 @@ class Game():
             # change location & contents etc from obj reference to ID:
             for obj in l:
                 obj._change_objs_to_IDs()
-            pickle.dump(l, f, pickle.HIGHEST_PROTOCOL)
+            # pickle.dump(l, f, pickle.HIGHEST_PROTOCOL)
+            saveables = [x.get_saveable() for x in l]
+            f.write(json.dumps(saveables, sort_keys=True, indent=4))
             Thing.ID_dict = backup_ID_dict
             player.cons.write("Saved player data to file %s" % filename)
             f.close()
@@ -142,21 +145,6 @@ class Game():
             obj.id = head  
             obj._add_ID(obj.id)  # re-create original entry in ID_dict
         
-    def login_player(self, cons):
-        """Create a new player object and put it in "login state", which
-        doesn't do anything but request the username and password. If the
-        username matches a player file, ask for the password, and if they 
-        match, load that player. If this is a new username, have them create
-        a new password and verify it, then put them in the new character 
-        creation room where they will select gender, species, etc. """
-        tmp_name = "login_player%d" % random.randint(10000, 99999)
-        user = Player(tmp_name, None, cons)
-        user.set_description("formless soul", "A formless player without a name")
-        user.set_max_weight_carried(750000)
-        user.set_max_volume_carried(2000)
-        cons.user = user
-        cons.write("Please enter your username: ")
-        user.login_state = "AWAITING_USERNAME"
 
     def load_player(self, filename, cons, oldplayer=None):
         """Unpickle a single player and his/her inventory from a saved file.
@@ -232,27 +220,18 @@ class Game():
         room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         return newplayer
     
-    def create_new_player(self, name, cons):
-        user = Player(name, None, cons)
+    def login_player(self, cons):
+        """Create a new player object and put it in "login state", which
+        doesn't do anything but request the username and password. If the
+        username matches a player file, ask for the password, and if they 
+        match, load that player. If this is a new username, have them create
+        a new password and verify it, then put them in the new character 
+        creation room where they will select gender, species, etc. """
+        tmp_name = "login_player%d" % random.randint(10000, 99999)
+        user = gametools.clone('player', [tmp_name, cons])
         cons.user = user
-        adjective = random.choice(('tall', 'short', 'dark', 'pale', 'swarthy', 'thin', 'heavyset'))
-        species = random.choice(('human', 'elf', 'dwarf', 'gnome'))
-        user.set_description(adjective + ' ' + species, 'A player named %s' % name)
-        user.set_max_weight_carried(750000)
-        user.set_max_volume_carried(2000)
-
-        start_room = gametools.load_room('domains.school.school.great_hall')
-        start_room.insert(user)
-
-        scroll = gametools.clone('domains.school.scroll')
-        scroll.move_to(user)
-        self.register_heartbeat(scroll)
-        user.set_start_loc(start_room)
-        user.perceive("\nWelcome to Firlefile Sorcery School!\n\n"
-        "Type 'look' to examine your surroundings or an object, "
-        "'inventory' to see what you are carrying, " 
-        "'quit' to end the game, and 'help' for more information.")
-        return user
+        cons.write("Please enter your username: ")
+        user.login_state = "AWAITING_USERNAME"
 
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""

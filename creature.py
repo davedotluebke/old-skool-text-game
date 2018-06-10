@@ -8,7 +8,7 @@ from armor import Armor
 
 class Creature(Container):
     def __init__(self, default_name, path, pref_id=None):
-        Container.__init__(self, default_name, pref_id)
+        Container.__init__(self, default_name, path, pref_id)
         self.closed = True
         self.closable = False
         self.see_inside = False

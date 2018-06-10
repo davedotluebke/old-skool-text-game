@@ -12,6 +12,17 @@ from creature import Creature
 from action import Action
 
 
+def clone(params=None):
+    if params:
+        ID = params[0]
+        console = params[1]
+    else:
+        ID = None
+        console = None
+    player = Player(ID, __file__, console)
+    return player
+
+
 class Player(Creature):
     def __init__(self, ID, path, console):
         """Initialize the Player object and attach a console"""
@@ -19,8 +30,11 @@ class Player(Creature):
         self.cons = console
         self.login_state = None
         self.start_loc_id = None
+        self.set_description("formless soul", "A formless player without a name")
         self.set_weight(175/2.2)
         self.set_volume(66)
+        self.set_max_weight_carried(750000)
+        self.set_max_volume_carried(2000)
         self.actions.append(Action(self.inventory, "inventory", False, True))
         self.actions.append(Action(self.toggle_terse, "terse", False, True))
         self.actions.append(Action(self.execute, "execute", True, True))
