@@ -30,6 +30,8 @@ class LakeRoom_underwater(room.Room):
 
     def force_surface(self, user):
         if user not in self.contents:
+            if isinstance(user.location, LakeRoom_underwater):
+                user.location.force_surface(user)
             return
         if user.wizardry_element == 'water': #if the user is already a water wizard, then they don't have to re-surface
             return

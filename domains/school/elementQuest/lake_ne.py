@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    lake_r = lake_room.LakeRoom_surface('lake', roomPath, 'domains.school.elementQuest.corse_sand')
+    lake_r = lake_room.LakeRoom_surface('lake', roomPath, 'domains.school.elementQuest.course_sand')
     lake_r.set_description('clear lake', 'You are on a smooth lake surface. The water is a light blue.')
     lake_r.add_exit('west', 'domains.school.elementQuest.lake_n')
     lake_r.add_exit('south', 'domains.school.elementQuest.lake_e')

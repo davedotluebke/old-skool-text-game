@@ -37,7 +37,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    coral_room = lake_room.LakeRoom_underwater('coral-filled room', roomPath, 'domains.school.elementQuest.lake_ne')
+    coral_room = lake_room.LakeRoom_underwater('coral-filled room', roomPath, 'domains.school.elementQuest.lake_e')
     coral_room.set_description('coral-filled room', 'This part of the lake has a small amount of coral growing. To the east you see a stone doorway.')
     coral_room.add_exit('west', 'domains.school.elementQuest.deep_depths')
     coral_room.add_exit('north', 'domains.school.elementQuest.course_sand')
