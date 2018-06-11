@@ -17,7 +17,7 @@ def clone(params=None):
         ID = params[0]
         console = params[1]
     else:
-        ID = None
+        ID = ""
         console = None
     player = Player(ID, __file__, console)
     return player
@@ -65,6 +65,15 @@ class Player(Creature):
         self.adj2 = None
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
+
+    def get_saveable(self):
+        saveable = super().get_saveable()
+        try:
+            del saveable['enemies']
+        except KeyError: 
+            pass
+        del saveable['cons']
+        return saveable
 
     def __getstate__(self):
         """Custom pickling code for Player. 
