@@ -47,6 +47,3 @@ class Liquid(Scenery):
         self.move_to(Thing.ID_dict['nulspace'])
         return True
     
-    
-
-

@@ -12,11 +12,11 @@ def load():
     kitchen.add_exit('west', 'domains.school.school.fire_lounge')
 
     central_pot = gametools.clone('domains.school.school.central_pot')
-    central_pot.move_to(kitchen)
+    central_pot.move_to(kitchen, True)
 
     clay_oven = gametools.clone('domains.school.school.clay_oven')
-    clay_oven.move_to(kitchen)
+    clay_oven.move_to(kitchen, True)
 
     metal_cabinets = gametools.clone('domains.school.school.metal_cabinets')
-    metal_cabinets.move_to(kitchen)
+    metal_cabinets.move_to(kitchen, True)
     return kitchen
