@@ -13,6 +13,7 @@ def load():
     field.add_exit('in', 'domains.school.forest.shack')
     field.add_exit("north",'domains.school.forest.garden')
     field.add_exit('northeast', 'domains.school.school.grand_entry')
+    field.add_exit('southeast', 'domains.school.forest.waterfall')
 
     butterfly = gametools.clone('domains.school.forest.butterfly')
     field.insert(butterfly)
