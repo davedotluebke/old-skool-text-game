@@ -20,7 +20,7 @@ class Bed(Container):
             cons.write('You lie down on the bed and fall fast asleep.')
             self.emit('&nD%s lies down on the bed and falls asleep.' % cons.user.id)
             cons.user.move_to(gametools.load_room(self.dreamland))
-            Thing.game.events.schedule(30, self.wake_up, cons)
+            Thing.game.events.schedule(70, self.wake_up, cons)
             return True
         if sV == 'lay' and sIDO == 'bed':
             cons.user.move_to(self)

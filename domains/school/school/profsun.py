@@ -36,6 +36,7 @@ class ProfSun(creature.NPC):
         # If checking status, continue
         if self.checking_done:
             self.check()
+            return
         
         # If giving a class, continue
         if self.giving_class:
@@ -97,8 +98,8 @@ class ProfSun(creature.NPC):
             self.emeralds.append(gametools.clone('domains.school.school.emerald'))
             self.rubies.append(gametools.clone('domains.school.school.ruby'))
         for i in range(0, len(players)):
-            players[i].contents.append(self.emeralds[i])
-            players[i].contents.append(self.rubies[i])
+            self.emeralds[i].move_to(players[i])
+            self.rubies[i].move_to(players[i])
             players[i].perceive('You notice an emerald and a ruby appear in front of you.')
         self.waiting = False
         self.checking_done = True
