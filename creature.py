@@ -32,6 +32,7 @@ class Creature(Container):
         self.introduced = set()
         self.proper_name = default_name.capitalize()
         self.dead = False
+        self.wizardry_element = None
 
     def set_default_weapon(self, name, damage, accuracy, unwieldiness, attack_verbs=["hit"]):
         self.default_weapon = Weapon(name, None, damage, accuracy, unwieldiness, attack_verbs)
