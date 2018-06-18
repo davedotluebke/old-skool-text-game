@@ -118,7 +118,7 @@ class Game():
         if not filename.endswith('.OADplayer'): 
             filename += '.OADplayer'
         try:
-            f = open(filename, 'w+b')
+            f = open(filename, 'w')
             # XXX double-check: is this really necessary? 
             backup_ID_dict = Thing.ID_dict.copy()
             Thing.ID_dict.clear()
@@ -133,8 +133,6 @@ class Game():
             f.close()
         except IOError:
             player.cons.write("Error writing to file %s" % filename)
-        except pickle.PickleError:
-            player.cons.write("Error pickling when saving to file %s" % filename)
         # restore location & contents etc to obj references:
         for obj in l:
             obj._restore_objs_from_IDs()
@@ -158,7 +156,7 @@ class Game():
         if not filename.endswith('.OADplayer'): 
             filename += '.OADplayer'
         try:
-            f = open(filename, 'r+b')
+            f = open(filename, 'r')
         except FileNotFoundError:
             cons.write("Error, couldn't find file named %s" % filename)
             raise gametools.PlayerLoadError

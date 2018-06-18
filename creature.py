@@ -54,13 +54,13 @@ class Creature(Container):
 
     def _restore_objs_from_IDs(self):
         super()._restore_objs_from_IDs()
-        if isInstance(self.default_weapon, str):
+        if isinstance(self.default_weapon, str):
             self.armor_worn = Thing.ID_dict[self.default_weapon]
-        if isInstance(self.default_armor, str):
+        if isinstance(self.default_armor, str):
             self.armor_worn = Thing.ID_dict[self.default_armor]
-        if isInstance(self.weapon_wielding, str):
+        if isinstance(self.weapon_wielding, str):
             self.armor_worn = Thing.ID_dict[self.weapon_wielding]
-        if isInstance(self.armor_worn, str):
+        if isinstance(self.armor_worn, str):
             self.armor_worn = Thing.ID_dict[self.armor_worn]
 
         
