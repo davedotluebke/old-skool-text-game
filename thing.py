@@ -21,6 +21,7 @@ class Thing(object):
     def __init__(self, default_name, path, pref_id=None):
         self.unlisted = False # should this thing be listed in room description  
         self.path = gametools.findGamePath(path) if path else None
+        self.version_number = 1
         self.names = [default_name]
         self._add_ID(default_name if not pref_id else pref_id)
         self.plural = False         # should this thing be treated as plural?
@@ -74,7 +75,7 @@ class Thing(object):
         default_obj = gametools.clone(self.path)
         default_state = default_obj.__dict__
         for attr in list(state):
-            if state[attr] != default_state[attr] or attr == 'path':
+            if state[attr] != default_state[attr] or attr == 'path' or attr == 'version_number':
                 saveable[attr] = state[attr]
         return saveable
 
@@ -85,12 +86,17 @@ class Thing(object):
         for attr in list(savable):
             state[attr] = savable[attr]
 
-        #TODO: Update version code
+        self.update_version()
 
         self.__dict__.update(state)
 
+    def update_version(self):
+        """Updates the version of the object, and runs snipets of code to make 
+        sure all objects will still function."""
+        if not self.version_number:
+            self.version_number = 1
 
-    def __getstate__(self): 
+    def __getstate__(self):
         """Custom pickling code for Thing.
         
         Doesn't pickle Thing.ID_dict (which refers to all objects in game).
