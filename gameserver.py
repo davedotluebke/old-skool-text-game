@@ -164,12 +164,13 @@ class Game():
             # l is the list of objects (player + recursive inventory). Note that 
             # unpickling calls init() which creates new entries in ID_dict for objects in l,
             # using the uniquified IDs - guaranteed to succeed without further changing ID
-            l = pickle.load(f)  
+            saveables = json.loads(f.read())
             f.close()
-        except pickle.PickleError:
-            cons.write("Encountered error while pickling to file %s, player not loaded." % filename)
-            f.close()
-            raise gametools.PlayerLoadError
+            l = []
+            for x in saveables:
+                obj = gametools.clone(x['path'])
+                obj.update_obj(x)
+                l.append(obj)
         except EOFError:
             cons.write("The file you are trying to load appears to be corrupt.")
             raise gametools.PlayerLoadError
@@ -190,7 +191,7 @@ class Game():
                 # o.__del__()  # XXX probably doesn't truly delete the object; needs more research
             cons.user = None
         
-        newplayer.cons = cons  # custom pickling code for Player doesn't save console
+        newplayer.cons = cons  # custom saving code for Player doesn't save console
         cons.user = newplayer  # update backref from cons
 
         cons.change_players = True
@@ -201,6 +202,10 @@ class Game():
             dbg.debug("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer), 0)
             cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
             newplayer.location = gametools.load_room('domains.school.school.great_hall')
+
+        # Add all of the objects to Thing.ID_dict temporarily
+        for o in l:
+            Thing.ID_dict[o.id] = o
         
         # Now fix up location & contents[] to list object refs, not ID strings
         for o in l:

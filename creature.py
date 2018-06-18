@@ -31,6 +31,14 @@ class Creature(Container):
         self.proper_name = default_name.capitalize()
         self.dead = False
 
+    def get_saveable(self):
+        saveable = super().get_saveable()
+        try:
+            del saveable['viewed']
+        except KeyError:
+            pass
+        return saveable
+
     def set_default_weapon(self, name, damage, accuracy, unwieldiness, attack_verbs=["hit"]):
         self.default_weapon = Weapon(name, None, damage, accuracy, unwieldiness, attack_verbs)
         self.weapon_wielding = self.default_weapon
@@ -55,11 +63,11 @@ class Creature(Container):
     def _restore_objs_from_IDs(self):
         super()._restore_objs_from_IDs()
         if isinstance(self.default_weapon, str):
-            self.armor_worn = Thing.ID_dict[self.default_weapon]
+            self.default_weapon = Thing.ID_dict[self.default_weapon]
         if isinstance(self.default_armor, str):
-            self.armor_worn = Thing.ID_dict[self.default_armor]
+            self.default_armor = Thing.ID_dict[self.default_armor]
         if isinstance(self.weapon_wielding, str):
-            self.armor_worn = Thing.ID_dict[self.weapon_wielding]
+            self.weapon_wielding = Thing.ID_dict[self.weapon_wielding]
         if isinstance(self.armor_worn, str):
             self.armor_worn = Thing.ID_dict[self.armor_worn]
 

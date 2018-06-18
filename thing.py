@@ -74,9 +74,20 @@ class Thing(object):
         default_obj = gametools.clone(self.path)
         default_state = default_obj.__dict__
         for attr in list(state):
-            if state[attr] != default_state[attr]:
+            if state[attr] != default_state[attr] or attr == 'path':
                 saveable[attr] = state[attr]
         return saveable
+
+    def update_obj(self, savable):
+        """Return the updated object from the "savable" version created above. 
+        Also call update_version() to make sure that all objects are up to date."""
+        state = self.__dict__.copy()
+        for attr in list(savable):
+            state[attr] = savable[attr]
+
+        #TODO: Update version code
+
+        self.__dict__.update(state)
 
 
     def __getstate__(self): 

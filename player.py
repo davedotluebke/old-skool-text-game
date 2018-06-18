@@ -109,8 +109,9 @@ class Player(Creature):
     def set_start_loc(self, startroom):
         self.start_loc_id = startroom.id
 
-    def detach(self):
-        self.cons.detach(self)
+    def detach(self, nocons=False):
+        if not nocons:
+            self.cons.detach(self)
         self.cons = None
         Thing.game.deregister_heartbeat(self)
 
@@ -179,6 +180,9 @@ class Player(Creature):
             return
         
     def heartbeat(self):
+        if self.cons == None:
+            self.detach(nocons=True)
+        
         cmd = self.cons.take_input()
         if self.login_state != None:
             if cmd != None:
