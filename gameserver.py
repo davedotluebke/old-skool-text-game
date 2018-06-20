@@ -38,7 +38,10 @@ class Game():
         self.parser = Parser()
         self.dbg = dbg
         self.users = []
+
         self.ip_address = "127.0.0.1"
+        self.runtime = 1
+        self.last_seconds = time.time()
         
 
     def save_game(self, filename):
@@ -274,7 +277,11 @@ class Game():
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
+        # XXX why is this code not working?
+        # self.runtime = time.time() - self.last_seconds
+        # self.last_seconds = time.time()
         dbg.debug("Beat! Time = %s" % self.time, 4)
+        # dbg.debug("Last runthrough took %s seconds." % self.runtime, 4)
         
         current_events = self.events.check_for_event(self.time)            
         for event in current_events:
@@ -298,6 +305,8 @@ class Game():
                     dbg.debug('Error caught!', 0)
             else:
                 h.heartbeat()
+        self.runtime = time.time() - self.last_seconds
+        self.last_seconds = time.time()
         # schedule the next heartbeat:
         asyncio.get_event_loop().call_later(1,self.beat)
 
@@ -320,6 +329,7 @@ class Game():
         asyncio.get_event_loop().call_later(1, self.handle_requests)
 
     def handle_requests(self):
+        """Allow any incoming requests to be handled."""
         self.tcpserver.handle_request()
         asyncio.get_event_loop().call_later(1, self.handle_requests)
 
