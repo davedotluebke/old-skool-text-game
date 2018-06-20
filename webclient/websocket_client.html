@@ -145,10 +145,7 @@
                     e.preventDefault();
                 }
             }, false);
-            var ip_address = window.prompt('IP Address: ');
-            while (ip_address == null) {
-                ip_address = window.prompt('IP Address: ');
-            }
+            var ip_address = window.location.hostname;
             var ws = new WebSocket("ws://" + ip_address + ":9124/"),
             messages = document.getElementsByTagName('div')[0];
             ws.onopen = function (event) {

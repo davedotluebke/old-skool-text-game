@@ -4,6 +4,8 @@ import traceback
 import random
 import time
 import asyncio
+import socketserver
+import http.server
 import websockets
 import connections_websock
 
@@ -36,6 +38,7 @@ class Game():
         self.parser = Parser()
         self.dbg = dbg
         self.users = []
+        self.ip_address = "127.0.0.1"
         
 
     def save_game(self, filename):
@@ -300,15 +303,25 @@ class Game():
 
     def start_loop(self):
         print("Starting game...")
-        ip_address = input('IP Address: ')
+        self.ip_address = input('IP Address: ')
         asyncio.get_event_loop().run_until_complete(
-            websockets.serve(connections_websock.ws_handler, ip_address, 9124))
+            websockets.serve(connections_websock.ws_handler, self.ip_address, 9124))
         print("Listening on port 9124...")
         asyncio.get_event_loop().call_later(1,self.beat)
+        asyncio.get_event_loop().call_later(1.5,self.start_server)
         asyncio.get_event_loop().run_forever()
         # XXX add callbacks to handle game exit? 
         dbg.debug("Exiting main game loop!")
         dbg.shut_down()
+
+    def start_server(self):
+        self.tcpserver = socketserver.TCPServer(("localhost", 8001), http.server.SimpleHTTPRequestHandler)
+        self.tcpserver.timeout = 0.2
+        asyncio.get_event_loop().call_later(1, self.handle_requests)
+
+    def handle_requests(self):
+        self.tcpserver.handle_request()
+        asyncio.get_event_loop().call_later(1, self.handle_requests)
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
         dbg.debug("Game.clear_nulspace() called! Currently does nothing.")
