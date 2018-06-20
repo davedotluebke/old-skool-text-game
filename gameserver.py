@@ -312,7 +312,9 @@ class Game():
 
     def start_loop(self):
         print("Starting game...")
-        self.ip_address = input('IP Address: ')
+        alternate_ip = input('IP Address: ')
+        if alternate_ip != "":
+            self.ip_address = alternate_ip
         asyncio.get_event_loop().run_until_complete(
             websockets.serve(connections_websock.ws_handler, self.ip_address, 9124))
         print("Listening on port 9124...")
