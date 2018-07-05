@@ -1,18 +1,17 @@
-def alt_begin(alt_run):
-    import alt_startup
-    complete = alt_startup.alt_startup(alt_run)
-    if complete:
-        return
-    
-    while True:
-        value = input('Startup command:')
-        complete = alt_startup.alt_startup(value)
-        if complete:
-            return
+import startup
 
 print("Welcome to Firefile Scorcery School server. Press enter to begin the game, or enter a startup command.")
-alt_run = input('Startup command:')
-if not alt_run:
-    import startup
-else:
-    alt_begin(alt_run)
+while True:
+    cmd = input('Startup command:')
+    if cmd == "":
+        cmd = "default"
+    try:
+        if startup.launch_cmds[cmd]["type"] == "message":
+            print(startup.launch_cmds[cmd]["message"])
+        elif startup.launch_cmds[cmd]["type"] == "function":
+            startup.launch_cmds[cmd]["function"]()
+        
+        if startup.launch_cmds[cmd]["complete"] == True:
+            break
+    except KeyError:
+        print("Invalid command. Please try again.")

@@ -8,7 +8,7 @@
             "request": "launch",
             "stopOnEntry": false,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceRoot}/startup.py",
+            "program": "${workspaceRoot}/launch_vscode.py",
             "cwd": "",
             "console": "integratedTerminal",
             "env": {},
