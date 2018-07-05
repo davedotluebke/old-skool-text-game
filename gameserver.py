@@ -41,6 +41,7 @@ class Game():
 
         self.ip_address = "127.0.0.1"
         self.runtime = 1
+        self.run_timings = False
         self.last_seconds = time.time()
         
 
@@ -259,11 +260,11 @@ class Game():
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-        # XXX why is this code not working?
-        # self.runtime = time.time() - self.last_seconds
-        # self.last_seconds = time.time()
+        if self.run_timings:
+            self.runtime = time.time() - self.last_seconds
+            self.last_seconds = time.time()
+            dbg.debug("Last runthrough took %s seconds." % self.runtime, 4)
         dbg.debug("Beat! Time = %s" % self.time, 4)
-        # dbg.debug("Last runthrough took %s seconds." % self.runtime, 4)
         
         current_events = self.events.check_for_event(self.time)            
         for event in current_events:
@@ -297,6 +298,21 @@ class Game():
         asyncio.get_event_loop().run_until_complete(
             websockets.serve(connections_websock.ws_handler, self.ip_address, 9124))
         print("Listening on port 9124...")
+        asyncio.get_event_loop().call_later(1,self.beat)
+        asyncio.get_event_loop().run_forever()
+        # XXX add callbacks to handle game exit? 
+        dbg.debug("Exiting main game loop!")
+        dbg.shut_down()
+
+    def begin_analysis_mode(self):
+        print("Starting game in analysis mode...")
+        asyncio.get_event_loop().run_until_complete(
+            websockets.serve(connections_websock.ws_handler, self.ip_address, 9124))
+        print("Listening on port 9124...")
+
+        dbg.verbosity = 4
+        self.run_timings = True
+
         asyncio.get_event_loop().call_later(1,self.beat)
         asyncio.get_event_loop().run_forever()
         # XXX add callbacks to handle game exit? 
