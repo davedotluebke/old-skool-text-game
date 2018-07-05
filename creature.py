@@ -8,7 +8,7 @@ from armor import Armor
 
 class Creature(Container):
     def __init__(self, default_name, path, pref_id=None):
-        Container.__init__(self, default_name, pref_id)
+        Container.__init__(self, default_name, path, pref_id)
         self.closed = True
         self.closable = False
         self.see_inside = False
@@ -20,10 +20,8 @@ class Creature(Container):
         self.combat_skill = 0
         self.strength = 0
         self.dexterity = 1
-        self.default_weapon = Weapon("bare hands", None, 1, 5, 1, attack_verbs=["hit"])
-        self.default_weapon.set_description("bare hands", "your  bare hands")
-        self.default_armor = Armor("skin", path, 0, 0)
-        self.default_armor.set_description("skin", "your tender skin")
+        self.default_weapon = gametools.clone("default_weapon")
+        self.default_armor = gametools.clone("default_armor")
         self.weapon_wielding = self.default_weapon
         self.armor_worn = self.default_armor
         self.closed_err = "You can't put things in creatures!"
@@ -33,6 +31,14 @@ class Creature(Container):
         self.proper_name = default_name.capitalize()
         self.dead = False
         self.wizardry_element = None
+
+    def get_saveable(self):
+        saveable = super().get_saveable()
+        try:
+            del saveable['viewed']
+        except KeyError:
+            pass
+        return saveable
 
     def set_default_weapon(self, name, damage, accuracy, unwieldiness, attack_verbs=["hit"]):
         self.default_weapon = Weapon(name, None, damage, accuracy, unwieldiness, attack_verbs)
@@ -47,6 +53,24 @@ class Creature(Container):
         self.combat_skill = combat_skill
         self.strength = strength
         self.dexterity = dexterity
+
+    def _change_objs_to_IDs(self):
+        super()._change_objs_to_IDs()
+        self.armor_worn = self.armor_worn.id
+        self.weapon_wielding = self.weapon_wielding.id
+        self.default_armor = self.default_armor.id
+        self.default_weapon = self.default_weapon.id
+
+    def _restore_objs_from_IDs(self):
+        super()._restore_objs_from_IDs()
+        if isinstance(self.default_weapon, str):
+            self.default_weapon = Thing.ID_dict[self.default_weapon]
+        if isinstance(self.default_armor, str):
+            self.default_armor = Thing.ID_dict[self.default_armor]
+        if isinstance(self.weapon_wielding, str):
+            self.weapon_wielding = Thing.ID_dict[self.weapon_wielding]
+        if isinstance(self.armor_worn, str):
+            self.armor_worn = Thing.ID_dict[self.armor_worn]
 
     def get_short_desc(self, perceiver=None, definite=False, indefinite=False):
         '''Overloads `Thing.get_short_desc()` to return short description of

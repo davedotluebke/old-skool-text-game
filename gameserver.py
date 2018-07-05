@@ -1,4 +1,3 @@
-import pickle
 import io
 import traceback
 import random
@@ -8,6 +7,7 @@ import socketserver
 import http.server
 import websockets
 import connections_websock
+import json
 
 import gametools
 
@@ -45,6 +45,7 @@ class Game():
         
 
     def save_game(self, filename):
+        raise NotImplementedError("Saving games no longer works.")
         if not filename.endswith('.OAD'): 
             filename += '.OAD'
         try:
@@ -60,6 +61,7 @@ class Game():
             self.cons.write("Error pickling when saving to file %s" % filename)
             
     def load_game(self, filename):
+        raise NotImplementedError("Loading games no longer works.")
         if not filename.endswith('.OAD'): 
             filename += '.OAD'
         try:
@@ -123,21 +125,20 @@ class Game():
         if not filename.endswith('.OADplayer'): 
             filename += '.OADplayer'
         try:
-            f = open(filename, 'w+b')
+            f = open(filename, 'w')
             # XXX double-check: is this really necessary? 
             backup_ID_dict = Thing.ID_dict.copy()
             Thing.ID_dict.clear()
             # change location & contents etc from obj reference to ID:
             for obj in l:
                 obj._change_objs_to_IDs()
-            pickle.dump(l, f, pickle.HIGHEST_PROTOCOL)
+            saveables = [x.get_saveable() for x in l]
+            f.write(json.dumps(saveables, sort_keys=True, indent=4))
             Thing.ID_dict = backup_ID_dict
             player.cons.write("Saved player data to file %s" % filename)
             f.close()
         except IOError:
             player.cons.write("Error writing to file %s" % filename)
-        except pickle.PickleError:
-            player.cons.write("Error pickling when saving to file %s" % filename)
         # restore location & contents etc to obj references:
         for obj in l:
             obj._restore_objs_from_IDs()
@@ -148,24 +149,9 @@ class Game():
             obj.id = head  
             obj._add_ID(obj.id)  # re-create original entry in ID_dict
         
-    def login_player(self, cons):
-        """Create a new player object and put it in "login state", which
-        doesn't do anything but request the username and password. If the
-        username matches a player file, ask for the password, and if they 
-        match, load that player. If this is a new username, have them create
-        a new password and verify it, then put them in the new character 
-        creation room where they will select gender, species, etc. """
-        tmp_name = "login_player%d" % random.randint(10000, 99999)
-        user = Player(tmp_name, None, cons)
-        user.set_description("formless soul", "A formless player without a name")
-        user.set_max_weight_carried(750000)
-        user.set_max_volume_carried(2000)
-        cons.user = user
-        cons.write("Please enter your username: ")
-        user.login_state = "AWAITING_USERNAME"
 
     def load_player(self, filename, cons, oldplayer=None):
-        """Unpickle a single player and his/her inventory from a saved file.
+        """Load a single player and his/her inventory from a saved file.
 
         Objects in the player's inventory (and their contents, recursively) 
         are treated as new objects, and will often be duplicates of
@@ -176,24 +162,25 @@ class Game():
         if not filename.endswith('.OADplayer'): 
             filename += '.OADplayer'
         try:
-            f = open(filename, 'r+b')
+            f = open(filename, 'r')
         except FileNotFoundError:
             cons.write("Error, couldn't find file named %s" % filename)
             raise gametools.PlayerLoadError
         try:
             # l is the list of objects (player + recursive inventory). Note that 
-            # unpickling calls init() which creates new entries in ID_dict for objects in l,
+            # the loading code calls init() which creates new entries in ID_dict for objects in l,
             # using the uniquified IDs - guaranteed to succeed without further changing ID
-            l = pickle.load(f)  
+            saveables = json.loads(f.read())
             f.close()
-        except pickle.PickleError:
-            cons.write("Encountered error while pickling to file %s, player not loaded." % filename)
-            f.close()
-            raise gametools.PlayerLoadError
+            l = []
+            for x in saveables:
+                obj = gametools.clone(x['path'])
+                obj.update_obj(x)
+                l.append(obj)
         except EOFError:
             cons.write("The file you are trying to load appears to be corrupt.")
             raise gametools.PlayerLoadError
-        newplayer = l[0]  # first object pickled is the player
+        newplayer = l[0]  # first object saved is the player
 
         if oldplayer:
             # TODO: move below code for deleting player to Player.__del__()
@@ -210,7 +197,7 @@ class Game():
                 # o.__del__()  # XXX probably doesn't truly delete the object; needs more research
             cons.user = None
         
-        newplayer.cons = cons  # custom pickling code for Player doesn't save console
+        newplayer.cons = cons  # custom saving code for Player doesn't save console
         cons.user = newplayer  # update backref from cons
 
         cons.change_players = True
@@ -221,6 +208,10 @@ class Game():
             dbg.debug("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer), 0)
             cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
             newplayer.location = gametools.load_room('domains.school.school.great_hall')
+
+        # Add all of the objects to Thing.ID_dict temporarily
+        for o in l:
+            Thing.ID_dict[o.id] = o
         
         # Now fix up location & contents[] to list object refs, not ID strings
         for o in l:
@@ -238,27 +229,18 @@ class Game():
         room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         return newplayer
     
-    def create_new_player(self, name, cons):
-        user = Player(name, None, cons)
+    def login_player(self, cons):
+        """Create a new player object and put it in "login state", which
+        doesn't do anything but request the username and password. If the
+        username matches a player file, ask for the password, and if they 
+        match, load that player. If this is a new username, have them create
+        a new password and verify it, then put them in the new character 
+        creation room where they will select gender, species, etc. """
+        tmp_name = "login_player%d" % random.randint(10000, 99999)
+        user = gametools.clone('player', [tmp_name, cons])
         cons.user = user
-        adjective = random.choice(('tall', 'short', 'dark', 'pale', 'swarthy', 'thin', 'heavyset'))
-        species = random.choice(('human', 'elf', 'dwarf', 'gnome'))
-        user.set_description(adjective + ' ' + species, 'A player named %s' % name)
-        user.set_max_weight_carried(750000)
-        user.set_max_volume_carried(2000)
-
-        start_room = gametools.load_room('domains.school.school.great_hall')
-        start_room.insert(user)
-
-        scroll = gametools.clone('domains.school.scroll')
-        scroll.move_to(user)
-        self.register_heartbeat(scroll)
-        user.set_start_loc(start_room)
-        user.perceive("\nWelcome to Firlefile Sorcery School!\n\n"
-        "Type 'look' to examine your surroundings or an object, "
-        "'inventory' to see what you are carrying, " 
-        "'quit' to end the game, and 'help' for more information.")
-        return user
+        cons.write("Please enter your username: ")
+        user.login_state = "AWAITING_USERNAME"
 
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""
