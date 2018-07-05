@@ -21,6 +21,7 @@ class Thing(object):
     def __init__(self, default_name, path, pref_id=None):
         self.unlisted = False # should this thing be listed in room description  
         self.path = gametools.findGamePath(path) if path else None
+        self.version_number = 1
         self.names = [default_name]
         self._add_ID(default_name if not pref_id else pref_id)
         self.plural = False         # should this thing be treated as plural?
@@ -57,7 +58,45 @@ class Thing(object):
     def __str__(self): 
         return self.names[0]
 
-    def __getstate__(self): 
+    def get_saveable(self):
+        """Return dictionary of everything needed to save/restore the object
+
+        Return a "saveable" version of the object: a dictionary containing a
+        list of attributes THAT DIFFER from the default attributes for this 
+        object. This dictionary can be saved to a file and the object can be
+        restored by creating a default object and overwriting any attributes 
+        listed in the saveable. 
+
+        This allows objects to persist across changes to the object code. 
+        """
+        saveable = {}
+        state = self.__dict__.copy()
+        del state["actions"]
+        default_obj = gametools.clone(self.path)
+        default_state = default_obj.__dict__
+        for attr in list(state):
+            if state[attr] != default_state[attr] or attr == 'path' or attr == 'version_number':
+                saveable[attr] = state[attr]
+        return saveable
+
+    def update_obj(self, savable):
+        """Return the updated object from the "savable" version created above. 
+        Also call update_version() to make sure that all objects are up to date."""
+        state = self.__dict__.copy()
+        for attr in list(savable):
+            state[attr] = savable[attr]
+
+        self.update_version()
+
+        self.__dict__.update(state)
+
+    def update_version(self):
+        """Updates the version of the object, and runs snipets of code to make 
+        sure all objects will still function."""
+        if not self.version_number:
+            self.version_number = 1
+
+    def __getstate__(self):
         """Custom pickling code for Thing.
         
         Doesn't pickle Thing.ID_dict (which refers to all objects in game).

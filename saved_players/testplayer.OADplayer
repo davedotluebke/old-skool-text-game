@@ -1,0 +1,48 @@
+[
+    {
+        "adj1": "happy",
+        "adj2": "green-eyed",
+        "adjectives": [
+            "female",
+            "happy",
+            "green-eyed"
+        ],
+        "armor_worn": "skin188-saveplayer964726",
+        "contents": [
+            "scroll018-saveplayer964726"
+        ],
+        "default_armor": "skin188-saveplayer964726",
+        "default_weapon": "bare hands8441-saveplayer964726",
+        "gender": "female",
+        "id": "testplayer10-saveplayer964726",
+        "location": "domains.school.forest.field",
+        "long_desc": "A happy green-eyed female elf ",
+        "names": [
+            "testplayer",
+            "elf"
+        ],
+        "path": "player",
+        "proper_name": "Testplayer",
+        "short_desc": "happy green-eyed female elf ",
+        "species": "elf",
+        "start_loc_id": "domains.school.school.great_hall",
+        "version_number": 1,
+        "weapon_wielding": "bare hands8441-saveplayer964726"
+    },
+    {
+        "id": "scroll018-saveplayer964726",
+        "location": "testplayer10-saveplayer964726",
+        "path": "domains.school.scroll",
+        "version_number": 1
+    },
+    {
+        "id": "bare hands8441-saveplayer964726",
+        "path": "default_weapon",
+        "version_number": 1
+    },
+    {
+        "id": "skin188-saveplayer964726",
+        "path": "default_armor",
+        "version_number": 1
+    }
+]
