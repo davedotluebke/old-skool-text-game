@@ -71,9 +71,6 @@ class Creature(Container):
         if isinstance(self.armor_worn, str):
             self.armor_worn = Thing.ID_dict[self.armor_worn]
 
-        
-
-
     def get_short_desc(self, perceiver=None, definite=False, indefinite=False):
         '''Overloads `Thing.get_short_desc()` to return short description of
         the creature, optionally prepended by a definite or indefinite article

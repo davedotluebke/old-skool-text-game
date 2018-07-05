@@ -1,4 +1,3 @@
-import pickle
 import io
 import traceback
 import random
@@ -40,6 +39,7 @@ class Game():
         
 
     def save_game(self, filename):
+        raise NotImplementedError("Saving games no longer works.")
         if not filename.endswith('.OAD'): 
             filename += '.OAD'
         try:
@@ -55,6 +55,7 @@ class Game():
             self.cons.write("Error pickling when saving to file %s" % filename)
             
     def load_game(self, filename):
+        raise NotImplementedError("Loading games no longer works.")
         if not filename.endswith('.OAD'): 
             filename += '.OAD'
         try:
@@ -125,7 +126,6 @@ class Game():
             # change location & contents etc from obj reference to ID:
             for obj in l:
                 obj._change_objs_to_IDs()
-            # pickle.dump(l, f, pickle.HIGHEST_PROTOCOL)
             saveables = [x.get_saveable() for x in l]
             f.write(json.dumps(saveables, sort_keys=True, indent=4))
             Thing.ID_dict = backup_ID_dict
@@ -145,7 +145,7 @@ class Game():
         
 
     def load_player(self, filename, cons, oldplayer=None):
-        """Unpickle a single player and his/her inventory from a saved file.
+        """Load a single player and his/her inventory from a saved file.
 
         Objects in the player's inventory (and their contents, recursively) 
         are treated as new objects, and will often be duplicates of
@@ -162,7 +162,7 @@ class Game():
             raise gametools.PlayerLoadError
         try:
             # l is the list of objects (player + recursive inventory). Note that 
-            # unpickling calls init() which creates new entries in ID_dict for objects in l,
+            # the loading code calls init() which creates new entries in ID_dict for objects in l,
             # using the uniquified IDs - guaranteed to succeed without further changing ID
             saveables = json.loads(f.read())
             f.close()
@@ -174,7 +174,7 @@ class Game():
         except EOFError:
             cons.write("The file you are trying to load appears to be corrupt.")
             raise gametools.PlayerLoadError
-        newplayer = l[0]  # first object pickled is the player
+        newplayer = l[0]  # first object saved is the player
 
         if oldplayer:
             # TODO: move below code for deleting player to Player.__del__()
