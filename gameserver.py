@@ -18,6 +18,7 @@ from parse import Parser
 from console import Console
 from event_nsl import EventQueue
 from parse import Parser
+from server_key_detect import KBHit
 
 class Game():
     """
@@ -28,7 +29,6 @@ class Game():
     """
     def __init__(self):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
-        self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
@@ -43,7 +43,18 @@ class Game():
         self.runtime = 1
         self.run_timings = False
         self.last_seconds = time.time()
-        
+
+        self.kb = KBHit()
+        self.current_input_str = ''
+        self.current_prompt = '> '
+        self.commands = {
+            'quit':self.quit_game,
+            'q':self.quit_game,
+            'help':self.print_help_msg,
+            'h':self.print_help_msg,
+            'verbose':self.set_dbg_verbosity,
+            'v':self.set_dbg_verbosity
+        }
 
     def save_game(self, filename):
         raise NotImplementedError("Saving games no longer works.")
@@ -256,6 +267,18 @@ class Game():
             del self.heartbeat_users[self.heartbeat_users.index(obj)]
         else:
             dbg.debug("object %s, not in heartbeat_users, tried to deregister heartbeat!" % obj, 2)
+
+    def _set_verbosity(self, level=-1):
+        if level != -1:
+            dbg.verbosity = level
+            return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity)
+        if dbg.verbosity == 0:
+            dbg.verbosity = 1
+            return "Verbose debug output now on, verbosity level %s." % dbg.verbosity
+        else:
+            dbg.verbosity = 0
+            return "Verbose debug output now off."
+
     
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
@@ -290,34 +313,122 @@ class Game():
                 h.heartbeat()
         self.runtime = time.time() - self.last_seconds
         self.last_seconds = time.time()
+
         # schedule the next heartbeat:
         asyncio.get_event_loop().call_later(1,self.beat)
 
-    def start_loop(self):
-        print("Starting game...")
+    
+    def check_char(self):
+        """Checks to see if there is any keyboard input, and if so, directs it to the game console."""
+        # check for keyboard entries
+        if self.kb.kbhit():
+            self.answer_kbd_input()
+
+        asyncio.get_event_loop().call_later(0.1, self.check_char)
+
+
+    def answer_kbd_input(self):
+        """Answer keyboard input portaining to the game console."""
+        key = self.kb.getch()
+        if (ord(key) >= 48 and ord(key) <= 57) or (ord(key) >= 97 and ord(key) <= 122) or ord(key) == 32: #lowercase letters, numbers, and spaces
+            if not self.current_input_str:
+                print(self.current_prompt, end='', flush=True)
+            print(key, end='', flush=True)
+            self.current_input_str += key
+        
+        elif ord(key) == 10: # enter
+            if not self.current_input_str:
+                pass
+            else:
+                try:
+                    self.commands[self.current_input_str.split()[0]](self.current_input_str)
+                    self.current_input_str = ''
+                    print('\n', end='', flush=True)
+                except KeyError:
+                    print('\nInvalid command. Please try again.')
+                    self.current_input_str = ''
+                except Exception:
+                    print('\nAn exception occured.')
+                    print(traceback.format_exc())
+                    self.current_input_str = ''
+
+        elif ord(key) == 127: # backspace
+            if not self.current_input_str:
+                pass
+            else:
+                print('\nCharacter deleted\n', end='', flush=True)
+                input_lst = [x for x in self.current_input_str]
+                self.current_input_str = ''
+                input_total_len = len(input_lst)
+                for num in range(0, input_total_len):
+                    x = input_lst[0]
+                    i = input_lst.index(x)
+                    length = len(input_lst) - 1
+                    if i != length:
+                        self.current_input_str += x
+                    del input_lst[input_lst.index(x)]
+                if self.current_input_str:
+                    print(self.current_prompt, self.current_input_str, sep='', end='', flush=True)
+        else:
+            print('\nPlease use only lowercase letters, numbers, and newlines.')
+            if self.current_input_str:
+                print(self.current_prompt, self.current_input_str, sep='', end='', flush=True)
+        
+        if self.kb.kbhit():
+            self.answer_kbd_input()
+
+    def quit_game(self, msg):
+        """Quits the game. Requires a confirm command from the game console."""
+        print('Are you sure you want to quit? The game will not be saved.')
+        confirm = input('Click enter to cancel. Any value will confirm:')
+        if confirm:
+            asyncio.get_event_loop().stop()
+
+    def print_help_msg(self, msg):
+        print(self.current_msg, self.commands, sep='\n')
+
+    def set_dbg_verbosity(self, msg):
+        print('\n', end='', flush=True)
+        words = msg.split()
+        try:
+            level = int(words[1])
+        except IndexError:
+            print(self._set_verbosity())
+            return
+        except ValueError:
+            if words[1] == 'filter':
+                try:
+                    s = words[2:] 
+                    dbg.set_filter_str(s)
+                    print("Set verbose filter to '%s', debug strings containing '%s' will now be printed." % (s, s))                      
+                except IndexError:
+                    dbg.set_filter_str('&&&')
+                    print("Turned off verbose filter; debug messages will only print if they are below level %d." % dbg.verbosity)
+                return
+            print("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>")
+            return
+        except Exception:
+            print(traceback.format_exc())
+        print(self._set_verbosity(level))
+
+
+    def start_loop(self, message=None, port=9124):
+        print(message if message else "Starting game...")
         asyncio.get_event_loop().run_until_complete(
-            websockets.serve(connections_websock.ws_handler, self.ip_address, 9124))
-        print("Listening on port 9124...")
+            websockets.serve(connections_websock.ws_handler, self.ip_address, port))
+        print("Listening on port %s..." % port)
         asyncio.get_event_loop().call_later(1,self.beat)
+        asyncio.get_event_loop().call_later(1.05,self.check_char)
         asyncio.get_event_loop().run_forever()
         # XXX add callbacks to handle game exit? 
         dbg.debug("Exiting main game loop!")
         dbg.shut_down()
 
     def begin_analysis_mode(self):
-        print("Starting game in analysis mode...")
-        asyncio.get_event_loop().run_until_complete(
-            websockets.serve(connections_websock.ws_handler, self.ip_address, 9124))
-        print("Listening on port 9124...")
-
         dbg.verbosity = 4
         self.run_timings = True
 
-        asyncio.get_event_loop().call_later(1,self.beat)
-        asyncio.get_event_loop().run_forever()
-        # XXX add callbacks to handle game exit? 
-        dbg.debug("Exiting main game loop!")
-        dbg.shut_down()
+        self.start_loop('Starting game in analysis mode...')
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
         dbg.debug("Game.clear_nulspace() called! Currently does nothing.")

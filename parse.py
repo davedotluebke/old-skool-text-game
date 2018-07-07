@@ -10,16 +10,6 @@ from player import Player
 
 class Parser:
     ordinals = {"first":1, "second":2, "third":3, "fourth":4, "fifth":5, "sixth":6, "seventh":7, "eighth":8, "ninth":9, "tenth":10}
-    def _set_verbosity(self, level=-1):
-        if level != -1:
-            dbg.verbosity = level
-            return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity)
-        if dbg.verbosity == 0:
-            dbg.verbosity = 1
-            return "Verbose debug output now on, verbosity level %s." % dbg.verbosity
-        else:
-            dbg.verbosity = 0
-            return "Verbose debug output now off."
 
     def diagram_sentence(self, words):
         """Categorize sentence type and set verb, direct/indirect object strings.
@@ -121,40 +111,16 @@ class Parser:
             return matched_objects[0]
 
     def parse(self, user, console, command):
-        """Parse and enact the user's command. Return False to quit game."""
+        """Parse and enact the user's command. Return False if user wishes to quit."""
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
         if command == 'quit':
             user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (user, user))
             console.game.save_player(os.path.join(gametools.PLAYER_DIR, user.names[0]), user)
             console.write("#quit")
             return False
-
-        if command == 'quit game':
-            console.game.keep_going = False
         
         self.words = command.split()
         if len(self.words) == 0:
-            return True
-
-        if self.words[0] == 'verbose':
-            try:
-                level = int(self.words[1])
-            except IndexError:
-                console.write(self._set_verbosity())
-                return True
-            except ValueError:
-                if self.words[1] == 'filter':
-                    try:
-                        s = self.words[2:] 
-                        dbg.set_filter_str(s)
-                        console.write("Set verbose filter to '%s', debug strings containing '%s' will now be printed." % (s, s))                      
-                    except IndexError:
-                        dbg.set_filter_str('&&&')
-                        console.write("Turned off verbose filter; debug messages will only print if they are below level %d." % dbg.verbosity)
-                    return True
-                console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>")
-                return True
-            console.write(self._set_verbosity(level))
             return True
         
         # remove articles and convert to lowercase, unless the command 
