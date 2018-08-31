@@ -25,8 +25,8 @@ class Thing(object):
         self.names = [default_name]
         self._add_ID(default_name if not pref_id else pref_id)
         self.plurality = 1
-        self.weight = 0.0
-        self.volume = 0.0
+        self._weight = 0.0
+        self._volume = 0.0
         self.emits_light = False
         self.flammable = 0
         self.location = None
@@ -215,14 +215,27 @@ class Thing(object):
         overloaded for objects whose description depends on who is observing 
         it. For example, Creatures (like NPCs and Players) may have proper 
         names that will be used instead of a short description once the 
-        Creature is introduced.'''
+        Creature is introduced. Plural objects are described as 
+        "{two/three/four/several/many/a {small/large/huge} pile of} <plural_short_desc>"'''
         if definite: 
             article = "the "
         elif indefinite:
             article = self.indefinite() + " "
         else:
             article = ""
-        return article + self.short_desc
+        if self.plurality > 1:
+            if   self.plurality == 2:        quantity = "two "  # TODO: consider package 'num2words' instead
+            elif self.plurality == 3:        quantity = "three "
+            elif self.plurality == 4:        quantity = "four "  
+            elif 5 <= self.plurality <= 8:   quantity = "several "
+            elif 9 <= self.plurality <= 15:  quantity = "many "
+            elif 16 <= self.plurality <= 25: quantity = article + "pile of "
+            elif 26 <= self.plurality <= 50: quantity = article + "large pile of "
+            elif 51 <= self.plurality < 100: quantity = article + "huge pile of "
+            elif 100 <= self.plurality:      quantity = article + "vast pile of "
+            return quantity + if hasattr(self, plural_short_desc) self.plural_short_desc else self.short_desc+"s"
+        else: 
+            return article + self.short_desc
 
     def possessive(self):
         """Return 'his', 'her', or 'its' as appropriate."""
@@ -286,7 +299,8 @@ class Thing(object):
         for recipient in recipients:
             recipient.perceive(message)
 
-    def move_to(self, dest, force_move=False):
+    def move_to(self, dest, force_move=False):  
+        raise  # XXX check if this code is compatible with plurals
         """Extract this object from its current location and insert into dest. 
         Returns True if the move succeeds. If the insertion fails, attempts to 
         re-insert into the original location and returns False.  
@@ -310,6 +324,7 @@ class Thing(object):
             return True
 
     def take(self, p, cons, oDO, oIDO):
+        raise  # XXX check if this code is compatible with plurals       
         if oDO == None: return "I don't know what you're trying to take!"
         if oDO != self: return "You can't take the %s!" % oDO.short_desc
         if self.fixed:  return self.fixed
@@ -322,6 +337,7 @@ class Thing(object):
         return True
 
     def drop(self, p, cons, oDO, oIDO):
+        raise  # XXX check if this code is compatible with plurals
         if oDO != self:     return "You can't drop that!"
         if self.fixed:      return self.fixed
         if self.location != cons.user: return "You aren't holding the %s!" % self.short_desc
