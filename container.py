@@ -100,19 +100,19 @@ class Container(Thing):
             return result
         if self.see_inside:
             if self.contents:
-                if self.plural:
+                if self.plurality > 1:
                     pass
                 preamble = "%s the %s there is:" % (self.insert_prepositions[0], self)
                 cons.write(preamble.capitalize())
                 for item in self.contents:
                     cons.write("a " + item.short_desc)
             else:
-                if self.plural:
+                if self.plurality > 1:
                     cons.write('They are empty. ')
                 else:
                     cons.write("It is empty. ")
         if self.closed:
-            if self.plural:
+            if self.plurality > 1:
                 cons.write('They are closed. ')
             else:
                 cons.write("It is closed. ")

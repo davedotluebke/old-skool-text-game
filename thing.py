@@ -24,7 +24,7 @@ class Thing(object):
         self.version_number = 1
         self.names = [default_name]
         self._add_ID(default_name if not pref_id else pref_id)
-        self.plural = False         # should this thing be treated as plural?
+        self.plurality = 1
         self.weight = 0.0
         self.volume = 0.0
         self.emits_light = False
