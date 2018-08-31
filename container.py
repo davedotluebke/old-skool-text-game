@@ -59,11 +59,11 @@ class Container(Thing):
         contents_weight = 0
         contents_volume = 0
         for w in self.contents:
-            contents_weight = contents_weight + w.weight
-            contents_volume = contents_volume + w.volume
+            contents_weight = contents_weight + w.get_weight()
+            contents_volume = contents_volume + w.get_volume()
         dbg.debug("insert(): %s currently carrying %d weight and %d volume" % (self.id, contents_weight, contents_volume), 3)
-        if (force_insert == True) or (self.max_weight_carried >= contents_weight+obj.weight and self.max_volume_carried >= contents_volume+obj.volume):
-            dbg.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.weight, obj.volume), 3)
+        if (force_insert == True) or (self.max_weight_carried >= contents_weight+obj.get_weight() and self.max_volume_carried >= contents_volume+obj.get_volume()):
+            dbg.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.get_weight(), obj.get_volume()), 3)
             obj.set_location(self)   # make this container the location of obj
             self.contents.append(obj)
             return False
@@ -71,7 +71,7 @@ class Container(Thing):
             dbg.debug("The weight(%d) and volume(%d) of the %s can't be held by the %s, "
                   "which can only carry %d grams and %d liters (currently "
                   "holding %d grams and %d liters)" 
-                  % (obj.weight, obj.volume, obj.id, self.id, self.max_weight_carried, self.max_volume_carried, contents_weight, contents_volume), 2)
+                  % (obj.get_weight(), obj.get_volume(), obj.id, self.id, self.max_weight_carried, self.max_volume_carried, contents_weight, contents_volume), 2)
             return True
 
     def set_max_weight_carried(self, max_grams_carried):

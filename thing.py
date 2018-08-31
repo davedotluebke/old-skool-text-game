@@ -25,8 +25,8 @@ class Thing(object):
         self.names = [default_name]
         self._add_ID(default_name if not pref_id else pref_id)
         self.plurality = 1
-        self.weight = 0.0
-        self.volume = 0.0
+        self._weight = 0.0
+        self._volume = 0.0
         self.emits_light = False
         self.flammable = 0
         self.location = None
@@ -169,14 +169,14 @@ class Thing(object):
             dbg.debug("Error: weight cannot be negative", 0)
             raise
         else:
-            self.weight = grams
+            self._weight = grams
 
     def set_volume(self, liters):
         if (liters < 0):
             dbg.debug("Error: volume cannot be negative", 0)
             raise
         else:
-            self.volume = liters
+            self._volume = liters
 
     def set_location(self, containing_object):
         self.location = containing_object
