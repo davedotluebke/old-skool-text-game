@@ -170,6 +170,10 @@ class Thing(object):
             raise
         else:
             self.weight = grams
+    
+    def get_weight(self):
+        '''Return the weight of a single object times the number of objects present'''
+        return self._weight * self.plurality
 
     def set_volume(self, liters):
         if (liters < 0):
@@ -177,6 +181,10 @@ class Thing(object):
             raise
         else:
             self.volume = liters
+    
+    def get_volume(self):
+        '''Return the volume of a single object times the number of objects present'''
+        return self._volume * self.plurality
 
     def set_location(self, containing_object):
         self.location = containing_object
