@@ -56,16 +56,24 @@ class Container(Thing):
         if obj == None:
             dbg.debug('Trying to insert a null object into %s!' % self, 0)
             return True
-        contents_weight = 0
-        contents_volume = 0
+        contents_weight = 0.0
+        contents_volume = 0.0
         for w in self.contents:
             contents_weight = contents_weight + w.get_weight()
             contents_volume = contents_volume + w.get_volume()
         dbg.debug("insert(): %s currently carrying %d weight and %d volume" % (self.id, contents_weight, contents_volume), 3)
         if (force_insert == True) or (self.max_weight_carried >= contents_weight+obj.get_weight() and self.max_volume_carried >= contents_volume+obj.get_volume()):
             dbg.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.get_weight(), obj.get_volume()), 3)
-            obj.set_location(self)   # make this container the location of obj
-            self.contents.append(obj)
+            # Success! The object fits in the container, add it. Or, if an identical 
+            # object already exists in the container, instead increase its plurality count.
+            for w in self.contents:
+                if obj.compare(w):
+                    w.plurality += obj.plurality 
+                    obj.destroy()
+                    break
+            else: # no break was called in for loop, menaing no identical object was found
+                self.contents.append(obj)
+                obj.set_location(self)   # make this container the location of obj
             return False
         else:
             dbg.debug("The weight(%d) and volume(%d) of the %s can't be held by the %s, "
@@ -80,19 +88,27 @@ class Container(Thing):
     def set_max_volume_carried(self, max_liters_carried):
         self.max_volume_carried = max_liters_carried
 
-    def extract(self, obj):
-        """Remove obj from this Container, returning True if the operation failed"""
+    def extract(self, obj, count=1):
+        """Remove <count> copies of obj from this Container, returning the extracted object(s) or returning True if the operation failed"""
+        # TODO: raise exceptions specific to "object not found" or "not enough objects"
         if obj not in self.contents:
             dbg.debug("Error! "+str(self)+" doesn't contain item "+str(obj.id), 0)
             return True
+        if obj.plurality < count:
+            dbg.debug("Error! Tried to remove %d copies of %s from %s, but %s contains only %d %s" %
+                      (count, str(obj), str(self), str(self), obj.count, 'copies' if obj.count>1 else 'copy'))
+            return True  
         
-        found = -1
-        for i in range(0, len(self.contents)):
-            if obj == self.contents[i]:
-                found = i
-                break
-        assert found != -1
-        del self.contents[i]
+        if count < obj.plurality:
+            # extracting only some of the identical objects in this container
+            obj.plurality -= count
+            new_obj = obj.replicate(count)  # create new plurality of <count> objects
+            return new_obj
+        else 
+            # extracting exactly as many copies of obj as are in the container 
+            i = self.contents.index(obj)  # no need for try..except since we already know obj in list
+            del self.contents[i]
+            return obj
 
     def look_at(self, p, cons, oDO, oIDO):
         result = Thing.look_at(self, p, cons, oDO, oIDO)
@@ -100,22 +116,14 @@ class Container(Thing):
             return result
         if self.see_inside:
             if self.contents:
-                if self.plurality > 1:
-                    pass
                 preamble = "%s the %s there is:" % (self.insert_prepositions[0], self)
                 cons.write(preamble.capitalize())
                 for item in self.contents:
-                    cons.write("a " + item.short_desc)
+                    cons.write(item.get_short_desc(indefinite=true))
             else:
-                if self.plurality > 1:
-                    cons.write('They are empty. ')
-                else:
-                    cons.write("It is empty. ")
+                cons.write("It is empty. ")
         if self.closed:
-            if self.plurality > 1:
-                cons.write('They are closed. ')
-            else:
-                cons.write("It is closed. ")
+            cons.write("It is closed. ")
         return True
     
     def close_action(self, p, cons, oDO, oIDO):
@@ -158,6 +166,7 @@ class Container(Thing):
         return True
 
     def put(self, p, cons, oDO, oIDO):
+        raise  # XXX check if this code is compatible with plurals
         """Put an object <oDO> into this container <oIDO>.  Returns an error 
         message if oIDO (the indirect object) is not this Container."""
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
@@ -179,6 +188,7 @@ class Container(Thing):
         return True            
 
     def remove(self, p, cons, oDO, oIDO):
+        raise  # XXX check if this code is compatible with plurals
         """Remove an object <oDO> from this container <oIDO>. Returns an error 
         message if oDO is not in this container."""
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
