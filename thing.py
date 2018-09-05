@@ -1,6 +1,7 @@
 from debug import dbg
 from action import Action
 import random
+import copy
 import gametools
 
 class Thing(object):
@@ -31,8 +32,9 @@ class Thing(object):
         self.flammable = 0
         self.location = None
         self.fixed = False          # False if unfixed, error message if fixed 
-        self.short_desc = 'need_short_desc'
-        self.long_desc = 'need_long_desc'
+        self._short_desc = 'need_short_desc'
+        self._plural_short_desc = 'need_plural_short_desc'
+        self._long_desc = 'need_long_desc'
         self.adjectives = []
         self.contents = None        # None - only Containers can contain things
         # dictionary mapping verb strings to functions:
@@ -58,6 +60,17 @@ class Thing(object):
     def __str__(self): 
         return self.names[0]
 
+    def replicate(self):
+        new_obj = copy.copy(self)
+        # Resolve fields that require special treatment
+        new_obj._add_ID(new_obj.id)
+        new_obj.plurality = None
+        new_obj.location = None
+        if new_obj.contents != None:
+            raise Exception("Can't replicate containers")
+        new_obj.actions = self._replicate_actions()
+        return new_obj
+        
     def get_saveable(self):
         """Return dictionary of everything needed to save/restore the object
 
@@ -195,16 +208,17 @@ class Thing(object):
     def unfix(self):
         self.fixed = False
 
-    def set_description(self, s_desc, l_desc, unlisted=False):
-        self.short_desc = s_desc
-        self.long_desc = l_desc
+    def set_description(self, s_desc, l_desc, p_s_desc=None, unlisted=False):
+        self._short_desc = s_desc
+        self._long_desc = l_desc
+        self._plural_short_desc = p_s_desc if p_s_desc else s_desc+"s"
         self.unlisted = unlisted
 
     def indefinite(self):
         """Return the appropriate indefinite article ('a' or 'an') to use with
         the object, based on starting character of self.short_desc. Overload  
         for objects not starting with a vowel that should still use 'an'"""
-        return "an" if self.short_desc[0] in 'aeiou' else "a"
+        return "an" if self._short_desc[0] in 'aeiou' else "a"
 
     def get_short_desc(self, perceiver=None, definite=False, indefinite=False):
         '''Return the short description of this object, optionally prepended
@@ -233,9 +247,9 @@ class Thing(object):
             elif 26 <= self.plurality <= 50: quantity = article + "large pile of "
             elif 51 <= self.plurality < 100: quantity = article + "huge pile of "
             elif 100 <= self.plurality:      quantity = article + "vast pile of "
-            return quantity + if hasattr(self, plural_short_desc) self.plural_short_desc else self.short_desc+"s"
+            return quantity + self._plural_short_desc
         else: 
-            return article + self.short_desc
+            return article + self._short_desc
 
     def possessive(self):
         """Return 'his', 'her', or 'its' as appropriate."""
@@ -326,9 +340,9 @@ class Thing(object):
     def take(self, p, cons, oDO, oIDO):
         raise  # XXX check if this code is compatible with plurals       
         if oDO == None: return "I don't know what you're trying to take!"
-        if oDO != self: return "You can't take the %s!" % oDO.short_desc
+        if oDO != self: return "You can't take %s!" % oDO.get_short_desc(definite=True)
         if self.fixed:  return self.fixed
-        if self.location == cons.user: return "You are already holding the %s!" % self.short_desc
+        if self.location == cons.user: return "You are already holding %s!" % self.get_short_desc(definite=True)
         if self.move_to(cons.user):
             cons.user.perceive("You take &nd%s." % self.id)
             self.emit('&nD%s takes &nd%s.' % (cons.user.id, self.id), [cons.user])
@@ -340,15 +354,15 @@ class Thing(object):
         raise  # XXX check if this code is compatible with plurals
         if oDO != self:     return "You can't drop that!"
         if self.fixed:      return self.fixed
-        if self.location != cons.user: return "You aren't holding the %s!" % self.short_desc
+        if self.location != cons.user: return "You aren't holding  %s!" % self.get_short_desc(definite=True)
         if self.move_to(cons.user.location):
-            cons.write("You drop the %s." % self.short_desc)
-            cons.user.emit("&nD%s drops the %s." % (cons.user.id, self.short_desc))
+            cons.write("You drop %s." % self.get_short_desc(definite=True))
+            cons.user.emit("&nD%s drops %s." % (cons.user.id, self.get_short_desc(definite=True)))
         else:
-            cons.write("You cannot drop the %s" % self.short_desc)
+            cons.write("You cannot drop %s" % self.get_short_desc(definite=True))
         return True
 
-    def look_at(self, p, cons, oDO, oIDO):  
+    def look_at(self, p, cons, oDO, oIDO):
         '''Print out the long description of the thing.'''
         if self == oDO or self == oIDO:
             cons.write(self.long_desc)
