@@ -34,7 +34,7 @@ class Flower(Thing):
     def shake(self, p, cons, oDO, oIDO):
         for i in self.actions:
             if i.func == self.shake:
-                if not i.validate:
+                if self not in cons.user.contents:
                     cons.write("You have to pick the flower before you can shake it!")
                     return True
         if self.type in ['poppy']:
