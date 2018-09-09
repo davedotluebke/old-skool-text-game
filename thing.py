@@ -35,11 +35,6 @@ class Thing(object):
         self.long_desc = 'need_long_desc'
         self.adjectives = []
         self.contents = None        # None - only Containers can contain things
-        # dictionary mapping verb strings to functions:
-        self.actions = []
-        self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
-        self.actions.append(Action(self.take, ["take", "get"], True, False))
-        self.actions.append(Action(self.drop, ["drop"], True, False))
         self.spawn_location = None
         self.spawn_interval = None
         self.spawn_message = None
@@ -331,4 +326,10 @@ class Thing(object):
             return True
         else:
             return "Not sure what you are trying to look at!"
-        
+
+    actions = {}
+    actions["look"] = Action(look_at, True, True)
+    actions["examine"] = Action(look_at, True, True)
+    actions["take"] = Action(take, True, False)
+    actions["get"] = Action(take, True, False)
+    actions["drop"] = Action(drop, True, False)
