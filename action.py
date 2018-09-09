@@ -1,12 +1,15 @@
+from collections import namedtuple
+
 from debug import dbg
 
-class Action:
-    """An action the player can do, associated with an object in the game.
-    Specifies a function <func> which is enacted by the player using one or more 
-    verb synonums (strings in <verblist>).  Verbs can be <transitive> (taking a 
-    direct object), <intransitive> (no direct object), or both.
+Action = namedtuple('Action', ['func', 'trans', 'intrans'])
+    """An action the player can do, associated with an object in the game or
+    with a class of objects.  Specifies an action function <func> which is
+    to be enacted when the player types a verb mapped to this Action. Verbs
+    can be transitive, taking a direct object (<trans> == True); intransitive,
+    with no direct object (<intrans> == True); or both.
     
-    Action functions take the special form 
+    Action functions always take the special form 
         a(parser, console, DO, IDO)
     where parser and console are from the current client, DO is the object 
     that the parser has determined is the direct object of the user's command
@@ -16,12 +19,4 @@ class Action:
     error would be printed out). The parser will print the appropriate error 
     message if no valid handler is found.   
     """  
-    def __init__(self, func=None, verbs=[], trans=False, intrans=False):
-        self.func = func
-        self.verblist = verbs
-        self.transitive = trans
-        self.intransitive = intrans
-        self.restrictions = rstrct
-    
-
 
