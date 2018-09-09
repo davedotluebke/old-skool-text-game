@@ -73,8 +73,8 @@ class Parser:
         """Find an object in the list <objs> matching the given string <sObj>.
         Tests the name(s) and any adjectives for each object in <objs> against the words in sObj. 
         
-        Returns the matching object or None if 1 or 0 objects match sObj.
-
+        Returns the matching object if 1 object matches sObj.
+        Returns None if 0 objects match sObj.
         Returns False after writing an error message to Console <cons> if more than 1 object matches. """
         matched_objects = []
         sNoun = sObj.split()[-1]  # noun is final word in sObj (after adjectives)
@@ -120,6 +120,27 @@ class Parser:
         else:   # exactly one object in matched_objects 
             return matched_objects[0]
 
+    def _handle_verbose(self, console):
+        try:
+            level = int(self.words[1])
+        except IndexError:
+            console.write(self._set_verbosity())
+            return True
+        except ValueError:
+            if self.words[1] == 'filter':
+                try:
+                    s = self.words[2:] 
+                    dbg.set_filter_str(s)
+                    console.write("Set verbose filter to '%s', debug strings containing '%s' will now be printed." % (s, s))                      
+                except IndexError:
+                    dbg.set_filter_str('&&&')
+                    console.write("Turned off verbose filter; debug messages will only print if they are below level %d." % dbg.verbosity)
+                return True
+            console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>")
+            return True
+        console.write(self._set_verbosity(level))
+        return True
+
     def parse(self, user, console, command):
         """Parse and enact the user's command. Return False to quit game."""
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
@@ -137,25 +158,7 @@ class Parser:
             return True
 
         if self.words[0] == 'verbose':
-            try:
-                level = int(self.words[1])
-            except IndexError:
-                console.write(self._set_verbosity())
-                return True
-            except ValueError:
-                if self.words[1] == 'filter':
-                    try:
-                        s = self.words[2:] 
-                        dbg.set_filter_str(s)
-                        console.write("Set verbose filter to '%s', debug strings containing '%s' will now be printed." % (s, s))                      
-                    except IndexError:
-                        dbg.set_filter_str('&&&')
-                        console.write("Turned off verbose filter; debug messages will only print if they are below level %d." % dbg.verbosity)
-                    return True
-                console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>")
-                return True
-            console.write(self._set_verbosity(level))
-            return True
+            self._handle_verbose(console)
         
         # remove articles and convert to lowercase, unless the command 
         # requires the exact user text:
@@ -185,11 +188,14 @@ class Parser:
         possible_verb_objects = []  # list of objects supporting the verb
         possible_verb_actions = []  # corresponding list of actions 
         for obj in possible_objects:
-            for act in obj.actions:
-                if sV in act.verblist:
-                    if (act.intransitive and not sDO) or (act.transitive): 
-                        possible_verb_objects.append(obj)
-                        possible_verb_actions.append(act)
+            act = obj.actions.get(sV)  # returns None if <sV> not in <actions>
+            #  actions associated with object (if any) overwrite actions associated with class
+            try: act = obj.obj_actions[sV]
+            except:     # <obj_actions> doesn't exist or doesn't contain <sV>
+                pass    # Note: <act> unchanged either way
+            if act and (act.intransitive and not sDO) or (act.transitive): 
+                possible_verb_objects.append(obj)
+                possible_verb_actions.append(act)
         if (not possible_verb_objects): 
             if sDO == None:
                 console.write("Parse error: can't find any object supporting intransitive verb %s!" % sV)
@@ -208,6 +214,7 @@ class Parser:
             return True     # ambiguous user input; >1 object matched 
 
         # If direct or indirect object supports the verb, try first in that order
+        # XXX TODO: probably a cleaner way to do this, maybe with list.pop()? 
         initial_actions = []
         for o in (oDO, oIDO):
             if o in possible_verb_objects:
