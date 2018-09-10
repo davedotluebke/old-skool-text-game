@@ -26,7 +26,7 @@ class Armor(Thing):
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
     #
-
+    
     def wear(self, p, cons, oDO, oIDO):
         if self == oDO:
             if self == cons.user.armor_worn:

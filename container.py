@@ -3,6 +3,9 @@ from thing import Thing
 from action import Action
 
 class Container(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path, pref_id=None):
         Thing.__init__(self, default_name, path, pref_id)
         self.contents = []
@@ -14,11 +17,14 @@ class Container(Thing):
         self.max_weight_carried = 1
         self.max_volume_carried = 1
         self.insert_prepositions = ["in", "into", "inside"]
-        self.actions.append(Action(self.put, ["put", "insert"], True, False))
-        self.actions.append(Action(self.remove, ["remove"], True, False))
-        self.actions.append(Action(self.open, ["open"], True, False))
-        self.actions.append(Action(self.close_action, ["close"], True, False))
 
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
+
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
     def set_prepositions(self, *preps):
         """Set one or more appropriate prepositions for inserting an object
         into this container, each as a separate argument.
@@ -33,19 +39,15 @@ class Container(Thing):
         g = Thing.game
         g.events.schedule(g.time+interval, self.spawn_obj, (path, interval, g))
 
-    def spawn_obj(self, info):
-        path = info[0]
-        interval = info[1]
-        game = info[2]
-        g = Thing.game
-        g.events.schedule(game.time+interval, self.spawn_obj, (path, interval, game))
-        for i in self.contents:
-            if i.path == path:
-                return
-        import path as obj_file
-        obj = obj_file.clone()
-        self.insert(obj)
+    def set_max_weight_carried(self, max_grams_carried):
+        self.max_weight_carried = max_grams_carried
 
+    def set_max_volume_carried(self, max_liters_carried):
+        self.max_volume_carried = max_liters_carried
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def insert(self, obj, force_insert=False):
         """Put obj into this Container object, returning True if the operation failed. 
         If <force_insert> is True, ignore weight and volume limits."""
@@ -74,12 +76,6 @@ class Container(Thing):
                   % (obj.weight, obj.volume, obj.id, self.id, self.max_weight_carried, self.max_volume_carried, contents_weight, contents_volume), 2)
             return True
 
-    def set_max_weight_carried(self, max_grams_carried):
-        self.max_weight_carried = max_grams_carried
-
-    def set_max_volume_carried(self, max_liters_carried):
-        self.max_volume_carried = max_liters_carried
-
     def extract(self, obj):
         """Remove obj from this Container, returning True if the operation failed"""
         if obj not in self.contents:
@@ -94,6 +90,28 @@ class Container(Thing):
         assert found != -1
         del self.contents[i]
 
+    def close(self):
+            self.closed = True
+            self.see_inside = False
+            if "closed" not in self.short_desc:
+                self.short_desc = "closed " + self.short_desc
+
+    def spawn_obj(self, info):
+        path = info[0]
+        interval = info[1]
+        game = info[2]
+        g = Thing.game
+        g.events.schedule(game.time+interval, self.spawn_obj, (path, interval, game))
+        for i in self.contents:
+            if i.path == path:
+                return
+        import path as obj_file
+        obj = obj_file.clone()
+        self.insert(obj)
+
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def look_at(self, p, cons, oDO, oIDO):
         result = Thing.look_at(self, p, cons, oDO, oIDO)
         if result != True:
@@ -131,15 +149,8 @@ class Container(Thing):
             self.emit("&nD%s closes the %s." % (cons.user.id, self.short_desc), [cons.user])
             self.close()
         return True
-    
-    def close(self):
-            self.closed = True
-            self.see_inside = False
-            if "closed" not in self.short_desc:
-                self.short_desc = "closed " + self.short_desc
 
-    
-    def open(self, p, cons, oDO, oIDO):
+    def open_action(self, p, cons, oDO, oIDO):
         """Open this container, revealing the contents."""
         if oDO != self:
             return "Did you mean to open the %s?" % self.short_desc
@@ -210,3 +221,12 @@ class Container(Thing):
         else:
             cons.write("You cannot remove the %s from the %s" % (oDO.short_desc, self.short_desc))
         return True
+
+        actions = dict(Thing.actions)
+        actions["look"] = Action(look_at, True, False)
+        actions["examine"] = Action(look_at, True, False)
+        actions["put"] = Action(put, True, False)
+        actions["insert"] = Action(put, True, False)
+        actions["remove"] = Action(remove, True, False)
+        actions["open"] = Action(open_action, True, False)
+        actions["close"] = Action(close_action, True, False)
