@@ -7,8 +7,8 @@ class Scenery(Thing):
         Thing.__init__(self, default_name, None)
         self.fix_in_place("You can't move the %s!" % (default_name))
         self.set_description(short_desc, long_desc)
-        self.obj_actions = []  # store actions with object, not class <-- XXX IS THIS EVEN NEEDED? CAN WE JUST DO self.actions = dict(Thing.actions)???
 
+        self.actions = dict(Thing.actions)
         # response tuple is (verblist, result_str, transitive, intransitive)
         self.responses = []     # list of response tuples
     
@@ -20,7 +20,7 @@ class Scenery(Thing):
         
         self.responses.append((verbs, result, trans, intrans, emit_message))
         for v in verbs:
-            self.obj_actions[v] = Action(self.handle_verb, trans, intrans)
+            self.actions[v] = Action(self.handle_verb, trans, intrans)
         
     def handle_verb(self, p, cons, oDO, oIDO):
         verb = p.words[0]

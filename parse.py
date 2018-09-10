@@ -177,35 +177,14 @@ class Parser:
         sPrep = None         # Preposition as string
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
-        # FIRST, search for objects that support the verb the user typed
-            # TODO: only include room contents if room is not dark (but always include user)
+        # FIRST, create a list of objects nearby or in the user's inventory
         possible_objects = [user.location] 
         for obj in user.contents + user.location.contents:
             possible_objects += [obj]
             if isinstance(obj, Container) and obj.see_inside and obj is not user:
                 possible_objects += obj.contents
-        
-        possible_verb_objects = []  # list of objects supporting the verb
-        possible_verb_actions = []  # corresponding list of actions 
-        for obj in possible_objects:
-            act = obj.actions.get(sV)  # returns None if <sV> not in <actions>
-            #  actions associated with object (if any) overwrite actions associated with class
-            try: act = obj.obj_actions[sV]
-            except:     # <obj_actions> doesn't exist or doesn't contain <sV>
-                pass    # Note: <act> unchanged either way
-            if act and (act.intransitive and not sDO) or (act.transitive): 
-                possible_verb_objects.append(obj)
-                possible_verb_actions.append(act)
-        if (not possible_verb_objects): 
-            if sDO == None:
-                console.write("Parse error: can't find any object supporting intransitive verb %s!" % sV)
-            else:
-                console.write("Parse error: can't find any object supporting transitive verb %s!" % sV)
-            # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
-            return True
-        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
 
-        # NEXT, find objects that match the direct & indirect object strings    
+        # THEN, check for objects matching the direct & indirect object strings
         if sDO: 
             oDO = self._find_matching_objects(sDO, possible_objects, console)
         if sIDO: 
@@ -213,33 +192,46 @@ class Parser:
         if oDO == False or oIDO == False: 
             return True     # ambiguous user input; >1 object matched 
 
+        # NEXT, find objects that support the verb the user typed
+        possible_verb_objects = []  # list of objects supporting the verb
+        for obj in possible_objects:
+            act = obj.actions.get(sV)  # returns None if <sV> not in <actions>
+            if act and (act.intransitive and not sDO) or (act.transitive): 
+                possible_verb_objects.append(obj)
+        if (not possible_verb_objects): 
+            console.write("Parse error: can't find any object supporting "
+                            + 'intransitive' if sDO == None else 'transitive' 
+                            + "verb %s!" % sV)
+            # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
+            return True
+        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
+
         # If direct or indirect object supports the verb, try first in that order
-        # XXX TODO: probably a cleaner way to do this, maybe with list.pop()? 
-        initial_actions = []
-        for o in (oDO, oIDO):
-            if o in possible_verb_objects:
-                idx = possible_verb_objects.index(o)
-                initial_actions.append(possible_verb_actions[idx])
-        possible_verb_actions = initial_actions + possible_verb_actions
+        p = possible_verb_objects  # terser reference to possible_verb_objects
+        if oIDO in p:
+            p.insert(0, p.pop(p.index(oIDO)))  # swap oIDO to front of p
+        if oDO in p:
+            p.insert(0, p.pop(p.index(oDO)))   # swap oDO to front of p
                 
-        # Try the "verb functions" associated with each object/action pair.
+        # FINALLY, try the action ("verb functions") of each object we found. 
         # If a valid usage of this verb function, it will return True and 
         # the command has been handled; otherwise it returns an error message. 
         # In this case keep trying other actions. If no valid verb function is 
         # found, print the error message from the first invalid verb tried.   
         result = False
         err_msg = None
-        for act in possible_verb_actions:
+        for obj in possible_verb_objects:
+            act = obj.actions[sV]
             if (user.game.handle_exceptions):
                 try:
-                    result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
+                    result = act.func(obj, self, console, oDO, oIDO) # <-- ENACT THE VERB
                 except Exception as isnt:
                     console.write('An error has occured. Please try a different action until the problem is resolved.')
                     dbg.debug(traceback.format_exc(), 0)
                     dbg.debug("Error caught!", 0)
                     result = True       # we don't want the parser to go and do an action they probably didn't intend
             else:
-                result = act.func(self, console, oDO, oIDO)  # <-- ENACT THE VERB
+                result = act.func(obj, self, console, oDO, oIDO)  # <-- ENACT THE VERB
             if result == True:      # mean to do if there is a bug in the one they did mean to do
                 break               # verb has been enacted, all done!
             if err_msg == None: 
