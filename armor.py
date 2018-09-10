@@ -3,10 +3,29 @@ from action import Action
 from thing import Thing
 
 class Armor(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path, bonus, unwieldiness, pref_id=None):
         Thing.__init__(self, default_name, path, pref_id)
         self.bonus = bonus
         self.unwieldiness = unwieldiness
+
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
+
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
+
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
 
     def wear(self, p, cons, oDO, oIDO):
         if self == oDO:
