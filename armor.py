@@ -63,3 +63,7 @@ class Armor(Thing):
     actions['unwear'] = Action(unwear, True, False)
     actions['remove'] = Action(unwear, True, False)
     actions['drop'] =   Action(armor_drop, True, False)  # replace Thing "drop"
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone())
+#

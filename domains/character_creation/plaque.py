@@ -3,6 +3,9 @@ import gametools
 import action
 
 class Plaque(thing.Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, mirror, number):
         super().__init__('plaque', __file__)
         self.set_description('stone plaque', 'Thou must intone the word that best describes thee.', unlisted=True)
@@ -40,9 +43,22 @@ class Plaque(thing.Thing):
                       ] 
         self.mirror = mirror
         self.number = number
-        self.actions.append(action.Action(self.intone, ['intone', 'acquire'], True, False))
-        self.actions.append(action.Action(self.look_at, ['read'], True, False))
 
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
+
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
+
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def look_at(self, p, cons, oDO, oIDO):
         words_on_plaque = ''
         for i in self.words:
@@ -66,3 +82,8 @@ class Plaque(thing.Thing):
             self.mirror.adj2 = sDO
         cons.write('You see the reflection in the mirror change slightly.')
         return True
+
+    actions = dict(Thing.actions)  # make a copy, don't change Thing's dict!
+    actions['intone'] =  Action(intone, True, False)
+    actions['acquire'] = Action(intone, True, False)
+    actions['read'] =    Action(look_at, True, False)

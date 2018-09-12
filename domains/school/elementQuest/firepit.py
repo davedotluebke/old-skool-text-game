@@ -5,6 +5,17 @@ import scenery
 import thing
 import gametools
 
+#
+# OTHER EXTERNAL METHODS (misc externally visible methods)
+#
+def go_out(firepit):
+    (head, sep, tail) = firepit.long_desc.partition('It is lit.')
+    firepit.long_desc = head + 'It is unlit.'
+    self.emit('The firepit goes out.')
+
+#
+# ACTION METHODS & DICTIONARY (dictionary must come last)
+#
 def light_firepit(p, cons, oDO, oIDO):
     if oDO.names[0] != 'firepit':
         return "I'm not quite sure what you are trying to light..."
@@ -14,11 +25,6 @@ def light_firepit(p, cons, oDO, oIDO):
     oDO.long_desc = head + 'It is lit.'
     thing.Thing.game.events.schedule(Thing.game.time+20, go_out, oDO)
     return True
-
-def go_out(firepit):
-    (head, sep, tail) = firepit.long_desc.partition('It is lit.')
-    firepit.long_desc = head + 'It is unlit.'
-    self.emit('The firepit goes out.')
 
 def take(p, cons, oDO, oIDO):
     (sV, sDO, sPrep, sIDO) =  p.diagram_sentence(p.words)
@@ -37,6 +43,11 @@ def take(p, cons, oDO, oIDO):
     cons.user.emit("&nD%s takes a sturdy oak branch from the firepit." % cons.user.id, [cons.user])
     return True
 
+# Scenery makes a per-object actions[] list, so add actions in load()
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def load():
     roomPath = gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)
@@ -52,8 +63,12 @@ def load():
 
     global firepit
     firepit = scenery.Scenery('firepit', 'copper firepit', 'This copper firepit is filled with sturdy oak branches. It is unlit.')
-    firepit.actions.append(room.Action(light_firepit, ['light', 'hold', 'touch', 'put'], True, False))
-    firepit.actions.append(room.Action(take, ['take', 'get'], True, False))
+    firepit.actions['light'] =  room.Action(light_firepit, True, False)
+    firepit.actions['hold'] =   room.Action(light_firepit, True, False)
+    firepit.actions['touch'] =  room.Action(light_firepit, True, False)
+    firepit.actions['put'] =    room.Action(light_firepit, True, False)
+    firepit.actions['take'] =   room.Action(take, True, False)
+    firepit.actions['get'] =    room.Action(take, True, False)
     firepit.lit = False
     firepit_room.insert(firepit)
     return firepit_room

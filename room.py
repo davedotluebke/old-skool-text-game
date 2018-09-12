@@ -5,17 +5,11 @@ from thing import Thing
 from container import Container
 from action import Action
 
-def check_loaded(room_path):
-    '''Check whether a room exists (i.e., has been created and inserted into Thing_ID.dict[]).
-    Takes roomPath, the file of the room module as returned by gametools.findGamePath().
-    Returns a reference to the room, or False if the room does not yet exist.'''
-    if room_path in Thing.ID_dict:
-        return Thing.ID_dict[room_path]
-    else:
-        return False
-
 class Room(Container):
     """Create a room."""
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, pref_id, light=1, safe=False, indoor=False, mod=None):
         """Initialize the room. Set <light> level to 0 for a dark room."""
         Container.__init__(self, default_name, path=pref_id, pref_id=pref_id)
@@ -30,7 +24,10 @@ class Room(Container):
         self.monster_safe = safe
         self.indoor = indoor
         self.mod = mod
-
+    
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def detach(self, room_path):
         '''Remove the room from Thing.ID_dict[] and moves all objects in the room 
         to nulspace (this removes references to the room instance, specifically 
@@ -63,31 +60,6 @@ class Room(Container):
             dbg.debug('Room %s: light level is %s' % (self.id, total_light), 3)
         return (total_light <= 0)
         
-    def look_at(self, p, cons, oDO, oIDO):
-        """Print long description of room, list items (excluding this player) and exits"""
-        # if verb is transitive, verify that the room is the direct object
-        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
-        if sDO and (oDO is None): 
-            return "I'm not sure what you are trying to look at!"
-        if self.is_dark():
-            cons.write("It's too dark to see anything here.")
-            return True
-        cons.write(self.long_desc)
-        assert(cons.user in self.contents)  # current player should always be in the room 
-        if (len(self.exits) > 0):
-            cons.write("Exits are:")
-            for w in self.exits:
-                cons.write('\t' + w)
-            local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.unlisted]
-            if local_objects:
-                cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))
-        else:
-            cons.write("There are no obvious exits.")
-        return True
-
-    def move_to(self, p, cons, oDO, oIDO):
-        cons.write('rooms cannot be moved!')
-    
     def report_arrival(self, user, silent=False):
         if not user.cons:
             return
@@ -111,6 +83,34 @@ class Room(Container):
                 cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))
         else:
             cons.write("There are no obvious exits.")
+
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
+    def move_to(self, p, cons, oDO, oIDO):
+        return 'Rooms cannot be moved!'
+
+    def look_at(self, p, cons, oDO, oIDO):
+        """Print long description of room, list items (excluding this player) and exits"""
+        # if verb is transitive, verify that the room is the direct object
+        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
+        if sDO and (oDO is None): 
+            return "I'm not sure what you are trying to look at!"
+        if self.is_dark():
+            cons.write("It's too dark to see anything here.")
+            return True
+        cons.write(self.long_desc)
+        assert(cons.user in self.contents)  # current player should always be in the room 
+        if (len(self.exits) > 0):
+            cons.write("Exits are:")
+            for w in self.exits:
+                cons.write('\t' + w)
+            local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.unlisted]
+            if local_objects:
+                cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))
+        else:
+            cons.write("There are no obvious exits.")
+        return True
 
     def go_to(self, p, cons, oDO, oIDO):
         words = p.words
@@ -136,3 +136,15 @@ class Room(Container):
                 return "For some reason you are unable to go to the %s." % sExit
         else: # user did not specify a valid exit
             return "I don't see how to go %s!" % sExit
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
+def check_loaded(room_path):
+    '''Check whether a room exists (i.e., has been created and inserted into Thing_ID.dict[]).
+    Takes roomPath, the file of the room module as returned by gametools.findGamePath().
+    Returns a reference to the room, or False if the room does not yet exist.'''
+    if room_path in Thing.ID_dict:
+        return Thing.ID_dict[room_path]
+    else:
+        return False

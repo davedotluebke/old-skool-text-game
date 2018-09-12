@@ -223,10 +223,10 @@ class Container(Thing):
         return True
 
         actions = dict(Thing.actions)
-        actions["look"] = Action(look_at, True, False)
+        actions["look"] =    Action(look_at, True, False)
         actions["examine"] = Action(look_at, True, False)
-        actions["put"] = Action(put, True, False)
-        actions["insert"] = Action(put, True, False)
-        actions["remove"] = Action(remove, True, False)
-        actions["open"] = Action(open_action, True, False)
-        actions["close"] = Action(close_action, True, False)
+        actions["put"] =     Action(put, True, False)
+        actions["insert"] =  Action(put, True, False)
+        actions["remove"] =  Action(remove, True, False)
+        actions["open"] =    Action(open_action, True, False)
+        actions["close"] =   Action(close_action, True, False)

@@ -10,6 +10,9 @@ from player import Player
 from creature import NPC
 
 class Lair(Room):
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def go_to(self, p, cons, oDO, oIDO):
         if self.monster in self.contents:
             if p.words[1] == 'northwest':
@@ -19,13 +22,26 @@ class Lair(Room):
         return Room.go_to(self, p, cons, oDO, oIDO)
 
 class CaveRoom(Room):
-    def __init__(self, ID, path, monster_storage):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
+        def __init__(self, ID, path, monster_storage):
         Room.__init__(self, ID, path, light=0)
         self.monster_storage = monster_storage
         self.released_monster = False
         self.create_cave_moss()
         self.create_gold()
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
 
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def create_cave_moss(self):
         for i in self.contents:
             if i.names[0] == 'cave moss':
@@ -47,14 +63,6 @@ class CaveRoom(Room):
         self.monster.move_to(self.monster_storage)
         self.monster_storage.monster = self.monster
     
-    def go_to(self, p, cons, oDO, oIDO):
-        if self.monster in self.contents:
-            if p.words[1] == 'west':
-                if cons.user.invisible != True:
-                    cons.write('You try to go to the west, but the monster blocks your path.')
-                    return True
-        return Room.go_to(self, p, cons, oDO, oIDO)
-
     def heartbeat(self):
         gold_check = False
         cave_moss_check = False
@@ -81,4 +89,15 @@ class CaveRoom(Room):
                 self.create_cave_moss()
                 self.create_gold()
                 self.released_monster = False
+
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
+    def go_to(self, p, cons, oDO, oIDO):
+        if self.monster in self.contents:
+            if p.words[1] == 'west':
+                if cons.user.invisible != True:
+                    cons.write('You try to go to the west, but the monster blocks your path.')
+                    return True
+        return Room.go_to(self, p, cons, oDO, oIDO)
 
