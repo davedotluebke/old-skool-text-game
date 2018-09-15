@@ -4,26 +4,32 @@ import thing
 import action
 
 class QuestDoor(thing.Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path):
         super().__init__(default_name, path)
         self.fix_in_place('The door is strongly secured in place. You can\'t take it.')
         self.opened = False
         self.view_through_door = None
         self.destination = None
-        self.actions.append(action.Action(self.open, ['open'], True, False))
-        self.actions.append(action.Action(self.close, ['close', 'shut', 'slam'], True, False))
-        self.actions.append(action.Action(self.enter, ['enter'], True, False))
         self.add_adjectives(default_name)
         self.add_names('door', 'quest')
     
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #    
     def set_view(self, view_through_door):
         self.view_through_door = view_through_door
     
     def set_dest(self, dest):
         self.destination = dest
 
-    # This door won't open for one who has already walked a different path (completed another door quest)
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def open(self, p, cons, oDO, oIDO):
+        # This door won't open for one who has already walked a different path (completed another door quest)
         if self.opened:
             cons.write('The door is already open!')
             return True
@@ -61,6 +67,16 @@ class QuestDoor(thing.Thing):
             self.emit('&nD%s walks through the doorway to the path of %s.' % (cons.user.id, self.names[0]))
         return True
 
+    actions = dict(Thing.actions)  # make a copy
+    actions['open'] =   Action(open, True, False)
+    actions['close'] =  Action(close, True, False)
+    actions['shut'] =   Action(close, True, False)
+    actions['slam'] =   Action(close, True, False)
+    actions['enter'] =  Action(enter, True, False)
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def load():
     roomPath = gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)

@@ -8,11 +8,16 @@ import thing
 import domains.school.elementQuest.doorway as doorway
 
 class Statue(scenery.Scenery):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, short_desc, long_desc):
         super().__init__(default_name, short_desc, long_desc)
-        self.actions.append(action.Action(self.put_pearl_in_eye, ['put', 'place'], True, False))
         self.unlisted = True
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def put_pearl_in_eye(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sDO == 'pearl' and sIDO == 'eye' and isinstance(oDO, gems.Pearl):
@@ -23,7 +28,15 @@ class Statue(scenery.Scenery):
             doorway.load()
             doorway.Doorway.open(doorway.Doorway.instance)
             return True
+    
+    actions = dict(Scenery.actions)
+    actions['put'] =    Action(put_pearl_in_eye, True, False)
+    actions['place'] =  Action(put_pearl_in_eye, True, False)
+    actions['insert'] = Action(put_pearl_in_eye, True, False)
 
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def load():
     roomPath = gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)
