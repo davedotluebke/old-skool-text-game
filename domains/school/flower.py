@@ -5,12 +5,16 @@ from thing import Thing
 import gametools
 
 class Flower(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path, type=None, pref_id=None):
         super().__init__(default_name, path)
         self.type = type
-        self.actions.append(Action(self.pick, ['pick', 'take', 'pluck'], True, False))
-        self.actions.append(Action(self.shake, ['shake'], True, False, ['held']))
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def pick(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if oDO == self:
@@ -46,3 +50,10 @@ class Flower(Thing):
         else:
             cons.write('You shake the flower, and nothing happens.')
             return True
+
+    actions = dict(Thing.actions)
+    actions['pick'] =   Action(pick, True, False)
+    actions['take'] =   Action(pick, True, False)
+    actions['pluck'] =  Action(pick, True, False)
+    actions['shake'] =  Action(shake, True, False)
+    

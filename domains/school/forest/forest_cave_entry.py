@@ -5,10 +5,15 @@ import action
 import thing
 
 class Vines(scenery.Scenery):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, short_desc, long_desc):
         super().__init__(default_name, short_desc, long_desc)
-        self.actions.append(action.Action(self.clear, ['clear', 'remove'], True, False))
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def clear(self, p, cons, oDO, oIDO):
         if oDO != self:
             return 'What do you want to clear?'
@@ -19,6 +24,11 @@ class Vines(scenery.Scenery):
         self.move_to(thing.Thing.ID_dict['nulspace'])
         return True
 
+# Scenery makes a per-object copy of actions[] so add actions in load()
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def load():
     roomPath =  gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)
@@ -30,4 +40,7 @@ def load():
 
     vine_obj = Vines('vines','wall of vines','The vines are thick and tangled, but seem to move freely.')
     vine_obj.move_to(r, force_move=True)
+    vine_obj.actions['clear'] = Action(clear, True, False)    
+    vine_obj.actions['remove'] = Action(clear, True, False)    
+
     return r
