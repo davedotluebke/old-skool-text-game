@@ -5,13 +5,17 @@ from action import Action
 from liquid import Liquid
 
 class Sink(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, ID, path):
         Thing.__init__(self, ID, path)
         self.set_description('metal sink', "This is an old metal sink, probably from the 1960's, and nothing seems wrong with it.")
         self.fix_in_place("You can't take the sink!")
-        self.actions.append(Action(self.fill_container, ["fill"], True, False))
-        self.actions.append(Action(self.pour_out_in_sink, ['pour'], True, False))
     
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def fill_container(self, p, cons, oDO, oIDO):
         if oDO == None: 
             return "What do you intend to fill from the sink?"
@@ -39,3 +43,7 @@ class Sink(Thing):
         obj.move_to(Thing.ID_dict['nulspace'])
         return True
         #TODO: Actually delete the object
+
+    actions = dict(Thing.actions)
+    actions['fill'] = Action(fill_container, True, False)
+    actions['pour'] = Action(pour_out_in_sink, True, False)

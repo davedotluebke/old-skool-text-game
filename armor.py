@@ -25,8 +25,7 @@ class Armor(Thing):
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
-    #
-    
+    # 
     def wear(self, p, cons, oDO, oIDO):
         if self == oDO:
             if self == cons.user.armor_worn:
@@ -65,5 +64,5 @@ class Armor(Thing):
     actions['drop'] =   Action(armor_drop, True, False)  # replace Thing "drop"
 
 #
-# MODULE-LEVEL FUNCTIONS (e.g., clone())
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
 #

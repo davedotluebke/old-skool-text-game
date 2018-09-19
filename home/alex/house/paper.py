@@ -3,15 +3,20 @@ import action
 import gametools
 
 class PlaceChooser(thing.Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, ID, path):
         super().__init__(ID, path)
         self.written_on = 'domains.school.forest.woods'
-        self.actions.append(action.Action(self.write, ['write'], True, False))
         self.fix_in_place('This paper is fixed to the wall with sorcery.')
         self.set_description('magical piece of paper', 'This magical paper says "woods" on it.')
         self.add_names('paper')
         self.add_adjectives('magical')
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def write(self, p, cons, oDO, oIDO):
         try:
             self.written_on = p.words[1]
@@ -30,6 +35,12 @@ class PlaceChooser(thing.Thing):
         self.long_desc = 'This magical paper says "%s" on it.' % parts[-1]
         return True
 
+    actions = dict(thing.Thing.actions)
+    actions['write'] = Action(write, True, False)
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def clone():
     magical_paper = PlaceChooser('paper', 'wall')
     return magical_paper

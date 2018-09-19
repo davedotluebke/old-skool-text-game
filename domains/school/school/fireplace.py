@@ -2,14 +2,19 @@ import thing
 import gametools
 
 class Fireplace(thing.Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self):
         super().__init__('fireplace', __file__)
         self.set_description('enormous fireplace', 'This enormous fireplace is filled with logs that are slowly burning. '
         'It almost seems as if there were another room also facing this fireplace, but you can\'t be sure.', unlisted=True)
         self.add_adjectives('enormous', 'huge')
-        self.actions.append(thing.Action(self.enter, ['enter'], True, False))
         self.dest = 'domains.school.school.fire_lounge'
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def enter(self, p, cons, oDO, oIDO):
         if oDO != self:
             return "What do you intend to enter?"
@@ -30,5 +35,11 @@ class Fireplace(thing.Thing):
             cons.user.health -= 2
             return True
 
+    actions = dict(thing.Thing.actions)
+    actions['enter'] = Action(enter, True, False)
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def clone():
     return Fireplace()
