@@ -1,6 +1,6 @@
 import thing
 import gametools
-import action
+from action import Action
 
 class Plaque(thing.Thing):
     #
@@ -83,7 +83,7 @@ class Plaque(thing.Thing):
         cons.write('You see the reflection in the mirror change slightly.')
         return True
 
-    actions = dict(Thing.actions)  # make a copy, don't change Thing's dict!
+    actions = dict(thing.Thing.actions)  # make a copy, don't change Thing's dict!
     actions['intone'] =  Action(intone, True, False)
     actions['acquire'] = Action(intone, True, False)
     actions['read'] =    Action(look_at, True, False)

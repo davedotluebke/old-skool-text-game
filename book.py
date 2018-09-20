@@ -214,5 +214,5 @@ class Book(Thing):
 
     actions = dict(Thing.actions)  # make a copy, don't change Thing's dict!
     actions['read'] =  Action(read, True, False)
-    actions['open'] =  Action(read, True, False))
+    actions['open'] =  Action(read, True, False)
     actions['close'] = Action(close, True, False)

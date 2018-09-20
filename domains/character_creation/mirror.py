@@ -1,5 +1,6 @@
 import thing
 import gametools
+import action
 
 class Mirror(thing.Thing):
     #
@@ -87,5 +88,5 @@ class Mirror(thing.Thing):
         dest.report_arrival(cons.user)
         return True
 
-    actions = dict(Thing.actions)  # make a copy, don't change Thing's dict!
-    actions['enter'] = Action(enter, True, False)
+    actions = dict(thing.Thing.actions)  # make a copy, don't change Thing's dict!
+    actions['enter'] = action.Action(enter, True, False)

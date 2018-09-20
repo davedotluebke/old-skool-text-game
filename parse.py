@@ -196,7 +196,7 @@ class Parser:
         possible_verb_objects = []  # list of objects supporting the verb
         for obj in possible_objects:
             act = obj.actions.get(sV)  # returns None if <sV> not in <actions>
-            if act and (act.intransitive and not sDO) or (act.transitive): 
+            if act and ((act.intrans and not sDO) or (act.trans)): 
                 possible_verb_objects.append(obj)
         if (not possible_verb_objects): 
             console.write("Parse error: can't find any object supporting "

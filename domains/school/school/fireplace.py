@@ -1,5 +1,6 @@
 import thing
 import gametools
+from action import Action
 
 class Fireplace(thing.Thing):
     #
