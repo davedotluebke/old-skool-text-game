@@ -16,8 +16,6 @@ class Room(Container):
         self.exits = {}
         self.set_max_weight_carried(4e9)
         self.set_max_volume_carried(3e9)
-        self.actions.append(Action(self.go_to, ["go", "walk"], True, False))
-        self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
         self.fix_in_place("You can't move that!")
         self.closable = False
         self.default_light = light  # Can see and perceive emits when light level > 0
@@ -136,6 +134,12 @@ class Room(Container):
                 return "For some reason you are unable to go to the %s." % sExit
         else: # user did not specify a valid exit
             return "I don't see how to go %s!" % sExit
+    
+    actions = dict(Container.actions)
+    actions['look'] = Action(look_at, True, True)
+    actions['examine'] = Action(look_at, True, True)
+    actions['go'] = Action(go_to, True, False)
+    actions['walk'] = Action(go_to, True, False)
 
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
