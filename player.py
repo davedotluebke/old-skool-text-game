@@ -58,15 +58,6 @@ class Player(Creature):
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
 
-    def get_saveable(self):
-        saveable = super().get_saveable()
-        try:
-            del saveable['enemies']
-        except KeyError: 
-            pass
-        del saveable['cons']
-        return saveable
-
     def __getstate__(self):
         """Custom pickling code for Player. 
         
@@ -170,6 +161,15 @@ class Player(Creature):
     #
     def set_start_loc(self, startroom):
         self.start_loc_id = startroom.id
+
+    def get_saveable(self):
+        saveable = super().get_saveable()
+        try:
+            del saveable['enemies']
+        except KeyError: 
+            pass
+        del saveable['cons']
+        return saveable
 
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
