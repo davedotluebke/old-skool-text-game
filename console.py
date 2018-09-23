@@ -24,7 +24,8 @@ class Console:
                \t'take sword'\n
                \t'take the rusty sword'\n
                \t'drink potion from tall flask'\n
-               \t'put the gold coin in the leather bag'\n\n
+               \t'put the gold coin in the leather bag'\n
+               \t'move vines'\n\n
                You can create shortcuts to reduce typing; type 'alias' for 
                more details. Type 'width' to change the console's text width. 
                Type 'quit' to save your progress and leave 
