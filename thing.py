@@ -217,7 +217,8 @@ class Thing(object):
         """
         saveable = {}
         state = self.__dict__.copy()
-        del state["actions"]
+        if state.get("actions"):
+            del state["actions"]
         default_obj = gametools.clone(self.path)
         default_state = default_obj.__dict__
         for attr in list(state):
