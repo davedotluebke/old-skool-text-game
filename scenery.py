@@ -20,7 +20,7 @@ class Scenery(Thing):
         
         self.responses.append((verbs, result, trans, intrans, emit_message))
         for v in verbs:
-            self.actions[v] = Action(self.handle_verb, trans, intrans)
+            self.actions[v] = Action(Scenery.handle_verb, trans, intrans)
         
     def handle_verb(self, p, cons, oDO, oIDO):
         verb = p.words[0]

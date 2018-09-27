@@ -12,13 +12,13 @@ class Weapon(Thing):
         self.accuracy = accuracy
         self.unwieldiness = unwieldiness
         self.actions = dict(Thing.actions)
-        self.actions['wield'] =   Action(self.wield, True, False)
-        self.actions['use'] =     Action(self.wield, True, False)
-        self.actions['unwield'] = Action(self.unwield, True, False)
+        self.actions['wield'] =   Action(Weapon.wield, True, False)
+        self.actions['use'] =     Action(Weapon.wield, True, False)
+        self.actions['unwield'] = Action(Weapon.unwield, True, False)
         for i in attack_verbs:
-            self.actions[i] = Action(self.start_attack, True, False)
+            self.actions[i] = Action(Weapon.start_attack, True, False)
         # overwrite default drop action:
-        self.actions['drop'] = Action(self.weapon_drop, True, False)
+        self.actions['drop'] = Action(Weapon.weapon_drop, True, False)
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)

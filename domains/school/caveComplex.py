@@ -25,7 +25,7 @@ class CaveRoom(Room):
     #
     # SPECIAL METHODS (i.e __method__() format)
     #
-        def __init__(self, ID, path, monster_storage):
+    def __init__(self, ID, path, monster_storage):
         Room.__init__(self, ID, path, light=0)
         self.monster_storage = monster_storage
         self.released_monster = False

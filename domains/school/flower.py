@@ -36,11 +36,9 @@ class Flower(Thing):
         return "I'm not sure what you mean! Are you trying to pick the %s or pick something from the %s? " % (self.names[0], self.names[0])
     
     def shake(self, p, cons, oDO, oIDO):
-        for i in self.actions:
-            if i.func == self.shake:
-                if self not in cons.user.contents:
-                    cons.write("You have to pick the flower before you can shake it!")
-                    return True
+        if self not in cons.user.contents:
+            cons.write("You have to pick the flower before you can shake it!")
+            return True
         if self.type in ['poppy']:
             cons.write('You shake the flower and collect some %s seeds.' % self.names[0])
             cons.user.emit("&nD%s shakes a flower and collects some seeds." % cons.user.id)

@@ -89,4 +89,6 @@ class Mirror(thing.Thing):
         return True
 
     actions = dict(thing.Thing.actions)  # make a copy, don't change Thing's dict!
-    actions['enter'] = action.Action(enter, True, False)
+    actions['enter'] =   action.Action(enter, True, False)
+    actions['look'] =    action.Action(look_at, True, False)
+    actions['examine'] = action.Action(look_at, True, False)
