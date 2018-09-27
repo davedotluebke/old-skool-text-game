@@ -18,9 +18,7 @@ class Weapon(Thing):
         for i in attack_verbs:
             self.actions[i] = Action(self.start_attack, True, False)
         # overwrite default drop action:
-        for a in self.actions:
-            if 'drop' in a.verblist:
-                a.func = self.weapon_drop
+        self.actions['drop'] = Action(self.weapon_drop, True, False)
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)

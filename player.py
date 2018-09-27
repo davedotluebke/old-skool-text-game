@@ -536,7 +536,7 @@ class Player(Creature):
 
     actions = dict(Creature.actions)  # make a copy
     actions['inventory'] =  Action(inventory, False, True)
-    actions['terse'] =      Action(terse, False, True)
+    actions['terse'] =      Action(toggle_terse, False, True)
     actions['execute'] =    Action(execute, True, True)
     actions['fetch'] =      Action(fetch, True, True)
     actions['clone'] =      Action(clone, True, True)

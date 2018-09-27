@@ -29,10 +29,7 @@ class Statue(scenery.Scenery):
             doorway.Doorway.open(doorway.Doorway.instance)
             return True
     
-    actions = dict(Scenery.actions)
-    actions['put'] =    Action(put_pearl_in_eye, True, False)
-    actions['place'] =  Action(put_pearl_in_eye, True, False)
-    actions['insert'] = Action(put_pearl_in_eye, True, False)
+# Scenery makes a per-object actions[] list, so add actions in load()
 
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
@@ -50,6 +47,10 @@ def load():
     
     obj = Statue('statue', 'statue', 'This giant stone statue solemnly stands in the middle of the room. It is missing a pearl in its left eye. ')
     obj.add_adjectives('giant', 'stone')
+    obj.actions['put'] =    Action(put_pearl_in_eye, True, False)
+    obj.actions['place'] =  Action(put_pearl_in_eye, True, False)
+    obj.actions['insert'] = Action(put_pearl_in_eye, True, False)
+
     obj.move_to(r)
     
     return r
