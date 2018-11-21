@@ -8,6 +8,8 @@ from player import Player
 
 class Console:
     default_width = 80
+    measurement_systems = ['IMP', 'SI']
+    default_measurement_system = 'IMP'
     prompt = "--> "
     help_msg = """Your goal is to explore the world around you, solve puzzles,
                fight monsters, complete quests, and eventually become a
@@ -41,6 +43,7 @@ class Console:
         self.connection = net_conn
         self.input_redirect = None
         self.width = Console.default_width
+        self.measurement_system = Console.default_measurement_system
         self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = True, tabsize = 4) 
         self.alias_map = {'n':       'go north',
                           's':       'go south',
@@ -105,8 +108,8 @@ class Console:
         return self.width
     
     def _add_alias(self, cmd):
-        instructions = 'To create a new alias, type:\n    alias <a> <text>\n' \
-                        'where <a> is the new alias and <text> is what will replace the alias.'
+        instructions = 'To create a new alias, type:\n    alias [a] [text]\n' \
+                        'where [a] is the new alias and [text] is what will replace the alias.'
          
         if len(self.words) == 1:
             # print a list of current aliases & instructions for adding
@@ -131,6 +134,17 @@ class Console:
         self.alias_map[alias] = expansion
         self.write("'%s' is now an alias for '%s'" % (alias, expansion))
         return
+    
+    def _change_units(self, cmd):
+        cmd = cmd.split(' ')
+        if len(cmd) == 2:
+            if cmd[1].upper() in Console.measurement_systems:
+                self.measurement_system = cmd[1].upper()
+                self.write('Changed units to %s.' % self.measurement_system)
+            else:
+                self.write('Not an accepted measurement system. Accepted ones are:\n' + [x for x in Console.measurement_systems])
+        else:
+            self.write('Current units are: %s\nType units [system] to change them.' % self.measurement_system)
 
     def _replace_aliases(self):
         cmd = ""
@@ -152,6 +166,10 @@ class Console:
                 self._add_alias(self.command)
                 return True
             
+            if cmd == 'units':
+                self._change_units(self.command)
+                return True
+            
             if cmd == 'width': 
                 if len(self.words) == 2 :
                     try: 
@@ -162,7 +180,7 @@ class Console:
                         self.width = self.default_width
                     self.tw.width = self.width
                 else:
-                    self.write("The console width is currently %d. Type 'width <width>' to change it." % self.width)
+                    self.write("The console width is currently %d. Type 'width [width]' to change it." % self.width)
                 return True
             
             if cmd == 'help':
@@ -194,14 +212,14 @@ class Console:
                     filename = self.words[1]
                     game_file_cmds[cmd](filename)
                 else:
-                    self.write("Usage: %s <filename>" % cmd)
+                    self.write("Usage: %s [filename]" % cmd)
                 return True
             if cmd == 'save':
                 if (len(self.words) == 2):
                     filename = self.words[1]
                     self.game.save_player(filename, self.user)
                 else:
-                    self.write("Usage: save <filename>")
+                    self.write("Usage: save [filename]")
                 return True
             if cmd == 'load':
                 if (len(self.words) == 2):
@@ -211,7 +229,7 @@ class Console:
                     except gametools.PlayerLoadError:
                         self.write("Encountered an error trying to load from file.")
                 else:
-                    self.write("Usage: load <filename>")
+                    self.write("Usage: load [filename]")
                 return True
         return False
 
@@ -277,6 +295,41 @@ class Console:
                 elif first == 'nontag':
                     final_html += full_tags[int(p/2)]
         return final_html
+    
+    def choose_measurements(self, text):
+        text = text.replace('[', '|[')
+        text = text.replace(']', ']|')
+        split_text = text.split('|')
+
+        in_measurement = False
+        correct_measurement = False
+        to_continue = False
+
+        new_text = ''
+
+        for i in split_text:
+            for j in Console.measurement_systems:
+                if i == '['+j+']':
+                    in_measurement = True
+                    to_continue = True
+                    if j == self.measurement_system:
+                        correct_measurement = True
+                    else:
+                        correct_measurement = False
+                elif i == '[/'+j+']':
+                    in_measurement = False
+                    to_continue = True
+                    if j == self.measurement_system:
+                        correct_measurement = True
+                    else:
+                        correct_measurement = False
+            if to_continue:
+                to_continue = False
+                continue
+            if (not in_measurement) or correct_measurement:
+                new_text += i
+        
+        return new_text
 
     def write(self, text, indent=0):
         str_text = str(text)
@@ -287,6 +340,7 @@ class Console:
             wrapped = self.tw.fill(l)
             self.raw_output += wrapped + '\n'
         self.raw_output = self.raw_output.replace('\n','<br>').replace('\t', '&nbsp&nbsp&nbsp&nbsp')
+        self.raw_output = self.choose_measurements(self.raw_output)
         self.raw_output = self.sanatizeHTML(self.raw_output)
         asyncio.ensure_future(connections_websock.ws_send(self))
 

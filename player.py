@@ -35,6 +35,7 @@ class Player(Creature):
         self.set_volume(66)
         self.set_max_weight_carried(750000)
         self.set_max_volume_carried(2000)
+        self.saved_cons_attributes = []
         self.actions.append(Action(self.inventory, "inventory", False, True))
         self.actions.append(Action(self.toggle_terse, "terse", False, True))
         self.actions.append(Action(self.execute, "execute", True, True))
@@ -74,6 +75,16 @@ class Player(Creature):
             pass
         del saveable['cons']
         return saveable
+
+    def update_cons_attributes(self):
+        try:
+            self.cons.alias_map = self.saved_cons_attributes[0]
+            self.cons.measurement_system = self.saved_cons_attributes[1]
+        except AttributeError:
+            pass
+        
+    def save_cons_attributes(self):
+        self.saved_cons_attributes = [self.cons.alias_map, self.cons.measurement_system]
 
     def __getstate__(self):
         """Custom pickling code for Player. 
