@@ -67,12 +67,12 @@ class QuestDoor(thing.Thing):
             self.emit('&nD%s walks through the doorway to the path of %s.' % (cons.user.id, self.names[0]))
         return True
 
-    actions = dict(Thing.actions)  # make a copy
-    actions['open'] =   Action(open, True, False)
-    actions['close'] =  Action(close, True, False)
-    actions['shut'] =   Action(close, True, False)
-    actions['slam'] =   Action(close, True, False)
-    actions['enter'] =  Action(enter, True, False)
+    actions = dict(thing.Thing.actions)  # make a copy
+    actions['open'] =   action.Action(open, True, False)
+    actions['close'] =  action.Action(close, True, False)
+    actions['shut'] =   action.Action(close, True, False)
+    actions['slam'] =   action.Action(close, True, False)
+    actions['enter'] =  action.Action(enter, True, False)
 
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())

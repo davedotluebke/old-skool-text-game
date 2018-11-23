@@ -1,5 +1,6 @@
 import room
 from thing import Thing
+from action import Action
 import gametools
 
 class LakeRoom_surface(room.Room):
@@ -21,7 +22,7 @@ class LakeRoom_surface(room.Room):
         Thing.game.events.schedule(Thing.game.time+15, loc.force_surface, cons.user)
         return True
     
-    actions = dict(room.actions)  # make a copy
+    actions = dict(room.Room.actions)  # make a copy
     actions['dive'] = Action(dive, False, True)
     actions['swim'] = actions['walk']  # replace walk with swim
     del actions['walk']
@@ -60,7 +61,7 @@ class LakeRoom_underwater(room.Room):
         cons.user.move_to(loc)
         return True
     
-    actions = dict(room.actions)  # make a copy
+    actions = dict(room.Room.actions)  # make a copy
     actions['surface'] = Action(surface, False, True)
     actions['swim'] = actions['walk']  # replace walk with swim
     del actions['walk']

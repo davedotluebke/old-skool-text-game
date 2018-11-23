@@ -2,6 +2,7 @@ import domains.school.elementQuest.lake_room as lake_room
 import room
 import gametools
 import scenery
+from action import Action
 
 class Doorway(scenery.Scenery):
     instance = None
@@ -10,6 +11,7 @@ class Doorway(scenery.Scenery):
     #
     def __init__(self):
         super().__init__('doorway', 'stone doorway', 'This is a stone doorway, leading to the east. A shimmering surface covers the entrance.')
+        self.actions['enter'] = Action(Doorway.enter, True, False)
         self.state = 'closed'
         Doorway.instance = self
     
@@ -38,9 +40,6 @@ class Doorway(scenery.Scenery):
         else:
             cons.user.perceive('...and just as quickly, you feel yourself return! But something has changed...')
         return True
-
-    actions = dict(Scenery.actions)  # make a copy
-    actions['enter'] = Action(enter, True, False))
 
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())

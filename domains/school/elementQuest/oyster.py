@@ -1,6 +1,7 @@
 import container
 import weapon
 import gametools
+from action import Action
 
 class Oyster(container.Container):
     #
@@ -16,16 +17,16 @@ class Oyster(container.Container):
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
     #      
-    def open(self, p, cons, oDO, oIDO):
+    def open_action(self, p, cons, oDO, oIDO):
         if isinstance(oIDO, weapon.Weapon):
-            return super().open(p, cons, oDO, oIDO)
+            return super().open_action(p, cons, oDO, oIDO)
         else:
             cons.user.perceive("You can't open the oyster without using some sort of tool.")
             return True
-    actions  = dict(Container.actions)  # make a copy
-    actions['open'] =     Action(open, True, False)
-    actions['pry'] =      Action(open, True, False)
-    actions['separate'] = Action(open, True, False)
+    actions  = dict(container.Container.actions)  # make a copy
+    actions['open'] =     Action(open_action, True, False)
+    actions['pry'] =      Action(open_action, True, False)
+    actions['separate'] = Action(open_action, True, False)
 
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())

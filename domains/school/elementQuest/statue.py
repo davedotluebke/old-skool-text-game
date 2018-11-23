@@ -2,7 +2,7 @@ import domains.school.elementQuest.lake_room as lake_room
 import room
 import gametools
 import scenery
-import action
+from action import Action
 import domains.wizardry.gems as gems
 import thing
 import domains.school.elementQuest.doorway as doorway
@@ -47,9 +47,9 @@ def load():
     
     obj = Statue('statue', 'statue', 'This giant stone statue solemnly stands in the middle of the room. It is missing a pearl in its left eye. ')
     obj.add_adjectives('giant', 'stone')
-    obj.actions['put'] =    Action(put_pearl_in_eye, True, False)
-    obj.actions['place'] =  Action(put_pearl_in_eye, True, False)
-    obj.actions['insert'] = Action(put_pearl_in_eye, True, False)
+    obj.actions['put'] =    Action(Statue.put_pearl_in_eye, True, False)
+    obj.actions['place'] =  Action(Statue.put_pearl_in_eye, True, False)
+    obj.actions['insert'] = Action(Statue.put_pearl_in_eye, True, False)
 
     obj.move_to(r)
     
