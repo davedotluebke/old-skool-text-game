@@ -12,10 +12,10 @@ class Liquid(Scenery):
     def __init__(self, default_name, short_desc = None, long_desc = None, pref_id=None):
         Scenery.__init__(self, default_name, short_desc, long_desc, pref_id)
         # Scenery __init__() creates a per-object actions[] dict
-        self.actions['pour'] =  Action(self.pour, True, False)
-        self.actions['drink'] = Action(self.drink, True, False)
-        self.actions['sip'] =   Action(self.drink, True, False)
-        self.actions['taste'] = Action(self.drink, True, False)
+        self.actions['pour'] =  Action(Liquid.pour, True, False)
+        self.actions['drink'] = Action(Liquid.drink, True, False)
+        self.actions['sip'] =   Action(Liquid.drink, True, False)
+        self.actions['taste'] = Action(Liquid.drink, True, False)
         self.is_liquid = True
 
     #

@@ -200,8 +200,8 @@ class Parser:
                 possible_verb_objects.append(obj)
         if (not possible_verb_objects): 
             console.write("Parse error: can't find any object supporting "
-                            + 'intransitive' if sDO == None else 'transitive' 
-                            + "verb %s!" % sV)
+                            + ('intransitive' if sDO == None else 'transitive')
+                             + " verb %s!" % sV)
             # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
             return True
         dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
