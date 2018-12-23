@@ -10,6 +10,6 @@ def load():
     road_four = room.Room('road_four', roomPath)
     road_four.set_description('streach of road', 'This stretch of road continues through the fields, north and south. To the left of the road a strange staircase descends underground.')
     road_four.add_exit('south', 'domains.centrata.firefile_area.fields.road_three')
-    road_four.add_exit('north', 'domains.centrata.firefile_area.fields.road_five')
+    road_four.add_exit('north', 'domains.centrata.kings_road?0')
     road_four.add_exit('down', 'domains.centrata.firefile_area.cave.carved_staircase')
     return road_four
