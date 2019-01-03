@@ -1,9 +1,74 @@
 # Room Factory: This module will create multiple rooms, depending on what paramaters are called in the load function
+import numpy as np
+
 import gametools
 import scenery
 import room
 import random
+from debug import dbg
 
+def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold):
+    """Return a true or false indicating whether a grid cell at 
+    (x, y, z) has a connection in direction (delta_x, delta_y, delta_z), 
+    where delta_x, delta_y, and delta_z are 0 or 1. For consistency, always 
+    check for a connection FROM the room with the most negative index TO the
+    room with most positive index.  E.g. to see if room (3, 4,-2) has a 
+    connection to the north, check (3,4,-2,(0,1,0)). For a connection to the
+    south, check (3,3,-2, (0,1,0)). Uses a random number seeded on combination 
+    of bits from the inputs and compares it to the provided threshold."""
+    x_bits = (x & 0xff) << 19
+    y_bits = (y & 0xff) << 11
+    z_bits = (z & 0xff) << 3
+    delta_x_bits = (delta_x & 0x01) << 2
+    delta_y_bits = (delta_y & 0x01) << 1
+    delta_z_bits = (delta_z & 0x01)
+    all_bits = x_bits | y_bits | z_bits | delta_x_bits | delta_y_bits | delta_z_bits
+    random.seed(all_bits)
+    num = random.random()
+    dbg.debug("Coordinates: %s, %s, %s. Direction: %s, %s, %s. Seed: %s. Num: %s" % (x, y, z, delta_x, delta_y, delta_z, all_bits, num))
+    return num < threshold
+
+def test_grid():
+    table = np.zeros((60,60))
+    for i in range(-30, 30):
+        for j in range(-30, 30):
+            possible_directions = []
+            directions_mask = 0x00
+
+            x = i
+            y = j
+            z = 0
+
+            exit_probability = 0.25
+
+            for direction, d_xyz, mask in [ ('north', (0,  1,  0 ), 0x01), 
+                                            ('south', (0, -1,  0 ), 0x02), 
+                                            ('east',  (1,  0,  0 ), 0x04),
+                                            ('west',  (-1, 0,  0 ), 0x08), 
+                                            ('up',    (0,  0,  1 ), 0x10), 
+                                            ('down',  (0,  0, -1 ), 0x20)]:
+                # see if a connection exists between this room and the room to the east (x+1), 
+                # west (x-1), north (y+1), etc.  
+                check_x = x if d_xyz[0] >= 0 else x-1
+                check_y = y if d_xyz[1] >= 0 else y-1
+                check_z = z if d_xyz[2] >= 0 else z-1
+
+                check_dx = 1 if d_xyz[0] != 0 else 0
+                check_dy = 1 if d_xyz[1] != 0 else 0
+                check_dz = 1 if d_xyz[2] != 0 else 0
+
+                if connection_exists(check_x, check_y, check_z, check_dx, check_dy, check_dz, exit_probability):
+                    possible_directions.append(direction)
+                    directions_mask |= mask
+            
+            table[x,y] = directions_mask
+    
+    for row in table:
+        for element in row:
+            print(element) #Actually meaningless. TODO: fix
+    
+    #TODO: Print out information
+        
 def load(param_list):
     path = param_list[0] # if paramaters are given, the first one is always the entire string, including parameters
     exists = room.check_loaded(path)
@@ -13,51 +78,30 @@ def load(param_list):
 
     this_room = room.Room('cave', path)
 
-    for i in ['north', 'south', 'east', 'west', 'up', 'down']:
-        t_add_exit = True
-        if i == 'north':
-            r_seed = (coords[0]*coords[1]*coords[2]*(coords[0]+1)*coords[1]*coords[2])
-            if r_seed == 0:
-                r_seed = (coords[0]+coords[1]+coords[2]+(coords[0]+1)+coords[1]+coords[2])
-            random.seed(r_seed)
-            loc_string = 'domains.endless_terrain.endless_caverns?%s&%s&%s' % (coords[0]+1, coords[1], coords[2])
-        elif i == 'south':
-            r_seed = (coords[0]*coords[1]*coords[2]*(coords[0]-1)*coords[1]*coords[2])
-            if r_seed == 0:
-                r_seed = (coords[0]+coords[1]+coords[2]+(coords[0]-1)+coords[1]+coords[2])
-            random.seed(r_seed)
-            loc_string = 'domains.endless_terrain.endless_caverns?%s&%s&%s' % (coords[0]-1, coords[1], coords[2])
-        elif i == 'west':
-            r_seed = (coords[0]*coords[1]*coords[2]*coords[0]*(coords[1]+1)*coords[2])
-            if r_seed == 0:
-                r_seed = (coords[0]+coords[1]+coords[2]+coords[0]+(coords[1]+1)+coords[2])
-            random.seed(r_seed)
-            loc_string = 'domains.endless_terrain.endless_caverns?%s&%s&%s' % (coords[0], coords[1]+1, coords[2])
-        elif i == 'east':
-            r_seed = (coords[0]*coords[1]*coords[2]*coords[0]*(coords[1]-1)*coords[2])
-            if r_seed == 0:
-                r_seed = (coords[0]+coords[1]+coords[2]+coords[0]+(coords[1]-1)+coords[2])
-            random.seed(r_seed)
-            loc_string = 'domains.endless_terrain.endless_caverns?%s&%s&%s' % (coords[0], coords[1]-1, coords[2])
-        elif i == 'up':
-            if coords[2] < 0:
-                r_seed = (coords[0]*coords[1]*coords[2]*coords[0]*coords[1]*(coords[2]+1))
-                if r_seed == 0:
-                    r_seed = (coords[0]+coords[1]+coords[2]+coords[0]+coords[1]+(coords[2]+1))
-                random.seed(r_seed)
-                loc_string = 'domains.endless_terrain.endless_caverns?%s&%s&%s' % (coords[0], coords[1], coords[2]+1)
-            else:
-                t_add_exit = False
-        elif i == 'down':
-            r_seed = (coords[0]*coords[1]*coords[2]*coords[0]*coords[1]*(coords[2]-1))
-            if r_seed == 0:
-                r_seed = (coords[0]+coords[1]+coords[2]+coords[0]+coords[1]+(coords[2]-1))
-            random.seed(r_seed)
-            loc_string = 'domains.endless_terrain.endless_caverns?%s&%s&%s' % (coords[0], coords[1], coords[2]-1)
+    exit_probability = 0.25
 
-        r = random.randint(0, 1)
-        if r == 1 and t_add_exit == True:
-            this_room.add_exit(i, loc_string)
+    x = coords[0]
+    y = coords[1]
+    z = coords[2]
+
+    for direction, d_xyz in [('north', (0,  1,  0 )), 
+                             ('south', (0, -1,  0 )), 
+                             ('east',  (1,  0,  0 )),
+                             ('west',  (-1, 0,  0 )), 
+                             ('up',    (0,  0,  1 )), 
+                             ('down',  (0,  0, -1 ))]:
+        # see if a connection exists between this room and the room to the east (x+1), 
+        # west (x-1), north (y+1), etc.  
+        check_x = x if d_xyz[0] >= 0 else x-1
+        check_y = y if d_xyz[1] >= 0 else y-1
+        check_z = z if d_xyz[2] >= 0 else z-1
+
+        check_dx = 1 if d_xyz[0] != 0 else 0
+        check_dy = 1 if d_xyz[1] != 0 else 0
+        check_dz = 1 if d_xyz[2] != 0 else 0
+
+        if connection_exists(check_x, check_y, check_z, check_dx, check_dy, check_dz, exit_probability):
+            this_room.add_exit(direction, 'domains.endless_terrain.endless_caverns?%s&%s&%s' % (x+d_xyz[0], y+d_xyz[1], z+d_xyz[2]))
     
     # Format: characteristic: % 
     light_levels = {'light': 62, 'dark': 38}
@@ -112,7 +156,7 @@ def load(param_list):
                 r_range_values.append(s)
         feature = r_range_values[random.randint(0, 99)]
         room_features.append(feature)
-
+    
     this_room.set_description('cavern','A test cavern. Coordinates: (%s, %s, %s). Features: %s, %s, %s' % (coords[0], coords[1], coords[2], room_features[0], room_features[1], room_features[2]))
 
     return this_room
