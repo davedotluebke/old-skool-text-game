@@ -28,25 +28,24 @@ def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold):
     dbg.debug("Coordinates: %s, %s, %s. Direction: %s, %s, %s. Seed: %s. Num: %s" % (x, y, z, delta_x, delta_y, delta_z, all_bits, num))
     return num < threshold
 
-def test_grid():
-    table = np.zeros((60,60))
+def test_grid(exit_probability = 0.25):
+    table = np.zeros((60,60), dtype=np.int32)
     for i in range(-30, 30):
         for j in range(-30, 30):
             possible_directions = []
             directions_mask = 0x00
 
-            x = i
-            y = j
+            x = j+30
+            y = i+30
             z = 0
 
-            exit_probability = 0.25
-
-            for direction, d_xyz, mask in [ ('north', (0,  1,  0 ), 0x01), 
-                                            ('south', (0, -1,  0 ), 0x02), 
-                                            ('east',  (1,  0,  0 ), 0x04),
-                                            ('west',  (-1, 0,  0 ), 0x08), 
-                                            ('up',    (0,  0,  1 ), 0x10), 
-                                            ('down',  (0,  0, -1 ), 0x20)]:
+            masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08, 'up':0x10, 'down':0x20}
+            for direction, d_xyz in [ ('north', (0,  1,  0 )), 
+                                      ('south', (0, -1,  0 )), 
+                                      ('east',  (1,  0,  0 )),
+                                      ('west',  (-1, 0,  0 )), 
+                                      ('up',    (0,  0,  1 )), 
+                                      ('down',  (0,  0, -1 )) ]:
                 # see if a connection exists between this room and the room to the east (x+1), 
                 # west (x-1), north (y+1), etc.  
                 check_x = x if d_xyz[0] >= 0 else x-1
@@ -59,15 +58,35 @@ def test_grid():
 
                 if connection_exists(check_x, check_y, check_z, check_dx, check_dy, check_dz, exit_probability):
                     possible_directions.append(direction)
-                    directions_mask |= mask
+                    directions_mask |= masks[direction]
             
             table[x,y] = directions_mask
     
-    for row in table:
-        for element in row:
-            print(element) #Actually meaningless. TODO: fix
-    
-    #TODO: Print out information
+    # create an ascii art depiction of the cavern map, with each room represented by a 3x3 grid of characters
+    # note north is direction of increasing y, i.e. first row in table is the southmost row on map. 
+    map = ""
+    for i in range(0, table.shape[0]):
+        # make 3 strings per row, to be printed as consecutive lines
+        line1 = ""
+        line2 = ""
+        line3 = ""
+        for j in range(0, table.shape[1]):
+            # make 3 characters in each line for each element
+            mask = table[j,i]
+            line1 += " | " if mask & masks['north'] else "   "
+            line2 += "-" if mask & masks['west'] else " "
+            if mask & (masks['north'] | masks['south'] | masks['east'] | masks['west']) :  
+                # ignore up and down for now, draw + if room has a NSEW exit or ' ' if not
+                line2 += "+"
+            else:
+                line2 += " "
+            line2 += "-" if mask & masks['east'] else " "
+            line3 += " | " if mask & masks['south'] else "   "
+        # i=0 is the bottom (southmost) row of map, so build map from bottom up
+        # therefore these three lines go on top of the map so far (i.e. before the current map string)
+        map = line1 + "\n" + line2 + '\n' + line3 + '\n' + map
+    print(map)
+            
         
 def load(param_list):
     path = param_list[0] # if paramaters are given, the first one is always the entire string, including parameters
