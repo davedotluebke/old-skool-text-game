@@ -28,6 +28,34 @@ def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold):
     dbg.debug("Coordinates: %s, %s, %s. Direction: %s, %s, %s. Seed: %s. Num: %s" % (x, y, z, delta_x, delta_y, delta_z, all_bits, num))
     return num < threshold
 
+masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08, 'up':0x10, 'down':0x20}
+
+def depth_first_search(t, start_x=-30,start_y=-30,end_x=30,end_y=30,start_label=1):
+    dfs_masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08}
+    directions = {'north': (0,  1,  0 ), 
+                  'south': (0, -1,  0 ),
+                  'east':  (1,  0,  0 ),
+                  'west':  (-1, 0,  0 ),
+                  'up':    (0,  0,  1 ), 
+                  'down':  (0,  0, -1 )}
+    visited = np.zeros(t.shape, dtype=np.int32)
+    
+    def visit_point(x, y, label):
+        if visited[x, y] != 0:
+            return
+        visited[x, y] = label
+        for e in masks:
+            if t[x, y] & masks[e]:
+                visit_point(x+directions[e][0], y+directions[e][1], label)
+        return label
+    
+    for a in range(start_x, end_x):
+        for b in range(start_y, end_y):
+            visit_point(start_x, start_y, start_label)
+            start_label += 1
+    
+    return visited
+
 def test_grid(exit_probability = 0.25):
     table = np.zeros((60,60), dtype=np.int32)
     for i in range(-30, 30):
@@ -39,7 +67,6 @@ def test_grid(exit_probability = 0.25):
             y = i+30
             z = 0
 
-            masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08, 'up':0x10, 'down':0x20}
             for direction, d_xyz in [ ('north', (0,  1,  0 )), 
                                       ('south', (0, -1,  0 )), 
                                       ('east',  (1,  0,  0 )),
@@ -62,9 +89,11 @@ def test_grid(exit_probability = 0.25):
             
             table[x,y] = directions_mask
     
+    centers = depth_first_search(table, -30, -30, 30, 30, 1)
+    
     # create an ascii art depiction of the cavern map, with each room represented by a 3x3 grid of characters
     # note north is direction of increasing y, i.e. first row in table is the southmost row on map. 
-    map = ""
+    map_str = ""
     for i in range(0, table.shape[0]):
         # make 3 strings per row, to be printed as consecutive lines
         line1 = ""
@@ -77,16 +106,17 @@ def test_grid(exit_probability = 0.25):
             line2 += "-" if mask & masks['west'] else " "
             if mask & (masks['north'] | masks['south'] | masks['east'] | masks['west']) :  
                 # ignore up and down for now, draw + if room has a NSEW exit or ' ' if not
-                line2 += "+"
+                line2 += chr(47+centers[j,i])
             else:
                 line2 += " "
             line2 += "-" if mask & masks['east'] else " "
             line3 += " | " if mask & masks['south'] else "   "
         # i=0 is the bottom (southmost) row of map, so build map from bottom up
         # therefore these three lines go on top of the map so far (i.e. before the current map string)
-        map = line1 + "\n" + line2 + '\n' + line3 + '\n' + map
-    print(map)
-            
+        map_str = line1 + "\n" + line2 + '\n' + line3 + '\n' + map_str
+    print(map_str)
+
+
         
 def load(param_list):
     path = param_list[0] # if paramaters are given, the first one is always the entire string, including parameters
