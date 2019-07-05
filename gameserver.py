@@ -328,7 +328,7 @@ class Game():
 
 
     def answer_kbd_input(self):
-        """Answer keyboard input portaining to the game console."""
+        """Answer keyboard input pertaining to the game console."""
         key = self.kb.getch()
         if (ord(key) >= 48 and ord(key) <= 57) or (ord(key) >= 97 and ord(key) <= 122) or ord(key) == 32: #lowercase letters, numbers, and spaces
             if not self.current_input_str:
