@@ -80,9 +80,9 @@ class Player(Creature):
         try:
             self.cons.alias_map = self.saved_cons_attributes[0]
             self.cons.measurement_system = self.saved_cons_attributes[1]
-        except AttributeError:
+        except (AttributeError, IndexError) as e:
             pass
-        
+
     def save_cons_attributes(self):
         self.saved_cons_attributes = [self.cons.alias_map, self.cons.measurement_system]
 
