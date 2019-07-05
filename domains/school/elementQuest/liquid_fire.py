@@ -30,6 +30,8 @@ class LiquidFire(liquid.Liquid):
 
     def heartbeat(self):
         loc = self.location
+        if loc == str(loc):
+            return
         while loc.location:
             if loc.path == 'domains.school.elementQuest':
                 break
