@@ -146,10 +146,10 @@ class Parser:
                 if self.words[1] == 'filter':
                     try:
                         s = self.words[2:] 
-                        dbg.set_filter_str(s)
+                        dbg.set_filter_strings(s)
                         console.write("Set verbose filter to '%s', debug strings containing '%s' will now be printed." % (s, s))                      
                     except IndexError:
-                        dbg.set_filter_str('&&&')
+                        dbg.set_filter_strings([])
                         console.write("Turned off verbose filter; debug messages will only print if they are below level %d." % dbg.verbosity)
                     return True
                 console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>")
