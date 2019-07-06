@@ -52,7 +52,7 @@ Bounce Away!® because they liked to feel like they were flying, and the trampol
 #*
     The warm rain drizzled down on them. It was not very strong anymore, just a little harder than mist. The ground was moist, visible from the second story window. It drizzled on.
     Skylar and Jennifer both stood for a second on the windowsill, gazing out upon the woods, before they took off into the rainy night. Flying down to the treehouse, they twisted and turned and fell in crazy somersaults. They rocketed up and down, right and left, and broke a few small branches. They tried to aim for the treehouse, but it was no good. They went up above the treehouse. Skylar came to a stop. He stood there for a second and looked out.
-    Unfortunately, Jennifer’s landing was unexpected. She was a foot over the treehouse roof when she just dropped. “Ow!” she said quietly
+    Unfortunately, Jennifer’s landing was unexpected. She was 30 cm over the treehouse roof when she just dropped. “Ow!” she said quietly
     “I’ve got one thing I want you to agree to,” said Skylar in a hushed voice.
     “Is it ‘Don’t tell anyone’?” Jennifer whispered back.
     “Yes!” replied Skylar.

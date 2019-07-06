@@ -18,8 +18,8 @@ class Cauldron(Container):
         super().__init__(default_name, path, pref_id)
         self.liquid = True
 
-    def insert(self, obj):
-        if super().insert(obj): 
+    def insert(self, obj, force_insert=False):
+        if super().insert(obj, force_insert): 
             return True
         for i in Cauldron.recipes:
             ingredients = {x.names[0] for x in self.contents}
