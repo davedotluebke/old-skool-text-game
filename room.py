@@ -62,7 +62,7 @@ class Room(Container):
             if isinstance(obj, Container) and (obj.see_inside or hasattr(obj, 'cons')):
                 if obj.contents: 
                     obj_list += obj.contents 
-            dbg.debug('Room %s: light level is %s' % (self.id, total_light), 3)
+        dbg.debug('Room %s: light level is %s' % (self.id, total_light), 3)
         return (total_light <= 0)
         
     def look_at(self, p, cons, oDO, oIDO):
