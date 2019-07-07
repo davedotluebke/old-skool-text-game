@@ -27,7 +27,7 @@ class PitRoom(Room):
                         self.long_desc = 'This is a crude pit. It is about 1/%s filled with water.' % self.water_level_den
                         i.perceive('The pit fills up more! The water is getting higher faster and faster!')
                     if self.water_level_den == 1 and not self.player_done:
-                        self.add_exit('up', 'waterfall')
+                        self.add_exit('up', 'domains.school.school.water_kitchen')
                         self.long_desc = 'This is a crude pit. It is completely full of water.'
                         self.player_done = True
                         if i.wizardry_element == 'water':

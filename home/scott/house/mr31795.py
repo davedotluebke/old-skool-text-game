@@ -24,5 +24,8 @@ def load():
 
     opal = gametools.clone('home.scott.house.opal')
     magic_room.insert(opal, True)
+
+    diamond = gametools.clone('home.scott.house.diamond')
+    magic_room.insert(diamond, True)
     
     return magic_room
