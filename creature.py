@@ -100,7 +100,7 @@ class Creature(Container):
                 cons.write('It is holding:')
                 for i in self.visible_inventory:
                     if i != self.armor_worn and i != self.weapon_wielding:
-                        cons.write('/na '+i.short_desc)
+                        cons.write('\na '+i.short_desc)
             return True
         else:
             return "Not sure what you are trying to look at!"

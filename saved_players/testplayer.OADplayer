@@ -7,15 +7,20 @@
             "happy",
             "green-eyed"
         ],
-        "armor_worn": "skin188-saveplayer964726",
+        "armor_worn": "leather_suit-saveplayer427021",
+        "attacking": null,
+        "combat_skill": 80,
         "contents": [
-            "scroll018-saveplayer964726"
+            "scroll018-saveplayer427021",
+            "sword-saveplayer427021",
+            "leather_suit-saveplayer427021"
         ],
-        "default_armor": "skin188-saveplayer964726",
-        "default_weapon": "bare hands8441-saveplayer964726",
+        "default_armor": "skin188-saveplayer427021",
+        "default_weapon": "bare hands8441-saveplayer427021",
         "gender": "female",
-        "id": "testplayer10-saveplayer964726",
-        "location": "domains.school.forest.field",
+        "health": 7.499999999999991,
+        "id": "testplayer10-saveplayer427021",
+        "location": "domains.centrata.firefile_area.key_quest.bat_fight",
         "long_desc": "A happy green-eyed female elf ",
         "names": [
             "testplayer",
@@ -23,25 +28,86 @@
         ],
         "path": "player",
         "proper_name": "Testplayer",
+        "saved_cons_attributes": [
+            {
+                "d": "go down",
+                "e": "go east",
+                "i": "inventory",
+                "l": "look",
+                "n": "go north",
+                "ne": "go northeast",
+                "nw": "go northwest",
+                "s": "go south",
+                "se": "go southeast",
+                "sw": "go southwest",
+                "u": "go up",
+                "w": "go west",
+                "x": "execute"
+            },
+            "IMP"
+        ],
         "short_desc": "happy green-eyed female elf ",
         "species": "elf",
         "start_loc_id": "domains.school.school.great_hall",
         "version_number": 1,
-        "weapon_wielding": "bare hands8441-saveplayer964726"
+        "weapon_wielding": "sword-saveplayer427021"
     },
     {
-        "id": "scroll018-saveplayer964726",
-        "location": "testplayer10-saveplayer964726",
+        "current_message": "Make a potion to hide thee. Use this potion to sneak past an unbeatable enemy.\nDue next class.",
+        "id": "scroll018-saveplayer427021",
+        "location": "testplayer10-saveplayer427021",
+        "messages": {
+            "domains.school.dungeon.dungeon_hall": [
+                "Thou must continue on thy journey\nAnd in thy journey\nThou must choose a path\nAnd thou must be careful, because thy choice defines thy destiny. ",
+                false
+            ],
+            "domains.school.elementQuest.path_choice": [
+                "Thou must continue on thy journey\nAnd in thy journey\nThou must choose a path\nAnd thou must be careful, because thy choice defines thy destiny. ",
+                false
+            ],
+            "domains.school.school.air_lounge": [
+                "Thy class begins shortly.",
+                false
+            ],
+            "domains.school.school.earth_lounge": [
+                "Thy class begins shortly.",
+                false
+            ],
+            "domains.school.school.fire_lounge": [
+                "Thy class begins shortly.",
+                false
+            ],
+            "domains.school.school.great_hall": [
+                "Make a potion to hide thee. Use this potion to sneak past an unbeatable enemy.\nDue next class.",
+                true
+            ],
+            "domains.school.school.water_lounge": [
+                "Thy class begins shortly.",
+                false
+            ]
+        },
         "path": "domains.school.scroll",
         "version_number": 1
     },
     {
-        "id": "bare hands8441-saveplayer964726",
+        "id": "sword-saveplayer427021",
+        "location": "testplayer10-saveplayer427021",
+        "path": "domains.school.forest.sword",
+        "version_number": 1
+    },
+    {
+        "id": "leather_suit-saveplayer427021",
+        "location": "testplayer10-saveplayer427021",
+        "path": "domains.school.forest.leather_suit",
+        "version_number": 1
+    },
+    {
+        "id": "bare hands8441-saveplayer427021",
         "path": "default_weapon",
         "version_number": 1
     },
     {
-        "id": "skin188-saveplayer964726",
+        "id": "skin188-saveplayer427021",
         "path": "default_armor",
         "version_number": 1
     }
