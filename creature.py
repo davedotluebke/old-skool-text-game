@@ -289,7 +289,7 @@ class NPC(Creature):
             if self.attacking:
                 if (self.attacking not in self.location.contents):
                     for l in self.location.exits:
-                        if l == self.attacking.location:
+                        if gametools.load_room(self.location.exits[l]) == self.attacking.location:
                             self.move_to(l)
                             moved = True
                             break

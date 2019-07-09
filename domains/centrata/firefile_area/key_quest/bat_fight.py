@@ -1,30 +1,14 @@
 import gametools
 import scenery
 import room
+import keyholemod
 
 class BatFightRoom(room.Room):
     def go_to(self, p, cons, oDO, oIDO):
         if p.words[1] == 'south':
             if cons.user not in self.keyhole.checked_players:
                 return "I'm not sure how to go south!"
-        super().go_to(p, cons, oDO, oIDO)
-
-class Keyhole(scenery.Scenery):
-    def __init__(self):
-        super().__init__('keyhole', 'keyhole embeded in the rock face', 'This keyhole is embeded in the rock face. You cannot see any other sign of a door.')
-        self.unlisted = True
-        self.actions.append(scenery.Action(self.open, ['put', 'insert'], True, False))
-        self.checked_players = []
-    
-    def open(self, p, cons, oDO, oIDO):
-        if hasattr(oDO, 'qkey_number') and oDO.qkey_number == 1:
-            cons.user.perceive('As soon as you insert the key, the massive rock wall begins to part, revealing a passage to the south.')
-            self.location.add_exit('south', 'domains.centrata.firefile_area.key_quest.maze_entrance')
-            oDO.move_to(room.Thing.ID_dict['nulspace'])
-            return True
-        else:
-            cons.user.perceive("You try to put the %s in the keyhole, but it doesn't fit." % oDO.default_name)
-            return True
+        return super().go_to(p, cons, oDO, oIDO)
 
 def load():
     roomPath =  gametools.findGamePath(__file__)
@@ -46,7 +30,7 @@ def load():
     bat.have_key()
     r.insert(bat, True)
 
-    keyhole = Keyhole()
+    keyhole = keyholemod.Keyhole('south', 'domains.centrata.firefile_area.key_quest.maze_entrance', 1)
     r.insert(keyhole, True)
     r.keyhole = keyhole
 
