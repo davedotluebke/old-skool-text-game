@@ -7,24 +7,25 @@
             "happy",
             "green-eyed"
         ],
-        "armor_worn": "leather_suit-saveplayer528498",
+        "armor_worn": "leather_suit6-saveplayer420976",
         "attacking": null,
-        "combat_skill": 45,
+        "combat_skill": 64,
         "contents": [
-            "scroll018-saveplayer528498",
-            "sword-saveplayer528498",
-            "leather_suit-saveplayer528498",
-            "ruby40-saveplayer528498",
-            "emerald-saveplayer528498",
-            "axe77-saveplayer528498"
+            "scroll018-saveplayer420976",
+            "sword6-saveplayer420976",
+            "leather_suit6-saveplayer420976",
+            "ruby40-saveplayer420976",
+            "emerald4-saveplayer420976",
+            "axe77-saveplayer420976",
+            "flashlight2-saveplayer420976"
         ],
-        "default_armor": "skin188-saveplayer528498",
-        "default_weapon": "bare hands8441-saveplayer528498",
+        "default_armor": "skin188-saveplayer420976",
+        "default_weapon": "bare hands8441-saveplayer420976",
         "engaged": true,
         "gender": "female",
-        "health": 19.4,
-        "id": "testplayer10-saveplayer528498",
-        "location": "domains.centrata.firefile_area.key_quest.maze3",
+        "health": 16.199999999999996,
+        "id": "testplayer10-saveplayer420976",
+        "location": "domains.centrata.firefile_area.key_quest.maze37",
         "long_desc": "A happy green-eyed female elf ",
         "names": [
             "testplayer",
@@ -54,53 +55,62 @@
         "species": "elf",
         "start_loc_id": "domains.school.school.great_hall",
         "version_number": 1,
-        "weapon_wielding": "sword-saveplayer528498"
+        "weapon_wielding": "sword6-saveplayer420976"
     },
     {
-        "id": "scroll018-saveplayer528498",
-        "location": "testplayer10-saveplayer528498",
+        "id": "scroll018-saveplayer420976",
+        "location": "testplayer10-saveplayer420976",
         "path": "domains.school.scroll",
         "version_number": 1
     },
     {
-        "id": "sword-saveplayer528498",
-        "location": "testplayer10-saveplayer528498",
+        "id": "sword6-saveplayer420976",
+        "location": "testplayer10-saveplayer420976",
         "path": "domains.school.forest.sword",
         "version_number": 1
     },
     {
-        "id": "leather_suit-saveplayer528498",
-        "location": "testplayer10-saveplayer528498",
+        "id": "leather_suit6-saveplayer420976",
+        "location": "testplayer10-saveplayer420976",
         "path": "domains.school.forest.leather_suit",
         "version_number": 1
     },
     {
-        "id": "ruby40-saveplayer528498",
-        "location": "testplayer10-saveplayer528498",
+        "id": "ruby40-saveplayer420976",
+        "location": "testplayer10-saveplayer420976",
         "path": "home.scott.house.ruby",
         "version_number": 1
     },
     {
-        "id": "emerald-saveplayer528498",
-        "location": "testplayer10-saveplayer528498",
+        "id": "emerald4-saveplayer420976",
+        "location": "testplayer10-saveplayer420976",
         "long_desc": "This is a delicately cut emerald. It is about 90 millimeters in all dimensions.",
         "path": "home.scott.house.emerald",
         "power_num": 90,
         "version_number": 1
     },
     {
-        "id": "axe77-saveplayer528498",
-        "location": "testplayer10-saveplayer528498",
+        "id": "axe77-saveplayer420976",
+        "location": "testplayer10-saveplayer420976",
         "path": "domains.centrata.firefile_area.key_quest.axe",
         "version_number": 1
     },
     {
-        "id": "bare hands8441-saveplayer528498",
+        "id": "flashlight2-saveplayer420976",
+        "light": 1,
+        "location": "testplayer10-saveplayer420976",
+        "long_desc": "An old metal flashlight.\nThe flashlight is on, burning brightly.",
+        "path": "domains.school.forest.flashlight",
+        "short_desc": "old flashlight burning brightly",
+        "version_number": 1
+    },
+    {
+        "id": "bare hands8441-saveplayer420976",
         "path": "default_weapon",
         "version_number": 1
     },
     {
-        "id": "skin188-saveplayer528498",
+        "id": "skin188-saveplayer420976",
         "path": "default_armor",
         "version_number": 1
     }

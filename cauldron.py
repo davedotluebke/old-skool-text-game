@@ -12,7 +12,10 @@ class Cauldron(Container):
     recipes = [({'water', 'molasses', 'poppyseed'}, 'pink potion'),  
                ({'water', 'molasses', 'sunflower petal', 'cave moss', 'truffles'}, 'invisibility potion'),
                ({'poppyseed', 'truffles', 'cave moss'}, 'explode'),
-               ({'molasses', 'dragon scale', 'poppyseed'}, 'strength potion')]
+               ({'molasses', 'dragon scale', 'poppyseed'}, 'strength potion'),
+               ({'spring', 'hay', 'dragon scale'}, 'jumping potion'),
+               ({'dragon scale', 'poppyseed', 'spring'}, 'explode'),
+               ({'dragon scale', 'truffles', 'molasses'}, 'exploration potion')]
 
     def __init__(self, default_name, path, pref_id=None):
         super().__init__(default_name, path, pref_id)
@@ -49,6 +52,9 @@ class Cauldron(Container):
             created.move_to(self)
         if i[1] == 'strength potion':
             created = gametools.clone('strength_potion')
+            created.move_to(self)
+        if i[1] == 'jumping potion':
+            created = gametools.clone('jumping_potion')
             created.move_to(self)
         self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.short_desc))
         

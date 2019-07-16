@@ -1,7 +1,7 @@
 import gametools
 import scenery
 import room
-import keyholemod
+import domains.centrata.firefile_area.key_quest.keyholemod as k
 
 class BatFightRoom(room.Room):
     def go_to(self, p, cons, oDO, oIDO):
@@ -15,7 +15,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    r = BatFightRoom('cave', roomPath)
+    r = BatFightRoom('cave', roomPath, indoor=True)
     r.set_description('cave', '''You find yourself in a large cave with a mostly flat floor. 
     Stalagtites cover the ceiling, and many matching stalagmites cover the floor. Strangely,
     there seems to be no water here, except a few drips that fall from the ceiling. The only
@@ -30,7 +30,7 @@ def load():
     bat.have_key()
     r.insert(bat, True)
 
-    keyhole = keyholemod.Keyhole('south', 'domains.centrata.firefile_area.key_quest.maze_entrance', 1)
+    keyhole = k.Keyhole('south', 'domains.centrata.firefile_area.key_quest.maze_entrance', 1)
     r.insert(keyhole, True)
     r.keyhole = keyhole
 

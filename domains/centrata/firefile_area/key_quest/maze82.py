@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    r = room.Room('passage', roomPath, light=0)
+    r = room.Room('passage', roomPath, light=0, indoor=True)
     r.set_description('dark passage','This is a dark passage. It is very rocky and steep.')
     r.add_exit('up', 'domains.centrata.firefile_area.key_quest.maze47')
     r.add_exit('south', 'domains.centrata.firefile_area.key_quest.maze57')

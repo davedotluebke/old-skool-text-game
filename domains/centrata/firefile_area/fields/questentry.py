@@ -24,7 +24,9 @@ def load():
     lakeside = room.Room('lakeside', roomPath)
     lakeside.set_description('shore of a lake', 'You find yourself beside a large lake with a shallow shoreline. The sun shines brightly here. The lakewaters seem as if they might be cooler.')
     lakeside.add_adjectives('hot')
+    lakeside.add_exit('west', 'domains.centrata.firefile_area.fields.road_six')
 
     lake = sinkholeLake()
     lakeside.insert(lake, True)
+
     return lakeside

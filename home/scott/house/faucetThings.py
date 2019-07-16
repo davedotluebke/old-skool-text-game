@@ -60,8 +60,7 @@ class FaucetThing(Thing):
             return True
         cons.write('Water comes out of the faucet and fills your %s.' % filling)
         self.emit('&nD%s fills a %s with water at the %s.' % (cons.user.id, filling, self.type))
-        water = Liquid('water', 'some normal water', 'This is some normal clear water.')
-        water.add_response(['drink'], 'You take a big drink of the water, and your thirst is quenched.')
+        water = gametools.clone('domains.school.school.water')
         oDO.insert(water)
         return True
     

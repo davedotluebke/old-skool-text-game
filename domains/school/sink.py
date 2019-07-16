@@ -1,3 +1,5 @@
+import gametools
+
 from debug import dbg
 from thing import Thing
 from scenery import Scenery
@@ -22,8 +24,7 @@ class Sink(Thing):
             return True
         cons.write('Water comes out of the sink, and fills your %s' % filling)
         self.emit('&nD%s fills a %s with water at the sink.' % (cons.user.id, filling))
-        water = Liquid('water', 'some normal water', 'This is some normal, clear water.')
-        water.add_response(['drink'], 'You take a big drink of the water, and your thirst is quenched.')
+        water = gametools.clone('domains.school.school.water')
         oDO.insert(water)
         return True
     

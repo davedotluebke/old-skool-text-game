@@ -199,7 +199,8 @@ class Creature(Container):
         self.emit("&nD%s dies!" % self.id, [self])
         corpse = gametools.clone('corpse', self)
         self.location.insert(corpse)
-        for i in self.contents:
+        while self.contents:
+            i = self.contents[0]
             i.move_to(corpse)
         if hasattr(self, 'cons'):
             self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))     #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
