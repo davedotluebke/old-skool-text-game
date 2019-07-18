@@ -194,6 +194,9 @@ class Player(Creature):
         if self.cons == None:
             self.detach(nocons=True)
         
+        if self.health < self.hitpoints:
+            self.heal()
+        
         cmd = self.cons.take_input()
         if self.login_state != None:
             if cmd != None:

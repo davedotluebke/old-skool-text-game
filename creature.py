@@ -31,6 +31,7 @@ class Creature(Container):
         self.proper_name = default_name.capitalize()
         self.dead = False
         self.wizardry_element = None
+        self.healing = 0
 
     def get_saveable(self):
         saveable = super().get_saveable()
@@ -209,6 +210,12 @@ class Creature(Container):
             self.dead = True
         if message:
             self.emit(message)
+    
+    def heal(self):
+        self.healing -= 1
+        if self.healing < 0:
+            self.health += 1
+            self.healing = 20
 
     def attack_enemy(self, enemy=None):
         """Attack any enemies, if possible, or if a highly aggressive Creature, attack anyone in the room."""
@@ -269,6 +276,8 @@ class NPC(Creature):
     def heartbeat(self):
         if self.dead:
             return
+        if self.health < self.hitpoints:
+            self.heal()
         self.act_soon += 1
         if self.act_soon >= self.act_frequency or (set(self.enemies) and set(self.location.contents)) or self.attacking:
             acting = False
