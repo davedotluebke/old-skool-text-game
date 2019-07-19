@@ -63,8 +63,8 @@
             var cmd_history = [''];
             var current_cmd = 0;
             var mode = 0;
-            var document_style_modes = ['','background-color: #000000; color: #00ff00; cursor:none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;'];
-            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none; caret-color: black'];
+            var document_style_modes = ['','background-color: #000000; color: #00ff00; cursor:none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;','background-color: #ff0000'];
+            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none; caret-color: black','background-color: #00ff00; color: #0000ff'];
             var allow_right_clicks = [true, false];
             var box_caret = [false, true];
             var b_style_modes = ['', 'color:#00ff00'];
@@ -196,14 +196,14 @@
                     document.title = 'Gameclient - ' + new_width_chars + ' x 24'
                 }
             }
-            window.onresize = function(e) {
+            /*window.onresize = function(e) {
                 if (document.getElementById('resizeValidate').value != 'true') {
                     console.log('Fixing!')
                     window.resizeTo(document.getElementById('width').value, 438);
                     window.scrollTo(0,document.body.scrollHeight);
                 }
                 document.getElementById('resizeValidate').value = '';
-            }
+            }*/
             function moveCursorForward(key) {
                 if (!(left_offset/9 > document.getElementById('inputLine').value.length) && !((left_offset/9 == document.getElementById('inputLine').value.length) && key == 39)) {
                     left_offset += 9;
