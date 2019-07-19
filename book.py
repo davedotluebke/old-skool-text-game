@@ -62,6 +62,9 @@ class Book(Thing):
         if self not in cons.user.contents:
             cons.write('You need to take the book before reading it!')
             return True
+        
+        if oDO != self:
+            return "Did you mean to read a book?"
 
         # take over user input
         cons.request_input(self)

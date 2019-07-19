@@ -20,5 +20,5 @@ class Keyhole(scenery.Scenery):
             self.checked_players.append(cons.user)
             return True
         else:
-            cons.user.perceive("You try to put the %s in the keyhole, but it doesn't fit." % oDO.default_name)
+            cons.user.perceive("You try to put the %s in the keyhole, but it doesn't fit." % oDO.names[0])
             return True
