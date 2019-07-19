@@ -7,8 +7,10 @@ class ProfSunRuby(gems.Ruby):
         gems.Thing.game.register_heartbeat(self)
 
     def heartbeat(self):
+        super().heartbeat()
         if self.power_num > 0:
-            profsun.ProfSun.rubies_powered.append(self.location)
+            if self not in profsun.ProfSun.rubies_powered:
+                profsun.ProfSun.rubies_powered.append(self.location)
 
 def clone():
     return ProfSunRuby()

@@ -8,21 +8,24 @@ def load():
     
     magic_room = room.Room('magical room', roomPath, indoor=True)
     magic_room.set_description('magical room', 'This room has a lot of magical supplies. It also has a door on the west side of the room with a piece of paper above it.')
-    magic_room.add_exit('north', 'home.alex.house.lr31795')
-    magic_room.add_exit('west', 'woods')
+    magic_room.add_exit('north', 'home.scott.house.lr31795')
+    magic_room.add_exit('west', 'domains.school.school.water_kitchen')
     magic_room.add_names('room')
     magic_room.add_adjectives('magic', 'magical')
 
-    paper = gametools.clone('home.alex.house.paper')
+    paper = gametools.clone('home.scott.house.placeChooser')
     magic_room.insert(paper, True)
 
-    emerald = gametools.clone('home.alex.house.emerald')
+    emerald = gametools.clone('home.scott.house.emerald')
     magic_room.insert(emerald, True)
 
-    ruby = gametools.clone('home.alex.house.ruby')
+    ruby = gametools.clone('home.scott.house.ruby')
     magic_room.insert(ruby, True)
 
-    opal = gametools.clone('home.alex.house.opal')
+    opal = gametools.clone('home.scott.house.opal')
     magic_room.insert(opal, True)
+
+    diamond = gametools.clone('home.scott.house.diamond')
+    magic_room.insert(diamond, True)
     
     return magic_room

@@ -80,9 +80,9 @@ class Player(Creature):
         try:
             self.cons.alias_map = self.saved_cons_attributes[0]
             self.cons.measurement_system = self.saved_cons_attributes[1]
-        except AttributeError:
+        except (AttributeError, IndexError) as e:
             pass
-        
+
     def save_cons_attributes(self):
         self.saved_cons_attributes = [self.cons.alias_map, self.cons.measurement_system]
 
@@ -194,6 +194,9 @@ class Player(Creature):
         if self.cons == None:
             self.detach(nocons=True)
         
+        if self.health < self.hitpoints:
+            self.heal()
+        
         cmd = self.cons.take_input()
         if self.login_state != None:
             if cmd != None:
@@ -214,11 +217,14 @@ class Player(Creature):
                 else:
                     self.attack_enemy(self.attacking)
                     return
-            for i in self.location.contents:
-                if i in self.enemies:
-                    self.cons.write('You attack your enemy %s.' % i.short_desc)
-                    self.attacking = i
-                    self.attack_enemy(i)
+            try:
+                for i in self.location.contents:
+                    if i in self.enemies:
+                        self.cons.write('You attack your enemy %s.' % i.short_desc)
+                        self.attacking = i
+                        self.attack_enemy(i)
+            except AttributeError:
+                dbg.debug('Error! Location is a string!')
         elif self.engaged:
             if self.attacking:
                 if self.attacking == 'quit':

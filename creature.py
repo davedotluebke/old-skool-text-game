@@ -31,6 +31,7 @@ class Creature(Container):
         self.proper_name = default_name.capitalize()
         self.dead = False
         self.wizardry_element = None
+        self.healing = 0
 
     def get_saveable(self):
         saveable = super().get_saveable()
@@ -100,7 +101,7 @@ class Creature(Container):
                 cons.write('It is holding:')
                 for i in self.visible_inventory:
                     if i != self.armor_worn and i != self.weapon_wielding:
-                        cons.write('/na '+i.short_desc)
+                        cons.write('\na '+i.short_desc)
             return True
         else:
             return "Not sure what you are trying to look at!"
@@ -199,7 +200,8 @@ class Creature(Container):
         self.emit("&nD%s dies!" % self.id, [self])
         corpse = gametools.clone('corpse', self)
         self.location.insert(corpse)
-        for i in self.contents:
+        while self.contents:
+            i = self.contents[0]
             i.move_to(corpse)
         if hasattr(self, 'cons'):
             self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))     #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
@@ -208,6 +210,12 @@ class Creature(Container):
             self.dead = True
         if message:
             self.emit(message)
+    
+    def heal(self):
+        self.healing -= 1
+        if self.healing < 0:
+            self.health += 1
+            self.healing = 20
 
     def attack_enemy(self, enemy=None):
         """Attack any enemies, if possible, or if a highly aggressive Creature, attack anyone in the room."""
@@ -268,6 +276,8 @@ class NPC(Creature):
     def heartbeat(self):
         if self.dead:
             return
+        if self.health < self.hitpoints:
+            self.heal()
         self.act_soon += 1
         if self.act_soon >= self.act_frequency or (set(self.enemies) and set(self.location.contents)) or self.attacking:
             acting = False
@@ -289,7 +299,7 @@ class NPC(Creature):
             if self.attacking:
                 if (self.attacking not in self.location.contents):
                     for l in self.location.exits:
-                        if l == self.attacking.location:
+                        if gametools.load_room(self.location.exits[l]) == self.attacking.location:
                             self.move_to(l)
                             moved = True
                             break
