@@ -15,6 +15,7 @@ def load():
     cave_bacon = scenery.Scenery ('cave bacon', 'strip of cave bacon', 'This is cave bacon looks like a larger than life strip of bacon, super large and cripy, YUM!')
     cave_bacon.add_response(['take'], 'You try to take the cave bacon, but it is fastened to the ceiling;.')
     cave_bacon.add_response(['eat'], 'The cave bacon is far too hard to eat.')
+    cave_bacon.unlisted = True
     r.insert(cave_bacon, True)
 
     return r
