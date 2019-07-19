@@ -14,6 +14,7 @@ def load():
 
     stalagtites = scenery.Scenery('stalagtites', 'stalagtites', 'These stalagtites look sturdy but slippery.')
     stalagtites.add_response(['climb'], 'Unfortunately, the stalagtites are too slipery to climb.')
+    stalagtites.unlisted = True
     r.insert(stalagtites, True)
 
     return r

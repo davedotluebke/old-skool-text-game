@@ -11,6 +11,7 @@ def load():
     r.set_description('tall cavern','You enter a tall cavern, with seemingly endless layers of balcony-like overlooks. You notice a huge slab of flowstone to the east.')
     r.add_exit('east', 'domains.centrata.firefile_area.key_quest.maze3')
 
+    flowstone.unlisted = True
     flowstone = scenery.Scenery('flowstone', 'huge slab of flowstone', 'This slab of flowstone is huge and looks as if it is a waterfall frozen in motion.')
     flowstone.add_adjectives('huge', 'wet')
     flowstone.add_response(['climb', 'traverse'], "You try to climb the slab but can't find any good holds on it.")
@@ -18,4 +19,5 @@ def load():
 
     giant = gametools.clone('domains.centrata.firefile_area.key_quest.giant')
     r.insert(giant)
+    
     return r
