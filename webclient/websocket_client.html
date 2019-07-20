@@ -115,24 +115,17 @@
             }
             var calculateWordDimensions = function(text, classes, escape) {
                 classes = classes || [];
-
                 if (escape === undefined) {
                     escape = true;
                 }
-
                 classes.push('textDimensionCalculation');
-
                 var div = document.createElement('div');
                 div.setAttribute('class', classes.join(' '));
-
                 div.innerHTML = text;
                 
                 document.body.appendChild(div);
-
                 width = div.offsetWidth;
-
                 div.parentNode.removeChild(div);
-
                 return width;
             };
             function updateCaret() {
@@ -149,8 +142,8 @@
             setInterval(updateCaret, 500);
             window.onkeyup = function(e) {
                 if (box_caret[mode]) {
-                    var textBeforeCaret = document.getElementById('inputLine').value.substring(0, document.getElementById('inputLine').value.selectionStart);
-                    left_indent = calculateWordDimensions(textBeforeCaret+'.') - calculateWordDimensions('.');
+                    var textBeforeCaret = document.getElementById('inputLine').value.substring(0, document.getElementById('inputLine').selectionStart);
+                    var left_indent = calculateWordDimensions(textBeforeCaret+'.') - calculateWordDimensions('.');
                     document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_indent}px`;
                 }
             }
