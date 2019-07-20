@@ -35,7 +35,7 @@
         #box_caret_el {
             display: none;
             position: fixed;
-            top: 371px;
+            bottom: 1px;
             left: 0px;
             width: 9px;
             height: 15px;
@@ -44,7 +44,37 @@
             background-color: #00ff00;
         }
         .offCaret {
-            background-color: #00000000
+            background-color: #00000000;
+        }
+        @keyframes crazymode {
+            0% {background-color: #54BDD6; color: #BC533A; cursor: wait}
+            9% {background-color: #84656F; color: #8CABA1; cursor: not-allowed}
+            18% {background-color: #784A9A; color: #98C676; cursor: wait}
+            27% {background-color: #EDEBA3; color: #23256D; cursor: not-allowed}
+            36% {background-color: #CC44D3; color: #44CC3D; cursor: wait}
+            45% {background-color: #2B822B; color: #E58EE5; cursor: not-allowed}
+            54% {background-color: #E192BD; color: #2F7E53; cursor: wait}
+            63% {background-color: #B81A35; color: #58F6DB; cursor: not-allowed}
+            72% {background-color: #EB9644; color: #1469BB; cursor: wait}
+            81% {background-color: #FFB1C7; color: #004E38; cursor: not-allowed}
+            90% {background-color: #2D6604; color: #D299FB; cursor: wait}
+            100% {background-color: #54BDD6; color: #BC533A; cursor: not-allowed}
+        }
+        @keyframes crazymodeinput {
+            0% {background-color: #B9C456; color: #463BA9; cursor: grab; border-color: #2750E9; border-width: 1px}
+            18% {background-color: #2AB805; color: #D547FA; cursor: wait; border-color: #D8AF16; border-width: 20px}
+            36% {background-color: #1791A9; color: #E86E56; cursor: grab; border-color: #D8AF16; border-width: 30px}
+            54% {background-color: #39B668; color: #C64997; cursor: wait; border-color: #6937A2; border-width: 40px}
+            72% {background-color: #BC4570; color: #43BA8F; cursor: grab; border-color: #96C85D; border-width: 50px}
+            90% {background-color: #9C5E1C; color: #63A1E3; cursor: wait; border-color: #96C85D; border-width: 60px}
+            100% {background-color: #B9C456; color: #463BA9; cursor: grab; border-color: #438CC7; border-width: 0px}
+        }
+        .textDimensionCalculation {
+            position: absolute;
+            visibility: hidden;
+            height: auto;
+            width: auto;
+            white-space: nowrap;
         }
         </style>
     </head>
@@ -63,13 +93,48 @@
             var cmd_history = [''];
             var current_cmd = 0;
             var mode = 0;
-            var document_style_modes = ['','background-color: #000000; color: #00ff00; cursor:none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;','background-color: #ff0000'];
-            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none; caret-color: black','background-color: #00ff00; color: #0000ff'];
-            var allow_right_clicks = [true, false];
-            var box_caret = [false, true];
-            var b_style_modes = ['', 'color:#00ff00'];
+            var document_style_modes = ['','background-color: #000000; color: #00ff00; cursor:none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;','animation-name: crazymode; animation-duration: 4s; animation-iteration-count: infinite','background-color: #4800ff; cursor: none; color: #d9c407'];
+            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none; caret-color: black','animation-name: crazhmodeinput; animation-duration: 4s; animation-iteration-count: infinite','background-color: #00ffd0; cursor: none'];
+            var allow_right_clicks = [true, false, true, false];
+            var box_caret = [false, true, false, false];
+            var b_style_modes = ['', 'color:#00ff00','','color: #d9c407'];
             var left_offset = 0;
             var caret_on = true;
+            function getRandomColor() {
+                var letters = '0123456789ABCDEF';
+                var color = '#';
+                var inverseColor = '#';
+                for (var i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                for (var j = 0; j < 6; j++) {
+                    inverseColor += letters[15 - letters.indexOf(color.split("")[j+1])]
+                    console.log(letters.indexOf(color.split("")[j+1]))
+                }
+                return [color, inverseColor];
+            }
+            var calculateWordDimensions = function(text, classes, escape) {
+                classes = classes || [];
+
+                if (escape === undefined) {
+                    escape = true;
+                }
+
+                classes.push('textDimensionCalculation');
+
+                var div = document.createElement('div');
+                div.setAttribute('class', classes.join(' '));
+
+                div.innerHTML = text;
+                
+                document.body.appendChild(div);
+
+                width = div.offsetWidth;
+
+                div.parentNode.removeChild(div);
+
+                return width;
+            };
             function updateCaret() {
                 var caret = document.getElementById('box_caret_el');
                 if (caret_on) {
@@ -82,9 +147,16 @@
                 }
             }
             setInterval(updateCaret, 500);
+            window.onkeyup = function(e) {
+                if (box_caret[mode]) {
+                    var textBeforeCaret = document.getElementById('inputLine').value.substring(0, document.getElementById('inputLine').value.selectionStart);
+                    left_indent = calculateWordDimensions(textBeforeCaret+'.') - calculateWordDimensions('.');
+                    document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_indent}px`;
+                }
+            }
             window.onkeydown = function(e) {
                 var key = e.charCode || e.keyCode || 0;
-                if (box_caret[mode]) {
+                /*if (box_caret[mode]) {
                     if (key == 8 || key == 37) {
                         moveCursorBack(key);
                     }
@@ -93,7 +165,7 @@
                             moveCursorForward(key);
                         }
                     }
-                } 
+                } */
                 if (key == 13) {
                     if (box_caret[mode]) {
                         left_offset = 0;
@@ -203,7 +275,7 @@
                     window.scrollTo(0,document.body.scrollHeight);
                 }
                 document.getElementById('resizeValidate').value = '';
-            }*/
+            }
             function moveCursorForward(key) {
                 if (!(left_offset/9 > document.getElementById('inputLine').value.length) && !((left_offset/9 == document.getElementById('inputLine').value.length) && key == 39)) {
                     left_offset += 9;
@@ -215,7 +287,7 @@
                     left_offset -= 9;
                     document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_offset}px`;
                 }
-            }
+            }*/
         </script>
     </body>
 </html>
