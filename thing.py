@@ -238,12 +238,15 @@ class Thing(object):
             return article + self.short_desc
 
     def possessive(self):
-        """Return 'his', 'her', or 'its' as appropriate."""
+        """Return 'his', 'her', 'their', or 'its' as appropriate."""
         if hasattr(self, 'gender'):
             if self.gender == 'male': 
                 return 'his'
             elif self.gender == 'female':
                 return 'her'
+            elif self.gender == 'non-binary':
+                return 'their'
+        # other gender or no gender specified:
         return 'its'  
 
     def pronoun(self):
@@ -253,6 +256,9 @@ class Thing(object):
                 return 'he'
             elif self.gender == 'female':
                 return 'she'
+            elif self.gender == 'non-binary':
+                return 'their'
+        # other gender or no gender specified:
         return 'it'
 
 #    def conjugate(self, verb_infinitive, cons):
@@ -276,9 +282,9 @@ class Thing(object):
         to specify the species, gender, or proper name of a creature.  
 
         To avoid printing a message to certain players (for example if that player
-        should receive a custom message), include them in the ignore[] list. Note that
-        `Player.perceive()` will skip printing the message to any Player explicitly  
-        named in the message using the &n tag. """
+        should receive a custom message), include them in the ignore[] list. 
+        NOTE: `Player.perceive()` will skip printing the message to any Player   
+        explicitly named in the message using the &n tag. """
         if hasattr(self, 'invisible') and self.invisible == True:
             return
         # pass message to containing object, if it can receive messages

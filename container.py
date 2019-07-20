@@ -7,10 +7,10 @@ class Container(Thing):
         Thing.__init__(self, default_name, path, pref_id)
         self.contents = []
         self.see_inside = True      # can contents of container be seen? 
+        self.liquid = False         # can this container carry liquid? 
+        self.closable = False       # can this container be opened and closed?
         self.closed = False         # can't remove items from closed container
         self.closed_err = ""        # custom "container is closed" error msg
-        self.closable = False       # can this container be opened and closed?
-        self.liquid = False         # can this container carry liquid? 
         self.max_weight_carried = 1
         self.max_volume_carried = 1
         self.insert_prepositions = ["in", "into", "inside"]
@@ -64,8 +64,8 @@ class Container(Thing):
         dbg.debug("insert(): %s currently carrying %d weight and %d volume" % (self.id, contents_weight, contents_volume), 3)
         if (force_insert == True) or (self.max_weight_carried >= contents_weight+obj.get_weight() and self.max_volume_carried >= contents_volume+obj.get_volume()):
             dbg.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.get_weight(), obj.get_volume()), 3)
-            # Success! The object fits in the container, add it. Or, if an identical 
-            # object already exists in the container, instead increase its plurality count.
+            # Success! The object fits in the container, add it.  
+            # If an identical object already exists in the container, instead increase its plurality count.
             for w in self.contents:
                 if obj.compare(w):
                     w.plurality += obj.plurality 
