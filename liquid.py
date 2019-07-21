@@ -1,3 +1,5 @@
+import gametools
+
 from thing import Thing
 from debug import dbg
 from action import Action
@@ -9,7 +11,7 @@ class Liquid(Scenery):
     #
     # SPECIAL METHODS (i.e __method__() format)
     #
-    def __init__(self, default_name, short_desc = None, long_desc = None, pref_id=None):
+    def __init__(self, default_name, path=None, short_desc = None, long_desc = None, pref_id=None):
         Scenery.__init__(self, default_name, short_desc, long_desc, pref_id)
         # Scenery __init__() creates a per-object actions[] dict
         self.actions['pour'] =  Action(Liquid.pour, True, False)
@@ -17,6 +19,7 @@ class Liquid(Scenery):
         self.actions['sip'] =   Action(Liquid.drink, True, False)
         self.actions['taste'] = Action(Liquid.drink, True, False)
         self.is_liquid = True
+        self.path = gametools.findGamePath(path) if path else None
 
     #
     # ACTION METHODS (dictionary for scenery defined per-object)

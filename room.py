@@ -14,6 +14,7 @@ class Room(Container):
         """Initialize the room. Set <light> level to 0 for a dark room."""
         Container.__init__(self, default_name, path=pref_id, pref_id=pref_id)
         self.exits = {}
+        self.caution_taped_exits = {}
         self.set_max_weight_carried(4e9)
         self.set_max_volume_carried(3e9)
         self.fix_in_place("You can't move that!")
@@ -42,8 +43,9 @@ class Room(Container):
         except KeyError:
             return False
 
-    def add_exit(self, exit_name, exit_room):
+    def add_exit(self, exit_name, exit_room, caution_tape_msg=False):
         self.exits[exit_name] = exit_room
+        self.caution_taped_exits[exit_name] = caution_tape_msg
     
     def is_dark(self):
         total_light = self.default_light
@@ -55,7 +57,7 @@ class Room(Container):
             if isinstance(obj, Container) and (obj.see_inside or hasattr(obj, 'cons')):
                 if obj.contents: 
                     obj_list += obj.contents 
-            dbg.debug('Room %s: light level is %s' % (self.id, total_light), 3)
+        dbg.debug('Room %s: light level is %s' % (self.id, total_light), 3)
         return (total_light <= 0)
         
     def report_arrival(self, user, silent=False):
@@ -115,6 +117,9 @@ class Room(Container):
         user = cons.user
         sExit = words[1]  
         if sExit in list(self.exits):
+            if self.caution_taped_exits[sExit]:
+                cons.write(self.caution_taped_exits[sExit])
+                return True
             try:
                 destPath = self.exits[sExit]  # filename of the destination room module
                 dest = gametools.load_room(destPath)

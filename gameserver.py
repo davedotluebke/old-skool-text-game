@@ -100,6 +100,7 @@ class Game():
         f.close()
     
     def save_player(self, filename, player):
+        player.save_cons_attributes()
         # Uniquify the ID string of every object carried by the player
         tag = '-saveplayer'+str(random.randint(100000,999999))
         l = [player] 
@@ -193,6 +194,7 @@ class Game():
         
         newplayer.cons = cons  # custom saving code for Player doesn't save console
         cons.user = newplayer  # update backref from cons
+        newplayer.update_cons_attributes()
 
         cons.change_players = True
 
