@@ -75,7 +75,6 @@ class Room(Container):
             cons.write("It's too dark to see anything here.")
             return True
         cons.write(self.long_desc)
-        assert(cons.user in self.contents)  # current player should always be in the room 
         if (len(self.exits) > 0):
             cons.write("Exits are:")
             for w in self.exits:

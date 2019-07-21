@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    bathroom = room.Room('bathroom', pref_id=roomPath, indoor=True)
+    bathroom = room.Room('bathroom', pref_id=roomPath, indoor=True, safe=True)
     bathroom.set_description('modern bathroom', 'This small bathroom has a bathtub, a shower, and a sink.')
     bathroom.add_exit('east', 'home.scott.house.lr31795')
     bathroom.add_adjectives('modern')
