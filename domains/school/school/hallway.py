@@ -85,4 +85,9 @@ def load():
     dolphins_door.add_adjectives('dolphin', 'dolphins', 'dolphin\'s', 'teak', 'brass', 'wood')
     hallway.insert(dolphins_door, True)
 
+    otters_door = StaffDoorway('door','door with a carving of two otters on it',
+    'THis is a strong palm wood door with a platnum carving of two sea otters playing on it.', 'home.tate.house.sea_otter_hall', ['tate', 'scott', 'fastar'. 'cedric'])
+    otters_door.add_adjectives('otter', 'otters', 'otter\'s', 'platnum', 'palm')
+    hallway.insert(otters_door, True)
+
     return hallway
