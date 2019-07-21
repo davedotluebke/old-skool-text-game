@@ -11,6 +11,8 @@ class Vines(scenery.Scenery):
     def __init__(self, default_name, short_desc, long_desc):
         super().__init__(default_name, short_desc, long_desc)
 
+
+
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
     # 
@@ -40,7 +42,7 @@ def load():
 
     vine_obj = Vines('vines','wall of vines','The vines are thick and tangled, but seem to move freely.')
     vine_obj.move_to(r, force_move=True)
-    vine_obj.actions['clear'] = Action(clear, True, False)    
-    vine_obj.actions['remove'] = Action(clear, True, False)    
+    vine_obj.actions['clear'] = action.Action(Vines.clear, True, False)    
+    vine_obj.actions['remove'] = action.Action(Vines.clear, True, False)    
 
     return r

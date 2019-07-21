@@ -1,6 +1,7 @@
 import scenery
 import gametools
 import thing
+import action
 
 class Keyhole(scenery.Scenery):
     def __init__(self, exit_direction, exit_dest, qkey_number):
@@ -22,3 +23,5 @@ class Keyhole(scenery.Scenery):
         else:
             cons.user.perceive("You try to put the %s in the keyhole, but it doesn't fit." % oDO.default_name)
             return True
+
+    
