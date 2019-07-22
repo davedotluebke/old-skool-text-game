@@ -1,5 +1,6 @@
 from thing import Thing
 from action import Action
+import gametools
 
 class PlaceChooser(Thing):
     #
@@ -22,7 +23,7 @@ class PlaceChooser(Thing):
         except IndexError:
             return 'Did you mean to write something on the paper?'
         cons.write('You write "%s" on the paper and feel a magical shift occur.' % self.written_on)
-        self.emit("&nD%s writes something on the paper and vanishes before your eyes!" % cons.user.id, cons.user)
+        self.emit("&nD%s writes something on the paper and vanishes before your eyes!" % cons.user.id, [cons.user])
         del self.location.exits['west']
         try:
             self.location.exits['west'] = self.written_on

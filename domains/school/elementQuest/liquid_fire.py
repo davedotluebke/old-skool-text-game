@@ -30,6 +30,8 @@ class LiquidFire(liquid.Liquid):
 
     def heartbeat(self):
         loc = self.location
+        if loc == str(loc):
+            return
         while loc.location:
             if loc.path == 'domains.school.elementQuest':
                 break
@@ -44,7 +46,7 @@ class LiquidFire(liquid.Liquid):
         self.move_to(Thing.ID_dict['nulspace'])
 
 def clone():
-    f = LiquidFire('liquid', 'luminous red liquid', 'This luminous red liquid shimmers, almost as if it were in flames.')
+    f = LiquidFire('liquid', __file__, 'luminous red liquid', 'This luminous red liquid shimmers, almost as if it were in flames.')
     f.path = 'domains.school.elementQuest.liquid_fire'
     f.add_adjectives('luminous', 'red')
     Thing.game.register_heartbeat(f)

@@ -11,10 +11,11 @@ class Cauldron(Container):
     recipes = [({'water', 'molasses', 'poppyseed'}, 'pink potion'),  
                ({'water', 'molasses', 'sunflower petal', 'cave moss', 'truffles'}, 'invisibility potion'),
                ({'poppyseed', 'truffles', 'cave moss'}, 'explode'),
-               ({'molasses', 'dragon scale', 'poppyseed'}, 'strength potion')]
-    #
-    # SPECIAL METHODS (i.e __method__() format)
-    #
+               ({'molasses', 'dragon scale', 'poppyseed'}, 'strength potion'),
+               ({'spring', 'hay', 'dragon scale'}, 'jumping potion'),
+               ({'dragon scale', 'poppyseed', 'spring'}, 'explode'),
+               ({'dragon scale', 'truffles', 'molasses'}, 'exploration potion')]
+
     def __init__(self, default_name, path, pref_id=None):
         super().__init__(default_name, path, pref_id)
         self.liquid = True
@@ -30,8 +31,8 @@ class Cauldron(Container):
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
-    def insert(self, obj):
-        if super().insert(obj): 
+    def insert(self, obj, force_insert=False):
+        if super().insert(obj, force_insert): 
             return True
         for i in Cauldron.recipes:
             ingredients = {x.names[0] for x in self.contents}
@@ -61,6 +62,9 @@ class Cauldron(Container):
             created.move_to(self)
         if i[1] == 'strength potion':
             created = gametools.clone('strength_potion')
+            created.move_to(self)
+        if i[1] == 'jumping potion':
+            created = gametools.clone('jumping_potion')
             created.move_to(self)
         self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.short_desc))
         

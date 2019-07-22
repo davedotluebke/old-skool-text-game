@@ -1,4 +1,4 @@
-import home.alex.house.faucetThings as faucetThings
+import home.scott.house.faucetThings as faucetThings
 
 def clone():
     sink = faucetThings.FaucetThing('sink', __file__, 'porcelin sink', 'This is a ordinary bathroom sink made of porcelin. It has a clean metal faucet.', 'sink')

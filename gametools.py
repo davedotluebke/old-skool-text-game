@@ -1,6 +1,7 @@
 import os
 import importlib
 from debug import dbg
+from walking_os import findAllPythonFiles
 
 # the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
 gameroot = os.path.dirname(__file__) 
