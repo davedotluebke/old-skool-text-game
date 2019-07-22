@@ -3,7 +3,7 @@ import gametools
 import creature
 
 class Door(scenery.Scenery):
-    def __init__(self, default_name, short_desc, long_desc, dest, direction):
+    def __init__(self, default_name, short_desc, long_desc, dest, direction, allowed_players=None):
         super().__init__(default_name, short_desc, long_desc)
         self.dest = dest
         self.direction = direction
