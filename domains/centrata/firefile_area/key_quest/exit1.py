@@ -13,5 +13,8 @@ def load():
     scroll = gametools.clone('domains.centrata.firefile_area.key_quest.scroll1')
     scroll.move_to(r)
 
-    r.add_exit('east', 'domains.centata.firefile_area.fields.road_eight')
+    hay = gametools.clone('domains.centrata.firefile_area.key_quest.hay')
+    hay.move_to(r)
+
+    r.add_exit('east', 'domains.centrata.firefile_area.fields.road_eight')
     return r
