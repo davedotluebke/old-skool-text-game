@@ -1,6 +1,7 @@
 import gametools
 import room
 import scenery
+import action
 from debug import dbg
 
 class Waterfall(scenery.Scenery):
@@ -51,8 +52,8 @@ def load():
     r.add_exit('northwest', 'domains.school.forest.field')
 
     w = Waterfall()
-    w.actions = dict(Scenery.actions)
-    w.actions['enter'] = Action(w.enter, True, False)
+    w.actions = dict(scenery.Scenery.actions)
+    w.actions['enter'] = action.Action(w.enter, True, False)
 
     r.insert(w, True)
 

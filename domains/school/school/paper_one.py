@@ -18,6 +18,6 @@ def clone():
     paper.set_description('paper', 'This paper appears to be part of a letter.')
     paper.add_names('letter')
     # Add actions in clone() -> make a copy to not change Thing.actions[]
-    paper.actions = dict(Thing.actions)
-    paper.actions['read'] = Action(read, True, False))
+    paper.actions = dict(thing.Thing.actions)
+    paper.actions['read'] = action.Action(read, True, False)
     return paper

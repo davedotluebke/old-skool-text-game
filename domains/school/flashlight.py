@@ -27,7 +27,7 @@ class Flashlight(Thing):
     # ACTION METHODS & DICTIONARY (dictionary must come last)
     # 
     def put(self, p, cons, oDO, oIDO):
-        (sV, sDO, sPrep, sIDO) = p.diagram_sentance(p.words)
+        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sPrep == 'away' or sDO == 'away' or sIDO == 'away':      #TODO: Fix this up
             return self.put_away(p, cons, oDO, oIDO)
         else:
