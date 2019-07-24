@@ -50,9 +50,9 @@ class Bed(Container):
         return 'Did you intend to stand up?'
 
     actions = dict(Container.actions)
-    actions['lay'] =   Action(lay, True, True)
-    actions['sleep'] = Action(lay, True, True)
-    actions['stand'] = Action(stand, True, True)
+    actions['lay'] =   action.Action(lay, True, True)
+    actions['sleep'] = action.Action(lay, True, True)
+    actions['stand'] = action.Action(stand, True, True)
 
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
