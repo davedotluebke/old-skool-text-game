@@ -175,6 +175,7 @@ class Book(Thing):
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
     #
+    
     def drop(self, p, cons, oDO, oIDO):
         # make it so the next person to pick up the book doesn't start 
         # reading where the last left off
@@ -182,15 +183,18 @@ class Book(Thing):
         self.bookmark = None
 
         return super(Book, self).drop(p, cons, oDO, oIDO)
-
     def read(self, p, cons, oDO, oIDO):
         '''
         This function is only executed when reading starts. All subsequent actions are sent 
         directly to self.console_recv() via the input takeover system
         '''
+
         if self not in cons.user.contents:
             cons.write('You need to take the book before reading it!')
             return True
+        
+        if oDO != self:
+            return "Did you mean to read a book?"
 
         # take over user input
         cons.request_input(self)

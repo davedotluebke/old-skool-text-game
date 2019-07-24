@@ -12,10 +12,12 @@ def load():
     r.add_exit('east', 'domains.centrata.firefile_area.key_quest.maze3')
 
     flowstone = scenery.Scenery('flowstone', 'huge slab of flowstone', 'This slab of flowstone is huge and looks as if it is a waterfall frozen in motion.')
+    flowstone.unlisted = True
     flowstone.add_adjectives('huge', 'wet')
     flowstone.add_response(['climb', 'traverse'], "You try to climb the slab but can't find any good holds on it.")
     flowstone.move_to(r, True)
 
     giant = gametools.clone('domains.centrata.firefile_area.key_quest.giant')
     r.insert(giant)
+    
     return r

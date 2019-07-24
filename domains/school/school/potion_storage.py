@@ -18,4 +18,5 @@ def load():
     potion_storage.insert(cauldron)
 
     scale = gametools.clone('domains.school.school.dragon_scale')
+    potion_storage.insert(scale)
     return potion_storage

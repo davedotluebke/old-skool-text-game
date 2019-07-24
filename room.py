@@ -59,7 +59,7 @@ class Room(Container):
                     obj_list += obj.contents 
         dbg.debug('Room %s: light level is %s' % (self.id, total_light), 3)
         return (total_light <= 0)
-        
+
     def report_arrival(self, user, silent=False):
         if not user.cons:
             return
@@ -78,11 +78,11 @@ class Room(Container):
             cons.write("Exits are:")
             for w in loc.exits:
                 cons.write('\t' + w)
-            local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.unlisted]
-            if local_objects:
-                cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))
         else:
             cons.write("There are no obvious exits.")
+        local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.unlisted]
+        if local_objects:
+            cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))         
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
@@ -97,19 +97,19 @@ class Room(Container):
         if sDO and (oDO is None): 
             return "I'm not sure what you are trying to look at!"
         if self.is_dark():
-            cons.write("It's too dark to see anything here.")
+            cons.user.perceive("It's too dark to see anything here.")
             return True
-        cons.write(self.long_desc)
-        assert(cons.user in self.contents)  # current player should always be in the room 
+        cons.user.perceive(self.long_desc)
         if (len(self.exits) > 0):
-            cons.write("Exits are:")
+            cons.user.perceive("Exits are:")
             for w in self.exits:
-                cons.write('\t' + w)
-            local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.unlisted]
-            if local_objects:
-                cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))
+                cons.user.perceive('\t' + w)
         else:
-            cons.write("There are no obvious exits.")
+            cons.user.perceive("There are no obvious exits.")            
+        local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.unlisted]
+        if local_objects:
+            cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))
+        
         return True
 
     def go_to(self, p, cons, oDO, oIDO):

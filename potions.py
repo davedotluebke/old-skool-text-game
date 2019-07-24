@@ -53,11 +53,12 @@ class JumpingPotion(Liquid):
         if hasattr(cons.user.location, 'jumping_destination'):
             cons.user.move_to(cons.user.location.jumping_destination)
             cons.user.perceive("You find yourself in a new place...")
-            cons.user.location.report_arrival(self)
+            cons.user.location.report_arrival(cons.user)
             return True
         cons.user.perceive("You crash back down to the ground, gaining several bruises.")
         cons.user.emit("&nD%s crashes back down into the ground.")
         cons.user.health -= 2
+        return True
 
 class ExplorationPotion(Liquid):
     def drink(self, p, cons, oDO, oIDO):
