@@ -2,15 +2,18 @@ import gametools
 import room
 import scenery
 import thing
+import action
 
 class StaffDoorway(scenery.Scenery):
     def __init__(self, default_name, short_desc, long_desc, dest, allowed_players_list='everyone', qkey_number=None):
         super().__init__(default_name, short_desc, long_desc)
         self.dest = gametools.load_room(dest)
         self.allowed_players_list = allowed_players_list
-        self.actions.append(scenery.Action(self.enter_door, ['open', 'enter'], True, False))
+        self.actions['open'] = action.Action(StaffDoorway.enter_door, True, False)
+        self.actions['enter'] = action.Action(StaffDoorway.enter_door, True, False)
+        self.actions['insert'] = action.Action(StaffDoorway.open, True, False)
+        self.actions['put'] = action.Action(StaffDoorway.open, True, False)
         self.add_response(['kick', 'hit', 'punch', 'chop'], 'The door is firmly closed, and you only manage to gain a bruise.')
-        self.actions.append(scenery.Action(self.open, ['insert', 'put'], True, False))
         self.unlisted = True
         self.keyq = qkey_number
         self.locked = True

@@ -2,19 +2,29 @@ import domains.school.elementQuest.lake_room as lake_room
 import room
 import gametools
 import scenery
+from action import Action
 
 class Doorway(scenery.Scenery):
     instance = None
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self):
         super().__init__('doorway', 'stone doorway', 'This is a stone doorway, leading to the east. A shimmering surface covers the entrance.')
-        self.actions.append(scenery.Action(self.enter, ['enter'], True, False))
+        self.actions['enter'] = Action(Doorway.enter, True, False)
         self.state = 'closed'
         Doorway.instance = self
     
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def open(self):
         self.long_desc = 'This is a stone doorway, leading to the east.'
         self.state = 'open'
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def enter(self, p, cons, oDO, oIDO):
         if self.state == "closed":
             cons.user.perceive('You try to enter the doorway, but something blocks your path.')
@@ -31,7 +41,9 @@ class Doorway(scenery.Scenery):
             cons.user.perceive('...and just as quickly, you feel yourself return! But something has changed...')
         return True
 
-
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def load():
     roomPath = gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)

@@ -73,8 +73,8 @@ class Parser:
         """Find an object in the list <objs> matching the given string <sObj>.
         Tests the name(s) and any adjectives for each object in <objs> against the words in sObj. 
         
-        Returns the matching object or None if 1 or 0 objects match sObj.
-
+        Returns the matching object if 1 object matches sObj.
+        Returns None if 0 objects match sObj.
         Returns False after writing an error message to Console <cons> if more than 1 object matches. """
         matched_objects = []
         sNoun = sObj.split()[-1]  # noun is final word in sObj (after adjectives)
@@ -120,6 +120,27 @@ class Parser:
         else:   # exactly one object in matched_objects 
             return matched_objects[0]
 
+    def _handle_verbose(self, console):
+        try:
+            level = int(self.words[1])
+        except IndexError:
+            console.write(self._set_verbosity())
+            return True
+        except ValueError:
+            if self.words[1] == 'filter':
+                try:
+                    s = self.words[2:] 
+                    dbg.set_filter_str(s)
+                    console.write("Set verbose filter to '%s', debug strings containing '%s' will now be printed." % (s, s))                      
+                except IndexError:
+                    dbg.set_filter_str('&&&')
+                    console.write("Turned off verbose filter; debug messages will only print if they are below level %d." % dbg.verbosity)
+                return True
+            console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>")
+            return True
+        console.write(self._set_verbosity(level))
+        return True
+
     def parse(self, user, console, command):
         """Parse and enact the user's command. Return False to quit game."""
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
@@ -137,25 +158,7 @@ class Parser:
             return True
 
         if self.words[0] == 'verbose':
-            try:
-                level = int(self.words[1])
-            except IndexError:
-                console.write(self._set_verbosity())
-                return True
-            except ValueError:
-                if self.words[1] == 'filter':
-                    try:
-                        s = self.words[2:] 
-                        dbg.set_filter_strings(s)
-                        console.write("Set verbose filter to '%s', debug strings containing '%s' will now be printed." % (s, s))                      
-                    except IndexError:
-                        dbg.set_filter_strings([])
-                        console.write("Turned off verbose filter; debug messages will only print if they are below level %d." % dbg.verbosity)
-                    return True
-                console.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided <level>")
-                return True
-            console.write(self._set_verbosity(level))
-            return True
+            self._handle_verbose(console)
         
         # remove articles and convert to lowercase, unless the command 
         # requires the exact user text:
@@ -174,32 +177,14 @@ class Parser:
         sPrep = None         # Preposition as string
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
-        # FIRST, search for objects that support the verb the user typed
-            # TODO: only include room contents if room is not dark (but always include user)
+        # FIRST, create a list of objects nearby or in the user's inventory
         possible_objects = [user.location] 
         for obj in user.contents + user.location.contents:
             possible_objects += [obj]
             if isinstance(obj, Container) and obj.see_inside and obj is not user:
                 possible_objects += obj.contents
-        
-        possible_verb_objects = []  # list of objects supporting the verb
-        possible_verb_actions = []  # corresponding list of actions 
-        for obj in possible_objects:
-            for act in obj.actions:
-                if sV in act.verblist:
-                    if (act.intransitive and not sDO) or (act.transitive): 
-                        possible_verb_objects.append(obj)
-                        possible_verb_actions.append(act)
-        if (not possible_verb_objects): 
-            if sDO == None:
-                console.write("Parse error: can't find any object supporting intransitive verb %s!" % sV)
-            else:
-                console.write("Parse error: can't find any object supporting transitive verb %s!" % sV)
-            # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
-            return True
-        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
 
-        # NEXT, find objects that match the direct & indirect object strings    
+        # THEN, check for objects matching the direct & indirect object strings
         if sDO: 
             oDO = self._find_matching_objects(sDO, possible_objects, console)
         if sIDO: 
@@ -207,32 +192,46 @@ class Parser:
         if oDO == False or oIDO == False: 
             return True     # ambiguous user input; >1 object matched 
 
+        # NEXT, find objects that support the verb the user typed
+        possible_verb_objects = []  # list of objects supporting the verb
+        for obj in possible_objects:
+            act = obj.actions.get(sV)  # returns None if <sV> not in <actions>
+            if act and ((act.intrans and not sDO) or (act.trans)): 
+                possible_verb_objects.append(obj)
+        if (not possible_verb_objects): 
+            console.write("Parse error: can't find any object supporting "
+                            + ('intransitive' if sDO == None else 'transitive')
+                             + " verb %s!" % sV)
+            # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
+            return True
+        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
+
         # If direct or indirect object supports the verb, try first in that order
-        initial_actions = []
-        for o in (oDO, oIDO):
-            if o in possible_verb_objects:
-                idx = possible_verb_objects.index(o)
-                initial_actions.append(possible_verb_actions[idx])
-        possible_verb_actions = initial_actions + possible_verb_actions
+        p = possible_verb_objects  # terser reference to possible_verb_objects
+        if oIDO in p:
+            p.insert(0, p.pop(p.index(oIDO)))  # swap oIDO to front of p
+        if oDO in p:
+            p.insert(0, p.pop(p.index(oDO)))   # swap oDO to front of p
                 
-        # Try the "verb functions" associated with each object/action pair.
+        # FINALLY, try the action ("verb functions") of each object we found. 
         # If a valid usage of this verb function, it will return True and 
         # the command has been handled; otherwise it returns an error message. 
         # In this case keep trying other actions. If no valid verb function is 
         # found, print the error message from the first invalid verb tried.   
         result = False
         err_msg = None
-        for act in possible_verb_actions:
+        for obj in possible_verb_objects:
+            act = obj.actions[sV]
             if (user.game.handle_exceptions):
                 try:
-                    result = act.func(self, console, oDO, oIDO) # <-- ENACT THE VERB
+                    result = act.func(obj, self, console, oDO, oIDO) # <-- ENACT THE VERB
                 except Exception as isnt:
                     console.write('An error has occured. Please try a different action until the problem is resolved.')
                     dbg.debug(traceback.format_exc(), 0)
                     dbg.debug("Error caught!", 0)
                     result = True       # we don't want the parser to go and do an action they probably didn't intend
             else:
-                result = act.func(self, console, oDO, oIDO)  # <-- ENACT THE VERB
+                result = act.func(obj, self, console, oDO, oIDO)  # <-- ENACT THE VERB
             if result == True:      # mean to do if there is a bug in the one they did mean to do
                 break               # verb has been enacted, all done!
             if err_msg == None: 

@@ -24,6 +24,9 @@ def clone(params=None):
 
 
 class Player(Creature):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, ID, path, console):
         """Initialize the Player object and attach a console"""
         Creature.__init__(self, ID, path)
@@ -36,17 +39,6 @@ class Player(Creature):
         self.set_max_weight_carried(750000)
         self.set_max_volume_carried(2000)
         self.saved_cons_attributes = []
-        self.actions.append(Action(self.inventory, "inventory", False, True))
-        self.actions.append(Action(self.toggle_terse, "terse", False, True))
-        self.actions.append(Action(self.execute, "execute", True, True))
-        self.actions.append(Action(self.fetch, "fetch", True, True))
-        self.actions.append(Action(self.clone, "clone", True, True))
-        self.actions.append(Action(self.apparate, "apparate", True, True))
-        self.actions.append(Action(self.reload, "reload", True, True))
-        self.actions.append(Action(self.say, ["say", "shout", "mutter", "whisper"], True, True))
-        self.actions.append(Action(self.introduce, "introduce", True, True))
-        self.actions.append(Action(self.engage, ["engage", "attack"], True, False))
-        self.actions.append(Action(self.disengage, "disengage", False, True))
         self.aggressive = 1         #TODO: Specialized individual stats
         self.armor_class = 10
         self.combat_skill = 40
@@ -117,15 +109,9 @@ class Player(Creature):
         # Restore instance attributes
         self.enemies = [] #XXX fix problem with enemies
 
-    def set_start_loc(self, startroom):
-        self.start_loc_id = startroom.id
-
-    def detach(self, nocons=False):
-        if not nocons:
-            self.cons.detach(self)
-        self.cons = None
-        Thing.game.deregister_heartbeat(self)
-
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
     def _handle_login(self, cmd):
         state = self.login_state
         if state == 'AWAITING_USERNAME':
@@ -189,6 +175,30 @@ class Player(Creature):
                                 "Please try again.<br>Please enter your username: " % (self.names[0], filename))
                 self.login_state = "AWAITING_USERNAME"
             return
+
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+    def set_start_loc(self, startroom):
+        self.start_loc_id = startroom.id
+
+    def get_saveable(self):
+        saveable = super().get_saveable()
+        try:
+            del saveable['enemies']
+        except KeyError: 
+            pass
+        del saveable['cons']
+        return saveable
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
+    def detach(self, nocons=False):
+        if not nocons:
+            self.cons.detach(self)
+        self.cons = None
+        Thing.game.deregister_heartbeat(self)
         
     def heartbeat(self):
         if self.cons == None:
@@ -349,8 +359,14 @@ class Player(Creature):
     def hold_object(self, obj):
         self.visible_inventory.append(obj)
 
+    def attack_enemy(self, enemy):
+        if self.attacking in self.location.contents:
+            self.attack(enemy)
+        else:
+            self.attacking = None
+
     #
-    # ACTION FUNCTIONS (verbs):
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
     # 
     def inventory(self, p, cons, oDO, oIDO):
         if cons.user != self:
@@ -544,8 +560,19 @@ class Player(Creature):
         self.engaged = False
         return True
 
-    def attack_enemy(self, enemy):
-        if self.attacking in self.location.contents:
-            self.attack(enemy)
-        else:
-            self.attacking = None
+    actions = dict(Creature.actions)  # make a copy
+    actions['inventory'] =  Action(inventory, False, True)
+    actions['terse'] =      Action(toggle_terse, False, True)
+    actions['execute'] =    Action(execute, True, True)
+    actions['fetch'] =      Action(fetch, True, True)
+    actions['clone'] =      Action(clone, True, True)
+    actions['apparate'] =   Action(apparate, True, True)
+    actions['reload'] =     Action(reload, True, True)
+    actions['say'] =        Action(say, True, True)
+    actions['shout'] =      Action(say, True, True)
+    actions['mutter'] =     Action(say, True, True)
+    actions['whisper'] =    Action(say, True, True)
+    actions['introduce'] =  Action(introduce, True, True)
+    actions['engage'] =  Action(engage, True, False)
+    actions['attack'] =  Action(engage, True, False)
+    actions['disengage'] =  Action(disengage, False, True)

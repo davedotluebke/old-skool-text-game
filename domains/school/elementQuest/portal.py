@@ -4,14 +4,19 @@ import action
 import gametools
 
 class Portal(thing.Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self):
         super().__init__('portal', __file__)
         self.set_description('portal', 'This ancient portal is made of three vast stones, each covered '
                              'with arcane runes. A vertical sheet of glowing flame roars between the '
                              'stones, filling the portal with an inferno of powerful magic fire.')
-        self.actions.append(action.Action(self.enter, ['enter'], True, False))
         self.add_adjectives('flaming', 'stone')
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def enter(self, p, cons, oDO, oIDO):
         if oDO == self:
             cons.user.wizardry_element = 'fire'
@@ -28,5 +33,11 @@ class Portal(thing.Thing):
             return True
         return "Did you mean to enter the portal?"
 
+    actions = dict(Thing.actions)
+    actions['enter'] = Action(enter, True, False)
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def clone():
     return Portal()

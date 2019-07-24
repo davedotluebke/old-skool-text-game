@@ -3,14 +3,18 @@ from container import Container
 from action import Action
 
 class Couch(Container):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path):
         super().__init__(default_name, path)
-        self.actions.append(Action(self.sit, ["sit"], True, True))
-        self.actions.append(Action(self.stand, ['stand'], True, True))
         self.closable = False
         self.fix_in_place('Moving the couch would require a lot of effort.')
         self.set_prepositions('on', 'onto')
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def sit(self, p, cons, oDO, oIDO):
         if oIDO == self:
             cons.write('You sit on the couch.')
@@ -27,6 +31,13 @@ class Couch(Container):
             return True
         return 'Did you intend to stand up?'
 
+    actions = dict(Container.actions)  # make a copy
+    actions['sit'] =   Action(sit, True, True)
+    actions['stand'] = Action(stand, True, True)
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def clone():
     couch = Couch('couch', __file__)
     couch.set_description('nice leather couch', 'This is a nice leather couch. You want to sit on it.')

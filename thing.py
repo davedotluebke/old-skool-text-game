@@ -7,17 +7,9 @@ class Thing(object):
     ID_dict = {}
     game = None
 
-    def _add_ID(self, preferred_id):
-        """Add object to Thing.ID_dict (the dictionary mapping IDs to objects).
-
-        Takes a preferred ID string and (if necessary) creates a unique ID
-        string from it. Returns the unique ID string. """
-        self.id = preferred_id
-        while self.id in Thing.ID_dict:     # unique-ify self.id if necessary
-            self.id = self.id + str(random.randint(0, 9))
-        Thing.ID_dict[self.id] = self
-        return self.id
-
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path, pref_id=None):
         self.unlisted = False # should this thing be listed in room description  
         self.path = gametools.findGamePath(path) if path else None
@@ -35,66 +27,15 @@ class Thing(object):
         self.long_desc = 'need_long_desc'
         self.adjectives = []
         self.contents = None        # None - only Containers can contain things
-        # dictionary mapping verb strings to functions:
-        self.actions = []
-        self.actions.append(Action(self.look_at, ["look", "examine"], True, True))
-        self.actions.append(Action(self.take, ["take", "get"], True, False))
-        self.actions.append(Action(self.drop, ["drop"], True, False))
         self.spawn_location = None
         self.spawn_interval = None
         self.spawn_message = None
 
     def __del__(self):
         dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id), 0)
-    
-    def delete(self):
-        if self.contents:
-            for i in self.contents:
-                i.delete()
-        if self.location:
-            self.location.extract(self)
-        del Thing.ID_dict[self.id]
 
     def __str__(self): 
         return self.names[0]
-
-    def get_saveable(self):
-        """Return dictionary of everything needed to save/restore the object
-
-        Return a "saveable" version of the object: a dictionary containing a
-        list of attributes THAT DIFFER from the default attributes for this 
-        object. This dictionary can be saved to a file and the object can be
-        restored by creating a default object and overwriting any attributes 
-        listed in the saveable. 
-
-        This allows objects to persist across changes to the object code. 
-        """
-        saveable = {}
-        state = self.__dict__.copy()
-        del state["actions"]
-        default_obj = gametools.clone(self.path)
-        default_state = default_obj.__dict__
-        for attr in list(state):
-            if state[attr] != default_state[attr] or attr == 'path' or attr == 'version_number':
-                saveable[attr] = state[attr]
-        return saveable
-
-    def update_obj(self, savable):
-        """Return the updated object from the "savable" version created above. 
-        Also call update_version() to make sure that all objects are up to date."""
-        state = self.__dict__.copy()
-        for attr in list(savable):
-            state[attr] = savable[attr]
-
-        self.update_version()
-
-        self.__dict__.update(state)
-
-    def update_version(self):
-        """Updates the version of the object, and runs snipets of code to make 
-        sure all objects will still function."""
-        if not self.version_number:
-            self.version_number = 1
 
     def __getstate__(self):
         """Custom pickling code for Thing.
@@ -142,12 +83,19 @@ class Thing(object):
             Thing.game.register_heartbeat(self)
         self.__dict__.update(state)
 
-    def _restore_objs_from_IDs(self):
-        """Update object references stored as ID strings to directly reference the objects, using Thing.ID_dict."""
-        if isinstance(self.location, str):
-            self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet? 
-        if self.contents != None:
-            self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
+    def _add_ID(self, preferred_id):
+        """Add object to Thing.ID_dict (the dictionary mapping IDs to objects).
+
+        Takes a preferred ID string and (if necessary) creates a unique ID
+        string from it. Returns the unique ID string. """
+        self.id = preferred_id
+        while self.id in Thing.ID_dict:     # unique-ify self.id if necessary
+            self.id = self.id + str(random.randint(0, 9))
+        Thing.ID_dict[self.id] = self
+        return self.id
 
     def _change_objs_to_IDs(self):
         """Replace object references with ID strings, in preparation for pickling."""
@@ -156,6 +104,16 @@ class Thing(object):
         if self.contents:
             self.contents = [obj.id for obj in self.contents]
 
+    def _restore_objs_from_IDs(self):
+        """Update object references stored as ID strings to directly reference the objects, using Thing.ID_dict."""
+        if isinstance(self.location, str):
+            self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet? 
+        if self.contents != None:
+            self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
+
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""
         self.names += list(sNames)
@@ -187,16 +145,16 @@ class Thing(object):
     def unfix(self):
         self.fixed = False
 
+    def set_flammable(self, f):
+        """Set flammability. 0 == non-flammable, 10 == very flammable."""
+        self.flammable = f
+    
+    # XXX implement set_fire so flammable objects can be set on fire with e.g. a fireball
+
     def set_description(self, s_desc, l_desc, unlisted=False):
         self.short_desc = s_desc
         self.long_desc = l_desc
         self.unlisted = unlisted
-
-    def indefinite(self):
-        """Return the appropriate indefinite article ('a' or 'an') to use with
-        the object, based on starting character of self.short_desc. Overload  
-        for objects not starting with a vowel that should still use 'an'"""
-        return "an" if self.short_desc[0] in 'aeiou' else "a"
 
     def get_short_desc(self, perceiver=None, definite=False, indefinite=False):
         '''Return the short description of this object, optionally prepended
@@ -216,6 +174,12 @@ class Thing(object):
             article = ""
         return article + self.short_desc
 
+    def indefinite(self):
+        """Return the appropriate indefinite article ('a' or 'an') to use with
+        the object, based on starting character of self.short_desc. Overload  
+        for objects not starting with a vowel that should still use 'an'"""
+        return "an" if self.short_desc[0] in 'aeiou' else "a"
+
     def possessive(self):
         """Return 'his', 'her', or 'its' as appropriate."""
         if hasattr(self, 'gender'):
@@ -234,19 +198,58 @@ class Thing(object):
                 return 'she'
         return 'it'
 
-#    def conjugate(self, verb_infinitive, cons):
-#        for i in self.conjugations:
-#            if hasattr(i, 'cons'):
-#                pass
-    
-    def set_flammable(self, f):
-        """Set flammability. 0 == non-flammable, 10 == very flammable."""
-        self.flammable = f
-    
-    # XXX implement set_fire so flammable objects can be set on fire with e.g. a fireball
-
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def heartbeat(self):
         pass
+
+    def get_saveable(self):
+        """Return dictionary of everything needed to save/restore the object
+
+        Return a "saveable" version of the object: a dictionary containing a
+        list of attributes THAT DIFFER from the default attributes for this 
+        object. This dictionary can be saved to a file and the object can be
+        restored by creating a default object and overwriting any attributes 
+        listed in the saveable. 
+
+        This allows objects to persist across changes to the object code. 
+        """
+        saveable = {}
+        state = self.__dict__.copy()
+        if state.get("actions"):
+            del state["actions"]
+        default_obj = gametools.clone(self.path)
+        default_state = default_obj.__dict__
+        for attr in list(state):
+            if state[attr] != default_state[attr] or attr == 'path' or attr == 'version_number':
+                saveable[attr] = state[attr]
+        return saveable
+
+    def update_obj(self, savable):
+        """Return the updated object from the "savable" version created above. 
+        Also call update_version() to make sure that all objects are up to date."""
+        state = self.__dict__.copy()
+        for attr in list(savable):
+            state[attr] = savable[attr]
+
+        self.update_version()
+
+        self.__dict__.update(state)
+
+    def update_version(self):
+        """Updates the version of the object, and runs snipets of code to make 
+        sure all objects will still function."""
+        if not self.version_number:
+            self.version_number = 1
+
+    def delete(self):
+        if self.contents:
+            for i in self.contents:
+                i.delete()
+        if self.location:
+            self.location.extract(self)
+        del Thing.ID_dict[self.id]
 
     def emit(self, message, ignore = []):
         """Write a message to be seen by creatures holding this Thing or in the same  
@@ -301,6 +304,9 @@ class Thing(object):
         else:
             return True
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def take(self, p, cons, oDO, oIDO):
         if oDO == None: return "I don't know what you're trying to take!"
         if oDO != self: return "You can't take the %s!" % oDO.short_desc
@@ -327,8 +333,14 @@ class Thing(object):
     def look_at(self, p, cons, oDO, oIDO):  
         '''Print out the long description of the thing.'''
         if self == oDO or self == oIDO:
-            cons.write(self.long_desc)
+            cons.user.perceive(self.long_desc)
             return True
         else:
             return "Not sure what you are trying to look at!"
-        
+
+    actions = {}
+    actions["look"] = Action(look_at, True, False)
+    actions["examine"] = Action(look_at, True, False)
+    actions["take"] = Action(take, True, False)
+    actions["get"] = Action(take, True, False)
+    actions["drop"] = Action(drop, True, False)

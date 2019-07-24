@@ -5,13 +5,18 @@ import action
 import liquid
 
 class WaterJet(scenery.Scenery):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self):
         super().__init__('jet', 'jet of water', 'This jet of water shoots from the rocks into the large pool in the center of the room.')
         self.unlisted = True
         self.add_adjectives('water')
-        self.actions.append(action.Action(self.fill_container, ['fill'], True, False))
         self.add_response(['drink'], 'You take a drink of the flowing water, and quench your thirst.', True, True)
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def fill_container(self, p, cons, oDO, oIDO):
         if oDO == None: 
             return "What do you intend to fill from the jet of water?"
@@ -26,6 +31,12 @@ class WaterJet(scenery.Scenery):
         oDO.insert(water)
         return True
 
+    actions = dict(scenery.Scenery.actions)
+    actions['fill'] = action.Action(fill_container, True, False)
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def load():
     roomPath =  gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)
