@@ -32,7 +32,7 @@ class WaterJet(scenery.Scenery):
         return True
 
     actions = dict(scenery.Scenery.actions)
-    actions['fill'] = Action(fill_container, True, False)
+    actions['fill'] = action.Action(fill_container, True, False)
 
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
