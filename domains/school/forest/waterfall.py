@@ -53,7 +53,7 @@ def load():
 
     w = Waterfall()
     w.actions = dict(scenery.Scenery.actions)
-    w.actions['enter'] = action.Action(w.enter, True, False)
+    w.actions['enter'] = action.Action(Waterfall.enter, True, False)
 
     r.insert(w, True)
 
