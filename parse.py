@@ -57,13 +57,13 @@ class Parser:
                 # break after finding 1st preposition (simple sentences only)
                 break  
         if sPrep == None: 
-            # no preposition found: Sentence type 2, direct object is all text
+            # no preposition found: Sentence type 2, direct object is `text`
             assert(sDO == sIDO == None)  # sDO and sIDO should still be None  
             sDO = text
             return (sV, sDO, sPrep, sIDO)
-        # has a preposition: Sentence type 3 or 4
-        if sDO == "": sDO = None
-        if sIDO == "": sIDO = None
+        # has a preposition: Sentence type 1 or 3
+        if sDO == "": sDO = None    # no direct object
+        if sIDO == "": sIDO = None  # no indirect object 
         if not sIDO: 
             dbg.debug("Possibly malformed input: found preposition %s but missing indirect object." % sPrep)
             dbg.debug("Ending a sentence in a preposition is something up with which I will not put.")
@@ -150,7 +150,7 @@ class Parser:
             console.write("#quit")
             return False
 
-        if command == 'quit game':
+        if command == 'quit game':  # end the game server
             console.game.keep_going = False
         
         self.words = command.split()
@@ -160,9 +160,10 @@ class Parser:
         if self.words[0] == 'verbose':
             self._handle_verbose(console)
         
-        # remove articles and convert to lowercase, unless the command 
-        # requires the exact user text:
-        if self.words[0] not in ['execute', 'say', 'shout', 'whisper', 'mutter', 'emote']:
+        # remove articles and convert to lowercase, except for some commands that 
+        # treat everything after the verb as a single "diect object" string
+        # (TODO: directly recognise strings delimited by '' or ")
+        if self.words[0].lower() not in ['execute', 'say', 'shout', 'whisper', 'mutter', 'emote']:
             command = command.lower()   
             self.words = [w for w in self.words if w not in ['a', 'an', 'the']]
             if len(self.words) == 0:
@@ -177,9 +178,11 @@ class Parser:
         sPrep = None         # Preposition as string
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
-        # FIRST, create a list of objects nearby or in the user's inventory
-        possible_objects = [user.location] 
-        for obj in user.contents + user.location.contents:
+        # FIRST, search for objects that support the verb the user typed
+        # (only include room contents if room is not dark (but always include user)
+        room = user.location
+        possible_objects = [room] 
+        for obj in user.contents + (None if room.is_dark() else room.contents):
             possible_objects += [obj]
             if isinstance(obj, Container) and obj.see_inside and obj is not user:
                 possible_objects += obj.contents
@@ -221,26 +224,41 @@ class Parser:
         result = False
         err_msg = None
         for obj in possible_verb_objects:
+            plural = obj.plurality > 1
+            if plural:  # peel off a single object on which to try enacting the verb
+                obj_copy = obj.replicate()
+                # TODO: support peeling off a plurality, e.g. "drop three coins"
+                obj_copy.plurality = obj.plurality - 1
+                obj.plurality = 1
             act = obj.actions[sV]
-            if (user.game.handle_exceptions):
-                try:
-                    result = act.func(obj, self, console, oDO, oIDO) # <-- ENACT THE VERB
-                except Exception as isnt:
-                    console.write('An error has occured. Please try a different action until the problem is resolved.')
-                    dbg.debug(traceback.format_exc(), 0)
-                    dbg.debug("Error caught!", 0)
-                    result = True       # we don't want the parser to go and do an action they probably didn't intend
-            else:
-                result = act.func(obj, self, console, oDO, oIDO)  # <-- ENACT THE VERB
-            if result == True:      # mean to do if there is a bug in the one they did mean to do
+            try:
+                result = act.func(obj, self, console, oDO, oIDO) # <-- ENACT THE VERB
+            except Exception as isnt:
+                console.write('An error has occured. Please try a different action until the problem is resolved.')
+                dbg.debug(traceback.format_exc(), 0)
+                dbg.debug("Error caught!", 0)
+                if plural: 
+                    obj.plurality += obj_copy.plurality 
+                    obj_copy.destroy()
+                result = True   # we don't want the parser to go and do an action they probably didn't intend
+            if plural:
+                # did the action change obj so we need to remove from plurality?
+                if obj.compare(obj_copy):  
+                    # yes, obj_copy remains, register heartbeat for obj_copy if needed
+                    pass 
+                else
+                    # no, obj_copy is identical to obj, merge back into a single plurality
+                    obj.plurality += obj_copy.plurality 
+                    obj_copy.destroy()
+
+            if result == True:
                 break               # verb has been enacted, all done!
             if err_msg == None: 
                 err_msg = result    # save the first error encountered
 
-        if result == True:
-            return True
+        if result == False:
+            # no objects handled the verb; print the first error message 
+            console.write(err_msg if err_msg else "No objects handled verb, but no error message defined!")
 
-        # no objects handled the verb; print the first error message 
-        console.write(err_msg if err_msg else "No objects handled verb, but no error message defined!")
         return True
 
