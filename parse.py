@@ -224,17 +224,33 @@ class Parser:
         result = False
         err_msg = None
         for obj in possible_verb_objects:
+            plural = obj.plurality > 1
+            if plural:  # peel off a single object on which to try enacting the verb
+                obj_copy = obj.replicate()
+                # TODO: support peeling off a plurality, e.g. "drop three coins"
+                obj_copy.plurality = obj.plurality - 1
+                obj.plurality = 1
             act = obj.actions[sV]
-            if (user.game.handle_exceptions):
-                try:
-                    result = act.func(obj, self, console, oDO, oIDO) # <-- ENACT THE VERB
-                except Exception as isnt:
-                    console.write('An error has occured. Please try a different action until the problem is resolved.')
-                    dbg.debug(traceback.format_exc(), 0)
-                    dbg.debug("Error caught!", 0)
-                    result = True   # we don't want the parser to go and do an action they probably didn't intend
-            else:
-                result = act.func(obj, self, console, oDO, oIDO)  # <-- ENACT THE VERB
+            try:
+                result = act.func(obj, self, console, oDO, oIDO) # <-- ENACT THE VERB
+            except Exception as isnt:
+                console.write('An error has occured. Please try a different action until the problem is resolved.')
+                dbg.debug(traceback.format_exc(), 0)
+                dbg.debug("Error caught!", 0)
+                if plural: 
+                    obj.plurality += obj_copy.plurality 
+                    obj_copy.destroy()
+                result = True   # we don't want the parser to go and do an action they probably didn't intend
+            if plural:
+                # did the action change obj so we need to remove from plurality?
+                if obj.compare(obj_copy):  
+                    # yes, obj_copy remains, register heartbeat for obj_copy if needed
+                    pass 
+                else
+                    # no, obj_copy is identical to obj, merge back into a single plurality
+                    obj.plurality += obj_copy.plurality 
+                    obj_copy.destroy()
+
             if result == True:
                 break               # verb has been enacted, all done!
             if err_msg == None: 
