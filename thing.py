@@ -251,15 +251,35 @@ class Thing(object):
         return saveable
 
     def replicate(self):
+        """Make a copy of an object and register in Thing.ID_dict[]. Does not affect
+        the source or destination plurality field, and does not register a heartbeat
+        function for the copy. The calling function should handle these effects."""
         new_obj = copy.copy(self)
         # Resolve fields that require special treatment
         new_obj._add_ID(new_obj.id)
-        new_obj.plurality = None
-        new_obj.location = None
         if new_obj.contents != None:
             raise Exception("Can't replicate containers")
-        new_obj.actions = self._replicate_actions()
         return new_obj
+    
+    def compare(self, obj):
+        """Compares self with obj, ignoring the plurality and id fields."""
+        # keep track of target plurality & id, but temporarily
+        # set equal to source plurality for easy comparison
+        tmp = (obj.plurality, obj.id)
+        obj.plurality, obj.id = self.plurality, self.id
+        if self.__dir__ == obj.__dir__:
+            obj.plurality, obj.id = tmp
+            return True
+        else:
+            obj.plurality, obj.id = tmp
+            return False
+    
+    def destroy(self):
+        """Removes and object from Thing.ID_dict, extracts it, and deregisters its heartbeat."""
+        del Thing.ID_dict[self.id]
+        self.location.extract(self)
+        if self in Thing.game.heartbeat_users:
+            Thing.game.deregester_heartbeat(self)
 
     def update_obj(self, saveable):
         """Return the updated object from the "saveable" version created above. 
