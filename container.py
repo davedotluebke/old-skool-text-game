@@ -101,7 +101,7 @@ class Container(Thing):
             obj.plurality -= count
             new_obj = obj.replicate(count)  # create new plurality of <count> objects
             return new_obj
-        else 
+        else:
             # extracting exactly as many copies of obj as are in the container 
             i = self.contents.index(obj)  # no need for try..except since we already know obj in list
             del self.contents[i]
