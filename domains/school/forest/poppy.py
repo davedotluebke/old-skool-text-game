@@ -7,5 +7,6 @@ def clone():
     poppy.set_volume(2.122)
     poppy.set_weight(200)
     poppy.add_adjectives("very","pretty")
-    poppy.actions.append(action.Action(poppy.take, ['pick'], True, False))
+    poppy.actions = dict(flowerMod.Flower.actions)
+    poppy.actions['pick'] = action.Action(flowerMod.Flower.take, True, False)
     return poppy

@@ -8,13 +8,22 @@ from scenery import Scenery
 from container import Container
 
 class Liquid(Scenery):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path=None, short_desc = None, long_desc = None, pref_id=None):
         Scenery.__init__(self, default_name, short_desc, long_desc, pref_id)
-        self.actions.append(Action(self.pour, ['pour'], True))
-        self.actions.append(Action(self.drink, ['drink', 'sip', 'taste'], True))
+        # Scenery __init__() creates a per-object actions[] dict
+        self.actions['pour'] =  Action(Liquid.pour, True, False)
+        self.actions['drink'] = Action(Liquid.drink, True, False)
+        self.actions['sip'] =   Action(Liquid.drink, True, False)
+        self.actions['taste'] = Action(Liquid.drink, True, False)
         self.is_liquid = True
         self.path = gametools.findGamePath(path) if path else None
 
+    #
+    # ACTION METHODS (dictionary for scenery defined per-object)
+    # 
     def pour(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         loc = self.location

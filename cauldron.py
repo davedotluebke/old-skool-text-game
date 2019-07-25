@@ -1,6 +1,5 @@
 from debug import dbg
 
-from action import Action
 from thing import Thing
 from container import Container
 from potions import PinkPotion
@@ -21,6 +20,17 @@ class Cauldron(Container):
         super().__init__(default_name, path, pref_id)
         self.liquid = True
 
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
+
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def insert(self, obj, force_insert=False):
         if super().insert(obj, force_insert): 
             return True
@@ -58,3 +68,6 @@ class Cauldron(Container):
             created.move_to(self)
         self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.short_desc))
         
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #

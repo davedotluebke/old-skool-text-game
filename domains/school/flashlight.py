@@ -3,12 +3,16 @@ from thing import Thing
 from action import Action
 
 class Flashlight(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path):
         Thing.__init__(self, default_name, path)
         self.light = 0
-        self.actions.append(Action(self.activate, ["activate", "turn"], True, True))
-        self.actions.append(Action(self.put_away, ["hide"], True, True))
     
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
     def _adjust_descriptions(self):
         if self.light: 
             self.short_desc += " burning brightly"
@@ -19,8 +23,11 @@ class Flashlight(Thing):
             (head, sep, tail) = self.long_desc.partition("\nThe flashlight is on")
             self.long_desc = head
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def put(self, p, cons, oDO, oIDO):
-        (sV, sDO, sPrep, sIDO) = p.diagram_sentance(p.words)
+        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sPrep == 'away' or sDO == 'away' or sIDO == 'away':      #TODO: Fix this up
             return self.put_away(p, cons, oDO, oIDO)
         else:
@@ -71,4 +78,9 @@ class Flashlight(Thing):
                 self._adjust_descriptions()
                 return True
         return "I don't know what you mean by %s in this context." % sV
-                
+
+    actions = dict(Thing.actions)
+    actions['activate'] = Action(activate, True, True)
+    actions['turn']     = Action(activate, True, False)
+    actions['hide']     = Action(put_away, True, True)
+    actions['put']      = Action(put, True, False)

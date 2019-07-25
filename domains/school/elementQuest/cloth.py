@@ -3,6 +3,9 @@ import action
 import gametools
 
 class FireQuestCloth(thing.Thing):
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def wrap(self, p, cons, oDO, oIDO):
         if not oIDO:
             return "Did you mean to wrap the cloth around something?"
@@ -17,11 +20,16 @@ class FireQuestCloth(thing.Thing):
             i.move_to(thing.Thing.ID_dict['nulspace'])
         return True
 
+    actions = dict(Thing.actions)  # make a copy, don't change Thing's dict!
+    actions['wrap'] = Action(wrap, True, False)
+    
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone())
+#
 def clone():
     cloth = FireQuestCloth('torn tapestry', __file__, pref_id="torn_tapestry")
     cloth.set_description('torn bit of tapestry', 'This is a torn swath of tapestry, strewn on the ground. It doesn\'t seem to match any of the tapestries hanging in any rooms you have seen.')
     cloth.add_adjectives('torn')
     cloth.add_names('tapestry', 'swath', 'cloth')
-    cloth.actions.append(action.Action(cloth.wrap, ['wrap'], True, False))
     cloth.soaked = False
     return cloth
