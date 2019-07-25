@@ -2,17 +2,22 @@ import domains.school.elementQuest.lake_room as lake_room
 import room
 import gametools
 import scenery
-import action
+from action import Action
 import domains.wizardry.gems as gems
 import thing
 import domains.school.elementQuest.doorway as doorway
 
 class Statue(scenery.Scenery):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, short_desc, long_desc):
         super().__init__(default_name, short_desc, long_desc)
-        self.actions.append(action.Action(self.put_pearl_in_eye, ['put', 'place'], True, False))
         self.unlisted = True
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def put_pearl_in_eye(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sDO == 'pearl' and sIDO == 'eye' and isinstance(oDO, gems.Pearl):
@@ -23,7 +28,12 @@ class Statue(scenery.Scenery):
             doorway.load()
             doorway.Doorway.open(doorway.Doorway.instance)
             return True
+    
+# Scenery makes a per-object actions[] list, so add actions in load()
 
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def load():
     roomPath = gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)
@@ -37,6 +47,10 @@ def load():
     
     obj = Statue('statue', 'statue', 'This giant stone statue solemnly stands in the middle of the room. It is missing a pearl in its left eye. ')
     obj.add_adjectives('giant', 'stone')
+    obj.actions['put'] =    Action(Statue.put_pearl_in_eye, True, False)
+    obj.actions['place'] =  Action(Statue.put_pearl_in_eye, True, False)
+    obj.actions['insert'] = Action(Statue.put_pearl_in_eye, True, False)
+
     obj.move_to(r)
     
     return r

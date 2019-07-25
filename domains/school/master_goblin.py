@@ -27,7 +27,7 @@ class PitRoom(Room):
                         self.long_desc = 'This is a crude pit. It is about 1/%s filled with water.' % self.water_level_den
                         i.perceive('The pit fills up more! The water is getting higher faster and faster!')
                     if self.water_level_den == 1 and not self.player_done:
-                        self.add_exit('up', 'waterfall')
+                        self.add_exit('up', 'domains.school.school.water_kitchen')
                         self.long_desc = 'This is a crude pit. It is completely full of water.'
                         self.player_done = True
                         if i.wizardry_element == 'water':
@@ -49,13 +49,18 @@ class PitRoom(Room):
         player.cons.write('You notice that now you can reach the trapdoor the goblin closed.')
 
 class Roots(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path):
         Thing.__init__(self, default_name, path)
         self.open = False
         self.set_description('strong roots', 'These roots look very strong. You wish you could move them.')
         self.add_adjectives('strong')
-        self.actions.append(Action(self.move_roots, ['move'], True, False))
     
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def move_roots(self, p, cons, oDO, oIDO):
         if cons.user.wizardry_element == 'plant':
             self.open = True
@@ -67,8 +72,16 @@ class Roots(Thing):
         else:
             cons.write("You can't move the roots, they're very strong!")
             return True
+    
+    actions = dict(Thing.actions)
+    actions['move'] = Action(move_roots, True, False)
+    actions['part'] = Action(move_roots, True, False)
+
 
 class MasterGoblin(NPC):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, path):
         NPC.__init__(self, 'goblin', path, Thing.ID_dict['nulspace'].game)
         self.set_description('old mean goblin', 'This goblin is standing straight in front of the passage west. He is holding a piece of paper in his hand.')
@@ -86,6 +99,9 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
         self.talk_counter = 0
         Thing.game.register_heartbeat(self)
 
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def heartbeat(self):
         if not self.location:
             return

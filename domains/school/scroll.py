@@ -1,12 +1,15 @@
 from thing import Thing
 from action import Action
 from room import Room
+from debug import dbg
 
 class Scroll(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path, pref_id=None):
         super().__init__(default_name, path, pref_id)
         self.set_description('scroll', 'This scroll appears to say something on it.')
-        self.actions.append(Action(self.read, ['read'], True, False))
         self.current_message = ''
         self.messages = {
             'domains.school.school.great_hall':        ['Make a potion to hide thee. Use this potion to sneak past an unbeatable enemy.\nDue next class.', False],
@@ -21,9 +24,12 @@ class Scroll(Thing):
 
     def heartbeat(self):
         r = self
-        while r.location:
-            r = r.location
-        
+        try:
+            while r.location:
+                r = r.location
+        except AttributeError:
+            dbg.debug('AtrributeError occured in scroll!', 0)
+            return
         if r.id in list(self.messages):
             if self.messages[r.id][1] == True:
                 return
@@ -32,6 +38,9 @@ class Scroll(Thing):
                 self.current_message = self.messages[r.id][0]
                 self.messages[r.id][1] = True
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def read(self, p, cons, oDO, oIDO):
         if oDO != self:
             return "Are you intending to read the scroll?"
@@ -41,6 +50,12 @@ class Scroll(Thing):
         else:
             return "A problem occurred!"
 
+    actions = dict(Thing.actions)
+    actions['read'] = Action(read, True, False)
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def clone(): 
     obj = Scroll('scroll', __file__)
     return obj

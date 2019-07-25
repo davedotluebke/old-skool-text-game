@@ -1,17 +1,35 @@
 import thing
 import gametools
+import action
 
 class Mirror(thing.Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, what_you_see, exit_room, species=None, gender=None, adj1=None, adj2=None):
         super().__init__('mirror', __file__)
         self.set_description('shimmering mirror', 'In this mirror you see %s.' % what_you_see)
-        self.actions.append(thing.Action(self.enter, ['enter'],True, False))
         self.dest = exit_room
         self.species = species
         self.gender = gender
         self.adj1 = adj1
         self.adj2 = adj2
 
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
+
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
+
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def look_at(self, p, cons, oDO, oIDO):
         if self == oDO or self == oIDO:
             if self.adj1:
@@ -69,3 +87,8 @@ class Mirror(thing.Thing):
             "have changed...\n")
         dest.report_arrival(cons.user)
         return True
+
+    actions = dict(thing.Thing.actions)  # make a copy, don't change Thing's dict!
+    actions['enter'] =   action.Action(enter, True, False)
+    actions['look'] =    action.Action(look_at, True, False)
+    actions['examine'] = action.Action(look_at, True, False)

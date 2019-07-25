@@ -17,45 +17,42 @@ from player import Player
 from action import Action
 # Gem is a generic base class for all gems, used for isinstance() and other internal functions.
 class Gem(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
         super().__init__(default_name, path, pref_id)
         self.power_num = power_num
         self.set_description(short_desc, long_desc)
 
 class Emerald(Gem):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, path, default_name, short_desc, long_desc, power_num=10, pref_id=None):
         super().__init__(path, default_name, short_desc, long_desc+' It is about %s millimeters in all dimensions.' % power_num, power_num, pref_id)
         self.add_names('emerald')
-        self.actions.append(Action(self.move_power, ['power'], True, False))
         self.next_power = None
         self.cons = None
     
-    def power_gem(self, gem, amt):
-        if amt > self.power_num:
-            amt = self.power_num
-        gem.power_num += amt
-        self.power_num -= amt
-        self.adjust_description()
-
-    def adjust_description(self):
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
+    def _adjust_description(self):
         (head, sep, tail) = self.long_desc.partition(' It is about')
         self.long_desc = head + ' It is about %s millimeters in all dimensions.' % self.power_num
         if self.power_num <= 0:
             self.emit('The emerald shrinks and vanishes!')
             self.move_to(Thing.ID_dict['nulspace'])
-    
-    def move_power(self, p, cons, oDO, oIDO):
-        if oDO == self and isinstance(oIDO, Gem):
-            self.find_amount(cons, oIDO)
-        elif oIDO == self and isinstance(oDO, Gem):
-            self.find_amount(cons, oDO)
-        elif oIDO == None and oDO != self and isinstance(oDO, Gem):
-            self.find_amount(cons, oDO)
-        elif oIDO == None and oDO == self:
-            return "Did you mean to put power into the emerald?"
-        else:
-            return "I don't quite understand what you meant."
-        return True
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
+    def power_gem(self, gem, amt):
+        if amt > self.power_num:
+            amt = self.power_num
+        gem.power_num += amt
+        self.power_num -= amt
+        self._adjust_description()
     
     def find_amount(self, cons, gem):
         cons.write('How much power would you like to move? Type it below:')
@@ -73,14 +70,38 @@ class Emerald(Gem):
         self.cons.input_redirect = None
         self.next_power = None
         self.cons = None
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #   
+    def move_power(self, p, cons, oDO, oIDO):
+        if oDO == self and isinstance(oIDO, Gem):
+            self.find_amount(cons, oIDO)
+        elif oIDO == self and isinstance(oDO, Gem):
+            self.find_amount(cons, oDO)
+        elif oIDO == None and oDO != self and isinstance(oDO, Gem):
+            self.find_amount(cons, oDO)
+        elif oIDO == None and oDO == self:
+            return "Did you mean to put power into the emerald?"
+        else:
+            return "I don't quite understand what you meant."
+        return True
+        
+    actions = dict(Gem.actions)
+    actions['power'] = Action(move_power, True, False)
 
 class Jade(Gem):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
         super().__init__(path, default_name, short_desc, long_desc+' It seems almost as if it were somewhere else.', power_num, pref_id)
         self.add_names('jade')
         Thing.game.register_heartbeat(self)
         self.cons = None
 
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def heartbeat(self):
         if self.power_num > 0:
             possible_players = [x for x in self.location.contents]
@@ -113,7 +134,7 @@ class Jade(Gem):
                 obj.power_num += 1
                 self.power_num -= 1
                 if isinstance(obj, Emerald):
-                    obj.adjust_description()
+                    obj._adjust_description()
             if isinstance(obj, Container):
                 objs.append(obj.contents)
             del objs[objs.index(obj)]
@@ -121,12 +142,18 @@ class Jade(Gem):
                 break
 
 class Ruby(Gem):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
         super().__init__(path, default_name, short_desc, long_desc+' It almost seems to glow, as if light was trapped inside.', power_num, pref_id)
         self.add_names('ruby')
         self.light = 0
         Thing.game.register_heartbeat(self)
 
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def heartbeat(self):
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
         (head, sep, tail) = self.long_desc.partition(' It ')
@@ -143,6 +170,9 @@ class Ruby(Gem):
             self.long_desc = head + ' It almost seems to glow, as if light was trapped inside.'
             
 class Diamond(Gem):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
         super().__init__(path, default_name, short_desc, long_desc+' It is crystal clear.', power_num, pref_id)
         self.add_names('diamond')
@@ -150,6 +180,9 @@ class Diamond(Gem):
         self.user = None
         Thing.game.register_heartbeat(self)
 
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def heartbeat(self):
         if self.power_num > 0:
             self.power_num -= 1
@@ -175,6 +208,9 @@ class Opal(Gem):
         self.light = 0  # light is negative if powered, 0 otherwise (default 0)
         Thing.game.register_heartbeat(self)
 
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def heartbeat(self):
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
         (head, sep, tail) = self.long_desc.partition(' It ')
@@ -195,6 +231,9 @@ class Pearl(Gem):
         self.powering = None
         Thing.game.register_heartbeat(self)
     
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def heartbeat(self):
         if not self.powering:
             if self.power_num > 0:
@@ -217,6 +256,9 @@ class Pearl(Gem):
     def move_power(self, gem):
         self.powering = gem
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def move_power(self, p, cons, oDO, oIDO):
         if oDO == self and isinstance(oIDO, Gem):
             self.move_power(oIDO)

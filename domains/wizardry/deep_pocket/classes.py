@@ -8,20 +8,31 @@ from player import Player
 from room import Room
 
 class DeepPocket(Container):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, exit_loc, user, path, pref_id=None):
         super().__init__(default_name, path, pref_id)
         self.set_max_volume_carried(sys.maxsize)
         self.set_max_weight_carried(sys.maxsize)
         self.exit_loc = exit_loc
-        self.actions.append(Action(self.exit_vault, ['exit'], True, False))
         self.user = user
     
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def exit_vault(self, p, cons, oDO, oIDO):
         cons.write("You exit the vault.")
         cons.user.move_to(self.exit_loc)
         self.exit_loc.report_arrival(cons.user)
 
+    actions = dict(Container.actions)
+    actions['exit'] = Action(exit_vault, True, True)
+
 class DeepPocketSignUpWizard(NPC):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, path):
         super().__init__("Silemon", path, pref_id="DeepPocketSignUpWizard")
         self.set_description("Silemon Deplintere", "Silemon Deplintere is an older wizard and is wearing a blue cape. He is standing uniformly in front of you.")
@@ -34,6 +45,9 @@ class DeepPocketSignUpWizard(NPC):
         self.in_process = False
         self.said_nos = []
 
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
     def heartbeat(self):
         if not self.location:
             return
@@ -57,22 +71,8 @@ class DeepPocketSignUpWizard(NPC):
             self.emit('Silemon says: "Next up is %s!"' % customers[0])
             self.serving_customer = customers[0]
             self.serving_customer.perceive('Silemon says to you: "I\'m just double-checking - you\'re here for a deep pocket, right?"')
-            self.actions.append(Action(self.reply, ['yes', 'no'], False, True))
         if not self.serving_customer.cons:
             self.serving_customer = None
-
-    def reply(self, p, cons, oDO, oIDO):
-        if cons.user != self.serving_customer:
-            return "It's not your turn yet!"
-        reply = p.words[0]
-        if not reply:
-            return "Were you trying to reply to Silemon?"
-        if reply.lower() == 'yes':
-            self.create_new_pocket(self.serving_customer)
-        elif reply.lower() == 'no':
-            self.serving_customer.cons.write('Silemon says: "Ok, if that\'s what you want."')
-            self.serving_customer = False
-        return True
 
     def create_new_pocket(self, customer):
         DeepPocket.vault_room = self.vault_room
@@ -91,7 +91,26 @@ class DeepPocketSignUpWizard(NPC):
         self.serving_customer = False
         self.in_process = False
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
+    def reply(self, p, cons, oDO, oIDO):
+        if cons.user != self.serving_customer:
+            return "It's not your turn yet!"
+        reply = p.words[0]
+        if not reply:
+            return "Were you trying to reply to Silemon?"
+        if reply.lower() == 'yes':
+            self.create_new_pocket(self.serving_customer)
+        elif reply.lower() == 'no':
+            self.serving_customer.cons.write('Silemon says: "Ok, if that\'s what you want."')
+            self.serving_customer = False
+        return True
 
+    actions = dict(NPC.actions)
+    actions['yes'] = Actions(reply, False, True)
+    actions['no'] =  Actions(reply, False, True)
+    
 class VaultRoom(Room):
     def heartbeat(self):
         for i in self.contents:
