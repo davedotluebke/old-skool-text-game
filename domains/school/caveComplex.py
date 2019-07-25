@@ -25,6 +25,7 @@ class CaveRoom(Room):
         self.released_monster = False
         self.create_cave_moss()
         self.create_gold()
+        Thing.game.register_heartbeat(self)
 
     def create_cave_moss(self):
         for i in self.contents:
@@ -69,7 +70,7 @@ class CaveRoom(Room):
                     self.monster_storage.extract(self.monster)
                     self.insert(self.monster)
                     self.monster.emit('&nI%s arrives!' % self.monster.id)
-                    self.released_monster == True
+                    self.released_monster = True
                     self.counter = 10
                     for m in self.contents:
                         if m != self.monster and isinstance(m, Creature):
