@@ -7,8 +7,8 @@ class Keyhole(scenery.Scenery):
     def __init__(self, exit_direction, exit_dest, qkey_number):
         super().__init__('keyhole', 'keyhole embeded in the rock face', 'This keyhole is embeded in the rock face. You cannot see any other sign of a door.')
         self.unlisted = True
-        self.actions['put'] = action.Action(self.open_door, True, False)
-        self.actions['insert'] = action.Action(self.open_door, True, False)
+        self.actions['put'] = action.Action(Keyhole.open_door, True, False)
+        self.actions['insert'] = action.Action(Keyhole.open_door, True, False)
         self.checked_players = []
         self.exit_direction = exit_direction
         self.exit_dest = exit_dest
