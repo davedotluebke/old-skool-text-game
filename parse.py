@@ -245,7 +245,8 @@ class Parser:
                 # did the action change obj so we need to remove from plurality?
                 if obj.compare(obj_copy):  
                     # yes, obj_copy remains, register heartbeat for obj_copy if needed
-                    pass 
+                    if obj in Container.game.heartbeat_users:
+                        Container.game.register_heartbeat(obj_copy)
                 else
                     # no, obj_copy is identical to obj, merge back into a single plurality
                     obj.plurality += obj_copy.plurality 

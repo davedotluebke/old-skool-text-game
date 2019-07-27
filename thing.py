@@ -265,6 +265,7 @@ class Thing(object):
         new_obj._add_ID(new_obj.id)
         if new_obj.contents != None:
             raise Exception("Can't replicate containers")
+        new_obj.move_to(self.location)
         return new_obj
     
     def compare(self, obj):
