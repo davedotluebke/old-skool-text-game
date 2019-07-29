@@ -18,7 +18,7 @@ def load():
     north_window.add_adjectives('large', 'north')
     bedroom.insert(north_window, True)
 
-    south_window = exit_door.Window('window', 'souther window', 'This large window on the south side of the room has an almost invisible frame.', 'domains.school.forest.waterfall')
+    south_window = exit_door.Window('window', 'southern window', 'This large window on the south side of the room has an almost invisible frame.', 'domains.school.forest.waterfall')
     south_window.add_adjectives('large', 'south')
     bedroom.insert(south_window, True)
 
