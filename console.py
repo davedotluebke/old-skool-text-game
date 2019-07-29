@@ -160,6 +160,37 @@ class Console:
         dbg.debug("User input with aliases resolved:\n    %s" % (cmd), 3)
         return cmd
     
+    def _set_verbosity(self, level=-1):
+        if level != -1:
+            dbg.set_verbosity(level, self.user.id)
+            return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity)
+        if dbg.verbosity == 0:
+            dbg.set_verbosity(1, self.user.id)
+            return "Verbose debug output now on, verbosity level %s." % dbg.verbosity
+        else:
+            dbg.set_verbosity(0, self.user.id)
+            return "Verbose debug output now off."
+
+    def _handle_verbose(self):
+        try:
+            level = int(self.words[1])
+        except IndexError:
+            self.write(self._set_verbosity())
+            return
+        except ValueError:
+            if self.words[1] == 'filter':
+                try:
+                    s = self.words[2:]
+                    dbg.set_filter_strings(s, self.user.id)
+                    self.write("Set verbose filter to '%s', debug strings containing '%s' will now be printed." % (s, s))                      
+                except IndexError:
+                    dbg.set_filter_strings(['&&&'], self.user.id)
+                    self.write("Turned off verbose filter; debug messages will only print if they are below level %d." % dbg.verbosity)
+                return
+            self.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided [level]")
+            return
+        self.write(self._set_verbosity(level))
+    
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
         if len(self.words) > 0:
@@ -197,6 +228,15 @@ class Console:
                     return True
                 else:
                     self.write("You do not have permission to change the game's debug mode. If you would like to report a bug, type \"bug\" instead.")
+                    return True
+            
+            if cmd == 'verbose':
+                # check wizard privilages before allowing
+                if self.user.wprivilages:
+                    self._handle_verbose()
+                    return True
+                else:
+                    self.write("Type \"terse\" to print short descriptions when entering a room.")
                     return True
 
             if cmd == "escape":
