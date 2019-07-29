@@ -1,10 +1,12 @@
 import asyncio
 import connections_websock
 from textwrap import TextWrapper
+import os.path
 
 from debug import dbg
 from parse import Parser
 from player import Player
+import gametools
 
 class Console:
     default_width = 80
@@ -115,7 +117,7 @@ class Console:
             # print a list of current aliases & instructions for adding
             self.write('Current aliases:')
             for a in sorted(self.alias_map, key=self.alias_map.get):
-                self.write('%s --> %s' % (a.rjust(12), self.alias_map[a]))
+                self.write('%s = %s' % (a.rjust(12), self.alias_map[a]))
             self.write(instructions)
             return 
         alias = self.words[1]
@@ -188,9 +190,14 @@ class Console:
                 return True
 
             if cmd == 'debug':
-                self.game.handle_exceptions = not self.game.handle_exceptions
-                self.write("Toggle debug exception handling to %s" % ("on" if self.game.handle_exceptions else "off"))
-                return True
+                # check wizard privilages before allowing
+                if self.user.wprivilages:
+                    self.game.handle_exceptions = not self.game.handle_exceptions
+                    self.write("Toggle debug exception handling to %s" % ("on" if self.game.handle_exceptions else "off"))
+                    return True
+                else:
+                    self.write("You do not have permission to change the game's debug mode. If you would like to report a bug, type \"bug\" instead.")
+                    return True
 
             if cmd == "escape":
                 if self.input_redirect != None:
@@ -231,6 +238,15 @@ class Console:
                 else:
                     self.write("Usage: load [filename]")
                 return True
+            
+            if cmd == 'quit':
+                self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user, self.user))
+                self.game.save_player(os.path.join(gametools.PLAYER_DIR, self.user.names[0]), self.user)
+                self.write("#quit")
+                if self.words[1] == 'game' and self.user.wprivilages:
+                    self.game.keep_going = False
+                return "__quit__"
+
         return False
 
     def sanatizeHTML(self, html):
@@ -374,6 +390,8 @@ class Console:
         self.words = self.command.split()
         # if user types a console command, handle it and start over unless the player that called this is deactive
         internal = self._handle_console_commands()
+        if internal == "__quit__":
+            return "__quit__"
         if internal:
             return "__noparse__"
         if self.input_redirect != None:

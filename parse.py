@@ -1,6 +1,5 @@
 import sys
 import traceback
-import os.path
 
 import gametools
 
@@ -142,18 +141,17 @@ class Parser:
         return True
 
     def parse(self, user, console, command):
-        """Parse and enact the user's command. Return False to quit game."""
+        """Parse and enact the user's command. """
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
-        if command == 'quit':
+        '''if command == 'quit':
             user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (user, user))
             console.game.save_player(os.path.join(gametools.PLAYER_DIR, user.names[0]), user)
             console.write("#quit")
             return False
 
-        # TODO: Convert this to a special command that requires wizard privileges
         if command == 'quit game':
             console.game.keep_going = False
-            return True
+            return True'''
         
         self.words = command.split()
         if len(self.words) == 0:
