@@ -150,8 +150,10 @@ class Parser:
             console.write("#quit")
             return False
 
+        # TODO: Convert this to a special command that requires wizard privileges
         if command == 'quit game':
             console.game.keep_going = False
+            return True
         
         self.words = command.split()
         if len(self.words) == 0:

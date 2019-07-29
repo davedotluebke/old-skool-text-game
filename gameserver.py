@@ -279,8 +279,15 @@ class Game():
                     dbg.debug('Error caught!', 0)
             else:
                 h.heartbeat()
-        # schedule the next heartbeat:
-        asyncio.get_event_loop().call_later(1,self.beat)
+        
+        if self.keep_going:
+            # schedule the next heartbeat
+            asyncio.get_event_loop().call_later(1,self.beat)
+        else:
+            # quit the game
+            asyncio.get_event_loop().stop()
+            # TODO: Make sure all players are saved before we do this
+            asyncio.get_event_loop().close()
 
     def start_loop(self):
         print("Starting game...")
