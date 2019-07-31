@@ -231,6 +231,19 @@ class Parser:
                 obj_copy.plurality = obj.plurality - 1
                 obj.plurality = 1
             act = obj.actions[sV]
+
+            oDO_plural = oDO.plurality > 1
+            oIDO_plural = oIDO.plurality > 1
+            if oDO_plural:
+                oDO_copy = oDO.replicate()
+                # TODO: support peeling off a plurality, e.g. "drop three coins"
+                oDO_copy.plurality = oDO.plurality - 1
+                oDO.plurality = 1
+            if oIDO_plural:
+                oIDO_copy = oIDO.replicate()
+                # TODO: support peeling off a plurality, e.g. "drop three coins"
+                oIDO_copy.plurality = oIDO.plurality - 1
+                oIDO.plurality = 1
             try:
                 result = act.func(obj, self, console, oDO, oIDO) # <-- ENACT THE VERB
             except Exception as isnt:
@@ -240,6 +253,12 @@ class Parser:
                 if plural: 
                     obj.plurality += obj_copy.plurality 
                     obj_copy.destroy()
+                if oDO_plural:
+                    oDO.plurality += oDO_copy.plurality
+                    oDO_copy.destroy()
+                if oIDO_plural:
+                    oIDO.plurality += oIDO_copy.plurality
+                    oIDO_copy.destroy()
                 result = True   # we don't want the parser to go and do an action they probably didn't intend
             if plural:
                 # did the action change obj so we need to remove from plurality?
@@ -251,6 +270,27 @@ class Parser:
                     # no, obj_copy is identical to obj, merge back into a single plurality
                     obj.plurality += obj_copy.plurality 
                     obj_copy.destroy()
+            if oDO_plural:
+                # did the action change oDO so we need to remove from plurality?
+                if oDO.compare(oDO_copy):  
+                    # yes, oDO_copy remains, register heartbeat for oDO_copy if needed
+                    if oDO in Container.game.heartbeat_users:
+                        Container.game.register_heartbeat(oDO_copy)
+                else
+                    # no, oDO_copy is identical to oDO, merge back into a single plurality
+                    oDO.plurality += oDO_copy.plurality 
+                    oDO_copy.destroy()
+            if oIDO_plural:
+                # did the action change oIDO so we need to remove from plurality?
+                if oIDO.compare(oIDO_copy):  
+                    # yes, oIDO_copy remains, register heartbeat for oIDO_copy if needed
+                    if oIDO in Container.game.heartbeat_users:
+                        Container.game.register_heartbeat(oIDO_copy)
+                else
+                    # no, oIDO_copy is identical to oIDO, merge back into a single plurality
+                    oIDO.plurality += oIDO_copy.plurality 
+                    oIDO_copy.destroy()
+            
 
             if result == True:
                 break               # verb has been enacted, all done!
