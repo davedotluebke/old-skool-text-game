@@ -11,7 +11,7 @@ from action import Action
 class PinkPotion(Liquid):
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO: 
-            return "Did you meant to drink the %s?" % self.short_desc
+            return "Did you meant to drink the %s?" % self._short_desc
         cons.user.perceive('You drink the potion, and turn hot pink!')
         cons.user.emit('&nD%s drinks a potion and turns bright pink!' % cons.user, ignore=[cons.user])
         return True
@@ -19,7 +19,7 @@ class PinkPotion(Liquid):
 class InvisibilityPotion(Liquid):
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO: 
-            return "Did you meant to drink the %s?" % self.short_desc
+            return "Did you meant to drink the %s?" % self._short_desc
         cons.user.invisible = True      #TODO: Cleanup
         cons.game.events.schedule(cons.game.time+10, self.reappear, cons.user)
         self.emit('&nD%s drinks a potion and fades from sight.' % cons.user, [cons.user])
@@ -34,7 +34,7 @@ class InvisibilityPotion(Liquid):
 class StrengthPotion(Liquid):
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO: 
-            return "Did you meant to drink the %s?" % self.short_desc
+            return "Did you meant to drink the %s?" % self._short_desc
         cons.user.perceive("You drink the potion, and feel stronger than you did before.")
         cons.user.emit('&nD%s drinks a potion. Nothing obvious happens...' % cons.user, ignore=[cons.user])
         cons.user.strength += 70
@@ -47,7 +47,7 @@ class StrengthPotion(Liquid):
 class JumpingPotion(Liquid):
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO:
-            return "Did you mean to drink the %s?" % self.short_desc
+            return "Did you mean to drink the %s?" % self._short_desc
         cons.user.perceive("You drink the potion, and fly up into the air!")
         cons.user.emit("&nD%s drinks a potion, and goes flying up into the air!")
         if hasattr(cons.user.location, 'jumping_destination'):
@@ -63,7 +63,7 @@ class JumpingPotion(Liquid):
 class ExplorationPotion(Liquid):
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO:
-            return "Did you mean to drink the %s?" % self.short_desc
+            return "Did you mean to drink the %s?" % self._short_desc
         cons.user.perceive("You drink the potion, and fly up into the air!")
         cons.user.emit("&nD%s drinks a potion, and goes flying up into the air!")
         all_python_files = gametools.findAllPythonFiles()

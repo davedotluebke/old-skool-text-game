@@ -9,8 +9,8 @@ import gametools
 # OTHER EXTERNAL METHODS (misc externally visible methods)
 #
 def go_out(firepit):
-    (head, sep, tail) = firepit.long_desc.partition('It is lit.')
-    firepit.long_desc = head + 'It is unlit.'
+    (head, sep, tail) = firepit._long_desc.partition('It is lit.')
+    firepit._long_desc = head + 'It is unlit.'
     self.emit('The firepit goes out.')
 
 #
@@ -21,8 +21,8 @@ def light_firepit(p, cons, oDO, oIDO):
         return "I'm not quite sure what you are trying to light..."
     cons.write('You light the firepit, sending it into flames.')
     self.emit('&nD%s lights the firepit, sending it into flames.' % cons.user.id)
-    (head, sep, tail) = oDO.long_desc.partition('It is unlit.')
-    oDO.long_desc = head + 'It is lit.'
+    (head, sep, tail) = oDO._long_desc.partition('It is unlit.')
+    oDO._long_desc = head + 'It is lit.'
     thing.Thing.game.events.schedule(Thing.game.time+20, go_out, oDO)
     return True
 

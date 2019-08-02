@@ -66,7 +66,7 @@ class Cauldron(Container):
         if i[1] == 'jumping potion':
             created = gametools.clone('jumping_potion')
             created.move_to(self)
-        self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.short_desc))
+        self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created._short_desc))
         
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)

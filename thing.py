@@ -398,7 +398,7 @@ class Thing(object):
     def look_at(self, p, cons, oDO, oIDO):
         '''Print out the long description of the thing.'''
         if self == oDO or self == oIDO:
-            cons.user.perceive(self.long_desc)
+            cons.user.perceive(self._long_desc)
             return True
         else:
             return "Not sure what you are trying to look at!"

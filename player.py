@@ -230,7 +230,7 @@ class Player(Creature):
             try:
                 for i in self.location.contents:
                     if i in self.enemies:
-                        self.cons.write('You attack your enemy %s.' % i.short_desc)
+                        self.cons.write('You attack your enemy %s.' % i._short_desc)
                         self.attacking = i
                         self.attack_enemy(i)
             except AttributeError:
@@ -271,12 +271,12 @@ class Player(Creature):
                      short description of O proceeded by the capitalized 
                      definite article 'The'
             &ni<id>: 'name-indefinite': replace with O.proper_name if O has 
-                     been introduced, else O.short_desc preceeded by the 
+                     been introduced, else O._short_desc preceeded by the 
                      indefinite article ('a' or 'an')
             &nI<id>: 'name-indefinite-capitalized': replace with O.proper_name
-                     if O has been introduced, else 'A' or 'An' + O.short_desc
+                     if O has been introduced, else 'A' or 'An' + O._short_desc
             &nn<id>: 'name-no-article': replace with O.proper_name if O has 
-                     been introduced, else O.short_desc with no article.
+                     been introduced, else O._short_desc with no article.
 
             &s<id>:  'species': replace with species name (`O.species`)
             &S<id>:  'species-capitalized': replace with capitalized species
@@ -377,11 +377,11 @@ class Player(Creature):
         for i in self.contents:
             if i == self.weapon_wielding or i == self.armor_worn: 
                 continue
-            cons.write("\ta " + i.short_desc)
+            cons.write("\ta " + i._short_desc)
         if self.weapon_wielding != self.default_weapon: 
-            cons.write('You are wielding a %s.' % self.weapon_wielding.short_desc)
+            cons.write('You are wielding a %s.' % self.weapon_wielding._short_desc)
         if self.armor_worn != self.default_armor:
-            cons.write('You are wearing a %s.' % self.armor_worn.short_desc)
+            cons.write('You are wearing a %s.' % self.armor_worn._short_desc)
         return True
     
     def toggle_terse(self, p, cons, oDO, oIDO):

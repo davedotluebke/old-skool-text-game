@@ -75,7 +75,7 @@ class Book(Thing):
                 self.cons.user.perceive("The cover is blank")
                 return False
 
-            self.cons.user.emit("&nD%s closes the %s and gazes at the cover." %(self.cons.user.id, self.short_desc))
+            self.cons.user.emit("&nD%s closes the %s and gazes at the cover." %(self.cons.user.id, self._short_desc))
 
         elif command in toc_vocab:
             # view table of contents
@@ -87,9 +87,9 @@ class Book(Thing):
                 return False
 
             if last_index == self.COVER_INDEX:
-                self.cons.user.emit("&nD%s opens the %s and starts reading." %(self.cons.user.id, self.short_desc))
+                self.cons.user.emit("&nD%s opens the %s and starts reading." %(self.cons.user.id, self._short_desc))
             else:
-                self.cons.user.emit("&nD%s flips through the pages of the %s with a thoughtful expression." %(self.cons.user.id, self.short_desc))
+                self.cons.user.emit("&nD%s flips through the pages of the %s with a thoughtful expression." %(self.cons.user.id, self._short_desc))
 
         elif command in next_vocab:
             # view next page
@@ -98,7 +98,7 @@ class Book(Thing):
                 return False
 
             if self.index == self.TOC_INDEX:
-                self.cons.user.emit("&nD%s opens the %s and starts reading." %(self.cons.user.id, self.short_desc))
+                self.cons.user.emit("&nD%s opens the %s and starts reading." %(self.cons.user.id, self._short_desc))
             else:
                 self.cons.user.emit("&nD%s turns the page." %(self.cons.user.id))
 
@@ -109,7 +109,7 @@ class Book(Thing):
                 return False
 
             if self.index == self.COVER_INDEX:
-                self.cons.user.emit("&nD%s closes the %s and gazes at the cover." %(self.cons.user.id, self.short_desc))
+                self.cons.user.emit("&nD%s closes the %s and gazes at the cover." %(self.cons.user.id, self._short_desc))
             else:
                 self.cons.user.emit("&nD%s turns back a page." %(self.cons.user.id))
         
@@ -137,8 +137,8 @@ class Book(Thing):
             # stop input_takeover
             self.index = self.bookmark or self.TOC_INDEX
             self.cons.input_redirect = None
-            self.cons.user.perceive("You put the %s away." %(self.short_desc))
-            self.cons.user.emit("&nD%s puts the %s away." %(self.cons.user.id, self.short_desc))
+            self.cons.user.perceive("You put the %s away." %(self._short_desc))
+            self.cons.user.emit("&nD%s puts the %s away." %(self.cons.user.id, self._short_desc))
             self.cons = None
             return False
 
@@ -148,7 +148,7 @@ class Book(Thing):
                 self.cons.user.perceive("You can't find that page.")
                 return False
 
-            self.cons.user.emit("&nD%s flips through the pages of the %s with a thoughtful expression." %(self.cons.user.id, self.short_desc))
+            self.cons.user.emit("&nD%s flips through the pages of the %s with a thoughtful expression." %(self.cons.user.id, self._short_desc))
 
         else:
             self.cons.user.perceive("Other actions are blocked while reading; type 'quit' to exit reading mode.")
@@ -201,9 +201,9 @@ class Book(Thing):
         self.cons = cons
         
         if self.index == self.COVER_INDEX:
-            self.cons.user.emit("&nD%s takes out a %s and looks at the cover." %(self.cons.user.id, self.short_desc))
+            self.cons.user.emit("&nD%s takes out a %s and looks at the cover." %(self.cons.user.id, self._short_desc))
         else:
-            self.cons.user.emit("&nD%s opens a %s and starts reading." %(self.cons.user.id, self.short_desc))
+            self.cons.user.emit("&nD%s opens a %s and starts reading." %(self.cons.user.id, self._short_desc))
 
         # show the last page read when book is opened
         self.console_recv("")

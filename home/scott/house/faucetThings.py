@@ -20,13 +20,13 @@ class FaucetThing(Thing):
     # 
     def _adjust_descriptions(self):
         if self.running == 1:
-            self.short_desc += ', with the water running'
-            self.long_desc += ' The water in the %s is running.' % self.type
+            self._short_desc += ', with the water running'
+            self._long_desc += ' The water in the %s is running.' % self.type
         if self.running == 0:
-            (head, sep, tail) = self.short_desc.partition(", with the water running")
-            self.short_desc = head
-            (head, sep, tail) = self.long_desc.partition(" The water in the %s is running." % self.type)
-            self.long_desc = head
+            (head, sep, tail) = self._short_desc.partition(", with the water running")
+            self._short_desc = head
+            (head, sep, tail) = self._long_desc.partition(" The water in the %s is running." % self.type)
+            self._long_desc = head
         
     def toggle(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)

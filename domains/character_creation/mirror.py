@@ -37,7 +37,7 @@ class Mirror(thing.Thing):
             elif self.adj2:
                 cons.user.perceive("In this mirror you see a "+cons.user.adj1+" "+self.adj2+" "+cons.user.gender+" "+cons.user.species)
             else:
-                cons.user.perceive(self.long_desc)
+                cons.user.perceive(self._long_desc)
             return True
         else:
             return "Not sure what you are trying to look at!"
