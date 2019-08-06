@@ -13,7 +13,6 @@ class Scroll(Thing):
         self.current_message = ''
         self.messages = {
             'domains.school.school.great_hall':        ['Make a potion to hide thee. Use this potion to sneak past an unbeatable enemy.\nDue next class.', False],
-            'domains.school.dungeon.dungeon_hall':     ['Thou must continue on thy journey\nAnd in thy journey\nThou must choose a path\nAnd thou must be careful, because thy choice defines thy destiny. ', False],
             'domains.school.elementQuest.path_choice': ['Thou must continue on thy journey\nAnd in thy journey\nThou must choose a path\nAnd thou must be careful, because thy choice defines thy destiny. ', False],
             'domains.school.school.fire_lounge':       ['Thy class begins shortly.', False],
             'domains.school.school.water_lounge':      ['Thy class begins shortly.', False],
