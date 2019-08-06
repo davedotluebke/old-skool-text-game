@@ -178,7 +178,6 @@ class Container(Thing):
         return True
 
     def put(self, p, cons, oDO, oIDO):
-        raise  # XXX check if this code is compatible with plurals
         """Put an object <oDO> into this container <oIDO>.  Returns an error 
         message if oIDO (the indirect object) is not this Container."""
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
@@ -200,7 +199,6 @@ class Container(Thing):
         return True            
 
     def remove(self, p, cons, oDO, oIDO):
-        raise  # XXX check if this code is compatible with plurals
         """Remove an object <oDO> from this container <oIDO>. Returns an error 
         message if oDO is not in this container."""
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)

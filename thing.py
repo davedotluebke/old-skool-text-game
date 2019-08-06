@@ -39,52 +39,6 @@ class Thing(object):
     def __str__(self): 
         return self.names[0]
 
-    def __getstate__(self):
-        """Custom pickling code for Thing.
-        
-        Doesn't pickle Thing.ID_dict (which refers to all objects in game).
-        We will re-create this dictionary from scratch as we unpickle objects.
-        To facilitate this, replace all references to other objects with 
-        their unique ID strings. After unpickling we will replace these with
-        the actual references. 
-        """
-        # Copy the object's state from self.__dict__ which contains
-        # all our instance attributes. Always use the dict.copy()
-        # method to avoid modifying the original state.
-        state = self.__dict__.copy()
-        if self.location:
-            if not isinstance(self.location, str): 
-                # if it isn't already a string, convert it to one 
-                state['location'] = self.location.id
-        if self.contents != None: 
-            # replace with new list of id strings, or leave as None (not [])
-            state['contents'] = [(x if isinstance(x, str) else x.id) for x in self.contents]
-        if self in Thing.game.heartbeat_users:
-            state['has_beat'] = True
-        return state
-
-    def __setstate__(self, state):
-        """Custom unpickling code for Thing.
-
-        Re-create the Thing.ID_dict{} dictionary during unpickling:
-        if an object's ID is in the dictionary (because some other object
-        referred to it, e.g. via the location[] or contents[] fields)
-        just leave it there; otherwise create its entry.
-
-        After unpickling, another pass will be required to replace ID strings
-        (in location and contents fields) with the actual object references.
-        All objects end up in Thing.ID_dict, so we can just iterate over it.
-        """
-        # Restore instance attributes
-        try: 
-            obj = Thing.ID_dict[state['id']] # is this obj already in dict?
-            dbg.debug("Note: %s already in Thing.ID_dict, maps to %s" % (state['id'], obj))
-        except KeyError:  # Not already in dict
-            Thing.ID_dict[state['id']] = self
-        if 'has_beat' in state:
-            Thing.game.register_heartbeat(self)
-        self.__dict__.update(state)
-
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
@@ -265,20 +219,21 @@ class Thing(object):
         new_obj._add_ID(new_obj.id)
         if new_obj.contents != None:
             raise Exception("Can't replicate containers")
+        new_obj.incomplete_registration = True
         new_obj.move_to(self.location)
         return new_obj
     
     def compare(self, obj):
-        """Compares self with obj, ignoring the plurality and id fields."""
+        """Compares self with obj, ignoring the plurality, id, and location fields."""
         # keep track of target plurality & id, but temporarily
         # set equal to source plurality for easy comparison
-        tmp = (obj.plurality, obj.id)
-        obj.plurality, obj.id = self.plurality, self.id
-        if self.__dir__ == obj.__dir__:
-            obj.plurality, obj.id = tmp
+        tmp = (obj.plurality, obj.id, obj.location)
+        obj.plurality, obj.id, obj.location = self.plurality, self.id, self.location
+        if self.__dict__ == obj.__dict__:
+            obj.plurality, obj.id, obj.location = tmp
             return True
         else:
-            obj.plurality, obj.id = tmp
+            obj.plurality, obj.id, obj.location = tmp
             return False
     
     def destroy(self):
@@ -344,7 +299,6 @@ class Thing(object):
             recipient.perceive(message)
 
     def move_to(self, dest, force_move=False):  
-        raise  # XXX check if this code is compatible with plurals
         """Extract this object from its current location and insert into dest. 
         Returns True if the move succeeds. If the insertion fails, attempts to 
         re-insert into the original location and returns False.  
@@ -371,7 +325,6 @@ class Thing(object):
     # ACTION METHODS & DICTIONARY (dictionary must come last)
     #
     def take(self, p, cons, oDO, oIDO):
-        raise  # XXX check if this code is compatible with plurals       
         if oDO == None: return "I don't know what you're trying to take!"
         if oDO != self: return "You can't take %s!" % oDO.get_short_desc(definite=True)
         if self.fixed:  return self.fixed
@@ -384,7 +337,6 @@ class Thing(object):
         return True
 
     def drop(self, p, cons, oDO, oIDO):
-        raise  # XXX check if this code is compatible with plurals
         if oDO != self:     return "You can't drop that!"
         if self.fixed:      return self.fixed
         if self.location != cons.user: return "You aren't holding  %s!" % self.get_short_desc(definite=True)
