@@ -14,7 +14,7 @@ def load():
     gallery.add_exit('north', 'domains.school.school.hmasters_office')
     gallery.add_exit('northeast', 'domains.school.school.hallway')
 
-    portrait = scenery.Scenery('portrait','fancy portrait', 'This oil on canvas portrait is of a strange figure. He is dressed in dark colors and is against a dark background.')
+    portrait = scenery.Scenery('portrait','fancy portrait', 'This oil on canvas portrait is of a strange figure. He is dressed in dark colours and is against a dark background.')
     portrait.add_adjectives('fancy')
     portrait.add_response('take', 'You think about taking the portrait for a moment, but then realize that it is the school\'s property and should not steal it.')
     gallery.insert(portrait, True)
@@ -29,7 +29,7 @@ def load():
     portrait_three.add_response('take', 'You think about taking the portrait for a moment, but then realize that it is the school\'s property and should not steal it.')
     gallery.insert(portrait_three, True)
 
-    portrait_four = scenery.Scenery('portrait','seethrough portrait', 'This portrait is very strange. It is made of glass. You can barely make out a figure in the center.')
+    portrait_four = scenery.Scenery('portrait','seethrough portrait', 'This portrait is very strange. It is made of glass. You can barely make out a figure in the centre.')
     portrait_four.add_adjectives('seethrough', 'glass')
     portrait_four.add_response('take', 'You think about taking the portrait for a moment, but then realize that it is the school\'s property and should not steal it.')
     gallery.insert(portrait_four, True)

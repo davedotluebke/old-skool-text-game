@@ -9,7 +9,7 @@ class WaterJet(scenery.Scenery):
     # SPECIAL METHODS (i.e __method__() format)
     #
     def __init__(self):
-        super().__init__('jet', 'jet of water', 'This jet of water shoots from the rocks into the large pool in the center of the room.')
+        super().__init__('jet', 'jet of water', 'This jet of water shoots from the rocks into the large pool in the centre of the room.')
         self.unlisted = True
         self.add_adjectives('water')
         self.add_response(['drink'], 'You take a drink of the flowing water, and quench your thirst.', True, True)
