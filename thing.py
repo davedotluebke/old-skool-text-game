@@ -219,8 +219,7 @@ class Thing(object):
         new_obj._add_ID(new_obj.id)
         if new_obj.contents != None:
             raise Exception("Can't replicate containers")
-        new_obj.incomplete_registration = True
-        new_obj.move_to(self.location)
+        new_obj.move_to(self.location, merge_pluralities=False)
         return new_obj
     
     def compare(self, obj):
@@ -298,7 +297,7 @@ class Thing(object):
         for recipient in recipients:
             recipient.perceive(message)
 
-    def move_to(self, dest, force_move=False):  
+    def move_to(self, dest, force_move=False, merge_pluralities=True):  
         """Extract this object from its current location and insert into dest. 
         Returns True if the move succeeds. If the insertion fails, attempts to 
         re-insert into the original location and returns False.  
@@ -314,9 +313,9 @@ class Thing(object):
             origin.extract(self)
         # if cannot insert into destination, return to where it came from
         # (dest.insert returns True if insertion fails)
-        if dest == None or dest.insert(self, force_insert=force_move):
+        if dest == None or dest.insert(self, force_insert=force_move, merge_pluralities=merge_pluralities):
             if (origin):
-                origin.insert(self, force_insert=True)
+                origin.insert(self, force_insert=True, merge_pluralities=True)
             return False
         else:
             return True

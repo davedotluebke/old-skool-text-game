@@ -48,7 +48,7 @@ class Container(Thing):
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
-    def insert(self, obj, force_insert=False):
+    def insert(self, obj, force_insert=False, merge_pluralities=True):
         """Put obj into this Container object, returning True if the operation failed. 
         If <force_insert> is True, ignore weight and volume limits."""
         # error checking for max weight etc goes here
@@ -69,7 +69,7 @@ class Container(Thing):
             # Success! The object fits in the container, add it.  
             # If an identical object already exists in the container, instead increase its plurality count.
             for w in self.contents:
-                if obj.compare(w):
+                if merge_pluralities and obj.compare(w):
                     w.plurality += obj.plurality 
                     obj.destroy()
                     break

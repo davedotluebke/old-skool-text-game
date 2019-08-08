@@ -269,7 +269,6 @@ class Parser:
                     oIDO_copy.destroy()
                 result = True   # we don't want the parser to go and do an action they probably didn't intend
             if plural:
-                del obj_copy.__dict__['incomplete_registration']
                 # did the action change obj so we need to remove from plurality?
                 if obj.compare(obj_copy):  
                     # yes, obj_copy remains, register heartbeat for obj_copy if needed
@@ -280,7 +279,6 @@ class Parser:
                     obj.plurality += obj_copy.plurality 
                     obj_copy.destroy()
             if oDO_plural:
-                del oDO_copy.__dict__['incomplete_registration']
                 # did the action change oDO so we need to remove from plurality?
                 if oDO.compare(oDO_copy):  
                     # yes, oDO_copy remains, register heartbeat for oDO_copy if needed
@@ -291,7 +289,6 @@ class Parser:
                     oDO.plurality += oDO_copy.plurality 
                     oDO_copy.destroy()
             if oIDO_plural:
-                del oIDO_copy.__dict__['incomplete_registration']
                 # did the action change oIDO so we need to remove from plurality?
                 if oIDO.compare(oIDO_copy):  
                     # yes, oIDO_copy remains, register heartbeat for oIDO_copy if needed
