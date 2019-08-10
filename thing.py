@@ -215,7 +215,7 @@ class Thing(object):
         the source or destination plurality field, and does not register a heartbeat
         function for the copy. The calling function should handle these effects."""
         if self.contents != None:
-            raise Exception("Can't replicate containers")
+            raise Exception("Can't replicate containers!")
         new_obj = copy.copy(self)
         # Resolve fields that require special treatment
         new_obj._add_ID(new_obj.id)
@@ -223,8 +223,9 @@ class Thing(object):
         new_obj.move_to(self.location, merge_pluralities=False)
         return new_obj
     
-    def compare(self, obj):
-        """Compares self with obj, ignoring the plurality and id fields."""
+    def is_identical_to(self, obj):
+        """Compares self with obj, ignoring the plurality and id fields. Return
+        True if self is otherwise identical to obj, False if they differ."""
         # keep track of target plurality & id, but temporarily
         # set equal to source plurality for easy comparison
         tmp = (obj.plurality, obj.id)

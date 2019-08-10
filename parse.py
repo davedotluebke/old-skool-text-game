@@ -110,7 +110,7 @@ class Parser:
                 return False
         dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects), 3)        
         if len(matched_objects) > 1:
-            candidates = ", or the ".join(o._short_desc for o in matched_objects)
+            candidates = ", or the ".join(o.short_desc for o in matched_objects)
             cons.write("By '%s', do you mean the %s? Please provide more adjectives, or specify 'first', 'second', 'third', etc." % (sObj, candidates))
             return False
         elif len(matched_objects) == 0:
@@ -224,34 +224,29 @@ class Parser:
         result = False
         err_msg = None
         for obj in possible_verb_objects:
+            #  If obj is plural, peel off extra copies before trying to enact the verb
+            # TODO: support peeling off a plurality, e.g. "drop three coins"
             plural = obj.plurality > 1
-            if plural:  # peel off a single object on which to try enacting the verb
+            if plural:  
                 obj_copy = obj.replicate()
-                # TODO: support peeling off a plurality, e.g. "drop three coins"
                 obj_copy.plurality = obj.plurality - 1
                 obj.plurality = 1
-            act = obj.actions[sV]
-
-            if oDO:
-                oDO_plural = oDO.plurality > 1
-            else:
-                oDO_plural = False
-
-            if oIDO:
-                oIDO_plural = oIDO.plurality > 1
-            else:
-                oIDO_plural = False
-
-            if oDO_plural:
+            # Check direct/indirect object plurality, peel off extra copies. 
+            # Note: often oDO or oIDO points to obj, so test this after un-pluralizing obj
+            oDO_plural = if oDO then (oDO.plurality > 1) else False
+            if oDO_plural:  
                 oDO_copy = oDO.replicate()
                 # TODO: support peeling off a plurality, e.g. "drop three coins"
                 oDO_copy.plurality = oDO.plurality - 1
                 oDO.plurality = 1
+            oIDO_plural = if oIDO then (oIDO.plurality > 1) else False
             if oIDO_plural:
                 oIDO_copy = oIDO.replicate()
                 # TODO: support peeling off a plurality, e.g. "drop three coins"
                 oIDO_copy.plurality = oIDO.plurality - 1
                 oIDO.plurality = 1
+            
+            act = obj.actions[sV]
             try:
                 result = act.func(obj, self, console, oDO, oIDO) # <-- ENACT THE VERB
             except Exception as isnt:
@@ -270,34 +265,34 @@ class Parser:
                 result = True   # we don't want the parser to go and do an action they probably didn't intend
             if plural:
                 # did the action change obj so we need to remove from plurality?
-                if obj.compare(obj_copy):  
-                    # yes, obj_copy remains, register heartbeat for obj_copy if needed
-                    if obj in Container.game.heartbeat_users:
-                        Container.game.register_heartbeat(obj_copy)
-                else:
+                if obj.is_identical_to(obj_copy):  
                     # no, obj_copy is identical to obj, merge back into a single plurality
                     obj.plurality += obj_copy.plurality 
                     obj_copy.destroy()
+                else
+                    # yes, obj_copy remains, register heartbeat for obj_copy if needed
+                    if obj in Container.game.heartbeat_users:
+                        Container.game.register_heartbeat(obj_copy)
             if oDO_plural:
                 # did the action change oDO so we need to remove from plurality?
-                if oDO.compare(oDO_copy):  
-                    # yes, oDO_copy remains, register heartbeat for oDO_copy if needed
-                    if oDO in Container.game.heartbeat_users:
-                        Container.game.register_heartbeat(oDO_copy)
-                else:
+                if oDO.is_identical_to(oDO_copy):  
                     # no, oDO_copy is identical to oDO, merge back into a single plurality
                     oDO.plurality += oDO_copy.plurality 
                     oDO_copy.destroy()
+                else
+                    # yes, oDO_copy remains, register heartbeat for oDO_copy if needed
+                    if oDO in Container.game.heartbeat_users:
+                        Container.game.register_heartbeat(oDO_copy)
             if oIDO_plural:
                 # did the action change oIDO so we need to remove from plurality?
-                if oIDO.compare(oIDO_copy):  
-                    # yes, oIDO_copy remains, register heartbeat for oIDO_copy if needed
-                    if oIDO in Container.game.heartbeat_users:
-                        Container.game.register_heartbeat(oIDO_copy)
-                else:
+                if oIDO.is_identical_to(oIDO_copy):  
                     # no, oIDO_copy is identical to oIDO, merge back into a single plurality
                     oIDO.plurality += oIDO_copy.plurality 
                     oIDO_copy.destroy()
+                else
+                    # yes, oIDO_copy remains, register heartbeat for oIDO_copy if needed
+                    if oIDO in Container.game.heartbeat_users:
+                        Container.game.register_heartbeat(oIDO_copy)
             
 
             if result == True:
