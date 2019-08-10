@@ -52,7 +52,7 @@ class Container(Thing):
         """Put obj into this Container object, returning True if the operation failed. 
         If <force_insert> is True, ignore weight and volume limits."""
         # error checking for max weight etc goes here
-        if obj == self:
+        if obj is self:
             dbg.debug('Trying to insert into self - not allowed!', 0)
             return True
         if obj == None:
@@ -70,11 +70,12 @@ class Container(Thing):
             self.contents.append(obj)
             obj.set_location(self)   # make this container the location of obj
             # If an identical object already exists in the container, instead increase its plurality count and destroy obj.
-            for w in self.contents:
-                if not (w is obj) and merge_pluralities and obj.compare(w):
-                    obj.plurality += w.plurality 
-                    w.destroy()
-                    break
+            if merge_pluralities:
+                for w in self.contents:
+                    if (w is not obj) and obj.is_identical_to(w):
+                        obj.plurality += w.plurality 
+                        w.destroy()
+                        break
             return False
         else:
             dbg.debug("The weight(%d) and volume(%d) of the %s can't be held by the %s, "

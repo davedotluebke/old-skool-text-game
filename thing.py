@@ -214,11 +214,12 @@ class Thing(object):
         """Make a copy of an object and register in Thing.ID_dict[]. Does not affect
         the source or destination plurality field, and does not register a heartbeat
         function for the copy. The calling function should handle these effects."""
+        if self.contents != None:
+            raise Exception("Can't replicate containers")
         new_obj = copy.copy(self)
         # Resolve fields that require special treatment
         new_obj._add_ID(new_obj.id)
-        if new_obj.contents != None:
-            raise Exception("Can't replicate containers")
+        new_obj.location = None  # hasn't been properly added to container yet
         new_obj.move_to(self.location, merge_pluralities=False)
         return new_obj
     
@@ -238,9 +239,10 @@ class Thing(object):
     def destroy(self):
         """Removes and object from Thing.ID_dict, extracts it, and deregisters its heartbeat."""
         del Thing.ID_dict[self.id]
-        self.location.extract(self)
+        if self.location:
+            self.location.extract(self)
         if self in Thing.game.heartbeat_users:
-            Thing.game.deregester_heartbeat(self)
+            Thing.game.deregister_heartbeat(self)
 
     def update_obj(self, saveable):
         """Return the updated object from the "saveable" version created above. 
@@ -301,7 +303,9 @@ class Thing(object):
         """Extract this object from its current location and insert into dest. 
         Returns True if the move succeeds. If the insertion fails, attempts to 
         re-insert into the original location and returns False.  
-        If <force_move> is True, ignores the <fixed> attribute."""
+        If <force_move> is True, ignores the <fixed> attribute.
+        If <merge_pluralities is True, checks if this object is identical to any 
+        objects currently in dest.contents; if so, merges them into a plurality."""
         origin = self.location
         if self.fixed and force_move == False:
             if hasattr(self, 'is_liquid'):
