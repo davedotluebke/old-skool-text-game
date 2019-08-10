@@ -1,6 +1,7 @@
 from thing import Thing
 from action import Action
 from room import Room
+from container import Container
 from debug import dbg
 
 class Scroll(Thing):
@@ -23,19 +24,20 @@ class Scroll(Thing):
 
     def heartbeat(self):
         r = self
-        try:
-            while r.location:
-                r = r.location
-        except AttributeError:
-            dbg.debug('AtrributeError occured in scroll!', 0)
-            return
-        if r.id in list(self.messages):
-            if self.messages[r.id][1] == True:
-                return
-            else:
-                self.emit('The scroll glows for a second!')
-                self.current_message = self.messages[r.id][0]
-                self.messages[r.id][1] = True
+        while r.location:
+            r = r.location
+            if isinstance(r, str):
+                dbg.debug('Scroll is unable to function properly because it is in the saving process.', 0)
+                break
+            if isinstance(r, Room):
+                if r.id in list(self.messages):
+                    if self.messages[r.id][1] == True:
+                        return
+                    else:
+                        self.emit('The scroll glows for a second!')
+                        self.current_message = self.messages[r.id][0]
+                        self.messages[r.id][1] = True
+                break
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
