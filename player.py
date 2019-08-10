@@ -556,6 +556,8 @@ class Player(Creature):
             return "I don't quite get what you mean."
         if not oDO:
             return "Who do you intend to engage in combat?"
+        if not isinstance(oDO, Creature):
+            return "You can't attack non-creatures!"
         self.attacking = oDO
         self.weapon_and_armor_grab()
         self.engaged = True
