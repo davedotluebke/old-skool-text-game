@@ -176,6 +176,7 @@
                         cmd_history[current_cmd] = document.getElementById('inputLine').value;
                         current_cmd--;
                         document.getElementById('inputLine').value = cmd_history[current_cmd];
+                        e.preventDefault()
                     }
                 }
                 if (key == 40) {
@@ -183,6 +184,7 @@
                         cmd_history[current_cmd] = document.getElementById('inputLine').value;
                         current_cmd ++;
                         document.getElementById('inputLine').value = cmd_history[current_cmd]
+                        e.preventDefault()
                     }
                 }
                 if (key == 27) {
