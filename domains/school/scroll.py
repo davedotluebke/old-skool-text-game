@@ -23,21 +23,18 @@ class Scroll(Thing):
         Thing.game.register_heartbeat(self)
 
     def heartbeat(self):
-        r = self
-        while r.location:
+        r = self.location
+        while hasattr(r, 'location') and r.location:
             r = r.location
-            if isinstance(r, str):
-                dbg.debug('Scroll is unable to function properly because it is in the saving process.', 0)
-                break
             if isinstance(r, Room):
-                if r.id in list(self.messages):
-                    if self.messages[r.id][1] == True:
-                        return
-                    else:
-                        self.emit('The scroll glows for a second!')
-                        self.current_message = self.messages[r.id][0]
-                        self.messages[r.id][1] = True
                 break
+        if r.id in list(self.messages):
+            if self.messages[r.id][1] == True:
+                return
+            else:
+                self.emit('The scroll glows for a second!')
+                self.current_message = self.messages[r.id][0]
+                self.messages[r.id][1] = True
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
