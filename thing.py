@@ -223,16 +223,16 @@ class Thing(object):
         return new_obj
     
     def compare(self, obj):
-        """Compares self with obj, ignoring the plurality, id, and location fields."""
+        """Compares self with obj, ignoring the plurality and id fields."""
         # keep track of target plurality & id, but temporarily
         # set equal to source plurality for easy comparison
-        tmp = (obj.plurality, obj.id, obj.location)
-        obj.plurality, obj.id, obj.location = self.plurality, self.id, self.location
+        tmp = (obj.plurality, obj.id)
+        obj.plurality, obj.id = self.plurality, self.id
         if self.__dict__ == obj.__dict__:
-            obj.plurality, obj.id, obj.location = tmp
+            obj.plurality, obj.id = tmp
             return True
         else:
-            obj.plurality, obj.id, obj.location = tmp
+            obj.plurality, obj.id = tmp
             return False
     
     def destroy(self):

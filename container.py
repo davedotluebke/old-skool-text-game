@@ -67,15 +67,14 @@ class Container(Thing):
         if (force_insert == True) or (self.max_weight_carried >= contents_weight+obj.get_weight() and self.max_volume_carried >= contents_volume+obj.get_volume()):
             dbg.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.get_weight(), obj.get_volume()), 3)
             # Success! The object fits in the container, add it.  
-            # If an identical object already exists in the container, instead increase its plurality count.
+            self.contents.append(obj)
+            obj.set_location(self)   # make this container the location of obj
+            # If an identical object already exists in the container, instead increase its plurality count and destroy obj.
             for w in self.contents:
-                if merge_pluralities and obj.compare(w):
-                    w.plurality += obj.plurality 
-                    obj.destroy()
+                if not (w is obj) and merge_pluralities and obj.compare(w):
+                    obj.plurality += w.plurality 
+                    w.destroy()
                     break
-            else: # no break was called in for loop, menaing no identical object was found
-                self.contents.append(obj)
-                obj.set_location(self)   # make this container the location of obj
             return False
         else:
             dbg.debug("The weight(%d) and volume(%d) of the %s can't be held by the %s, "
@@ -99,7 +98,8 @@ class Container(Thing):
         if count < obj.plurality:
             # extracting only some of the identical objects in this container
             obj.plurality -= count
-            new_obj = obj.replicate(count)  # create new plurality of <count> objects
+            new_obj = obj.replicate()  # create new plurality of <count> objects
+            new_obj.plurality = count
             return new_obj
         else:
             # extracting exactly as many copies of obj as are in the container 
