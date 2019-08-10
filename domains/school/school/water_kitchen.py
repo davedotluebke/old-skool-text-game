@@ -48,7 +48,7 @@ def load():
     ' A small door lies to the east.')
     kitchen.add_adjectives('stone-walled', 'water')
     kitchen.add_exit('down', 'domains.school.school.water_lounge')
-    kitchen.add_exit('east', 'domains.school.school.office', caution_tape_msg="This door is locked.")
+    kitchen.add_exit('east', 'domains.school.school.four_worlds_room', caution_tape_msg="This door is locked.")
 
     jet_of_water = WaterJet()
     kitchen.insert(jet_of_water, True)
