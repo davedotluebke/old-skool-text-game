@@ -340,17 +340,18 @@ class Player(Creature):
     def inventory(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "You can't look at another player's inventory!"
-        cons.write("You are carrying:")
+        message = "You are carrying:\n"
         if not self.contents:
-            cons.write('\tnothing')
+            message += '\tnothing'
         for i in self.contents:
             if i == self.weapon_wielding or i == self.armor_worn: 
                 continue
-            cons.write("\ta " + i._short_desc)
+            message += "\t&ni%s\n" % i.id
         if self.weapon_wielding != self.default_weapon: 
-            cons.write('You are wielding a %s.' % self.weapon_wielding._short_desc)
+            message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
         if self.armor_worn != self.default_armor:
-            cons.write('You are wearing a %s.' % self.armor_worn._short_desc)
+            message += 'You are wearing &nd%s.\n' % self.armor_worn.id
+        self.perceive(message)
         return True
     
     def toggle_terse(self, p, cons, oDO, oIDO):

@@ -16,10 +16,13 @@ class Flashlight(Thing):
     def _adjust_descriptions(self):
         if self.light: 
             self._short_desc += " burning brightly"
+            self._plural_short_desc += " burning brightly"
             self._long_desc += "\nThe flashlight is on, burning brightly."
         else: 
             (head, sep, tail) = self._short_desc.partition(" burning brightly")
             self._short_desc = head
+            (head, sep, tail) = self._plural_short_desc.partition(" burning brightly")
+            self._plural_short_desc = head
             (head, sep, tail) = self._long_desc.partition("\nThe flashlight is on")
             self._long_desc = head
 
@@ -84,3 +87,10 @@ class Flashlight(Thing):
     actions['turn']     = Action(activate, True, False)
     actions['hide']     = Action(put_away, True, True)
     actions['put']      = Action(put, True, False)
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
+# XXX for historic reasons this file is called as a module from 
+# XXX domains.school.forest.flashlight.py, so the clone() function
+# XXX is defined there. 

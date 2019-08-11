@@ -110,7 +110,7 @@ class Parser:
                 return False
         dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects), 3)        
         if len(matched_objects) > 1:
-            candidates = ", or the ".join(o.short_desc for o in matched_objects)
+            candidates = ", or the ".join(o._short_desc for o in matched_objects)
             cons.write("By '%s', do you mean the %s? Please provide more adjectives, or specify 'first', 'second', 'third', etc." % (sObj, candidates))
             return False
         elif len(matched_objects) == 0:
@@ -233,13 +233,13 @@ class Parser:
                 obj.plurality = 1
             # Check direct/indirect object plurality, peel off extra copies. 
             # Note: often oDO or oIDO points to obj, so test this after un-pluralizing obj
-            oDO_plural = if oDO then (oDO.plurality > 1) else False
+            oDO_plural = (oDO.plurality > 1) if oDO else False
             if oDO_plural:  
                 oDO_copy = oDO.replicate()
                 # TODO: support peeling off a plurality, e.g. "drop three coins"
                 oDO_copy.plurality = oDO.plurality - 1
                 oDO.plurality = 1
-            oIDO_plural = if oIDO then (oIDO.plurality > 1) else False
+            oIDO_plural = (oIDO.plurality > 1) if oIDO else False
             if oIDO_plural:
                 oIDO_copy = oIDO.replicate()
                 # TODO: support peeling off a plurality, e.g. "drop three coins"
@@ -269,7 +269,7 @@ class Parser:
                     # no, obj_copy is identical to obj, merge back into a single plurality
                     obj.plurality += obj_copy.plurality 
                     obj_copy.destroy()
-                else
+                else:
                     # yes, obj_copy remains, register heartbeat for obj_copy if needed
                     if obj in Container.game.heartbeat_users:
                         Container.game.register_heartbeat(obj_copy)
@@ -279,7 +279,7 @@ class Parser:
                     # no, oDO_copy is identical to oDO, merge back into a single plurality
                     oDO.plurality += oDO_copy.plurality 
                     oDO_copy.destroy()
-                else
+                else:
                     # yes, oDO_copy remains, register heartbeat for oDO_copy if needed
                     if oDO in Container.game.heartbeat_users:
                         Container.game.register_heartbeat(oDO_copy)
@@ -289,12 +289,11 @@ class Parser:
                     # no, oIDO_copy is identical to oIDO, merge back into a single plurality
                     oIDO.plurality += oIDO_copy.plurality 
                     oIDO_copy.destroy()
-                else
+                else:
                     # yes, oIDO_copy remains, register heartbeat for oIDO_copy if needed
                     if oIDO in Container.game.heartbeat_users:
                         Container.game.register_heartbeat(oIDO_copy)
             
-
             if result == True:
                 break               # verb has been enacted, all done!
             if err_msg == None: 
