@@ -62,6 +62,7 @@ class Console:
                           'x':       'execute'
                           }
         self.legal_tags = {'span':     ['style'],
+                           'div':      ['style'],
                            'b':        ['style'],
                            'br':       ['style'],
                            'code':     ['code'],
@@ -315,7 +316,7 @@ class Console:
                 item = [tag_and_attributes[0], []]
             tag_lists.append(item)
         for l in range(0, len(tag_lists)):
-            if tag_lists[l][0] not in list(self.legal_tags):
+            if (tag_lists[l][0] not in list(self.legal_tags)) and (tag_lists[l][0].partition('/')[2] not in list(self.legal_tags)):
                 (head, sep, tail) = tag_lists[l][0].partition('/')
                 if tail in self.empty_elements:
                     tag_lists[l] = ['br', []]
@@ -325,10 +326,10 @@ class Console:
                     else:
                         tag_lists[l] = ['/span', []]
             for m in range(0, len(tag_lists[l][1])):
-                if tag_lists[l][0].rfind('/') > -1:
-                    (head, sep, tail) = tag_lists[l][1][m].partition('=')
-                    if head not in self.legal_tags[tag_lists[l][0]]:
-                        tag_lists[l][1][m] = ''
+                #if tag_lists[l][0].rfind('/') > -1:
+                (head, sep, tail) = tag_lists[l][1][m].partition('=')
+                if head not in self.legal_tags[tag_lists[l][0]]:
+                    tag_lists[l][1][m] = ''
         
         full_tags = []
         for n in tag_lists:
