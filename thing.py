@@ -329,26 +329,39 @@ class Thing(object):
     # ACTION METHODS & DICTIONARY (dictionary must come last)
     #
     def take(self, p, cons, oDO, oIDO):
-        if oDO == None: return "I don't know what you're trying to take!"
-        if oDO != self: return "You can't take %s!" % oDO.get_short_desc(definite=True)
-        if self.fixed:  return self.fixed
-        if self.location == cons.user: return "You are already holding %s!" % self.get_short_desc(definite=True)
+        if oDO == None: 
+            return "I don't know what you're trying to take!"
+        # get description before calling move_to(), which can change plurality.
+        # Want short desc with definite article as perceived by this player 
+        description = cons.user.perceive('&nd'+self.id, silent = True)  
+        if oDO != self: 
+            return "You can't take %s!" % description
+        if self.fixed: 
+            return self.fixed
+        if self.location == cons.user: 
+            return "You are already holding %s!" % description
         if self.move_to(cons.user):
-            cons.user.perceive("You take &nd%s." % self.id)
+            cons.user.perceive("You take %s." % description)
             self.emit('&nD%s takes &nd%s.' % (cons.user.id, self.id), [cons.user])
         else:
-            cons.user.perceive("You cannot take &nd%s." % self.id)
+            cons.user.perceive("You cannot take %s." % description)
         return True
 
     def drop(self, p, cons, oDO, oIDO):
-        if oDO != self:     return "You can't drop that!"
-        if self.fixed:      return self.fixed
-        if self.location != cons.user: return "You aren't holding  %s!" % self.get_short_desc(definite=True)
+        # get description before calling move_to(), which can change plurality.
+        # Want short desc with definite article as perceived by this player 
+        description = cons.user.perceive('&nd'+self.id, silent = True)  
+        if oDO != self:
+            return "You can't drop that!"
+        if self.fixed:
+            return self.fixed
+        if self.location != cons.user: 
+            return "You aren't holding  %s!" % description
         if self.move_to(cons.user.location):
-            cons.write("You drop %s." % self.get_short_desc(definite=True))
-            cons.user.emit("&nD%s drops %s." % (cons.user.id, self.get_short_desc(definite=True)))
+            cons.user.perceive("You drop %s." % description)
+            cons.user.emit("&nD%s drops %s." % (cons.user.id, description))
         else:
-            cons.write("You cannot drop %s" % self.get_short_desc(definite=True))
+            cons.write("You cannot drop %s" % description)
         return True
 
     def look_at(self, p, cons, oDO, oIDO):

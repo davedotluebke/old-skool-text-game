@@ -223,7 +223,7 @@ class Player(Creature):
         else:
             self.cons.write("Uh-oh! You don't have a starting location. You are in a great void...")
 
-    def perceive(self, message):
+    def perceive(self, message, silent=False):
         '''Parse a string passed to `emit()` and customize it for this
         player. Searches the string for special tags (indicated with the '&'
         symbol) and replaces the substring following that tag (up to a 
@@ -265,6 +265,9 @@ class Player(Creature):
         So for convenience `perceive()` will silently return if this player is
         one of the creatures named using the &n semantics above, effectively 
         ignoring any creatures named in the `emit()` message.
+
+        If the <silent> flag is set, do not actually write the constructed message
+        to the player's console, but instead return it as a string.
         '''
         if not self.location.is_dark():
             # replace any & tags in the message 
@@ -323,7 +326,10 @@ class Player(Creature):
                 message = m1 + m2
 
             super().perceive(message)
-            self.cons.write(message) 
+            if silent:
+                return message
+            else:
+                self.cons.write(message) 
                    
     def hold_object(self, obj):
         self.visible_inventory.append(obj)
