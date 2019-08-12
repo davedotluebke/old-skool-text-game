@@ -241,7 +241,7 @@ class Thing(object):
         """Removes and object from Thing.ID_dict, extracts it, and deregisters its heartbeat."""
         del Thing.ID_dict[self.id]
         if self.location:
-            self.location.extract(self)
+            self.location.extract(self, count='all')
         if self in Thing.game.heartbeat_users:
             Thing.game.deregister_heartbeat(self)
 

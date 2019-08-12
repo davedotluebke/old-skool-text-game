@@ -91,12 +91,12 @@ class Container(Thing):
         if obj not in self.contents:
             dbg.debug("Error! "+str(self)+" doesn't contain item "+str(obj.id), 0)
             return True
-        if obj.plurality < count:
+        if count != 'all' and obj.plurality < count:
             dbg.debug("Error! Tried to remove %d copies of %s from %s, but %s contains only %d %s" %
                       (count, str(obj), str(self), str(self), obj.count, 'copies' if obj.count>1 else 'copy'))
             return True  
         
-        if count < obj.plurality:
+        if count != 'all' and count < obj.plurality:
             # extracting only some of the identical objects in this container
             obj.plurality -= count
             new_obj = obj.replicate()  # create new plurality of <count> objects
