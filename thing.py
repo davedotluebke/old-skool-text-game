@@ -214,8 +214,8 @@ class Thing(object):
         """Make a copy of an object and register in Thing.ID_dict[]. Does not affect
         the source or destination plurality field, and does not register a heartbeat
         function for the copy. The calling function should handle these effects."""
-        if self.contents != None:
-            raise Exception("Can't replicate containers!")
+        if self.contents:
+            raise Exception("Can't replicate containers with anything inside!")
         new_obj = copy.copy(self)
         # Resolve fields that require special treatment
         new_obj._add_ID(new_obj.id)
@@ -225,7 +225,11 @@ class Thing(object):
     
     def is_identical_to(self, obj):
         """Compares self with obj, ignoring the plurality and id fields. Return
-        True if self is otherwise identical to obj, False if they differ."""
+        True if self is otherwise identical to obj, False if they differ. 
+        To avoid deep comparisons, containers with a non-empty `contents` list
+        always return False."""
+        if self.contents:
+            return False
         # keep track of target plurality & id, but temporarily
         # set equal to source plurality for easy comparison
         tmp = (obj.plurality, obj.id)
