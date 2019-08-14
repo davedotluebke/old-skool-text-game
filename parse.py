@@ -9,7 +9,8 @@ from container import Container
 from player import Player
 
 class Parser:
-    ordinals = {"first":1, "second":2, "third":3, "fourth":4, "fifth":5, "sixth":6, "seventh":7, "eighth":8, "ninth":9, "tenth":10}
+    ordinals = {"first":1, "second":2, "third":3, "fourth":4, "fifth":5, "sixth":6, "seventh":7, "eighth":8, "ninth":9, "tenth":10,
+                "1st":1, "2nd":2, "3rd":3, "4th":4, "5th":5, "6th":6, "7th":7, "8th":8, "9th":9, "10th":10}
     def _set_verbosity(self, level=-1):
         if level != -1:
             dbg.verbosity = level
@@ -103,10 +104,20 @@ class Parser:
             if match: 
                 matched_objects.append(obj)
         if ord_number:  
-            try:
-                matched_objects = [matched_objects[ord_number - 1]]
-            except IndexError:
-                cons.write("You specified '%s' but I only see %d objects matching %s %s!" % (ord_str, len(matched_objects), ' '.join(x for x in sAdjectives_list if x not in Parser.ordinals), sNoun))
+            # count through all matched objects, some of which might be plural
+            i = 1                   # ordinals start at "first" meaning element 0
+            for o in matched_objects:
+                i += o.plurality    # singular objects have plurality == 1
+                if ord_number < i:  
+                    matched_objects = [o]  # ordinal specifies an object in this plurality
+                    break
+            else:  # for-else clause, runs if no break called in loop
+                cons.write("You specified '%s' but I only see %d %s matching '%s %s'!" % (
+                    ord_str, 
+                    i-1, 
+                    'objects' if i-1 > 1 else 'object', 
+                    ' '.join(x for x in sAdjectives_list if x not in Parser.ordinals), 
+                    sNoun))
                 return False
         dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects), 3)        
         if len(matched_objects) > 1:
