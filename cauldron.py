@@ -54,18 +54,11 @@ class Cauldron(Container):
             a = self.contents[0]
             self.extract(a)
             Thing.ID_dict['nulspace'].insert(a)
-        if i[1] == 'pink potion':
-            created = gametools.clone('pink_potion')
+        try:
+            created = gametools.clone(i[1].replace(' ', '_'))
             created.move_to(self)
-        if i[1] == 'invisibility potion':
-            created = gametools.clone('invisibility_potion')
-            created.move_to(self)
-        if i[1] == 'strength potion':
-            created = gametools.clone('strength_potion')
-            created.move_to(self)
-        if i[1] == 'jumping potion':
-            created = gametools.clone('jumping_potion')
-            created.move_to(self)
+        except FileNotFoundError:
+            dbg.debug('Error! Cauldron recipies dictionary called for the creation of %s, but no file was found!', 0)
         self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.short_desc))
         
     #

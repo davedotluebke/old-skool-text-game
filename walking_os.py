@@ -9,6 +9,11 @@ def findAllPythonFiles():
         for file in files:
             debug.dbg.debug(len(path) * '---'+ file, 2)
             (head, sep, tail) = file.partition('.')
-            if tail == ".py":
-                files_list.append(file)
+            if tail == "py":
+                gameFilePath = ''
+                for loc_dir in path:
+                    gameFilePath += loc_dir
+                    gameFilePath += '.'
+                gameFilePath += file
+                files_list.append(gameFilePath)
     return files_list
