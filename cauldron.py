@@ -8,6 +8,7 @@ from potions import StrengthPotion
 import gametools
 
 class Cauldron(Container):
+    # Explanation: tuple of 2 items: set of ingredients and string name of potion file (spaces automatically replaced with underscores)
     recipes = [({'water', 'molasses', 'poppyseed'}, 'pink potion'),  
                ({'water', 'molasses', 'sunflower petal', 'cave moss', 'truffles'}, 'invisibility potion'),
                ({'poppyseed', 'truffles', 'cave moss'}, 'explode'),
