@@ -1,6 +1,7 @@
 from thing import Thing
 from action import Action
 from room import Room
+from container import Container
 from debug import dbg
 
 class Scroll(Thing):
@@ -13,7 +14,6 @@ class Scroll(Thing):
         self.current_message = ''
         self.messages = {
             'domains.school.school.great_hall':        ['Make a potion to hide thee. Use this potion to sneak past an unbeatable enemy.\nDue next class.', False],
-            'domains.school.dungeon.dungeon_hall':     ['Thou must continue on thy journey\nAnd in thy journey\nThou must choose a path\nAnd thou must be careful, because thy choice defines thy destiny. ', False],
             'domains.school.elementQuest.path_choice': ['Thou must continue on thy journey\nAnd in thy journey\nThou must choose a path\nAnd thou must be careful, because thy choice defines thy destiny. ', False],
             'domains.school.school.fire_lounge':       ['Thy class begins shortly.', False],
             'domains.school.school.water_lounge':      ['Thy class begins shortly.', False],
@@ -23,13 +23,11 @@ class Scroll(Thing):
         Thing.game.register_heartbeat(self)
 
     def heartbeat(self):
-        r = self
-        try:
-            while r.location:
-                r = r.location
-        except AttributeError:
-            dbg.debug('AtrributeError occured in scroll!', 0)
-            return
+        r = self.location
+        while hasattr(r, 'location') and r.location:
+            r = r.location
+            if isinstance(r, Room):
+                break
         if r.id in list(self.messages):
             if self.messages[r.id][1] == True:
                 return

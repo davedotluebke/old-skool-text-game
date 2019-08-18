@@ -12,7 +12,7 @@ by Owen Luebke
 #*
 Chapter 1
     Once upon a time there were two twins. One was named Skylar and the other was named Jennifer. They were each other’s best friends too. They both enjoyed writing. Skylar wrote mostly poetry, and Jennifer wrote some non-fiction and a lot of autobiography, which was in a long book she wrote about her and Skylar’s lives. Her book stretched back to when she first learned to write at age 3, quite early. Their local elementary school was very supportive of their writing, and they were happy there. 
-    Skylar and Jennifer happened to live in Kenshalk, and it was a great fit for them. Jennifer wrote a lot about the historic buildings, and they both enjoyed the brightly colored streetcars. They even lived in one of the houses overlooking the expansive KTA museum and the tracks beyond. 
+    Skylar and Jennifer happened to live in Kenshalk, and it was a great fit for them. Jennifer wrote a lot about the historic buildings, and they both enjoyed the brightly coloured streetcars. They even lived in one of the houses overlooking the expansive KTA museum and the tracks beyond. 
     Skylar and Jennifer had many adventures. Occasionally they went camping, or they would visit places in town. They even went to other cities sometimes. They liked adventures almost anywhere. 
     They had a treehouse up in one of the trees near the fence. They were not afraid of heights at all. In fact, they enjoyed feeling like they were flying from a high height. Sometimes sat up in the treehouse and wrote things. Skylar wrote many poems there, such as:
         The wind rustles the leaves

@@ -203,7 +203,7 @@ class Diamond(Gem):
 
 class Opal(Gem):
     def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
-        super().__init__(path, default_name, short_desc, long_desc+' It is a swirl of colors that seem to draw light inside it.', power_num, pref_id=None)
+        super().__init__(path, default_name, short_desc, long_desc+' It is a swirl of colours that seem to draw light inside it.', power_num, pref_id=None)
         self.add_names('opal')
         self.light = 0  # light is negative if powered, 0 otherwise (default 0)
         Thing.game.register_heartbeat(self)
@@ -215,13 +215,13 @@ class Opal(Gem):
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
         (head, sep, tail) = self._long_desc.partition(' It ')
         if self.power_num >= 5:
-            self._long_desc = head + ' It is a swirl of colors, spinning and pulling the light into it.'
+            self._long_desc = head + ' It is a swirl of colours, spinning and pulling the light into it.'
             self.light = -1
         elif self.power_num >= 2:
             self._long_desc = head + ' It seems like the surrounding light is going behind the swirl, trapped.'
             self.light = 0
         else:
-            self._long_desc = head + ' It is a swirl of colors that seem to draw light inside it.'
+            self._long_desc = head + ' It is a swirl of colours that seem to draw light inside it.'
 
 class Pearl(Gem):
     def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):

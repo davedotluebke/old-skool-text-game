@@ -100,18 +100,18 @@
             var b_style_modes = ['', 'color:#00ff00','','color: #d9c407'];
             var left_offset = 0;
             var caret_on = true;
-            function getRandomColor() {
+            function getRandomcolour() {
                 var letters = '0123456789ABCDEF';
-                var color = '#';
-                var inverseColor = '#';
+                var colour = '#';
+                var inversecolour = '#';
                 for (var i = 0; i < 6; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
+                    colour += letters[Math.floor(Math.random() * 16)];
                 }
                 for (var j = 0; j < 6; j++) {
-                    inverseColor += letters[15 - letters.indexOf(color.split("")[j+1])]
-                    console.log(letters.indexOf(color.split("")[j+1]))
+                    inversecolour += letters[15 - letters.indexOf(colour.split("")[j+1])]
+                    console.log(letters.indexOf(colour.split("")[j+1]))
                 }
-                return [color, inverseColor];
+                return [colour, inversecolour];
             }
             var calculateWordDimensions = function(text, classes, escape) {
                 classes = classes || [];
@@ -176,6 +176,7 @@
                         cmd_history[current_cmd] = document.getElementById('inputLine').value;
                         current_cmd--;
                         document.getElementById('inputLine').value = cmd_history[current_cmd];
+                        e.preventDefault()
                     }
                 }
                 if (key == 40) {
@@ -183,6 +184,7 @@
                         cmd_history[current_cmd] = document.getElementById('inputLine').value;
                         current_cmd ++;
                         document.getElementById('inputLine').value = cmd_history[current_cmd]
+                        e.preventDefault()
                     }
                 }
                 if (key == 27) {

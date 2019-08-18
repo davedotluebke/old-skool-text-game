@@ -40,7 +40,7 @@ def load():
     if exists: return exists
 
     r = lake_room.LakeRoom_underwater('statueroom',roomPath,'domains.school.elementQuest.lake_w')
-    r.set_description('pebble-floored room', 'This pebble-floored room has a large statue in the center of it. ')
+    r.set_description('pebble-floored room', 'This pebble-floored room has a large statue in the centre of it. ')
     r.add_exit('south', 'domains.school.elementQuest.shallow_shore')
     r.add_exit('north', 'domains.school.elementQuest.seaweed_forest')
     r.add_exit('east', 'domains.school.elementQuest.deep_depths')

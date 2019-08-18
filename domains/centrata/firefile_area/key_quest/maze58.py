@@ -8,7 +8,7 @@ def load():
     if exists: return exists
     
     r = room.Room('passage', roomPath, light=0, indoor=True)
-    r.set_description('dark passage','This is a dark passage, you notice a bunch of cave popcorn in the center of the room.')
+    r.set_description('dark passage','This is a dark passage, you notice a bunch of cave popcorn in the centre of the room.')
     r.add_exit('northeast', 'domains.centrata.firefile_area.key_quest.maze47')
     r.add_exit('south', 'domains.centrata.firefile_area.key_quest.maze27')
 

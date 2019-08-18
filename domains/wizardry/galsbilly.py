@@ -31,7 +31,7 @@ south_shopping_one.add_adjectives('lively', 'bright', 'busy')
 
 government_entrences.add_names('street')
 
-fountain = Scenery('fountain', 'crystal clear fountain', 'This is studded with gems in the center. All of the water coming out of the fountain is crystal clear.')
+fountain = Scenery('fountain', 'crystal clear fountain', 'This is studded with gems in the centre. All of the water coming out of the fountain is crystal clear.')
 fountain.add_adjectives('gem-studded', 'crystal','clear')
 fountain.move_to(central_fountain)
 

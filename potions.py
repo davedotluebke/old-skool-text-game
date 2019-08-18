@@ -9,6 +9,10 @@ from debug import dbg
 from action import Action
 
 class PinkPotion(Liquid):
+    def __init__(self, default_name, path=None, short_desc = None, long_desc = None, pref_id=None):
+        super().__init__(default_name, path, short_desc, long_desc)
+        self.actions['drink'] = Action(PinkPotion.drink, True, False)
+
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO: 
             return "Did you meant to drink the %s?" % self._short_desc
@@ -17,6 +21,10 @@ class PinkPotion(Liquid):
         return True
 
 class InvisibilityPotion(Liquid):
+    def __init__(self, default_name, path=None, short_desc = None, long_desc = None, pref_id=None):
+        super().__init__(default_name, path, short_desc, long_desc)
+        self.actions['drink'] = Action(InvisibilityPotion.drink, True, False)
+
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO: 
             return "Did you meant to drink the %s?" % self._short_desc
@@ -32,6 +40,10 @@ class InvisibilityPotion(Liquid):
         user.perceive('You notice you are now fading back into visibility.')
         
 class StrengthPotion(Liquid):
+    def __init__(self, default_name, path=None, short_desc = None, long_desc = None, pref_id=None):
+        super().__init__(default_name, path, short_desc, long_desc)
+        self.actions['drink'] = Action(StrengthPotion.drink, True, False)
+
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO: 
             return "Did you meant to drink the %s?" % self._short_desc
@@ -45,6 +57,10 @@ class StrengthPotion(Liquid):
         cons.user.perceive("You feel like you could collapse in exhaustion now.")
 
 class JumpingPotion(Liquid):
+    def __init__(self, default_name, path=None, short_desc = None, long_desc = None, pref_id=None):
+        super().__init__(default_name, path, short_desc, long_desc)
+        self.actions['drink'] = Action(JumpingPotion.drink, True, False)
+
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO:
             return "Did you mean to drink the %s?" % self._short_desc
@@ -61,15 +77,23 @@ class JumpingPotion(Liquid):
         return True
 
 class ExplorationPotion(Liquid):
+    def __init__(self, default_name, path=None, short_desc = None, long_desc = None, pref_id=None):
+        super().__init__(default_name, path, short_desc, long_desc)
+        self.actions['drink'] = Action(ExplorationPotion.drink, True, False)
+
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO:
             return "Did you mean to drink the %s?" % self._short_desc
         cons.user.perceive("You drink the potion, and fly up into the air!")
         cons.user.emit("&nD%s drinks a potion, and goes flying up into the air!")
         all_python_files = gametools.findAllPythonFiles()
-        dest = random.choice(all_python_files)
-        try:
-            gametools.load_room(gametools.findGamePath(dest)) #XXX needs to use full gamepath
-        except Exception:
-            return "This isn't working right now."
+        while True:
+            dest = random.choice(all_python_files)
+            r = gametools.load_room(gametools.findGamePath(dest))
+            if r != None:
+                cons.user.move_to(r)
+                cons.user.perceive("You find yourself sinking into a new place.")
+                dbg.debug("Exploration potion moved user %s to location %s" % (cons.user, dest))
+                r.report_arrival(cons.user)
+                break
         return True

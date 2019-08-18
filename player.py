@@ -49,6 +49,7 @@ class Player(Creature):
         self.engaged = False
         self.wizardry_skill = 0
         self.wizardry_element = None
+        self.wprivilages = False
         self.attacking = False
         self.hitpoints = 20
         self.health = 20
@@ -182,11 +183,11 @@ class Player(Creature):
                 self._handle_login(cmd)
             return
         if cmd:
-            if cmd != '__noparse__':
-                keep_going = Thing.game.parser.parse(self, self.cons, cmd)
-                if not keep_going:
-                    self.move_to(Thing.ID_dict['nulspace'])
-                    self.detach()
+            if cmd != '__noparse__' and cmd != '__quit__':
+                old_keep_going = Thing.game.parser.parse(self, self.cons, cmd)
+            elif cmd == '__quit__':
+                self.move_to(Thing.ID_dict['nulspace'])
+                self.detach()
            
 
         if self.auto_attack:            # TODO: Player Preferences
@@ -384,6 +385,8 @@ class Player(Creature):
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incantation correctly."
         cmd = ' '.join(p.words[1:])
         cons.write("Executing command: '%s'" % cmd)
         try: 
@@ -397,6 +400,8 @@ class Player(Creature):
         '''Find an in-game object by ID and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'fetch <id>', where id is an entry in Thing.ID_dict[]")
             return True
@@ -420,6 +425,8 @@ class Player(Creature):
         '''Clone a new copy of an object specified by ID or by module path, and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incatation correctly."
         if len(p.words) < 2: 
             cons.write("Usage:\n\t'clone <id>', where id is an entry in Thing.ID_dict[]"
                        "\n\t'clone <path>', where path is of the form 'domains.school.test_object'")
@@ -475,6 +482,8 @@ class Player(Creature):
     def apparate(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'apparate <id>', where id is the entry of a Room in Thing.ID_dict[] or a path to it's module")
             return True
@@ -523,6 +532,8 @@ class Player(Creature):
             return "I don't quite get what you mean."
         if not oDO:
             return "Who do you intend to engage in combat?"
+        if not isinstance(oDO, Creature):
+            return "You can't attack non-creatures!"
         self.attacking = oDO
         self.weapon_and_armor_grab()
         self.engaged = True

@@ -1,10 +1,12 @@
 import asyncio
 import connections_websock
 from textwrap import TextWrapper
+import os.path
 
 from debug import dbg
 from parse import Parser
 from player import Player
+import gametools
 
 class Console:
     default_width = 80
@@ -60,6 +62,7 @@ class Console:
                           'x':       'execute'
                           }
         self.legal_tags = {'span':     ['style'],
+                           'div':      ['style'],
                            'b':        ['style'],
                            'br':       ['style'],
                            'code':     ['code'],
@@ -115,7 +118,7 @@ class Console:
             # print a list of current aliases & instructions for adding
             self.write('Current aliases:')
             for a in sorted(self.alias_map, key=self.alias_map.get):
-                self.write('%s --> %s' % (a.rjust(12), self.alias_map[a]))
+                self.write('%s = %s' % (a.rjust(12), self.alias_map[a]))
             self.write(instructions)
             return 
         alias = self.words[1]
@@ -158,6 +161,37 @@ class Console:
         dbg.debug("User input with aliases resolved:\n    %s" % (cmd), 3)
         return cmd
     
+    def _set_verbosity(self, level=-1):
+        if level != -1:
+            dbg.set_verbosity(level, self.user.id)
+            return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity)
+        if dbg.verbosity == 0:
+            dbg.set_verbosity(1, self.user.id)
+            return "Verbose debug output now on, verbosity level %s." % dbg.verbosity
+        else:
+            dbg.set_verbosity(0, self.user.id)
+            return "Verbose debug output now off."
+
+    def _handle_verbose(self):
+        try:
+            level = int(self.words[1])
+        except IndexError:
+            self.write(self._set_verbosity())
+            return
+        except ValueError:
+            if self.words[1] == 'filter':
+                try:
+                    s = self.words[2:]
+                    dbg.set_filter_strings(s, self.user.id)
+                    self.write("Set verbose filter to '%s', debug strings containing '%s' will now be printed." % (s, s))                      
+                except IndexError:
+                    dbg.set_filter_strings(['&&&'], self.user.id)
+                    self.write("Turned off verbose filter; debug messages will only print if they are below level %d." % dbg.verbosity)
+                return
+            self.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided [level]")
+            return
+        self.write(self._set_verbosity(level))
+    
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
         if len(self.words) > 0:
@@ -188,9 +222,23 @@ class Console:
                 return True
 
             if cmd == 'debug':
-                self.game.handle_exceptions = not self.game.handle_exceptions
-                self.write("Toggle debug exception handling to %s" % ("on" if self.game.handle_exceptions else "off"))
-                return True
+                # check wizard privilages before allowing
+                if self.user.wprivilages:
+                    self.game.handle_exceptions = not self.game.handle_exceptions
+                    self.write("Toggle debug exception handling to %s" % ("on" if self.game.handle_exceptions else "off"))
+                    return True
+                else:
+                    self.write("You do not have permission to change the game's debug mode. If you would like to report a bug, type \"bug\" instead.")
+                    return True
+            
+            if cmd == 'verbose':
+                # check wizard privilages before allowing
+                if self.user.wprivilages:
+                    self._handle_verbose()
+                    return True
+                else:
+                    self.write("Type \"terse\" to print short descriptions when entering a room.")
+                    return True
 
             if cmd == "escape":
                 if self.input_redirect != None:
@@ -231,6 +279,15 @@ class Console:
                 else:
                     self.write("Usage: load [filename]")
                 return True
+            
+            if cmd == 'quit':
+                self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user, self.user))
+                self.game.save_player(os.path.join(gametools.PLAYER_DIR, self.user.names[0]), self.user)
+                self.write("#quit")
+                if self.words[1] == 'game' and self.user.wprivilages:
+                    self.game.keep_going = False
+                return "__quit__"
+
         return False
 
     def sanatizeHTML(self, html):
@@ -259,7 +316,7 @@ class Console:
                 item = [tag_and_attributes[0], []]
             tag_lists.append(item)
         for l in range(0, len(tag_lists)):
-            if tag_lists[l][0] not in list(self.legal_tags):
+            if (tag_lists[l][0] not in list(self.legal_tags)) and (tag_lists[l][0].partition('/')[2] not in list(self.legal_tags)):
                 (head, sep, tail) = tag_lists[l][0].partition('/')
                 if tail in self.empty_elements:
                     tag_lists[l] = ['br', []]
@@ -269,10 +326,10 @@ class Console:
                     else:
                         tag_lists[l] = ['/span', []]
             for m in range(0, len(tag_lists[l][1])):
-                if tag_lists[l][0].rfind('/') > -1:
-                    (head, sep, tail) = tag_lists[l][1][m].partition('=')
-                    if head not in self.legal_tags[tag_lists[l][0]]:
-                        tag_lists[l][1][m] = ''
+                #if tag_lists[l][0].rfind('/') > -1:
+                (head, sep, tail) = tag_lists[l][1][m].partition('=')
+                if head not in self.legal_tags[tag_lists[l][0]]:
+                    tag_lists[l][1][m] = ''
         
         full_tags = []
         for n in tag_lists:
@@ -374,6 +431,8 @@ class Console:
         self.words = self.command.split()
         # if user types a console command, handle it and start over unless the player that called this is deactive
         internal = self._handle_console_commands()
+        if internal == "__quit__":
+            return "__quit__"
         if internal:
             return "__noparse__"
         if self.input_redirect != None:

@@ -10,7 +10,7 @@ def load():
     lake_r = lake_room.LakeRoom_surface('lake', roomPath, 'domains.school.elementQuest.statue')
     lake_r.set_description('clear lake', 'You are on a smooth lake surface. The water is a light blue.')
     lake_r.add_exit('north', 'domains.school.elementQuest.lake_nw')
-    lake_r.add_exit('east', 'domains.school.elementQuest.lake_center')
+    lake_r.add_exit('east', 'domains.school.elementQuest.lake_centre')
     lake_r.add_exit('south', 'domains.school.elementQuest.lake_sw')
 
     return lake_r

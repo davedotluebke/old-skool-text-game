@@ -30,7 +30,7 @@ def load():
     r = FireQuestPotionRoom('potion room', roomPath)
     r.indoor = True
     r.set_description('potion room', 'This room has shelves along the walls. '
-    'On the shelves there are many flasks. In the center of the room sits an enormous cauldron.')
+    'On the shelves there are many flasks. In the centre of the room sits an enormous cauldron.')
     r.add_exit('northeast', 'domains.school.elementQuest.shaft_of_sunlight')
 
     cauldron = gametools.clone('domains.school.elementQuest.cauldron')

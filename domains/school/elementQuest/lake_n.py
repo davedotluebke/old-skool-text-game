@@ -11,6 +11,6 @@ def load():
     lake_r.set_description('clear lake', 'You are on a smooth lake surface. The water is a light blue.')
     lake_r.add_exit('east', 'domains.school.elementQuest.lake_ne')
     lake_r.add_exit('west', 'domains.school.elementQuest.lake_nw')
-    lake_r.add_exit('south', 'domains.school.elementQuest.lake_center')
+    lake_r.add_exit('south', 'domains.school.elementQuest.lake_centre')
 
     return lake_r
