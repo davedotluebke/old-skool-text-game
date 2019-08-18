@@ -38,7 +38,7 @@ class Window(scenery.Scenery):
     
     def look_at(self, p, cons, oDO, oIDO):
         if self == oDO or self == oIDO:
-            cons.user.perceive(self.long_desc)
+            cons.user.perceive(self._long_desc)
             cons.user.perceive('Through the window you see:')
             try:
                 self.view_of.look_at(p, cons, oDO, oIDO)

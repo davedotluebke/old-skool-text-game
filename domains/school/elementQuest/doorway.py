@@ -19,7 +19,7 @@ class Doorway(scenery.Scenery):
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
     def open(self):
-        self.long_desc = 'This is a stone doorway, leading to the east.'
+        self._long_desc = 'This is a stone doorway, leading to the east.'
         self.state = 'open'
 
     #

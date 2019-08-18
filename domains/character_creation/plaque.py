@@ -63,7 +63,7 @@ class Plaque(thing.Thing):
         words_on_plaque = ''
         for i in self.words:
             words_on_plaque += i + '\n'
-        cons.user.perceive('This plaque has a list of words on it. They read:\n<div style="column-count:3">' + words_on_plaque + '</div>Below the list of words are some instructions. They read:\n' + self.long_desc)
+        cons.user.perceive('This plaque has a list of words on it. They read:\n<div style="column-count:3">' + words_on_plaque + '</div>Below the list of words are some instructions. They read:\n' + self._long_desc)
         return True
 
     def intone(self, p, cons, oDO, oIDO):

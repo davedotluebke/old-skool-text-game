@@ -71,9 +71,9 @@ class Room(Container):
             cons.write("It's too dark to see anything here.")
             return True
         if user.terse:
-            cons.write("You enter a %s." % loc.short_desc)
+            cons.write("You enter a %s." % loc._short_desc)
         else:
-            cons.write(loc.long_desc)
+            cons.write(loc._long_desc)
         if (len(loc.exits) > 0):
             cons.write("Exits are:")
             for w in loc.exits:
@@ -99,7 +99,7 @@ class Room(Container):
         if self.is_dark():
             cons.user.perceive("It's too dark to see anything here.")
             return True
-        cons.user.perceive(self.long_desc)
+        cons.user.perceive(self._long_desc)
         if (len(self.exits) > 0):
             cons.user.perceive("Exits are:")
             for w in self.exits:

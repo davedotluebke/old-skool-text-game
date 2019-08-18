@@ -11,7 +11,7 @@ class Liquid(Scenery):
     #
     # SPECIAL METHODS (i.e __method__() format)
     #
-    def __init__(self, default_name, path=None, short_desc = None, long_desc = None, pref_id=None):
+    def __init__(self, default_name, path=None, short_desc = 'need_short_desc', long_desc = 'need_long_desc', pref_id=None):
         Scenery.__init__(self, default_name, short_desc, long_desc, pref_id)
         # Scenery __init__() creates a per-object actions[] dict
         self.actions['pour'] =  Action(Liquid.pour, True, False)
@@ -53,9 +53,9 @@ class Liquid(Scenery):
     
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO: 
-            return "Did you meant to drink the %s?" % self.short_desc
+            return "Did you meant to drink the %s?" % self._short_desc
         self.emit("&nD%s drinks something." % cons.user.id, [cons.user])
-        cons.user.perceive("You drink the %s." % self.short_desc)
+        cons.user.perceive("You drink the %s." % self._short_desc)
         self.move_to(Thing.ID_dict['nulspace'])
         return True
     

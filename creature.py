@@ -81,7 +81,7 @@ class Creature(Container):
         player for whom the description is intended).'''
         if perceiver == None:
             dbg.debug("%s.get_short_desc() called with no perceiver specified" % self)
-            return "<Error: no perceiver>" + self.short_desc
+            return "<Error: no perceiver>" + self._short_desc
         if self.id in perceiver.introduced:
             return self.proper_name
         else:
@@ -92,16 +92,16 @@ class Creature(Container):
         Weapons it is wielding and any armor it is wearing.'''
         self.viewed = cons.user
         if self == oDO or self == oIDO:
-            cons.write(self.long_desc)
+            cons.write(self._long_desc)
             if self.weapon_wielding and (self.weapon_wielding != self.default_weapon):
-                cons.write("It is wielding a %s." % (self.weapon_wielding.short_desc))        #if we use "bare hands" we will have to change this XXX not true anymore
+                cons.write("It is wielding a %s." % (self.weapon_wielding._short_desc))        #if we use "bare hands" we will have to change this XXX not true anymore
             if self.armor_worn and (self.armor_worn != self.default_armor):
-                cons.write("It is wearing %s." % (self.armor_worn.short_desc))
+                cons.write("It is wearing %s." % (self.armor_worn._short_desc))
             if self.visible_inventory and self.visible_inventory != [self.armor_worn, self.weapon_wielding] and self.visible_inventory != [self.weapon_wielding, self.armor_worn]:
                 cons.write('It is holding:')
                 for i in self.visible_inventory:
                     if i != self.armor_worn and i != self.weapon_wielding:
-                        cons.write('\na '+i.short_desc)
+                        cons.write('\na '+i._short_desc)
             return True
         else:
             return "Not sure what you are trying to look at!"
@@ -135,7 +135,7 @@ class Creature(Container):
                     self.weapon_wielding = w
                     dbg.debug("weapon chosen: %s" % self.weapon_wielding)
                     self.visible_inventory.append(self.weapon_wielding)
-                    self.perceive('You wield the %s, rather than using your %s.' % (self.weapon_wielding.short_desc, self.default_weapon.short_desc))
+                    self.perceive('You wield the %s, rather than using your %s.' % (self.weapon_wielding._short_desc, self.default_weapon._short_desc))
                     break
         if not self.armor_worn or self.armor_worn == self.default_armor:
             for a in self.contents:
@@ -143,7 +143,7 @@ class Creature(Container):
                     self.armor_worn = a
                     dbg.debug("armor chosen: %s" % self.armor_worn)
                     self.visible_inventory.append(self.armor_worn)
-                    self.perceive('You wear the %s, rather than your %s.' % (self.armor_worn.short_desc, self.default_armor.short_desc))
+                    self.perceive('You wear the %s, rather than your %s.' % (self.armor_worn._short_desc, self.default_armor._short_desc))
                     break
     
     def get_damage_message(self, percent_damage):

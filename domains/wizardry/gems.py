@@ -39,8 +39,8 @@ class Emerald(Gem):
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
     def _adjust_description(self):
-        (head, sep, tail) = self.long_desc.partition(' It is about')
-        self.long_desc = head + ' It is about %s millimeters in all dimensions.' % self.power_num
+        (head, sep, tail) = self._long_desc.partition(' It is about')
+        self._long_desc = head + ' It is about %s millimeters in all dimensions.' % self.power_num
         if self.power_num <= 0:
             self.emit('The emerald shrinks and vanishes!')
             self.move_to(Thing.ID_dict['nulspace'])
@@ -66,7 +66,7 @@ class Emerald(Gem):
         except:
             amt = 1
         self.power_gem(self.next_power, amt)
-        self.cons.write("You feel the power moving from the emerald to the %s." % self.next_power.short_desc)
+        self.cons.write("You feel the power moving from the emerald to the %s." % self.next_power._short_desc)
         self.cons.input_redirect = None
         self.next_power = None
         self.cons = None
@@ -156,18 +156,18 @@ class Ruby(Gem):
     #
     def heartbeat(self):
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
-        (head, sep, tail) = self.long_desc.partition(' It ')
+        (head, sep, tail) = self._long_desc.partition(' It ')
         if self.power_num >= 10:
-            self.long_desc = head + ' It is brilliantly glowing red.'
+            self._long_desc = head + ' It is brilliantly glowing red.'
             self.light = 2
         elif self.power_num >= 5:
-            self.long_desc = head + ' It is brightly glowing red.'
+            self._long_desc = head + ' It is brightly glowing red.'
             self.light = 1
         elif self.power_num >= 2:
-            self.long_desc = head + ' It is faintly glowing red.'
+            self._long_desc = head + ' It is faintly glowing red.'
             self.light = 0
         else:
-            self.long_desc = head + ' It almost seems to glow, as if light was trapped inside.'
+            self._long_desc = head + ' It almost seems to glow, as if light was trapped inside.'
             
 class Diamond(Gem):
     #
@@ -213,15 +213,15 @@ class Opal(Gem):
     #
     def heartbeat(self):
         self.power_num = self.power_num - 1 if self.power_num > 1 else 0
-        (head, sep, tail) = self.long_desc.partition(' It ')
+        (head, sep, tail) = self._long_desc.partition(' It ')
         if self.power_num >= 5:
-            self.long_desc = head + ' It is a swirl of colours, spinning and pulling the light into it.'
+            self._long_desc = head + ' It is a swirl of colours, spinning and pulling the light into it.'
             self.light = -1
         elif self.power_num >= 2:
-            self.long_desc = head + ' It seems like the surrounding light is going behind the swirl, trapped.'
+            self._long_desc = head + ' It seems like the surrounding light is going behind the swirl, trapped.'
             self.light = 0
         else:
-            self.long_desc = head + ' It is a swirl of colours that seem to draw light inside it.'
+            self._long_desc = head + ' It is a swirl of colours that seem to draw light inside it.'
 
 class Pearl(Gem):
     def __init__(self, path, default_name, short_desc, long_desc, power_num=0, pref_id=None):
