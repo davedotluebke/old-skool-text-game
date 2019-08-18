@@ -139,7 +139,7 @@ class Container(Thing):
                 preamble = "%s the %s there is:" % (self.insert_prepositions[0], self)
                 cons.write(preamble.capitalize())
                 for item in self.contents:
-                    cons.write(item.get_short_desc(indefinite=true))
+                    cons.write(item.get_short_desc(indefinite=True))
             else:
                 cons.write("It is empty. ")
         if self.closed:

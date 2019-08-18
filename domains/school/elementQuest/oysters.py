@@ -14,7 +14,6 @@ def load():
     oysters_room.add_exit('south', 'domains.school.elementQuest.deep_depths')
 
     oyster = gametools.clone('domains.school.elementQuest.oyster')
-    oyster.plurality = 5
     oyster.move_to(oysters_room, True)
     
     return oysters_room

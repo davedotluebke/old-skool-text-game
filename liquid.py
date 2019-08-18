@@ -11,7 +11,7 @@ class Liquid(Scenery):
     #
     # SPECIAL METHODS (i.e __method__() format)
     #
-    def __init__(self, default_name, path=None, short_desc = None, long_desc = None, pref_id=None):
+    def __init__(self, default_name, path=None, short_desc = 'need_short_desc', long_desc = 'need_long_desc', pref_id=None):
         Scenery.__init__(self, default_name, short_desc, long_desc, pref_id)
         # Scenery __init__() creates a per-object actions[] dict
         self.actions['pour'] =  Action(Liquid.pour, True, False)

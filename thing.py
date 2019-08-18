@@ -124,8 +124,8 @@ class Thing(object):
     def get_short_desc(self, perceiver=None, definite=False, indefinite=False):
         '''Return the short description of this object, optionally prepended
         by an article. Prepends with 'the' if <definite> is True, or with 'a'
-        or 'an' if indefinite is true. Only one of definite/indefinite should 
-        be set to true. The <perceiver> is the Creature (usually a Player) 
+        or 'an' if indefinite is True. Only one of definite/indefinite should 
+        be set to True. The <perceiver> is the Creature (usually a Player) 
         for whom the description is intended. This allows the function to be
         overloaded for objects whose description depends on who is observing 
         it. For example, Creatures (like NPCs and Players) may have proper 
