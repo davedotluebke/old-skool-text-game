@@ -20,6 +20,7 @@ class Thing(object):
         self.plurality = 1
         self._weight = 0.0
         self._volume = 0.0
+        self._value = 0
         self.emits_light = False
         self.flammable = 0
         self.location = None
@@ -118,6 +119,17 @@ class Thing(object):
     def set_flammable(self, f):
         """Set flammability. 0 == non-flammable, 10 == very flammable."""
         self.flammable = f
+
+    def get_value(self):
+        """Return the value of the thing as an integer. 
+        The value returned will be multiplied by the plurality of the object.
+        Can be overloaded for more complicated functionality."""
+        return self._value * self.plurality
+
+    def set_value(self, value):
+        """Set the value of the thing. Value must be an integer. 
+        Can be overloaded for more complicated functionality."""
+        self._value = value
     
     # XXX implement set_fire so flammable objects can be set on fire with e.g. a fireball
 
@@ -246,6 +258,7 @@ class Thing(object):
         del Thing.ID_dict[self.id]
         if self.location:
             self.location.extract(self, count='all')
+            self.location = None
         if self in Thing.game.heartbeat_users:
             Thing.game.deregister_heartbeat(self)
 
