@@ -2,9 +2,6 @@ from debug import dbg
 
 from thing import Thing
 from container import Container
-from potions import PinkPotion
-from potions import InvisibilityPotion
-from potions import StrengthPotion
 import gametools
 
 class Cauldron(Container):
@@ -56,7 +53,7 @@ class Cauldron(Container):
             self.extract(a)
             Thing.ID_dict['nulspace'].insert(a)
         try:
-            created = gametools.clone(i[1].replace(' ', '_'))
+            created = gametools.clone('potions.'+i[1].replace(' ', '_'))
             created.move_to(self)
         except FileNotFoundError:
             dbg.debug('Error! Cauldron recipies dictionary called for the creation of %s, but no file was found!', 0)
