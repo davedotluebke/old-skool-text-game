@@ -9,7 +9,7 @@ class ExchangeBox(Container):
             for i in self.contents:
                 amt += i.get_value()
                 i.destroy()
-            change = get_change(amt, [gametools.clone('gold'), gametools.clone('silver'), gametools.clone('copper')])
+            change = get_change(amt, [gametools.clone('currencies.gold'), gametools.clone('currencies.silver'), gametools.clone('currencies.copper')])
             for j in change:
                 super().insert(j)
             return False
