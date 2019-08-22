@@ -127,9 +127,6 @@ class Parser:
         self.words = command.split()
         if len(self.words) == 0:
             return True
-
-        if self.words[0] == 'verbose':
-            self._handle_verbose(console)
         
         # remove articles and convert to lowercase, except for some commands that 
         # treat everything after the verb as a single "diect object" string
