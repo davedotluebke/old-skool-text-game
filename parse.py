@@ -124,7 +124,7 @@ class Parser:
 
     def parse(self, user, console, command):
         """Parse and enact the user's command. """
-        dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
+        dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console), 3)
         
         self.words = command.split()
         if len(self.words) == 0:
