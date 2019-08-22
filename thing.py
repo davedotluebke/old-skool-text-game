@@ -11,13 +11,14 @@ class Thing(object):
     #
     # SPECIAL METHODS (i.e __method__() format)
     #
-    def __init__(self, default_name, path, pref_id=None):
+    def __init__(self, default_name, path, pref_id=None, plural_name=None):
         self.unlisted = False # should this thing be listed in room description  
         self.path = gametools.findGamePath(path) if path else None
         self.version_number = 1
         self.names = [default_name]
+        self.plural_names = [default_name+'s' if not plural_name else plural_name]
         self._add_ID(default_name if not pref_id else pref_id)
-        self.plurality = 1
+        self.plurality = 1  # how many identical objects this Thing represents
         self._weight = 0.0
         self._volume = 0.0
         self._value = 0

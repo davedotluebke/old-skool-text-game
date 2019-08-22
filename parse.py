@@ -63,9 +63,11 @@ class Parser:
         """Find an object in the list <objs> matching the given string <sObj>.
         Tests the name(s) and any adjectives for each object in <objs> against the words in sObj. 
         
-        Returns the matching object if 1 object matches sObj.
+        Returns a list with:
+          - the matching object, if 1 object (which may be a plurality) matches sObj.
+          - all matching objects, if <sObj> unambiguously specifies multiple objects.
         Returns None if 0 objects match sObj.
-        Returns False after writing an error message to Console <cons> if more than 1 object matches. """
+        Returns False after writing an error message to <cons> if <sObj> ambiguously matches multiple objects."""
         matched_objects = []
         sNoun = sObj.split()[-1]  # noun is final word in sObj (after adjectives)
         sAdjectives_list = sObj.split()[:-1]  # all words preceeding noun
@@ -122,14 +124,14 @@ class Parser:
 
     def parse(self, user, console, command):
         """Parse and enact the user's command. """
-        dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
+        dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console), 3)
         
         self.words = command.split()
         if len(self.words) == 0:
             return True
         
         # remove articles and convert to lowercase, except for some commands that 
-        # treat everything after the verb as a single "diect object" string
+        # treat everything after the verb as a single "direct object" string
         # (TODO: directly recognise strings delimited by '' or ")
         if self.words[0].lower() not in ['execute', 'say', 'shout', 'whisper', 'mutter', 'emote']:
             command = command.lower()   
