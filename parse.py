@@ -59,7 +59,7 @@ class Parser:
             dbg.debug("Ending a sentence in a preposition is something up with which I will not put.")
         return (sV, sDO, sPrep, sIDO)
 
-    def _find_matching_objects(self, sObj, objs, cons):
+    def find_matching_objects(self, sObj, objs, cons):
         """Find an object in the list <objs> matching the given string <sObj>.
         Tests the name(s) and any adjectives for each object in <objs> against the words in sObj. 
         
@@ -159,9 +159,9 @@ class Parser:
 
         # THEN, check for objects matching the direct & indirect object strings
         if sDO: 
-            oDO = self._find_matching_objects(sDO, possible_objects, console)
+            oDO = self.find_matching_objects(sDO, possible_objects, console)
         if sIDO: 
-            oIDO = self._find_matching_objects(sIDO, possible_objects, console)
+            oIDO = self.find_matching_objects(sIDO, possible_objects, console)
         if oDO == False or oIDO == False: 
             return True     # ambiguous user input; >1 object matched 
 

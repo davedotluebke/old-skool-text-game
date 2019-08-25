@@ -114,30 +114,38 @@ class Shopkeeper(NPC):
     
     def buy(self, p, cons, oDO, oIDO):
         """Buy an item from the shop."""
-        items = self.remove_items(oDO)
-        if not items:
-            return "The items you intended to buy are not sold in the shop!"
-        elif len(items) > 1:
-            for i in items[1:]
-                self.add_items(i) #XXX Simplify this system!
-        item = items[0]
+        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
 
+        # First, see if the object is in the shop's inventory
+        matches = p.find_matching_objects(sDO, self.inventory, cons)
+        if matches == False:
+            return True # find_matching_object found multiple ambiguous objects and printed error message
+        elif not matches:
+            return 'The shop does not seem to sell "%s".' % sDO
+        elif len(matches) > 1:
+            return 'Please purchase one type of item at a time.'
+        item = matches[0] # Found the item they are trying to buy
+        
+        # Second, verify that the player has enough money
         player_money = []
         player_money_value = 0
-        for coin in cons.user.contents:
-            if isinstance(coin, Money):
-                player_money.append(coin)
-                player_money_value += coin.get_value()
-        if player_money_value < item.get_value():
+        for o in cons.user.contents:
+            if isinstance(o, Money):
+                player_money.append(o)
+                player_money_value += o.get_total_value()
+        if player_money_value < item.get_total_value():
             cons.user.perceive("You don't have enough money to buy the %s!" % item)
             return True
-        player_money = sorted(player_money, key=Money.get_value, reverse=True)
+
+        player_money = sorted(player_money, key=Money.get_unit_value, reverse=True)
+
+        #XXX code beyond this point does not work
         using_to_pay = []
         player_money_value = 0
         for coin in player_money:
-            player_money_value += coin.get_value()
+            player_money_value += coin.get_total_value()
             using_to_pay.append(coin)
-            if player_money_value > item.get_value():
+            if player_money_value > item.get_total_value():
                 break
         
         for coin in using_to_pay:

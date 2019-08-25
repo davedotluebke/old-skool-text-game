@@ -121,11 +121,17 @@ class Thing(object):
         """Set flammability. 0 == non-flammable, 10 == very flammable."""
         self.flammable = f
 
-    def get_value(self):
+    def get_total_value(self):
         """Return the value of the thing as an integer. 
         The value returned will be multiplied by the plurality of the object.
         Can be overloaded for more complicated functionality."""
-        return self._value * self.plurality
+        return self.get_unit_value() * self.plurality
+    
+    def get_unit_value(self):
+        """Return the value of the thing as an integer.
+        The value returned will NOT be multiplied by the plurality of the object.
+        Can be overloaded for more complicated functionality."""
+        return self._value
 
     def set_value(self, value):
         """Set the value of the thing. Value must be an integer. 
