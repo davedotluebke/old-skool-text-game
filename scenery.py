@@ -1,12 +1,14 @@
 from debug import dbg
 from thing import Thing
 from action import Action
+import gametools
 
 class Scenery(Thing):
     def __init__(self, default_name, short_desc, long_desc, pref_id=None):
         Thing.__init__(self, default_name, None)
         self.fix_in_place("You can't move the %s!" % (default_name))
         self.set_description(short_desc, long_desc)
+        self.versions[gametools.findGamePath(__file__)] = 1
 
         self.actions = dict(Thing.actions)
         # response tuple is (verblist, result_str, transitive, intransitive)

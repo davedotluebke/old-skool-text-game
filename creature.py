@@ -32,6 +32,7 @@ class Creature(Container):
         self.dead = False
         self.wizardry_element = None
         self.healing = 0
+        self.versions[gametools.findGamePath(__file__)] = 1
 
     def get_saveable(self):
         saveable = super().get_saveable()

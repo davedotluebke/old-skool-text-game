@@ -59,6 +59,7 @@ class DebugLog():
                     self.ID_dict[player_id].cons.write(s)
                 except Exception:
                     print("AN ERROR OCCURED!")
+                    print(s)
         for player_id in list(self.filter_strings):
             found_match = any(filter_str in s for filter_str in self.filter_strings[player_id])
             if found_match:
@@ -66,6 +67,7 @@ class DebugLog():
                     self.ID_dict[player_id].cons.write(s)
                 except Exception:
                     print("AN ERROR OCCURED!")
+                    print(s)
         if self.log:
             self.log.write("%s\n" % s)
 
