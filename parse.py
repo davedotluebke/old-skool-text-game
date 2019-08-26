@@ -94,12 +94,13 @@ class Parser:
             dbg.debug("Ending a sentence in a preposition is something up with which I will not put.")
         return (sV, sDO, sPrep, sIDO)
 
-    def _find_matching_objects(self, sObj, objs, cons):
+    def find_matching_objects(self, sObj, objs, cons):
         """Find object(s) in the list <objs> matching the given string <sObj>.
         Tests the name(s) and any adjectives for each object in <objs> against the words in sObj.
         sObj may be a compound object, with multiple "object specifiers", for example 
         "rusty sword, ten gold coins, and third pink potion". In this case the function will
-        return a list of matching objects, splitting plural objects as needed. XXX SPLITTING PLURALITIES NOT YET IMPLEMENTED
+        return a list of matching objects, splitting plural objects as needed. 
+        XXX SPLITTING PLURALITIES NOT YET IMPLEMENTED
                 
         Returns a list with:
           - the matching object, if 1 object (which may be a plurality) matches sObj.
@@ -168,10 +169,19 @@ class Parser:
                 return None
             else:   # exactly one object in local_matches 
                 matched_objects += local_matches
+        
+        dbg.debug("matched_objects in '%s' are: %s" % (sObj, ' '.join(obj.id for obj in matched_objects)), 3)
+        return matched_objects
             
 
     def parse(self, user, console, command):
-        """Parse and enact the user's command. """
+        """Parse and enact the user's command. Valid commands have the form:
+            <verb> [direct object(s)] [preposition   indirect object(s)]
+        If multiple different direct objects are specified (as opposed to 
+        a plurality of one kind of object, e.g. "ten gold coins"), enact the 
+        verb on each direct object in turn, passing the full list of indirect
+        objects (if any) each time. 
+        """
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console), 3)
         
         # Split command into words, remove articles, convert to lowercase--but
@@ -206,7 +216,10 @@ class Parser:
         if oDO == False or oIDO == False: 
             return True     # ambiguous user input; >1 object matched 
 
-        # NEXT, find objects that support the verb the user typed
+        # IF there are multiple direct objects, try the verb for each one. 
+        raise  # need to loop over all or almost all of the below for each DO
+
+        # NEXT, find objects that support the verb the user typed. 
         possible_verb_objects = []  # list of objects supporting the verb
         for obj in possible_objects:
             act = obj.actions.get(sV)  # returns None if <sV> not in <actions>
