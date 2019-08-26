@@ -74,8 +74,6 @@ class Parser:
         sDO = sPrep = sIDO = None
         for p in prepositions:
             if p in textwords:
-                if sV == 'go' and p == 'in':  # what is this doing? 
-                    continue
                 idxPrep = textwords.index(p)
                 sPrep = textwords[idxPrep]
                 sDO = ' '.join(textwords[:idxPrep])
