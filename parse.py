@@ -1,5 +1,6 @@
 import sys
 import traceback
+import re
 
 import gametools
 
@@ -94,67 +95,80 @@ class Parser:
         return (sV, sDO, sPrep, sIDO)
 
     def _find_matching_objects(self, sObj, objs, cons):
-        """Find an object in the list <objs> matching the given string <sObj>.
-        Tests the name(s) and any adjectives for each object in <objs> against the words in sObj. 
-        
+        """Find object(s) in the list <objs> matching the given string <sObj>.
+        Tests the name(s) and any adjectives for each object in <objs> against the words in sObj.
+        sObj may be a compound object, with multiple "object specifiers", for example 
+        "rusty sword, ten gold coins, and third pink potion". In this case the function will
+        return a list of matching objects, splitting plural objects as needed. XXX SPLITTING PLURALITIES NOT YET IMPLEMENTED
+                
         Returns a list with:
           - the matching object, if 1 object (which may be a plurality) matches sObj.
           - all matching objects, if <sObj> unambiguously specifies multiple objects.
-        Returns None if 0 objects match sObj.
-        Returns False after writing an error message to <cons> if <sObj> ambiguously matches multiple objects."""
+        Returns None if 0 objects match sObj (or any of the specifiers).
+        Returns False after writing an error message to <cons> if any specifier ambiguously matches multiple objects."""
         matched_objects = []
-        sNoun = sObj.split()[-1]  # noun is final word in sObj (after adjectives)
-        sAdjectives_list = sObj.split()[:-1]  # all words preceeding noun
-        # In case multiple objects match the noun and adjectives given, 
-        # player may specify an ordinal adjective ('first', 'second', ..). 
-        ord_number = 0  # which ordinal (first=1,second=2,..), 0 if none specified
-        ord_str = ""    # actual string used to specify ordinal ('first', '3rd', etc)
-        for obj in objs:
-            match = True
-            if sNoun in obj.names:
-                for adj in sAdjectives_list:
-                    if adj in Parser.ordinals:  # dict mapping ordinals->ints
-                        if ord_str and ord_str != adj: 
-                            cons.write("I'm confused: you specified both %s and %s!" % (ord_str, adj))
-                            return False
-                        ord_number = Parser.ordinals[adj]
-                        ord_str = adj
-                    elif adj not in obj.adjectives:
-                        match = False  # found an invalid adjective
-                        break
-            else: 
-                match = False  # sNoun doesn't match any obj.names
+        # Build list of object 'specifier' strings, separated by commas and/or 'and'
+        # split on regexp for commas, "and"s, &s. Should be cached, no need to compile
+        lsObj = re.split("and\s+|,\s*|and,\s*|\&\s*", sObj)  
+        for s in lsObj:  # loop over specifiers, trying to match each to an object
+            local_matches = []  # each specifier should be just one object, though it may be plural
+            if not s:
+                continue  # skip over blank  strings
+            sWords = s.split()
+            sNoun = sWords[-1]  # noun is final word in specifier string (after adjectives)
+            sAdjectives_list = sWords[:-1]  # all words preceeding noun
+            # In case multiple objects match the noun and adjectives given, 
+            # player may specify an ordinal adjective ('first', 'second', ..). 
+            ord_number = 0  # which ordinal (first=1,second=2,..), 0 if none specified
+            ord_str = ""    # actual string used to specify ordinal ('first', '3rd', etc)
+            for obj in objs:
+                match = True
+                if sNoun in obj.names:
+                    for adj in sAdjectives_list:
+                        if adj in Parser.ordinals:  # dict mapping ordinals->ints
+                            if ord_str and ord_str != adj: 
+                                cons.write("I'm confused: you specified both %s and %s!" % (ord_str, adj))
+                                return False
+                            ord_number = Parser.ordinals[adj]
+                            ord_str = adj
+                        elif adj not in obj.adjectives:
+                            match = False  # found an invalid adjective
+                            break
+                else: 
+                    match = False  # sNoun doesn't match any obj.names
 
-            # if name & all adjectives match, add to list of matching objects
-            if match: 
-                matched_objects.append(obj)
-        if ord_number:  
-            # count through all matched objects, some of which might be plural
-            i = 1                   # ordinals start at "first" meaning element 0
-            for o in matched_objects:
-                i += o.plurality    # singular objects have plurality == 1
-                if ord_number < i:  
-                    matched_objects = [o]  # ordinal specifies an object in this plurality
-                    break
-            else:  # for-else section, runs if no break called in loop
-                cons.write("You specified '%s' but I only see %d %s matching '%s %s'!" % (
-                    ord_str, 
-                    i-1, 
-                    'objects' if i-1 > 1 else 'object', 
-                    ' '.join(x for x in sAdjectives_list if x not in Parser.ordinals), 
-                    sNoun))
+                # if name & all adjectives match, add to list of matching objects
+                if match: 
+                    local_matches.append(obj)
+            # if they specified an ordinal (1st, 2nd, etc), figure out which object they meant
+            if ord_number:  
+                # count through all matched objects, some of which might be plural
+                i = 1                   # ordinals start at "first" meaning element 0
+                for o in local_matches:
+                    i += o.plurality    # singular objects have plurality == 1
+                    if ord_number < i:  
+                        local_matches = [o]  # ordinal specifies an object in this plurality
+                        break
+                else:  # for-else section, runs if no break called in loop
+                    cons.write("You specified '%s' but I only see %d %s matching '%s %s'!" % (
+                        ord_str, 
+                        i-1, 
+                        'objects' if i-1 > 1 else 'object', 
+                        ' '.join(x for x in sAdjectives_list if x not in Parser.ordinals), 
+                        sNoun))
+                    return False
+            dbg.debug("local_matches in '%s' are: %s" % (s, ' '.join(obj.id for obj in local_matches)), 3)        
+            if len(local_matches) > 1:
+                candidates = ", or the ".join(o._short_desc for o in local_matches)
+                cons.write("By '%s', do you mean the %s? Please provide more adjectives, or specify 'first', 'second', 'third', etc." % (s, candidates))
                 return False
-        dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects), 3)        
-        if len(matched_objects) > 1:
-            candidates = ", or the ".join(o._short_desc for o in matched_objects)
-            cons.write("By '%s', do you mean the %s? Please provide more adjectives, or specify 'first', 'second', 'third', etc." % (sObj, candidates))
-            return False
-        elif len(matched_objects) == 0:
-            # user typed a direct object that doesn't match any objects. Could be 
-            # an error, could be e.g. "go north". Validate all supporting objects.
-            return None
-        else:   # exactly one object in matched_objects 
-            return matched_objects[0]
+            elif len(local_matches) == 0:
+                # user typed an object specifier that doesn't match any objects. Could be 
+                # an error, could be e.g. "go north". Validate all supporting objects.
+                return None
+            else:   # exactly one object in local_matches 
+                matched_objects += local_matches
+            
 
     def parse(self, user, console, command):
         """Parse and enact the user's command. """
