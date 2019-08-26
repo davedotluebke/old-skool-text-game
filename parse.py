@@ -11,7 +11,7 @@ class Parser:
     ordinals = {"first":1, "second":2, "third":3, "fourth":4, "fifth":5, "sixth":6, "seventh":7, "eighth":8, "ninth":9, "tenth":10,
                 "1st":1, "2nd":2, "3rd":3, "4th":4, "5th":5, "6th":6, "7th":7, "8th":8, "9th":9, "10th":10}
 
-        def _split_and_simplify(self, s):
+    def _split_and_simplify(self, s):
         """Split command into words using whitespace, remove articles
         ('a' and 'the'), and convert to lowercase -- but don't modify 
         "strings" of text between quotes; treat these as 1 word.  More
@@ -43,7 +43,7 @@ class Parser:
             if sections[i]:  # skip empty sections
                 if i & 0x1:  # if i is odd (lowest bit set), add section directly as a word
                     words += [sections[i]]
-                else  # i is even: convert to lowercase, split by whitespace, strip articles
+                else:  # i is even: convert to lowercase, split by whitespace, strip articles
                     words += [w for w in sections[i].lower().split() if w not in ['a', 'an', 'the']]
         return words
 
@@ -164,7 +164,7 @@ class Parser:
         
         # Split command into words, remove articles, convert to lowercase--but
         # don't modify "strings" of text between quotes; treat these as 1 word
-        self.words = _split_and_simplify(command)
+        self.words = self._split_and_simplify(command)
 
         if len(self.words) == 0:
             return True
