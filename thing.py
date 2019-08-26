@@ -233,15 +233,27 @@ class Thing(object):
         for attr in list(savable):
             state[attr] = savable[attr]
 
-        self.update_version()
-
         self.__dict__.update(state)
+
+        self.update_version()
 
     def update_version(self):
         """Updates the version of the object, and runs snipets of code to make 
         sure all objects will still function."""
         if not self.version_number:
             self.version_number = 1
+        
+        if self.version_number > 2: # Allow for subversioning?
+            try:
+                if 'short_desc' in self.__dict__:
+                    self._short_desc = self.short_desc
+                    del self.__dict__['short_desc']
+                if 'long_desc' in self.__dict__:
+                    self._long_desc = self.long_desc
+                    del self.__dict__['long_desc']
+                self.version_number = 2
+            except KeyError:
+                dbg.debug('Error updating object %s in Thing.update_version()' % self)
 
     def delete(self):
         if self.contents:
