@@ -60,7 +60,7 @@ class Cauldron(Container):
             created.move_to(self)
         except FileNotFoundError:
             dbg.debug('Error! Cauldron recipies dictionary called for the creation of %s, but no file was found!', 0)
-        self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.short_desc))
+        self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.get_short_desc()))
         
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)

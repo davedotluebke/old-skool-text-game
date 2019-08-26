@@ -79,37 +79,6 @@ class Player(Creature):
     def save_cons_attributes(self):
         self.saved_cons_attributes = [self.cons.alias_map, self.cons.measurement_system]
 
-    def __getstate__(self):
-        """Custom pickling code for Player. 
-        
-        Avoids directly pickling the associated console (will eventually
-        delete this for save-and-quit functionality in multiplayer; for 
-        now just detach the console to support save-and-keep-playing). 
-        """
-        # Copy the object's state from self.__dict__ which contains
-        # all our instance attributes. Always use the dict.copy()
-        # method to avoid modifying the original state.
-        state = super().__getstate__()
-        del state['enemies'] #TODO: Make saving and loading of this attribute work
-        # Remove the unpicklable entries.
-        del state['cons']
-        return state
-
-    def __setstate__(self, state):
-        """Custom unpickling code for Player
-
-        Note 1: The function unpickling the Player must then attach it to
-        a new console.
-        
-        Note 2: If the player is joining an ongoing game (as opposed to the
-        entire game including players getting saved/restored) then the 
-        function unpickling the player should restore the location field from
-        an ID string to a direct reference, do the same for the objects in the
-        contents field, and call move_to() to update the room."""
-        super(Player, self).__setstate__(state) # updates Thing.ID_dict
-        # Restore instance attributes
-        self.enemies = [] #XXX fix problem with enemies
-
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
@@ -231,7 +200,7 @@ class Player(Creature):
             try:
                 for i in self.location.contents:
                     if i in self.enemies:
-                        self.cons.write('You attack your enemy %s.' % i.short_desc)
+                        self.cons.write('You attack your enemy %s.' % i._short_desc)
                         self.attacking = i
                         self.attack_enemy(i)
             except AttributeError:
@@ -255,7 +224,7 @@ class Player(Creature):
         else:
             self.cons.write("Uh-oh! You don't have a starting location. You are in a great void...")
 
-    def perceive(self, message):
+    def perceive(self, message, silent=False):
         '''Parse a string passed to `emit()` and customize it for this
         player. Searches the string for special tags (indicated with the '&'
         symbol) and replaces the substring following that tag (up to a 
@@ -272,12 +241,12 @@ class Player(Creature):
                      short description of O proceeded by the capitalized 
                      definite article 'The'
             &ni<id>: 'name-indefinite': replace with O.proper_name if O has 
-                     been introduced, else O.short_desc preceeded by the 
+                     been introduced, else O._short_desc preceeded by the 
                      indefinite article ('a' or 'an')
             &nI<id>: 'name-indefinite-capitalized': replace with O.proper_name
-                     if O has been introduced, else 'A' or 'An' + O.short_desc
+                     if O has been introduced, else 'A' or 'An' + O._short_desc
             &nn<id>: 'name-no-article': replace with O.proper_name if O has 
-                     been introduced, else O.short_desc with no article.
+                     been introduced, else O._short_desc with no article.
 
             &s<id>:  'species': replace with species name (`O.species`)
             &S<id>:  'species-capitalized': replace with capitalized species
@@ -297,6 +266,9 @@ class Player(Creature):
         So for convenience `perceive()` will silently return if this player is
         one of the creatures named using the &n semantics above, effectively 
         ignoring any creatures named in the `emit()` message.
+
+        If the <silent> flag is set, do not actually write the constructed message
+        to the player's console, but instead return it as a string.
         '''
         if not self.location.is_dark():
             # replace any & tags in the message 
@@ -355,7 +327,10 @@ class Player(Creature):
                 message = m1 + m2
 
             super().perceive(message)
-            self.cons.write(message) 
+            if silent:
+                return message
+            else:
+                self.cons.write(message) 
                    
     def hold_object(self, obj):
         self.visible_inventory.append(obj)
@@ -372,17 +347,18 @@ class Player(Creature):
     def inventory(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "You can't look at another player's inventory!"
-        cons.write("You are carrying:")
+        message = "You are carrying:\n"
         if not self.contents:
-            cons.write('\tnothing')
+            message += '\tnothing'
         for i in self.contents:
             if i == self.weapon_wielding or i == self.armor_worn: 
                 continue
-            cons.write("\ta " + i.short_desc)
+            message += "\t&ni%s\n" % i.id
         if self.weapon_wielding != self.default_weapon: 
-            cons.write('You are wielding a %s.' % self.weapon_wielding.short_desc)
+            message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
         if self.armor_worn != self.default_armor:
-            cons.write('You are wearing a %s.' % self.armor_worn.short_desc)
+            message += 'You are wearing &nd%s.\n' % self.armor_worn.id
+        self.perceive(message)
         return True
     
     def toggle_terse(self, p, cons, oDO, oIDO):
