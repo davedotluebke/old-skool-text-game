@@ -1,4 +1,5 @@
 import re
+import gametools
 from thing import Thing
 from action import Action
 
@@ -17,6 +18,7 @@ class Book(Thing):
         # books always open on cover the first time and toc or bookmark afterwards
         self.index = self.COVER_INDEX 
         self.bookmark = None
+        self.versions[gametools.findGamePath(__file__)] = 1
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
