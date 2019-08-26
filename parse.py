@@ -11,14 +11,50 @@ class Parser:
     ordinals = {"first":1, "second":2, "third":3, "fourth":4, "fifth":5, "sixth":6, "seventh":7, "eighth":8, "ninth":9, "tenth":10,
                 "1st":1, "2nd":2, "3rd":3, "4th":4, "5th":5, "6th":6, "7th":7, "8th":8, "9th":9, "10th":10}
 
+        def _split_and_simplify(self, s):
+        """Split command into words using whitespace, remove articles
+        ('a' and 'the'), and convert to lowercase -- but don't modify 
+        "strings" of text between quotes; treat these as 1 word.  More
+        precisely: treat the contents of any string literals (sequences 
+        of text demarcated with the double-quote `"` character) as a 
+        single word with the demarcation characters stripped. Thus if `s` 
+        consists of:
+            Tell the troll "Let me pass!"
+        the function will return:
+            ['Tell', 'the', 'troll', 'Let me pass!']
+        The final `"` is actually optional, and no word will be returned 
+        for empty strings. Note that we only support `"` to demarcate strings,
+        not `'`. Nor does this function handle nesting of strings: If a
+        string literal demarcated with `"` contains a nested string 
+        demarcated with `'`, that nested string is simply treated as part 
+        of the encompassing string's single "word". This is helpful for the
+        wizardly 'execute' command, which allows the wizard to type valid 
+        Python commands to execute in the parser--by using `'` to indicate 
+        strings inside the command, the wizard avoids escaping quotation
+        marks. TODO: support escaping quotes with the backslash character."""
+        words = []
+        sections = s.split('"')  # split s into sections inside & outside quotes
+        numsections = len(sections)
+        # Odd-numbered sections are between quotes, e.g <section[0] "section[1]" section[2] "section[3]">:
+        #   put everything between the quotes into a single word.
+        # Even-numbered sections are outside quotes (including section[0] when are no quotes):
+        #   split these sections into words according to whitespace.
+        for i in range(numsections):      
+            if sections[i]:  # skip empty sections
+                if i & 0x1:  # if i is odd (lowest bit set), add section directly as a word
+                    words += [sections[i]]
+                else  # i is even: convert to lowercase, split by whitespace, strip articles
+                    words += [w for w in sections[i].lower().split() if w not in ['a', 'an', 'the']]
+        return words
+
     def diagram_sentence(self, words):
         """Categorize sentence type and set verb, direct/indirect object strings.
         
         Returns a tuple (sV, sDO, sPrep, sIDO)
         sV is a string containing the verb 
-        sDO is a string containing the direct object, or None
+        sDO is a list of strings containing the direct object(s), or None
         sPrep is a string containing the preposition, or None
-        sIDO is a string containing the indirect object, or None
+        sIDO is a list of strings containing the indirect object(s), or None
         Currently supports three sentence types, which can be detected thus: 
         1.  if sDO == None:     <intransitive verb>
         2.  elif sIDO == None:  <transitive verb> <direct object>
@@ -102,7 +138,7 @@ class Parser:
                 if ord_number < i:  
                     matched_objects = [o]  # ordinal specifies an object in this plurality
                     break
-            else:  # for-else clause, runs if no break called in loop
+            else:  # for-else section, runs if no break called in loop
                 cons.write("You specified '%s' but I only see %d %s matching '%s %s'!" % (
                     ord_str, 
                     i-1, 
@@ -126,23 +162,13 @@ class Parser:
         """Parse and enact the user's command. """
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console), 3)
         
-        self.words = command.split()
+        # Split command into words, remove articles, convert to lowercase--but
+        # don't modify "strings" of text between quotes; treat these as 1 word
+        self.words = _split_and_simplify(command)
+
         if len(self.words) == 0:
             return True
-
-        if self.words[0] == 'verbose':
-            self._handle_verbose(console)
         
-        # remove articles and convert to lowercase, except for some commands that 
-        # treat everything after the verb as a single "direct object" string
-        # (TODO: directly recognise strings delimited by '' or ")
-        if self.words[0].lower() not in ['execute', 'say', 'shout', 'whisper', 'mutter', 'emote']:
-            command = command.lower()   
-            self.words = [w for w in self.words if w not in ['a', 'an', 'the']]
-            if len(self.words) == 0:
-                console.write("Please specify more than just articles!")
-                return True
-
         sV = None            # verb as string
         sDO = None           # Direct object as string
         oDO = None           # Direct object as object
