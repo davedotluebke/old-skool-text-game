@@ -200,9 +200,9 @@ class Parser:
 
         # THEN, check for objects matching the direct & indirect object strings
         if sDO: 
-            oDO = self._find_matching_objects(sDO, possible_objects, console)
+            oDO = self.find_matching_objects(sDO, possible_objects, console)
         if sIDO: 
-            oIDO = self._find_matching_objects(sIDO, possible_objects, console)
+            oIDO = self.find_matching_objects(sIDO, possible_objects, console)
         if oDO == False or oIDO == False: 
             return True     # ambiguous user input; >1 object matched 
 
@@ -310,7 +310,7 @@ class Parser:
             if err_msg == None: 
                 err_msg = result    # save the first error encountered
 
-        if result == False:
+        if result != True:
             # no objects handled the verb; print the first error message 
             console.write(err_msg if err_msg else "No objects handled verb, but no error message defined!")
 

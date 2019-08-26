@@ -2,6 +2,8 @@ from debug import dbg
 from action import Action
 from thing import Thing
 
+import gametools
+
 class Weapon(Thing):
     #
     # SPECIAL METHODS (i.e __method__() format)
@@ -11,6 +13,7 @@ class Weapon(Thing):
         self.damage = damage
         self.accuracy = accuracy
         self.unwieldiness = unwieldiness
+        self.versions[gametools.findGamePath(__file__)] = 1
         self.actions = dict(Thing.actions)
         self.actions['wield'] =   Action(Weapon.wield, True, False)
         self.actions['use'] =     Action(Weapon.wield, True, False)

@@ -18,7 +18,7 @@ class Shopkeeper(NPC):
         self.default_items = []
         self.welcome_message = 'Welcome to my shop!'
         self.welcomed_customers = []
-        Thing.game.events.schedule(120, self.restock, None)
+        Thing.game.events.schedule(Thing.game.time+120, self.restock, None)
     
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
@@ -73,7 +73,7 @@ class Shopkeeper(NPC):
     def restock(self, unnecesary_parameter):
         for i in self.default_items:
             self.inventory.append(gametools.clone(i.path))
-        Thing.game.events.schedule(120, self.restock, None)
+        Thing.game.events.schedule(Thing.game.time+120, self.restock, None)
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
@@ -92,7 +92,8 @@ class Shopkeeper(NPC):
         if len(possible_inventory_matches) == 0:
             return "Did you mean to look at something in the shop?"
         elif len(possible_inventory_matches) == 1:
-            return possible_inventory_matches[0].look_at(p, cons, oDO, oIDO):
+            # possible_inventory_matches is the direct object (if we don't pass it in, this code will break)
+            return possible_inventory_matches[0].look_at(p, cons, possible_inventory_matches[0], oIDO)
         elif len(possible_inventory_matches) > 1:
             new_str = "Did you mean to look at"
             for j in possible_inventory_matches:
@@ -108,38 +109,52 @@ class Shopkeeper(NPC):
     def list_inventory(self, p, cons, oDO, oIDO):
         """List the inventory of this shop."""
         cons.user.perceive('The shop is selling: ')
-        for item in self.contents:
+        for item in self.inventory:
             cons.user.perceive(item.get_short_desc(indefinite=True))
         return True
     
     def buy(self, p, cons, oDO, oIDO):
         """Buy an item from the shop."""
-        items = self.remove_items(oDO)
-        if not items:
-            return "The items you intended to buy are not sold in the shop!"
-        elif len(items) > 1:
-            for i in items[1:]
-                self.add_items(i) #XXX Simplify this system!
-        item = items[0]
+        (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
 
+        # First, see if the object is in the shop's inventory
+        matches = p.find_matching_objects(sDO, self.inventory, cons)
+        if matches == False:
+            return True # find_matching_object found multiple ambiguous objects and printed error message
+        elif not matches:
+            return 'The shop does not seem to sell "%s".' % sDO
+        elif len(matches) > 1:
+            return 'Please purchase one type of item at a time.'
+        item = matches[0] # Found the item they are trying to buy
+        
+        # Second, verify that the player has enough money
         player_money = []
         player_money_value = 0
-        for coin in cons.user.contents:
-            if isinstance(coin, Money):
-                player_money.append(coin)
-                player_money_value += coin.get_value()
-        if player_money_value < item.get_value():
+        for o in cons.user.contents:
+            if isinstance(o, Money):
+                player_money.append(o)
+                player_money_value += o.get_total_value()
+        if player_money_value < item.get_total_value():
             cons.user.perceive("You don't have enough money to buy the %s!" % item)
             return True
-        player_money = sorted(player_money, key=Money.get_value, reverse=True)
+
+        player_money = sorted(player_money, key=Money.get_unit_value, reverse=True)
+
+        # Select the exact money the player is going to spend
         using_to_pay = []
-        player_money_value = 0
+        payment_total = 0
         for coin in player_money:
-            player_money_value += coin.get_value()
+            for i in range(0, coin.plurality):
+                payment_total += coin.get_unit_value()
+                if payment_total > item.get_total_value():
+                    new_coin = coin.replicate()
+                    new_coin.plurality = coin.plurality-i
+                    coin.plurality = i
+                    break
             using_to_pay.append(coin)
-            if player_money_value > item.get_value():
+            if payment_total > item.get_total_value():
                 break
-        
+
         for coin in using_to_pay:
             coin.move_to(self, force_move=True)
         coins = get_change(player_money_value, [gametools.clone('gold'), gametools.clone('silver'), gametools.clone('copper')])
@@ -147,6 +162,8 @@ class Shopkeeper(NPC):
             coin.move_to(cons.user)
 
     actions = dict(NPC.actions)
-    actions['look'] = Action(look_at, True, True)
+    actions['look'] =    Action(look_at, True, True)
     actions['examine'] = Action(look_at, True, False)
     actions['inspect'] = Action(look_at, True, False)
+    actions['buy'] =     Action(buy, True, False)
+    actions['purchase'] = Action(buy, True, False)

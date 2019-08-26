@@ -1,6 +1,7 @@
 from debug import dbg
 from thing import Thing
 from action import Action
+import gametools
 
 class Container(Thing):
     #
@@ -17,6 +18,7 @@ class Container(Thing):
         self.max_weight_carried = 1
         self.max_volume_carried = 1
         self.insert_prepositions = ["in", "into", "inside"]
+        self.versions[gametools.findGamePath(__file__)] = 1
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)

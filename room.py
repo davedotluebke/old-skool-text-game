@@ -23,6 +23,7 @@ class Room(Container):
         self.monster_safe = safe
         self.indoor = indoor
         self.mod = mod
+        self.versions[gametools.findGamePath(__file__)] = 1
     
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)

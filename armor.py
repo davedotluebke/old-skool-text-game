@@ -1,6 +1,7 @@
 from debug import dbg
 from action import Action
 from thing import Thing
+import gametools
 
 class Armor(Thing):
     #
@@ -10,6 +11,7 @@ class Armor(Thing):
         Thing.__init__(self, default_name, path, pref_id)
         self.bonus = bonus
         self.unwieldiness = unwieldiness
+        self.versions[gametools.findGamePath(__file__)] = 1
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)

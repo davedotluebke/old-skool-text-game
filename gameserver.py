@@ -170,6 +170,8 @@ class Game():
             l = []
             for x in saveables:
                 obj = gametools.clone(x['path'])
+                if not obj:
+                    continue
                 obj.update_obj(x)
                 l.append(obj)
         except EOFError:

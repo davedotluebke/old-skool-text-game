@@ -17,6 +17,7 @@ class Cauldron(Container):
     def __init__(self, default_name, path, pref_id=None):
         super().__init__(default_name, path, pref_id)
         self.liquid = True
+        self.versions[gametools.findGamePath(__file__)] = 1
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)

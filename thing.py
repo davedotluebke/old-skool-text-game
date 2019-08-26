@@ -14,7 +14,7 @@ class Thing(object):
     def __init__(self, default_name, path, pref_id=None, plural_name=None):
         self.unlisted = False # should this thing be listed in room description  
         self.path = gametools.findGamePath(path) if path else None
-        self.version_number = 1
+        self.versions = {gametools.findGamePath(__file__): 3}
         self.names = [default_name]
         self.plural_names = [default_name+'s' if not plural_name else plural_name]
         self._add_ID(default_name if not pref_id else pref_id)
@@ -67,7 +67,7 @@ class Thing(object):
         if isinstance(self.location, str):
             self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet? 
         if self.contents != None:
-            self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
+            self.contents = [Thing.ID_dict[id] for id in self.contents if (isinstance(id, str) and id in Thing.ID_dict)]
 
     #
     # SET/GET METHODS (methods to set or query attributes)
@@ -121,11 +121,17 @@ class Thing(object):
         """Set flammability. 0 == non-flammable, 10 == very flammable."""
         self.flammable = f
 
-    def get_value(self):
+    def get_total_value(self):
         """Return the value of the thing as an integer. 
         The value returned will be multiplied by the plurality of the object.
         Can be overloaded for more complicated functionality."""
-        return self._value * self.plurality
+        return self.get_unit_value() * self.plurality
+    
+    def get_unit_value(self):
+        """Return the value of the thing as an integer.
+        The value returned will NOT be multiplied by the plurality of the object.
+        Can be overloaded for more complicated functionality."""
+        return self._value
 
     def set_value(self, value):
         """Set the value of the thing. Value must be an integer. 
@@ -219,7 +225,10 @@ class Thing(object):
         default_obj = gametools.clone(self.path)
         default_state = default_obj.__dict__
         for attr in list(state):
-            if state[attr] != default_state[attr] or attr == 'path' or attr == 'version_number':
+            if attr not in default_state or \
+               state[attr] != default_state[attr] or \
+               attr == 'path' or attr == 'version_number' \
+               or attr == 'versions':
                 saveable[attr] = state[attr]
         return saveable
 
@@ -270,15 +279,32 @@ class Thing(object):
         for attr in list(saveable):
             state[attr] = saveable[attr]
 
-        self.update_version()
-
         self.__dict__.update(state)
+
+        self.update_version()
 
     def update_version(self):
         """Updates the version of the object, and runs snipets of code to make 
         sure all objects will still function."""
-        if not self.version_number:
+        if not hasattr(self, 'versions') and not hasattr(self, 'version_number'):
             self.version_number = 1
+        
+        if hasattr(self, 'version_number') and self.version_number < 2:
+            try:
+                if 'short_desc' in self.__dict__:
+                    self._short_desc = self.short_desc
+                    del self.__dict__['short_desc']
+                if 'long_desc' in self.__dict__:
+                    self._long_desc = self.long_desc
+                    del self.__dict__['long_desc']
+                self.version_number = 2
+            except KeyError:
+                dbg.debug('Error updating object %s in Thing.update_version()' % self)
+        
+        if hasattr(self, 'version_number'):
+            # Changing to dictionary-based versioning system
+            self.versions[gametools.findGamePath(__file__)] = 3
+            del self.__dict__['version_number']
 
     def delete(self):
         if self.contents:

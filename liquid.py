@@ -20,6 +20,7 @@ class Liquid(Scenery):
         self.actions['taste'] = Action(Liquid.drink, True, False)
         self.is_liquid = True
         self.path = gametools.findGamePath(path) if path else None
+        self.versions[gametools.findGamePath(__file__)] = 1
 
     #
     # ACTION METHODS (dictionary for scenery defined per-object)
