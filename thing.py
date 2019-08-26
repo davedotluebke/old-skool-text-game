@@ -67,7 +67,7 @@ class Thing(object):
         if isinstance(self.location, str):
             self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet? 
         if self.contents != None:
-            self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
+            self.contents = [Thing.ID_dict[id] for id in self.contents if (isinstance(id, str) and id in Thing.ID_dict)]
 
     #
     # SET/GET METHODS (methods to set or query attributes)
@@ -285,6 +285,8 @@ class Thing(object):
         sure all objects will still function."""
         if not self.version_number:
             self.version_number = 1
+        
+        # long_desc -> _long_desc
 
     def delete(self):
         if self.contents:

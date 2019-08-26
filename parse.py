@@ -269,7 +269,7 @@ class Parser:
             if err_msg == None: 
                 err_msg = result    # save the first error encountered
 
-        if result == False:
+        if result != True:
             # no objects handled the verb; print the first error message 
             console.write(err_msg if err_msg else "No objects handled verb, but no error message defined!")
 
