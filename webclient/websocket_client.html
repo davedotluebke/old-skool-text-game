@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Gameclient - 80 x 24</title>
+        <title>Gameclient</title>
         <style>
         body {
             margin: 0px;
             margin-bottom: 19px;
-            overflow: hidden;
             background: white;
         }
         input {
@@ -20,7 +19,27 @@
             border-right:0px;
             position: fixed;
             bottom: 0px;
+            right: 0px;
+            width: 97.5%;
+            font-weight: bold;
+            color: #0421f5
+        }
+        #inputPrompt {
+            font-family:'Monaco','Consolas',monospace;
+            font-size: 15px;
+            margin: 0px;
+            padding: 0px;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+            border-left: 0px;
+            border-right:0px;
+            position: fixed;
+            bottom: 0px;
             left: 0px;
+            width: 2.5%;
+            font-weight: bold;
+            color: #0421f5;
+            background-color: white;
         }
         input:focus {
             outline-width: 0;
@@ -84,9 +103,8 @@
         !-->
         <div class="messageOutput"><div>Your incoming data will appear here.</div></div>
         <form id="messageInput" width=100%>
-            <input size="80" width="100%" type="text" id="inputLine" autocomplete="off" autofocus="autofocus" autocorrect="off" autocapitalize="off" spellcheck="false">
-            <input type="hidden" id="resizeValidate">
-            <input type="hidden" id="width" value="721">
+            <span id='inputPrompt'>>&nbsp;</span>
+            <input type="text" id="inputLine" autocomplete="off" autofocus="autofocus" autocorrect="off" autocapitalize="off" spellcheck="false">
         </form>
         <span id='box_caret_el' class="onCaret"></span>
         <script>
@@ -94,7 +112,8 @@
             var current_cmd = 0;
             var mode = 0;
             var document_style_modes = ['','background-color: #000000; color: #00ff00; cursor:none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;','animation-name: crazymode; animation-duration: 4s; animation-iteration-count: infinite','background-color: #4800ff; cursor: none; color: #d9c407'];
-            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none; caret-color: black','animation-name: crazhmodeinput; animation-duration: 4s; animation-iteration-count: infinite','background-color: #00ffd0; cursor: none'];
+            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none; caret-color: black','animation-name: crazymodeinput; animation-duration: 4s; animation-iteration-count: infinite','background-color: #00ffd0; cursor: none'];
+            var input_prompt_style_modes = ['', 'background-color: #000000; color: #00ff00; border:none; cursor:none','animation-name: crazymodeinput; animation-duration: 4s; animation-iteration-count: infinite', 'background-color: #00ffd0; cursor: none']
             var allow_right_clicks = [true, false, true, false];
             var box_caret = [false, true, false, false];
             var b_style_modes = ['', 'color:#00ff00','','color: #d9c407'];
@@ -143,22 +162,12 @@
             window.onkeyup = function(e) {
                 if (box_caret[mode]) {
                     var textBeforeCaret = document.getElementById('inputLine').value.substring(0, document.getElementById('inputLine').selectionStart);
-                    var left_indent = calculateWordDimensions(textBeforeCaret+'.') - calculateWordDimensions('.');
+                    var left_indent = calculateWordDimensions(textBeforeCaret+'.') - calculateWordDimensions('.') + window.innerWidth*0.025;
                     document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_indent}px`;
                 }
             }
             window.onkeydown = function(e) {
                 var key = e.charCode || e.keyCode || 0;
-                /*if (box_caret[mode]) {
-                    if (key == 8 || key == 37) {
-                        moveCursorBack(key);
-                    }
-                    else {
-                        if (!(key == 38 || key == 40)) {
-                            moveCursorForward(key);
-                        }
-                    }
-                } */
                 if (key == 13) {
                     if (box_caret[mode]) {
                         left_offset = 0;
@@ -194,6 +203,7 @@
                     }
                     document.body.style = document_style_modes[mode];
                     document.getElementById('inputLine').style = input_style_modes[mode];
+                    document.getElementById('inputPrompt').style = input_prompt_style_modes[mode];
                     var b_elements = document.getElementsByTagName('b');
                     for (i = 0; i < b_elements.length; i++) {
                         b_elements[i].style = b_style_modes[mode];
@@ -221,6 +231,7 @@
             ws.onopen = function (event) {
                 ws.send('PING!');
             };
+            // What to do when receiving a message
             ws.onmessage = function (event) {
                 var messages = document.getElementsByTagName('div')[0],
                     message = document.createElement('div');
@@ -233,6 +244,7 @@
                 messages.appendChild(message);
                 window.scrollTo(0,document.body.scrollHeight);
             }
+            // What to do when sending a message
             function sendLine () {
                 var user_input = document.getElementById("inputLine").value,
                     messages = document.getElementsByTagName('div')[0],
@@ -240,49 +252,12 @@
                     contentBlock = document.createElement('b'),
                     content = document.createTextNode("> " + user_input);
                 contentBlock.style = b_style_modes[mode];
-                console.log("user: " + user_input);
                 ws.send(user_input + '\n');
                 contentBlock.appendChild(content);
                 message.appendChild(contentBlock);
                 messages.appendChild(message);
-                if (user_input.split(" ")[0] == 'width') {
-                    /*
-                     * If user typed a width command, resize the window appropriately
-                     */
-                    var new_width_chars = user_input.split(" ")[1],
-                        char_width = 9,
-                        new_width_pixels = new_width_chars * char_width + 1
-                        new_height_pixels = 438
-                    // Set window width to new_width * char_width plus 1 pixel padding
-                    // XXX hardcoded width of characters to 9 for now, instead should
-                    // build a span of 1 character and directly measure it. Same w/ height.
-                    document.getElementById('resizeValidate').value = 'true';
-                    window.resizeTo(Math.round(new_width_pixels), new_height_pixels);
-                    document.getElementById('width').value = Math.round(new_width_pixels);
-                    document.getElementById('inputLine').size = new_width_chars;
-                    document.title = 'Gameclient - ' + new_width_chars + ' x 24'
-                }
+                window.scrollTo(0,document.body.scrollHeight);
             }
-            /*window.onresize = function(e) {
-                if (document.getElementById('resizeValidate').value != 'true') {
-                    console.log('Fixing!')
-                    window.resizeTo(document.getElementById('width').value, 438);
-                    window.scrollTo(0,document.body.scrollHeight);
-                }
-                document.getElementById('resizeValidate').value = '';
-            }
-            function moveCursorForward(key) {
-                if (!(left_offset/9 > document.getElementById('inputLine').value.length) && !((left_offset/9 == document.getElementById('inputLine').value.length) && key == 39)) {
-                    left_offset += 9;
-                    document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_offset}px`;
-                }
-            }
-            function moveCursorBack(key) {
-                if (!(left_offset == 0)) {
-                    left_offset -= 9;
-                    document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_offset}px`;
-                }
-            }*/
         </script>
     </body>
 </html>
