@@ -209,14 +209,29 @@ class Parser:
                 possible_objects += obj.contents
 
         # THEN, check for objects matching the direct & indirect object strings
-        if sDO: 
+        if sDO:   # set oDO to object(s) matching direct object strings
             oDO = self.find_matching_objects(sDO, possible_objects, console)
-        if sIDO: 
+        if sIDO:  # set oDO to object(s) matching direct object strings
             oIDO = self.find_matching_objects(sIDO, possible_objects, console)
         if oDO == False or oIDO == False: 
             return True     # ambiguous user input; >1 object matched 
 
-        # IF there are multiple direct objects, try the verb for each one. 
+        # IF there are multiple direct objects, we might need to try the verb 
+        # for each one. E.g. "take the flashlight, sword, and coin" requires
+        # enacting each "take" actions in the flashlight, sword, & coin objects. 
+        # But the "put" action is supported by the container, so for "put the
+        # sword and coin in the bag" we will need to call the bag's "put" 
+        # action three times once for each direct object. In general when 
+        # the verb is supported by the indirect object or an unnamed object
+        # (such as a sword supporting the command "attack orc"), we should 
+        # use the first IDO or unnamed object that returns True for the first
+        # direct object on all the remaining direct objects. 
+        # So we need to store the first object that handles the verb 
+        # successfully (returning True); if that is a direct object, then
+        # test the verb on each remaining direct object using only each DO's
+        # verb; otherwise, test all remaining direct objects using only the 
+        # object that handled the first one successfully    
+
         raise  # need to loop over all or almost all of the below for each DO
 
         # NEXT, find objects that support the verb the user typed. 
@@ -235,10 +250,10 @@ class Parser:
 
         # If direct or indirect object supports the verb, try first in that order
         p = possible_verb_objects  # terser reference to possible_verb_objects
-        if oIDO in p:
-            p.insert(0, p.pop(p.index(oIDO)))  # swap oIDO to front of p
-        if oDO in p:
-            p.insert(0, p.pop(p.index(oDO)))   # swap oDO to front of p
+        if oIDO in p:  # swap oIDO to front of p
+            p.insert(0, p.pop(p.index(oIDO)))
+        if oDO in p:   # swap oDO to front of p
+            p.insert(0, p.pop(p.index(oDO)))
                 
         # FINALLY, try the action ("verb functions") of each object we found. 
         # If a valid usage of this verb function, it will return True and 
@@ -271,9 +286,9 @@ class Parser:
                 oIDO.plurality = 1
             
             act = obj.actions[sV]
-            try:
-                result = act.func(obj, self, console, oDO, oIDO) # <-- ENACT THE VERB
-            except Exception as isnt:
+            try:  ### ENACT THE VERB ###
+                result = act.func(obj, self, console, oDO, oIDO) 
+            except Exception:  # error, roll back any plurality changes and return True
                 console.write('An error has occured. Please try a different action until the problem is resolved.')
                 dbg.debug(traceback.format_exc(), 0)
                 dbg.debug("Error caught!", 0)
@@ -287,8 +302,7 @@ class Parser:
                     oIDO.plurality += oIDO_copy.plurality
                     oIDO_copy.destroy()
                 result = True   # we don't want the parser to go and do an action they probably didn't intend
-            if plural:
-                # did the action change obj so we need to remove from plurality?
+            if plural:  # did the action change obj so we need to remove from plurality?
                 if obj.is_identical_to(obj_copy):  
                     # no, obj_copy is identical to obj, merge back into a single plurality
                     obj.plurality += obj_copy.plurality 
@@ -297,8 +311,7 @@ class Parser:
                     # yes, obj_copy remains, register heartbeat for obj_copy if needed
                     if obj in Container.game.heartbeat_users:
                         Container.game.register_heartbeat(obj_copy)
-            if oDO_plural:
-                # did the action change oDO so we need to remove from plurality?
+            if oDO_plural:  # did the action change oDO so we need to remove from plurality?                
                 if oDO.is_identical_to(oDO_copy):  
                     # no, oDO_copy is identical to oDO, merge back into a single plurality
                     oDO.plurality += oDO_copy.plurality 
@@ -307,8 +320,7 @@ class Parser:
                     # yes, oDO_copy remains, register heartbeat for oDO_copy if needed
                     if oDO in Container.game.heartbeat_users:
                         Container.game.register_heartbeat(oDO_copy)
-            if oIDO_plural:
-                # did the action change oIDO so we need to remove from plurality?
+            if oIDO_plural:  # did the action change oIDO so we need to remove from plurality?
                 if oIDO.is_identical_to(oIDO_copy):  
                     # no, oIDO_copy is identical to oIDO, merge back into a single plurality
                     oIDO.plurality += oIDO_copy.plurality 
