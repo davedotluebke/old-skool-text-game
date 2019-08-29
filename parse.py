@@ -203,37 +203,19 @@ class Parser:
         # (only include room contents if room is not dark (but always include user)
         room = user.location
         possible_objects = [room] 
-        for obj in user.contents + (None if room.is_dark() else room.contents):
+        for obj in user.contents + (None if room.is_dark() else room.contents):  
             possible_objects += [obj]
             if isinstance(obj, Container) and obj.see_inside and obj is not user:
                 possible_objects += obj.contents
 
         # THEN, check for objects matching the direct & indirect object strings
         if sDO:   # set oDO to object(s) matching direct object strings
-            oDO = self.find_matching_objects(sDO, possible_objects, console)
+            oDO_list = self.find_matching_objects(sDO, possible_objects, console)
         if sIDO:  # set oDO to object(s) matching direct object strings
-            oIDO = self.find_matching_objects(sIDO, possible_objects, console)
-        if oDO == False or oIDO == False: 
+            oIDO_list = self.find_matching_objects(sIDO, possible_objects, console)
+        if oDO_list == False or oIDO_list == False: 
             return True     # ambiguous user input; >1 object matched 
-
-        # IF there are multiple direct objects, we might need to try the verb 
-        # for each one. E.g. "take the flashlight, sword, and coin" requires
-        # enacting each "take" actions in the flashlight, sword, & coin objects. 
-        # But the "put" action is supported by the container, so for "put the
-        # sword and coin in the bag" we will need to call the bag's "put" 
-        # action three times once for each direct object. In general when 
-        # the verb is supported by the indirect object or an unnamed object
-        # (such as a sword supporting the command "attack orc"), we should 
-        # use the first IDO or unnamed object that returns True for the first
-        # direct object on all the remaining direct objects. 
-        # So we need to store the first object that handles the verb 
-        # successfully (returning True); if that is a direct object, then
-        # test the verb on each remaining direct object using only each DO's
-        # verb; otherwise, test all remaining direct objects using only the 
-        # object that handled the first one successfully    
-
-        raise  # need to loop over all or almost all of the below for each DO
-
+        
         # NEXT, find objects that support the verb the user typed. 
         possible_verb_objects = []  # list of objects supporting the verb
         for obj in possible_objects:
@@ -250,6 +232,7 @@ class Parser:
 
         # If direct or indirect object supports the verb, try first in that order
         p = possible_verb_objects  # terser reference to possible_verb_objects
+        raise # XXX convert below code to use oDO_list and oIDO_list
         if oIDO in p:  # swap oIDO to front of p
             p.insert(0, p.pop(p.index(oIDO)))
         if oDO in p:   # swap oDO to front of p
