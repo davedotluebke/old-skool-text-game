@@ -172,7 +172,86 @@ class Parser:
         
         dbg.debug("matched_objects in '%s' are: %s" % (sObj, ' '.join(obj.id for obj in matched_objects)), 3)
         return matched_objects
-            
+
+    def _try_verb_from_obj(self, sV, obj, oDO, oIDO, cons):
+        """Try the action function matching the verb `sV` for an object `obj`. 
+        Passes on the direct object `oDO` and indirect object `oIDO` as well as
+        the parser and console. The action function returns True to indicate 
+        this is a valid usage of the verb function and the appropriate action
+        has been performed; otherwise it returns an error message string.
+
+        If obj, oDO, or oIDO are plural, peel off a singular copy before 
+        trying to enact the verb, then afterwards compare the enacted object
+        to the remaining copies to see if the action has changed the object. 
+        If not, merge the unchanged object back into the plurality. 
+        """
+        #  If obj is plural, peel off extra copies before trying to enact the verb
+        # TODO: support peeling off a plurality, e.g. "drop three coins"
+        plural = obj.plurality > 1
+        if plural:  
+            obj_copy = obj.replicate()
+            obj_copy.plurality = obj.plurality - 1
+            obj.plurality = 1
+        # Check direct/indirect object plurality, peel off extra copies. 
+        # Note: often oDO or oIDO points to obj, so test this after un-pluralizing obj
+        oDO_plural = (oDO.plurality > 1) if oDO else False
+        if oDO_plural:  
+            oDO_copy = oDO.replicate()
+            # TODO: support peeling off a plurality, e.g. "drop three coins"
+            oDO_copy.plurality = oDO.plurality - 1
+            oDO.plurality = 1
+        oIDO_plural = (oIDO.plurality > 1) if oIDO else False
+        if oIDO_plural:
+            oIDO_copy = oIDO.replicate()
+            # TODO: support peeling off a plurality, e.g. "drop three coins"
+            oIDO_copy.plurality = oIDO.plurality - 1
+            oIDO.plurality = 1
+        
+        act = obj.actions[sV]
+        try:  ### ENACT THE VERB ###
+            result = act.func(obj, self, cons, oDO, oIDO) 
+        except Exception:  # error, roll back any plurality changes and return True
+            console.write('An error has occured. Please try a different action until the problem is resolved.')
+            dbg.debug(traceback.format_exc(), 0)
+            dbg.debug("Error caught!", 0)
+            if plural: 
+                obj.plurality += obj_copy.plurality 
+                obj_copy.destroy()
+            if oDO_plural:
+                oDO.plurality += oDO_copy.plurality
+                oDO_copy.destroy()
+            if oIDO_plural:
+                oIDO.plurality += oIDO_copy.plurality
+                oIDO_copy.destroy()
+            result = True   # upon error, don't go do a different action - user probably intended this one
+        if plural:  # did the action change obj so we need to remove from plurality?
+            if obj.is_identical_to(obj_copy):  
+                # no, obj_copy is identical to obj, merge back into a single plurality
+                obj.plurality += obj_copy.plurality 
+                obj_copy.destroy()
+            else:
+                # yes, obj_copy remains, register heartbeat for obj_copy if needed
+                if obj in Container.game.heartbeat_users:
+                    Container.game.register_heartbeat(obj_copy)
+        if oDO_plural:  # did the action change oDO so we need to remove from plurality?                
+            if oDO.is_identical_to(oDO_copy):  
+                # no, oDO_copy is identical to oDO, merge back into a single plurality
+                oDO.plurality += oDO_copy.plurality 
+                oDO_copy.destroy()
+            else:
+                # yes, oDO_copy remains, register heartbeat for oDO_copy if needed
+                if oDO in Container.game.heartbeat_users:
+                    Container.game.register_heartbeat(oDO_copy)
+        if oIDO_plural:  # did the action change oIDO so we need to remove from plurality?
+            if oIDO.is_identical_to(oIDO_copy):  
+                # no, oIDO_copy is identical to oIDO, merge back into a single plurality
+                oIDO.plurality += oIDO_copy.plurality 
+                oIDO_copy.destroy()
+            else:
+                # yes, oIDO_copy remains, register heartbeat for oIDO_copy if needed
+                if oIDO in Container.game.heartbeat_users:
+                    Container.game.register_heartbeat(oIDO_copy)
+
 
     def parse(self, user, console, command):
         """Parse and enact the user's command. Valid commands have the form:
@@ -230,88 +309,32 @@ class Parser:
             return True
         dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
 
-        # If direct or indirect object supports the verb, try first in that order
-        p = possible_verb_objects  # terser reference to possible_verb_objects
-        raise # XXX convert below code to use oDO_list and oIDO_list
-        if oIDO in p:  # swap oIDO to front of p
-            p.insert(0, p.pop(p.index(oIDO)))
-        if oDO in p:   # swap oDO to front of p
-            p.insert(0, p.pop(p.index(oDO)))
+        # If multiple direct or indirect objects, enact the verb on each in turn.
+        # See discussion in issue #89: the correct verb function (action) could come from 
+        # the direct objects ("take sword and bow from chest", `take()`` from `Thing`), the
+        # indirect object ("put sword and bow in chest", `put()` from `Container`), or some 
+        # unnamed object ("attack troll" engaging `attack` in a wielded `Weapon`). Solution:
+        ####################################################################
+        raise  # XXX still need to implement the order in the below comment
+        ####################################################################
+        # First try enacting the action from a direct object on itself. 
+        #   If successful, enact the verbs from any other direct objects on themselves in turn.  
+        # If not, test the verbs from the indirect object, then all other possible objects
+        #   If any of these verbs succeeds, use the same verb on any other direct objects. 
+        
+        p = possible_verb_objects  # terser 
+        # move direct and indirect objects to the front of the list:
+        p = oDO_list + oIDO_list + [o for o in p if o not in oDO_list and o not in oIDO_list]
                 
-        # FINALLY, try the action ("verb functions") of each object we found. 
-        # If a valid usage of this verb function, it will return True and 
-        # the command has been handled; otherwise it returns an error message. 
-        # In this case keep trying other actions. If no valid verb function is 
-        # found, print the error message from the first invalid verb tried.   
-        result = False
+        # FINALLY, try the actions ("verb functions") of each object until
+        # one returns True (indicating the action was handled). If an action
+        # returns an error message instead, keep trying other actions. If no
+        # object's action returns True, print the first object's error message.
         err_msg = None
+        for DO in 
+        result = False
         for obj in possible_verb_objects:
-            #  If obj is plural, peel off extra copies before trying to enact the verb
-            # TODO: support peeling off a plurality, e.g. "drop three coins"
-            plural = obj.plurality > 1
-            if plural:  
-                obj_copy = obj.replicate()
-                obj_copy.plurality = obj.plurality - 1
-                obj.plurality = 1
-            # Check direct/indirect object plurality, peel off extra copies. 
-            # Note: often oDO or oIDO points to obj, so test this after un-pluralizing obj
-            oDO_plural = (oDO.plurality > 1) if oDO else False
-            if oDO_plural:  
-                oDO_copy = oDO.replicate()
-                # TODO: support peeling off a plurality, e.g. "drop three coins"
-                oDO_copy.plurality = oDO.plurality - 1
-                oDO.plurality = 1
-            oIDO_plural = (oIDO.plurality > 1) if oIDO else False
-            if oIDO_plural:
-                oIDO_copy = oIDO.replicate()
-                # TODO: support peeling off a plurality, e.g. "drop three coins"
-                oIDO_copy.plurality = oIDO.plurality - 1
-                oIDO.plurality = 1
-            
-            act = obj.actions[sV]
-            try:  ### ENACT THE VERB ###
-                result = act.func(obj, self, console, oDO, oIDO) 
-            except Exception:  # error, roll back any plurality changes and return True
-                console.write('An error has occured. Please try a different action until the problem is resolved.')
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug("Error caught!", 0)
-                if plural: 
-                    obj.plurality += obj_copy.plurality 
-                    obj_copy.destroy()
-                if oDO_plural:
-                    oDO.plurality += oDO_copy.plurality
-                    oDO_copy.destroy()
-                if oIDO_plural:
-                    oIDO.plurality += oIDO_copy.plurality
-                    oIDO_copy.destroy()
-                result = True   # we don't want the parser to go and do an action they probably didn't intend
-            if plural:  # did the action change obj so we need to remove from plurality?
-                if obj.is_identical_to(obj_copy):  
-                    # no, obj_copy is identical to obj, merge back into a single plurality
-                    obj.plurality += obj_copy.plurality 
-                    obj_copy.destroy()
-                else:
-                    # yes, obj_copy remains, register heartbeat for obj_copy if needed
-                    if obj in Container.game.heartbeat_users:
-                        Container.game.register_heartbeat(obj_copy)
-            if oDO_plural:  # did the action change oDO so we need to remove from plurality?                
-                if oDO.is_identical_to(oDO_copy):  
-                    # no, oDO_copy is identical to oDO, merge back into a single plurality
-                    oDO.plurality += oDO_copy.plurality 
-                    oDO_copy.destroy()
-                else:
-                    # yes, oDO_copy remains, register heartbeat for oDO_copy if needed
-                    if oDO in Container.game.heartbeat_users:
-                        Container.game.register_heartbeat(oDO_copy)
-            if oIDO_plural:  # did the action change oIDO so we need to remove from plurality?
-                if oIDO.is_identical_to(oIDO_copy):  
-                    # no, oIDO_copy is identical to oIDO, merge back into a single plurality
-                    oIDO.plurality += oIDO_copy.plurality 
-                    oIDO_copy.destroy()
-                else:
-                    # yes, oIDO_copy remains, register heartbeat for oIDO_copy if needed
-                    if oIDO in Container.game.heartbeat_users:
-                        Container.game.register_heartbeat(oIDO_copy)
+            result = _try_verb_from_obj(sV, obj, oDO, oIDO, self, console)
             
             if result == True:
                 break               # verb has been enacted, all done!
