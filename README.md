@@ -1,7 +1,7 @@
 # old-skool-text-game
-Coding project used by Owen (and Dave) to learn Python
+A text adventure game written in python
 
-Contains a framework somewhat like the old LPMud worlds (see genesismud.org):
+Contains a framework somewhat like the old LPMud worlds (see genesismud.org)
 
 ## The World
 The world consists of a scorcery school, where you are assigned quests with a magical scroll. Your quests may take you into dangerous forests, pit you against fierce monsters, teach you to brew new types of potions, etc. Eventual goal is that players will be able to become wizards and add their own quests, monsters, etc. to the world.
