@@ -80,6 +80,11 @@ class Thing(object):
         """Add one or more adjective strings, each as a separate argument"""
         self.adjectives += list(sAdjs)
     
+    def remove_adjectives(self, *sAdjs):
+        """Remove one or more adjective strings, each specified as a separate argument. 
+        Ignores any adjectives that are not associated with the object."""
+        self.adjectives = [o for o in self.adjectives if o not in list(sAdjs)]
+
     def set_weight(self, grams):
         if (grams < 0):
             dbg.debug("Error: weight cannot be negative", 0)

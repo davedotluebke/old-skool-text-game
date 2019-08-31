@@ -18,6 +18,7 @@ class Flashlight(Thing):
             self._short_desc += " burning brightly"
             self._plural_short_desc += " burning brightly"
             self._long_desc += "\nThe flashlight is on, burning brightly."
+            self.add_adjectives("lit", "burning")
         else: 
             (head, sep, tail) = self._short_desc.partition(" burning brightly")
             self._short_desc = head
@@ -25,6 +26,7 @@ class Flashlight(Thing):
             self._plural_short_desc = head
             (head, sep, tail) = self._long_desc.partition("\nThe flashlight is on")
             self._long_desc = head
+            self.remove_adjectives("lit", "burning")
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
