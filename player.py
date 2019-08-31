@@ -60,7 +60,7 @@ class Player(Creature):
         self.adj2 = None
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
-        self.versions[gametools.findGamePath(__file__)] = 1
+        self.versions[gametools.findGamePath(__file__)] = 2
 
     def get_saveable(self):
         saveable = super().get_saveable()
@@ -80,6 +80,13 @@ class Player(Creature):
 
     def save_cons_attributes(self):
         self.saved_cons_attributes = [self.cons.alias_map, self.cons.measurement_system]
+    
+    def update_version(self):
+        super().update_version()
+
+        if self.versions[gametools.findGamePath(__file__)] == 1:
+            self.password = "{\"F\":[1779033703,-1150833019,1013904242,-1521486534,1359893119,-1694144372,528734635,1541459225],\"A\":[1634952294],\"l\":32}"
+            self.versions[gametools.findGamePath(__file__)] = 2
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
@@ -134,22 +141,22 @@ class Player(Creature):
         elif state == 'AWAITING_PASSWORD':
             passwd = cmd
             # XXX temporary fix, need more security
-            if passwd == self.password:
-                # TODO more secure password authentication goes here
-                filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+            # TODO more secure password authentication goes here
+            filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+            try:
                 try:
-                    newuser = self.game.load_player(filename, self.cons)
+                    newuser = self.game.load_player(filename, self.cons, password=passwd)
                     dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]), 0)
                     newuser.login_state = None
                     self.login_state = None
                     self.game.deregister_heartbeat(self)
                     del Thing.ID_dict[self.id]
-                except gametools.PlayerLoadError:
-                    self.cons.write("Error loading data for player %s from file %s. <br>"
-                                    "Please try again.<br>Please enter your username: " % (self.names[0], filename))
+                except gametools.IncorrectPasswordError:
+                    self.cons.write("Your username or password is incorrect. Please try again.")
                     self.login_state = "AWAITING_USERNAME"
-            else:
-                self.cons.write("Your username or password is incorrect. Please try again.")
+            except gametools.PlayerLoadError:
+                self.cons.write("Error loading data for player %s from file %s. <br>"
+                                "Please try again.<br>Please enter your username: " % (self.names[0], filename))
                 self.login_state = "AWAITING_USERNAME"
     #
     # SET/GET METHODS (methods to set or query attributes)

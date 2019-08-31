@@ -45,6 +45,7 @@ class Console:
         self.input_redirect = None
         self.width = Console.default_width
         self.measurement_system = Console.default_measurement_system
+        self.changing_passwords = False
         self.alias_map = {'n':       'go north',
                           's':       'go south',
                           'e':       'go east', 
@@ -237,6 +238,13 @@ class Console:
                 self.write("Auto attack toggled to %s." % self.user.auto_attack)
                 return True
             
+            if cmd == 'change':
+                if self.words[1] == 'password':
+                    self.write("Please enter your new #password:")
+                    self.input_redirect = self
+                    self.changing_passwords = True
+                    return True
+            
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
             if cmd in game_file_cmds:
@@ -401,6 +409,13 @@ class Console:
     def request_input(self, dest):
         self.input_redirect = dest
         dbg.debug("Input from console %s given to %s!" % (self, dest))
+    
+    def console_recv(self, command):
+        """Temporarily recieve information as a two-part command, e.g. changing passwords."""
+        if self.changing_passwords:
+            self.user.password = command
+            self.changing_passwords = False
+            self.input_redirect = None
 
     def take_input(self):
         if (self.raw_input == ''):

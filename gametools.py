@@ -16,6 +16,9 @@ class PlayerSaveError(Exception):
 class PlayerLoadError(Exception):
     pass
 
+class IncorrectPasswordError(Exception):
+    pass
+
 def validate_func(modpath, func):
     try:
         mod = importlib.import_module(modpath)

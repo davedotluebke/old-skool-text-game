@@ -145,7 +145,7 @@ class Game():
             obj._add_ID(obj.id)  # re-create original entry in ID_dict
         
 
-    def load_player(self, filename, cons, oldplayer=None):
+    def load_player(self, filename, cons, oldplayer=None, password=None):
         """Load a single player and his/her inventory from a saved file.
 
         Objects in the player's inventory (and their contents, recursively) 
@@ -176,6 +176,9 @@ class Game():
             cons.write("The file you are trying to load appears to be corrupt.")
             raise gametools.PlayerLoadError
         newplayer = l[0]  # first object saved is the player
+        if password:
+            if password != newplayer.password:
+                raise gametools.IncorrectPasswordError
 
         if oldplayer:
             # TODO: move below code for deleting player to Player.__del__()
