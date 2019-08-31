@@ -5,6 +5,7 @@ from thing import Thing
 from container import Container
 from weapon import Weapon
 from armor import Armor
+from action import Action
 
 class Creature(Container):
     def __init__(self, default_name, path, pref_id=None):
@@ -248,6 +249,10 @@ class Creature(Container):
             self.attack(attacking)
         else:
             self.attack_now += 1
+    
+    actions = dict(Container.actions)
+    actions['look'] = Action(look_at, True, False)
+    actions['examine'] = Action(look_at, True, False)
 
 class NPC(Creature):
     def __init__(self, ID, path, aggressive=0, pref_id=None):

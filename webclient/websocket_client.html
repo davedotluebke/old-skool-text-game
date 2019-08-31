@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Gameclient - 80 x 24</title>
+        <title>Gameclient</title>
         <style>
         body {
             margin: 0px;
             margin-bottom: 19px;
-            overflow: hidden;
             background: white;
         }
         input {
@@ -20,7 +19,27 @@
             border-right:0px;
             position: fixed;
             bottom: 0px;
+            right: 0px;
+            width: 97.5%;
+            font-weight: bold;
+            color: #0421f5
+        }
+        #inputPrompt {
+            font-family:'Monaco','Consolas',monospace;
+            font-size: 15px;
+            margin: 0px;
+            padding: 0px;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+            border-left: 0px;
+            border-right:0px;
+            position: fixed;
+            bottom: 0px;
             left: 0px;
+            width: 2.5%;
+            font-weight: bold;
+            color: #0421f5;
+            background-color: white;
         }
         input:focus {
             outline-width: 0;
@@ -82,24 +101,28 @@
         <!--
         <iframe id="messageFrame" width="100%" height="70%"></iframe>
         !-->
-        <div class="messageOutput"><div>Your incoming data will appear here.</div></div>
+        <div class="messageOutput"><div>Please enter an IP Address, or click "enter" to try recent ones:</div></div>
         <form id="messageInput" width=100%>
-            <input size="80" width="100%" type="text" id="inputLine" autocomplete="off" autofocus="autofocus" autocorrect="off" autocapitalize="off" spellcheck="false">
-            <input type="hidden" id="resizeValidate">
-            <input type="hidden" id="width" value="721">
+            <span id='inputPrompt'>>&nbsp;</span>
+            <input type="text" id="inputLine" autocomplete="off" autofocus="autofocus" autocorrect="off" autocapitalize="off" spellcheck="false">
         </form>
         <span id='box_caret_el' class="onCaret"></span>
         <script>
             var cmd_history = [''];
             var current_cmd = 0;
-            var mode = 0;
+            var state = 'MAKE_CONNECTION';
             var document_style_modes = ['','background-color: #000000; color: #00ff00; cursor:none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;','animation-name: crazymode; animation-duration: 4s; animation-iteration-count: infinite','background-color: #4800ff; cursor: none; color: #d9c407'];
-            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none; caret-color: black','animation-name: crazhmodeinput; animation-duration: 4s; animation-iteration-count: infinite','background-color: #00ffd0; cursor: none'];
+            var input_style_modes = ['', 'background-color: #000000; color: #00ff00; cursor:none; border:none; caret-color: black','animation-name: crazymodeinput; animation-duration: 4s; animation-iteration-count: infinite','background-color: #00ffd0; cursor: none'];
+            var input_prompt_style_modes = ['', 'background-color: #000000; color: #00ff00; border:none; cursor:none','animation-name: crazymodeinput; animation-duration: 4s; animation-iteration-count: infinite', 'background-color: #00ffd0; cursor: none']
             var allow_right_clicks = [true, false, true, false];
             var box_caret = [false, true, false, false];
             var b_style_modes = ['', 'color:#00ff00','','color: #d9c407'];
             var left_offset = 0;
             var caret_on = true;
+            var ws = undefined;
+
+            document.getElementById('inputLine').focus();
+
             function getRandomcolour() {
                 var letters = '0123456789ABCDEF';
                 var colour = '#';
@@ -138,27 +161,67 @@
                     caret.className = 'onCaret';
                     caret_on = true;
                 }
+            };
+            function setCookie(cname, cvalue, exminutes) {
+                var d = new Date();
+                d.setTime(d.getTime() + (exminutes*60*1000));
+                var expires = "expires="+ d.toUTCString();
+                document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
             }
+
+            function getCookie(cname) {
+                var name = cname + "=";
+                var decodedCookie = decodeURIComponent(document.cookie);
+                var ca = decodedCookie.split(';');
+                for(var i = 0; i <ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                        return c.substring(name.length, c.length);
+                    }
+                }
+                return undefined;
+            }
+
+            var former_ip_addresses = getCookie('formip').split(',');
+            if (former_ip_addresses == undefined) {
+                former_ip_addresses = ['127.0.0.1','127.0.0.1','127.0.0.1','127.0.0.1']
+            }
+
+            function updateWindowStyle(mode) {
+                document.body.style = document_style_modes[mode];
+                document.getElementById('inputLine').style = input_style_modes[mode];
+                document.getElementById('inputPrompt').style = input_prompt_style_modes[mode];
+                var b_elements = document.getElementsByTagName('b');
+                for (i = 0; i < b_elements.length; i++) {
+                    b_elements[i].style = b_style_modes[mode];
+                }
+                if (box_caret[mode]) {
+                    document.getElementById('box_caret_el').style = 'display:block';
+                }
+                else {
+                    document.getElementById('box_caret_el').style = '';
+                }
+            }
+
+            var mode = Number(getCookie('mode'));
+            if (mode != mode || mode == undefined || mode == null) {
+                mode = 0;
+            }
+            setTimeout(updateWindowStyle, 1, mode);
+
             setInterval(updateCaret, 500);
             window.onkeyup = function(e) {
                 if (box_caret[mode]) {
                     var textBeforeCaret = document.getElementById('inputLine').value.substring(0, document.getElementById('inputLine').selectionStart);
-                    var left_indent = calculateWordDimensions(textBeforeCaret+'.') - calculateWordDimensions('.');
+                    var left_indent = calculateWordDimensions(textBeforeCaret+'.') - calculateWordDimensions('.') + window.innerWidth*0.025;
                     document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_indent}px`;
                 }
             }
             window.onkeydown = function(e) {
                 var key = e.charCode || e.keyCode || 0;
-                /*if (box_caret[mode]) {
-                    if (key == 8 || key == 37) {
-                        moveCursorBack(key);
-                    }
-                    else {
-                        if (!(key == 38 || key == 40)) {
-                            moveCursorForward(key);
-                        }
-                    }
-                } */
                 if (key == 13) {
                     if (box_caret[mode]) {
                         left_offset = 0;
@@ -192,18 +255,8 @@
                     if (mode == document_style_modes.length) {
                         mode = 0;
                     }
-                    document.body.style = document_style_modes[mode];
-                    document.getElementById('inputLine').style = input_style_modes[mode];
-                    var b_elements = document.getElementsByTagName('b');
-                    for (i = 0; i < b_elements.length; i++) {
-                        b_elements[i].style = b_style_modes[mode];
-                    }
-                    if (box_caret[mode]) {
-                        document.getElementById('box_caret_el').style = 'display:block';
-                    }
-                    else {
-                        document.getElementById('box_caret_el').style = '';
-                    }
+                    setCookie('mode', mode, 60*24*7*4);
+                    setTimeout(updateWindowStyle, 1, mode);
                     e.preventDefault();
                 }
             }
@@ -212,27 +265,69 @@
                     e.preventDefault();
                 }
             }, false);
-            var ip_address = window.prompt('IP Address: ');
-            while (ip_address == null) {
-                ip_address = window.prompt('IP Address: ');
-            }
-            var ws = new WebSocket("ws://" + ip_address + ":9124/"),
-            messages = document.getElementsByTagName('div')[0];
-            ws.onopen = function (event) {
-                ws.send('PING!');
-            };
-            ws.onmessage = function (event) {
+            function receiveMessage(event) {
                 var messages = document.getElementsByTagName('div')[0],
                     message = document.createElement('div');
-                message.innerHTML = event.data
+                if (state == 'PLAY_GAME') {
+                    message.innerHTML = event.data;
+                }
+                if (state == 'MAKE_CONNECTION') {
+                    message.innerHTML = event;
+                }
                 if (message.innerHTML.indexOf('#quit') > -1) {
-                    window.parent.focus();
-                    window.parent.location.reload();
-                    window.close();
+                    state = 'MAKE_CONNECTION';
+                    ws.close();
                 }
                 messages.appendChild(message);
                 window.scrollTo(0,document.body.scrollHeight);
             }
+            // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
+            function openWebSocket(ip_address, ip_index) {
+                setTimeout(receiveMessage,1,"Trying to connect to " + ip_address + "...");
+                ws = new WebSocket("ws://" + ip_address + ":9124/");
+                ws.onopen = function (event) {
+                    receiveMessage("Successfully connected to " + ip_address);
+                    state = 'PLAY_GAME';
+                    if (ip_address != '127.0.0.1') {
+                        former_ip_addresses = former_ip_addresses.slice(0,3);
+                        former_ip_addresses.unshift(ip_address);
+                        setCookie('formip', former_ip_addresses, 60*24*7*4);
+                    }
+                    ws.send('PING!');
+                };
+                ws.onerror = function (event) {
+                    setTimeout(receiveMessage,1,"No server was found at " + ip_address);
+                    tryFormerIpAddresses(ip_index+1);
+                };
+                // What to do when receiving a message
+                ws.onmessage = receiveMessage;
+            }
+            function tryFormerIpAddresses(ip_index) {
+                if (former_ip_addresses[ip_index] != undefined) {
+                    openWebSocket(former_ip_addresses[ip_index], ip_index)
+                }
+                else {
+                    setTimeout(receiveMessage,1,"Please enter a server IP Address:");
+                }
+            }
+            function handleInput(user_input) {
+                // Detect if input is IP Address
+                if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(user_input)) {
+                    openWebSocket(user_input)
+                }
+                else {
+                    if (user_input.length == 0) {
+                        openWebSocket('127.0.0.1', -1);
+                    }
+                    else {
+                        if (user_input == 'exit') {
+                            window.close();
+                        }
+                        setTimeout(receiveMessage,1,"I didn't understand your input.");
+                    }
+                }
+            }
+            // What to do when sending a message
             function sendLine () {
                 var user_input = document.getElementById("inputLine").value,
                     messages = document.getElementsByTagName('div')[0],
@@ -240,49 +335,17 @@
                     contentBlock = document.createElement('b'),
                     content = document.createTextNode("> " + user_input);
                 contentBlock.style = b_style_modes[mode];
-                console.log("user: " + user_input);
-                ws.send(user_input + '\n');
+                if (state == 'PLAY_GAME') {
+                    ws.send(user_input + '\n');
+                }
+                if (state == 'MAKE_CONNECTION') {
+                    handleInput(user_input);
+                }
                 contentBlock.appendChild(content);
                 message.appendChild(contentBlock);
                 messages.appendChild(message);
-                if (user_input.split(" ")[0] == 'width') {
-                    /*
-                     * If user typed a width command, resize the window appropriately
-                     */
-                    var new_width_chars = user_input.split(" ")[1],
-                        char_width = 9,
-                        new_width_pixels = new_width_chars * char_width + 1
-                        new_height_pixels = 438
-                    // Set window width to new_width * char_width plus 1 pixel padding
-                    // XXX hardcoded width of characters to 9 for now, instead should
-                    // build a span of 1 character and directly measure it. Same w/ height.
-                    document.getElementById('resizeValidate').value = 'true';
-                    window.resizeTo(Math.round(new_width_pixels), new_height_pixels);
-                    document.getElementById('width').value = Math.round(new_width_pixels);
-                    document.getElementById('inputLine').size = new_width_chars;
-                    document.title = 'Gameclient - ' + new_width_chars + ' x 24'
-                }
+                window.scrollTo(0,document.body.scrollHeight);
             }
-            /*window.onresize = function(e) {
-                if (document.getElementById('resizeValidate').value != 'true') {
-                    console.log('Fixing!')
-                    window.resizeTo(document.getElementById('width').value, 438);
-                    window.scrollTo(0,document.body.scrollHeight);
-                }
-                document.getElementById('resizeValidate').value = '';
-            }
-            function moveCursorForward(key) {
-                if (!(left_offset/9 > document.getElementById('inputLine').value.length) && !((left_offset/9 == document.getElementById('inputLine').value.length) && key == 39)) {
-                    left_offset += 9;
-                    document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_offset}px`;
-                }
-            }
-            function moveCursorBack(key) {
-                if (!(left_offset == 0)) {
-                    left_offset -= 9;
-                    document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_offset}px`;
-                }
-            }*/
         </script>
     </body>
 </html>

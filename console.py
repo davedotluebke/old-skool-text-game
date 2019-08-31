@@ -1,6 +1,5 @@
 import asyncio
 import connections_websock
-from textwrap import TextWrapper
 import os.path
 
 from debug import dbg
@@ -46,7 +45,6 @@ class Console:
         self.input_redirect = None
         self.width = Console.default_width
         self.measurement_system = Console.default_measurement_system
-        self.tw = TextWrapper(width = self.width, replace_whitespace = False, drop_whitespace = True, tabsize = 4) 
         self.alias_map = {'n':       'go north',
                           's':       'go south',
                           'e':       'go east', 
@@ -105,7 +103,6 @@ class Console:
 
     def set_width(self, w):
         self.width = w
-        self.tw.width = w
     
     def get_width(self):
         return self.width
@@ -202,19 +199,6 @@ class Console:
             
             if cmd == 'units':
                 self._change_units(self.command)
-                return True
-            
-            if cmd == 'width': 
-                if len(self.words) == 2 :
-                    try: 
-                        self.width = int(self.words[1])
-                        self.write("Changing console width to %d" % self.width)
-                    except ValueError:
-                        self.write("Syntax error, changing console width to default %d." % self.default_width)
-                        self.width = self.default_width
-                    self.tw.width = self.width
-                else:
-                    self.write("The console width is currently %d. Type 'width [width]' to change it." % self.width)
                 return True
             
             if cmd == 'help':
@@ -389,13 +373,7 @@ class Console:
         return new_text
 
     def write(self, text, indent=0):
-        str_text = str(text)
-        self.tw.initial_indent = indent * ' '
-        self.tw.subsequent_indent = indent * ' '
-        lines = str_text.splitlines()
-        for l in lines: 
-            wrapped = self.tw.fill(l)
-            self.raw_output += wrapped + '\n'
+        self.raw_output += str(text) + '<br>'
         self.raw_output = self.raw_output.replace('\n','<br>').replace('\t', '&nbsp&nbsp&nbsp&nbsp')
         self.raw_output = self.choose_measurements(self.raw_output)
         self.raw_output = self.sanitizeHTML(self.raw_output)
