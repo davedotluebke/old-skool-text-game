@@ -107,6 +107,7 @@
             <input type="text" id="inputLine" autocomplete="off" autofocus="autofocus" autocorrect="off" autocapitalize="off" spellcheck="false">
         </form>
         <span id='box_caret_el' class="onCaret"></span>
+        <script src="https://bitwiseshiftleft.github.io/sjcl/sjcl.js"></script>
         <script>
             var cmd_history = [''];
             var current_cmd = 0;
@@ -185,9 +186,12 @@
                 return undefined;
             }
 
-            var former_ip_addresses = getCookie('formip').split(',');
+            var former_ip_addresses = getCookie('formip');
             if (former_ip_addresses == undefined) {
                 former_ip_addresses = ['127.0.0.1','127.0.0.1','127.0.0.1','127.0.0.1']
+            }
+            else {
+                former_ip_addresses.split(",");
             }
 
             function updateWindowStyle(mode) {
@@ -227,9 +231,11 @@
                         left_offset = 0;
                         document.getElementById('box_caret_el').style = `display:block; position:fixed; left: ${left_offset}px`;
                     }
-                    cmd_history[cmd_history.length-1] = document.getElementById('inputLine').value;
-                    cmd_history.push('')
-                    current_cmd = cmd_history.length - 1;
+                    if (state != 'SEND_PASSWORD') {
+                        cmd_history[cmd_history.length-1] = document.getElementById('inputLine').value;
+                        cmd_history.push('')
+                        current_cmd = cmd_history.length - 1;
+                    }
                     e.preventDefault();
                     sendLine();
                     document.getElementById("inputLine").value = cmd_history[current_cmd];
@@ -277,6 +283,10 @@
                 if (message.innerHTML.indexOf('#quit') > -1) {
                     state = 'MAKE_CONNECTION';
                     ws.close();
+                }
+                if (message.innerHTML.indexOf('password') > -1) {
+                    state = 'SEND_PASSWORD';
+                    document.getElementById('inputLine').type = 'password';
                 }
                 messages.appendChild(message);
                 window.scrollTo(0,document.body.scrollHeight);
@@ -332,11 +342,24 @@
                 var user_input = document.getElementById("inputLine").value,
                     messages = document.getElementsByTagName('div')[0],
                     message = document.createElement('div'),
-                    contentBlock = document.createElement('b'),
-                    content = document.createTextNode("> " + user_input);
+                    contentBlock = document.createElement('b');
+                if (state != 'SEND_PASSWORD') {
+                    var content = document.createTextNode("> " + user_input);
+                }
+                else {
+                    var content = document.createTextNode("> ******");
+                }
                 contentBlock.style = b_style_modes[mode];
                 if (state == 'PLAY_GAME') {
                     ws.send(user_input + '\n');
+                }
+                if (state == 'SEND_PASSWORD') {
+                    var hashed_key = new sjcl.hash.sha256();
+                    hashed_key.update(user_input);
+                    ws.send(hashed_key);
+                    user_input = '';
+                    document.getElementById('inputLine').type = 'text';
+                    state = 'PLAY_GAME';
                 }
                 if (state == 'MAKE_CONNECTION') {
                     handleInput(user_input);
