@@ -32,6 +32,7 @@ class Player(Creature):
         Creature.__init__(self, ID, path)
         self.cons = console
         self.login_state = None
+        self.password = None
         self.start_loc_id = None
         self.set_description("formless soul", "A formless player without a name")
         self.set_weight(175/2.2)
@@ -116,7 +117,8 @@ class Player(Creature):
                 return
         elif state == 'AWAITING_NEW_PASSWORD':
             passwd = cmd
-            # XXX ignoring for now. 
+            # XXX temporary fix for now
+            self.password = passwd
             # TODO secure password authentication goes here
             self.id = self._add_ID(self.names[0])            
             self.proper_name = self.names[0].capitalize()
@@ -131,22 +133,24 @@ class Player(Creature):
             return
         elif state == 'AWAITING_PASSWORD':
             passwd = cmd
-            # XXX ignoring for now. 
-            # TODO secure password authentication goes here
-            filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
-            try:
-                newuser = self.game.load_player(filename, self.cons)
-                dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]), 0)
-                newuser.login_state = None
-                self.login_state = None
-                self.game.deregister_heartbeat(self)
-                del Thing.ID_dict[self.id]
-            except gametools.PlayerLoadError:
-                self.cons.write("Error loading data for player %s from file %s. <br>"
-                                "Please try again.<br>Please enter your username: " % (self.names[0], filename))
+            # XXX temporary fix, need more security
+            if passwd == self.password:
+                # TODO more secure password authentication goes here
+                filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+                try:
+                    newuser = self.game.load_player(filename, self.cons)
+                    dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]), 0)
+                    newuser.login_state = None
+                    self.login_state = None
+                    self.game.deregister_heartbeat(self)
+                    del Thing.ID_dict[self.id]
+                except gametools.PlayerLoadError:
+                    self.cons.write("Error loading data for player %s from file %s. <br>"
+                                    "Please try again.<br>Please enter your username: " % (self.names[0], filename))
+                    self.login_state = "AWAITING_USERNAME"
+            else:
+                self.cons.write("Your username or password is incorrect. Please try again.")
                 self.login_state = "AWAITING_USERNAME"
-            return
-
     #
     # SET/GET METHODS (methods to set or query attributes)
     #

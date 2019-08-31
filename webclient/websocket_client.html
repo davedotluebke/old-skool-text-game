@@ -191,7 +191,7 @@
                 former_ip_addresses = ['127.0.0.1','127.0.0.1','127.0.0.1','127.0.0.1']
             }
             else {
-                former_ip_addresses.split(",");
+                former_ip_addresses = former_ip_addresses.split(",");
             }
 
             function updateWindowStyle(mode) {
@@ -356,7 +356,8 @@
                 if (state == 'SEND_PASSWORD') {
                     var hashed_key = new sjcl.hash.sha256();
                     hashed_key.update(user_input);
-                    ws.send(hashed_key);
+                    key_to_send = JSON.stringify(hashed_key);
+                    ws.send(key_to_send);
                     user_input = '';
                     document.getElementById('inputLine').type = 'text';
                     state = 'PLAY_GAME';
