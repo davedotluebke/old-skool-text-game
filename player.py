@@ -82,6 +82,9 @@ class Player(Creature):
         self.saved_cons_attributes = [self.cons.alias_map, self.cons.measurement_system]
     
     def update_version(self):
+        if hasattr(self, 'version_number'):
+            self.versions[gametools.findGamePath(__file__)] = 1
+        
         super().update_version()
 
         if self.versions[gametools.findGamePath(__file__)] == 1:
