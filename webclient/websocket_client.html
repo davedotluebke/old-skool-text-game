@@ -284,7 +284,7 @@
                     state = 'MAKE_CONNECTION';
                     ws.close();
                 }
-                if (message.innerHTML.indexOf('password') > -1) {
+                if (message.innerHTML.indexOf('#password') > -1) {
                     state = 'SEND_PASSWORD';
                     document.getElementById('inputLine').type = 'password';
                 }
