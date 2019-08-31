@@ -105,7 +105,7 @@ class Parser:
         Returns a list with:
           - the matching object, if 1 object (which may be a plurality) matches sObj.
           - all matching objects, if <sObj> unambiguously specifies multiple objects.
-        Returns None if 0 objects match sObj (or any of the specifiers).
+        Returns [] (empty list) if 0 objects match sObj (or any of the specifiers).
         Returns False after writing an error message to <cons> if any specifier ambiguously matches multiple objects."""
         matched_objects = []
         # Build list of object 'specifier' strings, separated by commas and/or 'and'
@@ -166,7 +166,7 @@ class Parser:
             elif len(local_matches) == 0:
                 # user typed an object specifier that doesn't match any objects. Could be 
                 # an error, could be e.g. "go north". Validate all supporting objects.
-                return None
+                return []
             else:   # exactly one object in local_matches 
                 matched_objects += local_matches
         
@@ -251,7 +251,7 @@ class Parser:
                 # yes, oIDO_copy remains, register heartbeat for oIDO_copy if needed
                 if oIDO in Container.game.heartbeat_users:
                     Container.game.register_heartbeat(oIDO_copy)
-
+        return result
 
     def parse(self, user, console, command):
         """Parse and enact the user's command. Valid commands have the form:
@@ -272,9 +272,9 @@ class Parser:
         
         sV = None            # verb as string
         sDO = None           # Direct object as string
-        oDO = None           # Direct object as object
+        oDO_list = []        # List of direct object(s) as object
         sIDO = None          # Indirect object as string
-        oIDO = None          # Indirect object as object
+        oIDO_list = []       # List of indirect object(s) as object
         sPrep = None         # Preposition as string
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
@@ -292,8 +292,8 @@ class Parser:
             oDO_list = self.find_matching_objects(sDO, possible_objects, console)
         if sIDO:  # set oDO to object(s) matching direct object strings
             oIDO_list = self.find_matching_objects(sIDO, possible_objects, console)
-        if oDO_list == False or oIDO_list == False: 
-            return True     # ambiguous user input; >1 object matched 
+        if oDO_list == False or oIDO_list == False:
+            return True     # ambiguous user input; >1 object matched or multiple DOs _and_ IDOs matched
         
         # NEXT, find objects that support the verb the user typed. 
         possible_verb_objects = []  # list of objects supporting the verb
@@ -314,30 +314,39 @@ class Parser:
         # the direct objects ("take sword and bow from chest", `take()`` from `Thing`), the
         # indirect object ("put sword and bow in chest", `put()` from `Container`), or some 
         # unnamed object ("attack troll" engaging `attack` in a wielded `Weapon`). Solution:
-        ####################################################################
-        raise  # XXX still need to implement the order in the below comment
-        ####################################################################
+        #
         # First try enacting the action from a direct object on itself. 
         #   If successful, enact the verbs from any other direct objects on themselves in turn.  
         # If not, test the verbs from the indirect object, then all other possible objects
-        #   If any of these verbs succeeds, use the same verb on any other direct objects. 
-        
-        p = possible_verb_objects  # terser 
+        #   If any of these verbs succeeds, use the SAME verb on any other direct objects. 
+
         # move direct and indirect objects to the front of the list:
+        p = possible_verb_objects  # terser 
         p = oDO_list + oIDO_list + [o for o in p if o not in oDO_list and o not in oIDO_list]
                 
+        err_msg = None
+        result = False
+        oDO = oDO_list[0] if oDO_list else None     # Try the first direct object (if any) first
+        oIDO = oIDO_list[0] if oIDO_list else None  # XXX compound indirect objects not yet supported
         # FINALLY, try the actions ("verb functions") of each object until
         # one returns True (indicating the action was handled). If an action
         # returns an error message instead, keep trying other actions. If no
         # object's action returns True, print the first object's error message.
-        err_msg = None
-        for DO in 
-        result = False
-        for obj in possible_verb_objects:
-            result = _try_verb_from_obj(sV, obj, oDO, oIDO, self, console)
+        for obj in p:
+            result = self._try_verb_from_obj(sV, obj, oDO, oIDO, console)
             
-            if result == True:
-                break               # verb has been enacted, all done!
+            if result == True:  # verb from obj successfully enacted! 
+                if obj in oDO_list:  # was it a direct object? 
+                    for d in oDO_list[1:] : # if so, enact the verb from all the other DOs on themselves
+                        result = self._try_verb_from_obj(sV, d, d, oIDO, console)
+                        if result != True:
+                            break  # this direct object failed even though others succeeded, abort here
+                else:  # verb supported by an indirect object or unnamed object
+                    for d in oDO_list[1:] :  # enact the SAME verb on every direct object
+                        result = self._try_verb_from_obj(sV, obj, d, oIDO, console)
+                        if result != True:
+                            break  # this direct object failed even though others succeeded, abort here
+                break  # verb has been enacted by at least one object, all done!
             if err_msg == None: 
                 err_msg = result    # save the first error encountered
 
