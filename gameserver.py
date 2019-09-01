@@ -187,6 +187,7 @@ class Game():
             l = []
             for x in saveables:
                 obj = gametools.clone(x['path'])
+                del Thing.ID_dict[obj.id] # Delete the temporary ID created by the `clone` function
                 obj.update_obj(x)
                 l.append(obj)
         except EOFError:

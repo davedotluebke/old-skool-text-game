@@ -41,6 +41,7 @@ def clone(obj_module, params=None):
             obj = mod.clone(params)
         else:
             obj = mod.clone()
+        obj.mod = mod
     except ImportError:
         dbg.debug("Error importing module %s" % obj_module, 0)
         return None

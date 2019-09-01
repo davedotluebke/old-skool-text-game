@@ -467,31 +467,57 @@ class Player(Creature):
         return True                    
     
     def reload(self, p, cons, oDO, oIDO):
-        '''Reloads the specified room, or the room containing the player if none is given.
-        First moves all objects out of the room into nulspace, then re-imports the room 
-        module, calls `load()` in the new module, then finally moves any creatures including
+        '''Reloads the specified object, or the room containing the player if none is given.
+        First moves all objects out of the room into nulspace, then re-imports the object 
+        module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
         players back to the new room.'''
-        room = None
+        obj = None
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incatation correctly."
+        if isinstance(obj, Creature):
+            return "You cannot reload players or NPCs!"
         if len(p.words) < 2: 
-            room = self.location
+            obj = self.location
         elif len(p.words) == 2:
-            room = gametools.load_room(p.words[1])
-            if room == None: 
-                return "Error, room '%s' doesn't seem to exist!" % p.words[1]
+            obj = gametools.load_room(p.words[1])
+            if obj == None:
+                obj = gametools.clone(p.words[1])
+                if obj == None:
+                    return "Error, room or object '%s' doesn't seem to exist!" % p.words[1]
         else: 
-            return "Usage: 'reload' [room path]\n\t<room path> is optional, if none is given will reload the current room."
+            return "Usage: 'reload' [object path]\n\t[object path\ is optional, if none is given will reload the current room."
 
-        alive = [x for x in room.contents if isinstance(x, Creature)] # all Creatures incl NPCs & players
-        if room.detach(room.path) == False:
-            return "Error while detaching room %s!" % room.path
-        mod = importlib.reload(room.mod)
-        newroom = mod.load()  # TODO: store and re-use parameters of original load() call?
-        newroom.mod = mod
-        for c in alive: 
-            c.move_to(newroom, force_move = True)
+        if obj.contents != None:
+            alive = [x for x in obj.contents if isinstance(x, Creature)] # all Creatures incl NPCs & players (usefull if room)
+            if obj.detach(obj.path) == False:
+                return "Error while detaching object %s!" % obj.path
+        else:
+            alive = []
+        mod = importlib.reload(obj.mod)
+        try:
+            if isinstance(obj, Room):
+                newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
+        except Exception:
+            dbg.debug('Error reloading object %s!' % obj)
+            cons.user.perceive('An error occured while reloading %s.' % obj)
+            for c in alive:
+                c.move_t(obj)
+            return True
+        if isinstance(obj, Room):
+            for c in alive: 
+                c.move_to(newobj, force_move = True)
+        else:
+            thing_id_list = list(Thing.ID_dict)
+            for cidx in thing_id_list:
+                c = Thing.ID_dict[cidx]
+                if c.path == obj.path and obj is not c:
+                    new_c = gametools.clone(obj.path)
+                    if c.location:
+                        new_c.move_to(c.location, merge_pluralities=False)
+                    c.destroy()
         cons.write('You make a magical gesture and scene around you suddenly changes.')
         self.emit('&nD%s makes a magical gesture, and you sense something has changed.' % self.id)
-        del room  # XXX unclear if this will do anything
+        obj.destroy()
         return True
 
     def apparate(self, p, cons, oDO, oIDO):
