@@ -51,7 +51,8 @@
             "player": 2,
             "thing": 3
         },
-        "weapon_wielding": "bare hands8441-saveplayer126396"
+        "weapon_wielding": "bare hands8441-saveplayer126396",
+        "wprivilages": true
     },
     {
         "id": "scroll018-saveplayer126396",
