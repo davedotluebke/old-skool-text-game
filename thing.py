@@ -63,7 +63,7 @@ class Thing(object):
     def _restore_objs_from_IDs(self):
         """Update object references stored as ID strings to directly reference the objects, using Thing.ID_dict."""
         if isinstance(self.location, str):
-            self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet? 
+            self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet?
         if self.contents != None:
             self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
 

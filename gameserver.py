@@ -100,22 +100,39 @@ class Game():
         f.close()
     
     def save_player(self, filename, player):
-        player.save_cons_attributes()
+        try:
+            player.save_cons_attributes()
+        except Exception:
+            dbg.debug('Error saving console attributes for player %s!' % player, 0)
+
+        # Keep a list of "broken objects" to destroy
+        broken_objs = []
         # Uniquify the ID string of every object carried by the player
         tag = '-saveplayer'+str(random.randint(100000,999999))
         l = [player] 
         for obj in l:
             # change object ID and corresponding entry in ID_dict
-            del Thing.ID_dict[obj.id]
-            obj.id = obj.id + tag  
-            obj._add_ID(obj.id)
-            # recursively add associated objects
-            if obj.contents != None:
-                l += obj.contents
-            if hasattr(obj, 'default_weapon'):
-                l += [obj.default_weapon]
-            if hasattr(obj, 'default_armor'):
-                l += [obj.default_armor]
+            try:
+                del Thing.ID_dict[obj.id]
+                obj.id = obj.id + tag  
+                obj._add_ID(obj.id)
+                # recursively add associated objects
+                if obj.contents != None:
+                    l += obj.contents
+                if hasattr(obj, 'default_weapon'):
+                    l += [obj.default_weapon]
+                if hasattr(obj, 'default_armor'):
+                    l += [obj.default_armor]
+            except Exception:
+                dbg.debug('Error uniquifying the ID of %s. Removing from player inventory.' % obj)
+                broken_objs.append(obj)
+                
+        for obj in broken_objs:
+            try:
+                obj.destroy()
+            except Exception:
+                dbg.debug('Error destroying object %s!' % obj, 0)
+                # TODO: figure out what to do here
 
         if not filename.endswith('.OADplayer'): 
             filename += '.OADplayer'
@@ -179,6 +196,8 @@ class Game():
         if password:
             if password != newplayer.password:
                 raise gametools.IncorrectPasswordError
+        
+        broken_objs = [] # Make sure to remove all of the broken objects from the player's inventory
 
         if oldplayer:
             # TODO: move below code for deleting player to Player.__del__()
@@ -214,18 +233,56 @@ class Game():
         
         # Now fix up location & contents[] to list object refs, not ID strings
         for o in l:
-            o._restore_objs_from_IDs()
+            try:
+                o._restore_objs_from_IDs()
+            except Exception:
+                broken_objs.append(o)
+                dbg.debug('An error occured while loading %s! Printing below:', 0)
+                dbg.debug(traceback.format_exc(), 0)
+                dbg.debug('Error caught!', 0)
         # Now de-uniquify all IDs, replace object.id and ID_dict{} entry
         for o in l:
-            del Thing.ID_dict[o.id]
-            (head, sep, tail) = o.id.partition('-saveplayer')
-            o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
+            try:
+                del Thing.ID_dict[o.id]
+                (head, sep, tail) = o.id.partition('-saveplayer')
+                o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
+            except Exception:
+                broken_objs.append(o)
+                dbg.debug('An error occured while loading %s! Printing below:', 0)
+                dbg.debug(traceback.format_exc(), 0)
+                dbg.debug('Error caught!', 0)
+
+        # Make sure that broken objects are removed from their container's contents list
+        reference_check = [newplayer]
+        for obj in reference_check:
+            if obj.contents and isinstance(obj.contents, list):
+                for o in obj.contents:
+                    if o in broken_objs:
+                        del obj.contents[obj.contents.index(o)]
+                    # Catch a few specific errors
+                    if o.location != obj:
+                        broken_objs.append(o)
+                        del obj.contents[obj.contents.index(o)]
+        
+        for o in broken_objs:
+            try:
+                o.destroy()
+            except Exception:
+                dbg.debug('Error destroying object %s!' % o, 0)
+                #TODO: Figure out what to do here
 
         room = newplayer.location
-        room.insert(newplayer)  # insert() does some necessary bookkeeping
-        cons.write("Restored game state from file %s" % filename)
-        room.report_arrival(newplayer, silent=True)
-        room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
+        try:
+            room.insert(newplayer)  # insert() does some necessary bookkeeping
+            cons.write("Restored game state from file %s" % filename)
+            room.report_arrival(newplayer, silent=True)
+            room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
+        except Exception:
+            dbg.debug('Error inserting player into location! Moving player back to default start location', 0)
+            room = gametools.load_room(newplayer.start_loc_id)
+            cons.write("Restored game state from file %s" % filename)
+            room.report_arrival(newplayer, silent=True)
+            room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         return newplayer
     
     def login_player(self, cons):

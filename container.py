@@ -60,6 +60,9 @@ class Container(Thing):
         if obj == None:
             dbg.debug('Trying to insert a null object into %s!' % self, 0)
             return True
+        if obj.id not in Thing.ID_dict and force_insert == False:
+            dbg.debug("Now returns True when an object's id not in Thing.ID_dict", 0)
+            return True
         contents_weight = 0.0
         contents_volume = 0.0
         for w in self.contents:

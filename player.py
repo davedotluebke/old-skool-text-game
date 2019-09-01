@@ -194,7 +194,7 @@ class Player(Creature):
         
         cmd = self.cons.take_input()
         if self.login_state != None:
-            if cmd != None:
+            if cmd != None and cmd != '__noparse__' and cmd != '__quit__':
                 self._handle_login(cmd)
             return
         if cmd:
