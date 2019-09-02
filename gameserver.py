@@ -1,4 +1,5 @@
 import io
+import os
 import traceback
 import random
 import time
@@ -153,7 +154,14 @@ class Game():
             player.cons.write("Error writing to file %s" % filename)
         # restore location & contents etc to obj references:
         for obj in l:
-            obj._restore_objs_from_IDs()
+            try:
+                obj._restore_objs_from_IDs()
+            except Exception:
+                broken_objs.append(obj)
+                dbg.debug('An error occured while loading %s! Printing below:', 0)
+                dbg.debug(traceback.format_exc(), 0)
+                dbg.debug('Error caught!', 0)
+
         # restore original IDs by removing tag
         for obj in l:
             del Thing.ID_dict[obj.id]  # get rid of uniquified entry in ID_dict
@@ -347,8 +355,6 @@ class Game():
         else:
             # quit the game
             asyncio.get_event_loop().stop()
-            # TODO: Make sure all players are saved before we do this
-            asyncio.get_event_loop().close()
 
     def start_loop(self):
         print("Starting game...")
@@ -358,7 +364,20 @@ class Game():
         print("Listening on port 9124...")
         asyncio.get_event_loop().call_later(1,self.beat)
         asyncio.get_event_loop().run_forever()
-        # XXX add callbacks to handle game exit? 
+        # XXX add callbacks to handle game exit?
+        # Go through and save every player
+        players = [Thing.ID_dict[x] for x in Thing.ID_dict if isinstance(Thing.ID_dict[x], Player)]
+        consoles = [x.cons for x in players]
+        for i in players:
+            if i.cons:
+                i.cons.write('The game is now shutting down.')
+                self.save_player(os.path.join(gametools.PLAYER_DIR, i.names[0]), i)
+                i.cons.write('#quit')
+        
+        for j in consoles:
+            if j: # Make sure to send all messages from consoles before fully quitting game
+                asyncio.get_event_loop().run_until_complete(connections_websock.ws_send(j))                
+
         dbg.debug("Exiting main game loop!")
         dbg.shut_down()
 

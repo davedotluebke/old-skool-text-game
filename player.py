@@ -239,7 +239,7 @@ class Player(Creature):
         else:
             self.cons.write("Uh-oh! You don't have a starting location. You are in a great void...")
 
-    def perceive(self, message, silent=False):
+    def perceive(self, message, silent=False, force=False):
         '''Parse a string passed to `emit()` and customize it for this
         player. Searches the string for special tags (indicated with the '&'
         symbol) and replaces the substring following that tag (up to a 
@@ -284,8 +284,11 @@ class Player(Creature):
 
         If the <silent> flag is set, do not actually write the constructed message
         to the player's console, but instead return it as a string.
+
+        If the [force] flag is set, make the player print the message even if the 
+        room is dark.
         '''
-        if not self.location.is_dark():
+        if not self.location.is_dark() or force:
             # replace any & tags in the message 
             while True:
                 # first, replace any occurrence of '&u' with the user's ID

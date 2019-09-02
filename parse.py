@@ -153,7 +153,7 @@ class Parser:
         # (only include room contents if room is not dark (but always include user)
         room = user.location
         possible_objects = [room] 
-        for obj in user.contents + (None if room.is_dark() else room.contents):
+        for obj in user.contents + ([] if room.is_dark() else room.contents):
             possible_objects += [obj]
             if isinstance(obj, Container) and obj.see_inside and obj is not user:
                 possible_objects += obj.contents
