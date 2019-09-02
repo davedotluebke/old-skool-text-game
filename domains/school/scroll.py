@@ -23,11 +23,15 @@ class Scroll(Thing):
         Thing.game.register_heartbeat(self)
 
     def heartbeat(self):
-        r = self.location
-        while hasattr(r, 'location') and r.location:
-            r = r.location
-            if isinstance(r, Room):
-                break
+        try:
+            r = self.location
+            while hasattr(r, 'location') and r.location:
+                r = r.location
+                if isinstance(r, Room):
+                    break
+        except AttributeError:
+            dbg.debug('Error! Scroll has no attribute location', 0)
+            return
         if r.id in list(self.messages):
             if self.messages[r.id][1] == True:
                 return
