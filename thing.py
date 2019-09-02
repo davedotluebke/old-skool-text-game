@@ -76,6 +76,10 @@ class Thing(object):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""
         self.names += list(sNames)
 
+    def add_plural_names(self, *sPluralNames):
+        """Add one or more strings as possible plural noun names for this object, each as a separate argument"""
+        self.plural_names += list(sPluralNames)
+
     def add_adjectives(self, *sAdjs):
         """Add one or more adjective strings, each as a separate argument"""
         self.adjectives += list(sAdjs)

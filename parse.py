@@ -2,8 +2,9 @@ import sys
 import traceback
 import re
 
-import gametools
+from word2number import w2n
 
+import gametools
 from debug import dbg
 from container import Container
 from player import Player
@@ -11,6 +12,8 @@ from player import Player
 class Parser:
     ordinals = {"first":1, "second":2, "third":3, "fourth":4, "fifth":5, "sixth":6, "seventh":7, "eighth":8, "ninth":9, "tenth":10,
                 "1st":1, "2nd":2, "3rd":3, "4th":4, "5th":5, "6th":6, "7th":7, "8th":8, "9th":9, "10th":10}
+    cardinals = w2n.american_number_system  # list of number words, e.g. "one", "eleven", "thousand"
+    del cardinals["point"]  # don't need decimal-point notation 
 
     def _split_and_simplify(self, s):
         """Split command into words using whitespace, remove articles
@@ -100,7 +103,7 @@ class Parser:
         sObj may be a compound object, with multiple "object specifiers", for example 
         "rusty sword, ten gold coins, and third pink potion". In this case the function will
         return a list of matching objects, splitting plural objects as needed. 
-        XXX SPLITTING PLURALITIES NOT YET IMPLEMENTED
+        XXX SPLITTING PLURALITIES IMPLEMENTED BUT NOT MERGING IF NEEDED AFTERWARDS.
                 
         Returns a list with:
           - the matching object, if 1 object (which may be a plurality) matches sObj.
@@ -110,12 +113,15 @@ class Parser:
         matched_objects = []
         # Build list of object 'specifier' strings, separated by commas and/or 'and'
         # split on regexp for commas, "and"s, &s. Should be cached, no need to compile
-        lsObj = re.split("and\s+|,\s*|and,\s*|\&\s*", sObj)  
+        lsObj = [x for x in re.split("and\s+|,\s*|and,\s*|\&\s*", sObj) if x]  # skip blank strings
         for s in lsObj:  # loop over specifiers, trying to match each to an object
             local_matches = []  # each specifier should be just one object, though it may be plural
-            if not s:
-                continue  # skip over blank  strings
-            sWords = s.split()
+            try:
+                number = w2n.word_to_num(s)  # look for numbers, e.g. 'three', 'twenty-two'
+            except ValueError:
+                number = 1  # if no number specified assume 1
+            sWords = [x for x in s.split() if x not in Parser.cardinals]  # get rid of number words
+            # XXX can probably implement ordinals the same way, would be cleaner than below
             sNoun = sWords[-1]  # noun is final word in specifier string (after adjectives)
             sAdjectives_list = sWords[:-1]  # all words preceeding noun
             # In case multiple objects match the noun and adjectives given, 
@@ -124,10 +130,12 @@ class Parser:
             ord_str = ""    # actual string used to specify ordinal ('first', '3rd', etc)
             for obj in objs:
                 match = True
-                if sNoun in obj.names:
+                noun_match = sNoun in obj.names
+                plural_noun_match = sNoun in obj.plural_names
+                if noun_match or plural_noun_match:  # nouns match, check adjectives
                     for adj in sAdjectives_list:
                         if adj in Parser.ordinals:  # dict mapping ordinals->ints
-                            if ord_str and ord_str != adj: 
+                            if ord_str and ord_str != adj:  # more than one ordinal? 
                                 cons.write("I'm confused: you specified both %s and %s!" % (ord_str, adj))
                                 return False
                             ord_number = Parser.ordinals[adj]
@@ -138,11 +146,18 @@ class Parser:
                 else: 
                     match = False  # sNoun doesn't match any obj.names
 
-                # if name & all adjectives match, add to list of matching objects
-                if match: 
+                if match: # if name & all adjectives match, add to list of matching objects
+                    # first sanity-check some things with plurals
+                    if number > 1 and not plural_noun_match:
+                        cons.write("You specified %d '%s' but '%s' is not plural - assuming you meant '%s'..." % (number, sNoun, sNoun, obj.plural_names[0]))
+                    if number == 1 and plural_noun_match and not noun_match:
+                        number = obj.plurality  # they specified plural form of noun but no number, assume they meant 'all'
                     local_matches.append(obj)
             # if they specified an ordinal (1st, 2nd, etc), figure out which object they meant
             if ord_number:  
+                if number > 1:
+                    cons.write("You specified %d %s but also %s; mixing ordinals (first, second, etc) with numbers is not supported." % (number, obj.names[0], ord_str))
+                    return False
                 # count through all matched objects, some of which might be plural
                 i = 1                   # ordinals start at "first" meaning element 0
                 for o in local_matches:
@@ -158,6 +173,7 @@ class Parser:
                         ' '.join(x for x in sAdjectives_list if x not in Parser.ordinals), 
                         sNoun))
                     return False
+
             dbg.debug("local_matches in '%s' are: %s" % (s, ' '.join(obj.id for obj in local_matches)), 3)        
             if len(local_matches) > 1:
                 candidates = ", or the ".join(o._short_desc for o in local_matches)
@@ -168,7 +184,17 @@ class Parser:
                 # an error, could be e.g. "go north". Validate all supporting objects.
                 return []
             else:   # exactly one object in local_matches 
-                matched_objects += local_matches
+                obj = local_matches[0]
+                if number > 1:  # they specified a number of objects, split plurality if needed
+                    if number > obj.plurality:
+                        pl = obj.plural_names
+                        cons.write("You specified %d %s, but I don't see that many %s!" % (number, pl, pl))
+                        return False
+                    if number < obj.plurality:
+                        obj_copy = obj.replicate()
+                        obj_copy.plurality = obj.plurality - number
+                        obj.plurality = number
+                matched_objects += [obj]
         
         dbg.debug("matched_objects in '%s' are: %s" % (sObj, ' '.join(obj.id for obj in matched_objects)), 3)
         return matched_objects
@@ -354,5 +380,6 @@ class Parser:
             # no objects handled the verb; print the first error message 
             console.write(err_msg if err_msg else "No objects handled verb, but no error message defined!")
 
+        # TODO: find and merge any identical duplicate objects created while handling pluralities
         return True
 
