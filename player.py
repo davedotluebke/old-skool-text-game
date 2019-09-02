@@ -550,7 +550,7 @@ class Player(Creature):
             return "I don't quite get what you are trying to say."
         if len(p.words) < 2:
             return "What do you want to say?"
-        self.emit("&nD%s %ss: %s" % (self.names[0], p.words[0], " ".join(p.words[1:])), ignore = [self])
+        self.emit("&nD%s %ss: %s" % (self.id, p.words[0], " ".join(p.words[1:])), ignore = [self])
         cons.write("You %s: %s" % (p.words[0], " ".join(p.words[1:])))
         return True
     
