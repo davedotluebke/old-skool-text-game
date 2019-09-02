@@ -219,7 +219,7 @@ class Parser:
             obj_copy.plurality = obj.plurality - 1
             obj.plurality = 1
         # Check direct/indirect object plurality, peel off extra copies. 
-        # Note: often oDO or oIDO points to obj, so test this after un-pluralizing obj
+        # Note: often oDO or oIDO points to obj, so test this AFTER un-pluralizing obj
         oDO_plural = (oDO.plurality > 1) if oDO else False
         if oDO_plural:  
             oDO_copy = oDO.replicate()
