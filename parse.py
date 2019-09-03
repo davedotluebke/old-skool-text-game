@@ -97,6 +97,21 @@ class Parser:
             dbg.debug("Ending a sentence in a preposition is something up with which I will not put.")
         return (sV, sDO, sPrep, sIDO)
 
+    def _collect_possible_objects(self, user:Player):
+        """Search for objects that might support the verb the player typed,
+        or might be direct/indirect objects of the verb. These include
+        the room, the recursive contents of the room, and the player.  Don't
+        include room contents if room is dark (but always include user)."""
+        room = user.location
+        possible_objects = [room, user] 
+        for obj in user.contents + (None if room.is_dark() else room.contents):  
+            if obj is user:
+                continue
+            possible_objects += [obj]
+            if isinstance(obj, Container) and obj.see_inside and obj is not user:
+                possible_objects += obj.contents
+        return possible_objects
+
     def find_matching_objects(self, sObj, objs, cons):
         """Find object(s) in the list <objs> matching the given string <sObj>.
         Tests the name(s) and any adjectives for each object in <objs> against the words in sObj.
@@ -250,6 +265,7 @@ class Parser:
                 oIDO.plurality += oIDO_copy.plurality
                 oIDO_copy.destroy()
             result = True   # upon error, don't go do a different action - user probably intended this one
+        """
         if plural:  # did the action change obj so we need to remove from plurality?
             if obj.is_identical_to(obj_copy):  
                 # no, obj_copy is identical to obj, merge back into a single plurality
@@ -277,7 +293,33 @@ class Parser:
                 # yes, oIDO_copy remains, register heartbeat for oIDO_copy if needed
                 if oIDO in Container.game.heartbeat_users:
                     Container.game.register_heartbeat(oIDO_copy)
+        """
         return result
+
+    def _merge_identical_objects(self, obj_list:list):
+        """Find any objects in obj_list which are identical, and merge each 
+        set of identical objects into a single plurality. The individual 
+        objects may themselves be pluralities. For efficiency, sort obj_list
+        by the objects' path attribute, and only test objects with matching
+        paths for merging.
+        NOTE: sorts obj_list in place, so changes order of objects in it."""
+        obj_list.sort(key = lambda obj: obj.path)
+        while True:
+            try:  # pop the last object in list, compare to next-last objects
+                o1 = obj_list.pop()  
+                for o2 in obj_list[-1::-1]:  # iterate list backwards from end
+                    if o1.path == o2.path:
+                        if o2.is_identical_to(o1):  # if objects identical, merge into one plurality
+                            o2.plurality += o1.plurality
+                            o1.destroy()
+                    else:
+                        break
+            except IndexError:  # out of objects, done
+                break
+            except AttributeError:  # something else went wrong, bail out
+                dbg.debug("AttributeError: called obj_list.pop() for obj_list = %s" % obj_list)
+                break
+                
 
     def parse(self, user, console, command):
         """Parse and enact the user's command. Valid commands have the form:
@@ -304,19 +346,13 @@ class Parser:
         sPrep = None         # Preposition as string
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
-        # FIRST, search for objects that support the verb the user typed
-        # (only include room contents if room is not dark (but always include user)
-        room = user.location
-        possible_objects = [room] 
-        for obj in user.contents + (None if room.is_dark() else room.contents):  
-            possible_objects += [obj]
-            if isinstance(obj, Container) and obj.see_inside and obj is not user:
-                possible_objects += obj.contents
+        # FIRST, search for nearby objects that support the verb user typed
+        possible_objects = self._collect_possible_objects(user)
 
         # THEN, check for objects matching the direct & indirect object strings
         if sDO:   # set oDO to object(s) matching direct object strings
             oDO_list = self.find_matching_objects(sDO, possible_objects, console)
-        if sIDO:  # set oDO to object(s) matching direct object strings
+        if sIDO:  # set oIDO to object(s) matching indirect object strings
             oIDO_list = self.find_matching_objects(sIDO, possible_objects, console)
         if oDO_list == False or oIDO_list == False:
             return True     # ambiguous user input; >1 object matched or multiple DOs _and_ IDOs matched
@@ -380,6 +416,8 @@ class Parser:
             # no objects handled the verb; print the first error message 
             console.write(err_msg if err_msg else "No objects handled verb, but no error message defined!")
 
-        # TODO: find and merge any identical duplicate objects created while handling pluralities
+        # Find and merge any identical duplicate objects created while handling pluralities
+        possible_objects = self._collect_possible_objects(user)
+        self._merge_identical_objects(possible_objects)
         return True
 
