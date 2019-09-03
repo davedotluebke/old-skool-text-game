@@ -216,6 +216,7 @@ class Thing(object):
                attr == 'path' or attr == 'version_number' \
                or attr == 'versions':
                 saveable[attr] = state[attr]
+        default_obj.destroy()
         return saveable
 
     def replicate(self):
