@@ -29,7 +29,7 @@ class Thing(object):
         self._short_desc = 'need_short_desc'
         self._plural_short_desc = 'need_plural_short_desc'
         self._long_desc = 'need_long_desc'
-        self.adjectives = []
+        self.adjectives = set()
         self.contents = None        # None - only Containers can contain things
         self.spawn_location = None
         self.spawn_interval = None
@@ -82,12 +82,12 @@ class Thing(object):
 
     def add_adjectives(self, *sAdjs):
         """Add one or more adjective strings, each as a separate argument"""
-        self.adjectives += list(sAdjs)
+        self.adjectives |= set(sAdjs)
     
     def remove_adjectives(self, *sAdjs):
         """Remove one or more adjective strings, each specified as a separate argument. 
         Ignores any adjectives that are not associated with the object."""
-        self.adjectives = [o for o in self.adjectives if o not in list(sAdjs)]
+        self.adjectives -= set(sAdjs)
 
     def set_weight(self, grams):
         if (grams < 0):
