@@ -100,6 +100,34 @@ class Game():
     
         f.close()
     
+    def create_backups(self, filename, player, other_filename):        
+        if not other_filename.endswith('.OADplayer'):
+            other_filename += '.OADplayer'
+        
+        former_files = []
+        try:
+            f = open(other_filename, 'r')
+            former_files.append(f.read())
+            f.close()
+        except FileNotFoundError:
+            return
+        
+        for i in range(0, 20):
+            try:
+                f = open(filename+str(i)+'.OADplayer', 'r')
+                former_files.append(f.read())
+                f.close()
+            except FileNotFoundError:
+                pass
+        
+        for j in range(0, len(former_files)):
+            try:
+                f = open(filename+str(j)+'.OADplayer', 'w')
+                f.write(former_files[j])
+                f.close()
+            except FileNotFoundError:
+                pass
+    
     def save_player(self, filename, player):
         try:
             player.save_cons_attributes()

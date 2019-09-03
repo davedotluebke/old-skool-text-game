@@ -7,6 +7,7 @@ from walking_os import findAllPythonFiles
 gameroot = os.path.dirname(__file__) 
 
 PLAYER_DIR = os.path.join(gameroot, "saved_players")
+PLAYER_BACKUP_DIR = os.path.join(gameroot, "backup_saved_players")
 NEW_PLAYER_START_LOC = 'domains.character_creation.start_loc'
 DEFAULT_START_LOC = 'domains.school.school.great_hall'
 

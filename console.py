@@ -275,6 +275,7 @@ class Console:
             if cmd == 'quit':
                 self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user, self.user))
                 self.game.save_player(os.path.join(gametools.PLAYER_DIR, self.user.names[0]), self.user)
+                self.game.create_backups(os.path.join(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, os.path.join(gametools.PLAYER_DIR, self.user.names[0]))
                 self.write("#quit")
                 if self.words[1] == 'game' and self.user.wprivilages:
                     self.game.keep_going = False
