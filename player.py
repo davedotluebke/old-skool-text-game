@@ -183,7 +183,7 @@ class Player(Creature):
         if not nocons:
             self.cons.detach(self)
         self.cons = None
-        Thing.game.deregister_heartbeat(self)
+        self.destroy()
         
     def heartbeat(self):
         if self.cons == None:
@@ -201,7 +201,6 @@ class Player(Creature):
             if cmd != '__noparse__' and cmd != '__quit__':
                 old_keep_going = Thing.game.parser.parse(self, self.cons, cmd)
             elif cmd == '__quit__':
-                self.move_to(Thing.ID_dict['nulspace'])
                 self.detach()
            
 

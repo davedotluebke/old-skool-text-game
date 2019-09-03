@@ -47,6 +47,11 @@ class Thing(object):
 
         Takes a preferred ID string and (if necessary) creates a unique ID
         string from it. Returns the unique ID string. """
+        if hasattr(self, 'id'):
+            try:
+                del Thing.ID_dict[self.id]
+            except KeyError:
+                dbg.debug('%s.id was not in Thing.ID_dict!' % self)
         self.id = preferred_id
         while self.id in Thing.ID_dict:     # unique-ify self.id if necessary
             self.id = self.id + str(random.randint(0, 9))
@@ -246,7 +251,10 @@ class Thing(object):
     
     def destroy(self):
         """Removes and object from Thing.ID_dict, extracts it, and deregisters its heartbeat."""
-        del Thing.ID_dict[self.id]
+        try:
+            del Thing.ID_dict[self.id]
+        except KeyError:
+            dbg.debug('%s was already moved from Thing.ID_dict' % self)
         if self.location:
             self.location.extract(self, count='all')
         if self in Thing.game.heartbeat_users:
