@@ -278,6 +278,7 @@ class Console:
                 self.game.create_backups(os.path.join(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, os.path.join(gametools.PLAYER_DIR, self.user.names[0]))
                 self.write("#quit")
                 if len(self.words) > 1 and self.words[1] == 'game' and self.user.wprivilages:
+                    self.game.shutdown_console = self
                     self.game.keep_going = False
                 return "__quit__"
 

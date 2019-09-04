@@ -37,7 +37,8 @@ class Game():
         self.parser = Parser()
         self.dbg = dbg
         self.users = []
-        
+
+        self.shutdown_console = None        
 
     def save_game(self, filename):
         raise NotImplementedError("Saving games no longer works.")
@@ -396,6 +397,8 @@ class Game():
         # Go through and save every player
         players = [Thing.ID_dict[x] for x in Thing.ID_dict if isinstance(Thing.ID_dict[x], Player)]
         consoles = [x.cons for x in players]
+        if self.shutdown_console:
+            consoles.append(self.shutdown_console)
         for i in players:
             if i.cons:
                 i.cons.write('The game is now shutting down.')
