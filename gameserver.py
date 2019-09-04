@@ -29,6 +29,7 @@ class Game():
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
+        self.start_time = 0
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
         self.time = 0  # number of heartbeats since game began
@@ -353,9 +354,10 @@ class Game():
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-        dbg.debug("Beat! Time = %s" % self.time, 4)
+        dbg.debug("Beat! game.time = %s" % self.time, 4)
+        dbg.debug("Time since game began (in seconds): %s" % (time.time() - self.start_time), 4)
         
-        current_events = self.events.check_for_event(self.time)            
+        current_events = self.events.check_for_event(self.time)       
         for event in current_events:
             if (self.handle_exceptions):
                 try:
@@ -378,6 +380,9 @@ class Game():
             else:
                 h.heartbeat()
         
+        if time.time() > (self.start_time + 86400):
+            self.keep_going == False
+        
         if self.keep_going:
             # schedule the next heartbeat
             asyncio.get_event_loop().call_later(1,self.beat)
@@ -386,6 +391,9 @@ class Game():
             asyncio.get_event_loop().stop()
 
     def start_loop(self):
+        # To have a consistant 24 hour shutdown time
+        # The start time is always the last midnight the occured.
+        self.start_time = (time.time() // 86400)*86400
         print("Starting game...")
         ip_address = input('IP Address: ')
         asyncio.get_event_loop().run_until_complete(
