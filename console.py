@@ -40,6 +40,10 @@ class Console:
         self.username = None
         self.raw_input = ''
         self.raw_output = ''
+        self.file_input = bytes()
+        self.file_output = bytes()
+        self.uploading_filename = ''
+        self.current_directory = 'home/scott/house'
         self.change_players = False
         self.connection = net_conn
         self.input_redirect = None
@@ -245,6 +249,22 @@ class Console:
                     self.changing_passwords = True
                     return True
             
+            if cmd == 'upload':
+                if self.user.wprivilages:
+                    if len(self.words) > 1 and self.words[1]:
+                        self.uploading_filename = self.words[1] #TODO: make sure this is a valid filename
+                    else:
+                        self.uploading_filename = 'default_filename.py'
+                    if '.' not in self.uploading_filename:
+                        self.uploading_filename += '.py'
+                    self.write('Please select a file to #upload:')
+                    return True
+
+            if cmd == 'download':
+                if self.user.wprivilages:
+                    self.download_file(self.words[1:])
+                    return True
+            
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
             if cmd in game_file_cmds:
@@ -283,6 +303,41 @@ class Console:
                 return "__quit__"
 
         return False
+    
+    def upload_file(self, file):
+        replacing_file = True
+        try:
+            f = open(self.current_directory+'/'+self.uploading_filename, 'r')
+            dbg.debug('Found a file. Contents: %s' % f.read())
+            f.close()
+        except FileNotFoundError:
+            replacing_file = False
+        
+        if not replacing_file:
+            f = open(self.current_directory+'/'+self.uploading_filename, 'wb')
+            f.write(file)
+            f.close()
+            self.write('Sucessfully uploaded file.')
+            self.file_input = bytes()
+        else:
+            self.write('A file named %s already exits.' % (self.current_directory+'/'+self.uploading_filename))
+            self.file_input = bytes()
+
+    def download_file(self, filename_words):
+        filename = ''
+        for x in filename_words:
+            filename += x
+
+        try:
+            f = open(self.current_directory+'/'+filename, 'rb')
+        except FileNotFoundError:
+            self.write("Couldn't find a file named %s." % filename)
+            return
+
+        self.file_output = f.read()
+        asyncio.ensure_future(connections_websock.file_send(self))
+        f.close()
+        self.write('Downloading file %s...' % filename)
 
     def sanatizeHTML(self, html):
         html = html.replace('<', '(#*tag)(||istag)').replace('>', '(#*tag)')
@@ -420,6 +475,8 @@ class Console:
             self.input_redirect = None
 
     def take_input(self):
+        if self.file_input:
+            self.upload_file(self.file_input)
         if (self.raw_input == ''):
             return None
         (self.command, sep, self.raw_input) = self.raw_input.partition('\n')

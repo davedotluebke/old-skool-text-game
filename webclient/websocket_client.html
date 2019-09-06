@@ -95,6 +95,11 @@
             width: auto;
             white-space: nowrap;
         }
+        #filename {
+            opacity: 0;
+            height: 0px;
+            width: 0px;
+        }
         </style>
     </head>
     <body>
@@ -105,6 +110,7 @@
         <form id="messageInput" width=100%>
             <span id='inputPrompt'>>&nbsp;</span>
             <input type="text" id="inputLine" autocomplete="off" autofocus="autofocus" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <input type="file" id="filename" accept=".py">
         </form>
         <span id='box_caret_el' class="onCaret"></span>
         <script src="https://bitwiseshiftleft.github.io/sjcl/sjcl.js"></script>
@@ -274,6 +280,10 @@
             function receiveMessage(event) {
                 var messages = document.getElementsByTagName('div')[0],
                     message = document.createElement('div');
+                if (event.data instanceof ArrayBuffer) {
+                    receiveFile(event.data);
+                    return
+                }
                 if (state == 'PLAY_GAME') {
                     message.innerHTML = event.data;
                 }
@@ -288,13 +298,30 @@
                     state = 'SEND_PASSWORD';
                     document.getElementById('inputLine').type = 'password';
                 }
+                if (message.innerHTML.indexOf('#upload') > -1) {
+                    uploadFiles();
+                }
                 messages.appendChild(message);
                 window.scrollTo(0,document.body.scrollHeight);
+            }
+            function receiveFile(file_contents) {
+                var binaryData = [];
+                binaryData.push(file_contents);
+                const url = window.URL.createObjectURL(new Blob(binaryData, {type: "application/zip"}));
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                // the filename you want
+                a.download = 'gamefile.py';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
             }
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
             function openWebSocket(ip_address, ip_index) {
                 setTimeout(receiveMessage,1,"Trying to connect to " + ip_address + "...");
                 ws = new WebSocket("ws://" + ip_address + ":9124/");
+                ws.binaryType = "arraybuffer";
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
                     state = 'PLAY_GAME';
@@ -369,6 +396,26 @@
                 message.appendChild(contentBlock);
                 messages.appendChild(message);
                 window.scrollTo(0,document.body.scrollHeight);
+            }
+            function uploadFiles() {
+                document.getElementById('filename').onchange = sendFile;
+                document.getElementById('filename').click();
+            }
+            function sendFile() {
+                var file = document.getElementById('filename').files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    var rawData = new ArrayBuffer();           
+                    console.log(file.name);
+                    reader.loadend = function() {
+                    }
+                    reader.onload = function(e) {
+                        rawData = e.target.result;
+                        ws.send(rawData);
+                        console.log("the File has been transferred.")
+                    }
+                    reader.readAsArrayBuffer(file);
+                }
             }
         </script>
     </body>
