@@ -44,7 +44,7 @@ class Console:
         self.file_input = bytes()
         self.file_output = bytes()
         self.uploading_filename = ''
-        self.current_directory = 'home/scott/house'
+        self.current_directory = 'domains'
         self.change_players = False
         self.connection = net_conn
         self.input_redirect = None
@@ -329,12 +329,16 @@ class Console:
             if cmd == 'ls':
                 if self.user.wprivilages:
                     ls_info = '<div style="column-count:4">'
+                    try:
+                        param = self.words[1]
+                    except IndexError:
+                        param = None
                     dirs, files = [[x[1],x[2]] for x in os.walk(self.current_directory)][0]
                     for d in dirs:
-                        if not d.startswith('.') and d != '__pycache__':
+                        if (not d.startswith('.') and d != '__pycache__') or param == '-a':
                             ls_info += d+' '
                     for f in files:
-                        if not f.startswith('.'):
+                        if not f.startswith('.') or param == '-a':
                             ls_info += f+' '
                     ls_info += '</div>'
                     self.write(ls_info)
