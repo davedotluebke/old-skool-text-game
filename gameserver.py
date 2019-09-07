@@ -407,8 +407,10 @@ class Game():
         # Go through and save every player
         players = [Thing.ID_dict[x] for x in Thing.ID_dict if isinstance(Thing.ID_dict[x], Player)]
         consoles = [x.cons for x in players]
+        restart_code = 0
         if self.shutdown_console:
             consoles.append(self.shutdown_console)
+            restart_code = 1
         for i in players:
             if i.cons:
                 i.cons.write('The game is now shutting down.')
@@ -421,6 +423,7 @@ class Game():
 
         dbg.debug("Exiting main game loop!")
         dbg.shut_down()
+        sys.exit(restart_code)
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
         dbg.debug("Game.clear_nulspace() called! Currently does nothing.")
