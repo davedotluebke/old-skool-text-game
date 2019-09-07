@@ -1,6 +1,7 @@
 import asyncio
 import connections_websock
 import os.path
+import re
 
 from debug import dbg
 from parse import Parser
@@ -255,7 +256,7 @@ class Console:
                     allow_edits = False
                     try:
                         for i in self.game.player_edit_privilages[self.user.names[0]]:
-                            if self.current_directory.startswith(i):
+                            if re.fullmatch(i, self.current_directory):
                                 allow_edits = True
                                 break
                     except KeyError:
@@ -311,7 +312,7 @@ class Console:
                         allow_reads = True
                     try:
                         for i in self.game.player_read_privilages[self.user.names[0]]:
-                            if path.startswith(i):
+                            if re.fullmatch(i,path):
                                 allow_reads = True
                                 break
                     except KeyError:
@@ -356,7 +357,7 @@ class Console:
                     allow_edits = False
                     try:
                         for i in self.game.player_edit_privilages[self.user.names[0]]:
-                            if self.current_directory.startswith(i):
+                            if re.fullmatch(i, self.current_directory):
                                 allow_edits = True
                                 break 
                     except KeyError:
