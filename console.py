@@ -50,6 +50,7 @@ class Console:
         self.width = Console.default_width
         self.measurement_system = Console.default_measurement_system
         self.changing_passwords = False
+        self.removing_directory = False
         self.alias_map = {'n':       'go north',
                           's':       'go south',
                           'e':       'go east', 
@@ -265,6 +266,103 @@ class Console:
                     self.download_file(self.words[1:])
                     return True
             
+            if cmd == 'cd':
+                if self.user.wprivilages:
+                    path = ''
+                    cont_path = ''
+                    dot_idx = False
+                    for i in self.words[1:]:
+                        path += i+' '
+                    path = path[:-1]
+                    if '..' in path: #TODO: Handle multiple '..' correctly
+                        num_back = path.count('..')
+                        dirlist = self.current_directory.split('/')[0:-num_back]
+                        for j in dirlist:
+                            cont_path += j+'/'
+                        path = path.replace('..','')
+                        dot_idx = True
+                    else:
+                        cont_path = self.current_directory+'/'
+                    path = path.replace('\\','/')
+                    if path.startswith('/') and not dot_idx:
+                        path = path[1:]
+                        cont_path = ''
+                    path = cont_path + path
+                    path = path.replace('//','/')
+                    if path.endswith('/'):
+                        path = path[:-1]
+                    if path == '':
+                        path = '.'
+                    if os.path.exists(path):
+                        self.current_directory = path
+                    else:
+                        self.write('Error! No such file or directory.')
+                    return True
+            
+            if cmd == 'ls':
+                if self.user.wprivilages:
+                    ls_info = '<div style="column-count:4">'
+                    dirs, files = [[x[1],x[2]] for x in os.walk(self.current_directory)][0]
+                    for d in dirs:
+                        if not d.startswith('.') and d != '__pycache__':
+                            ls_info += d+' '
+                    for f in files:
+                        if not f.startswith('.'):
+                            ls_info += f+' '
+                    ls_info += '</div>'
+                    self.write(ls_info)
+                    return True
+            
+            if cmd == 'cat':
+                if self.user.wprivilages:
+                    if len(self.words) > 1:
+                        filename = self.words[1] #TODO: make sure this is a valid filename
+                        try:
+                            f = open(self.current_directory+'/'+filename, 'r')
+                            self.write(f.read())
+                            f.close()
+                        except FileNotFoundError:
+                            self.write('Error! No file named %s.' % filename)
+                        return True
+            
+            if cmd == 'rm':
+                if self.user.wprivilages:
+                    if len(self.words) > 1:
+                        filename = self.words[1]
+                        if os.path.exists(self.current_directory+'/'+filename):
+                            self.removing_directory = self.current_directory+'/'+filename
+                            self.input_redirect = self
+                            self.write('Are you sure you would like to complete this operation? Y/n:')
+                        else:
+                            self.write('Error, no file named %s exists.' % filename)
+                    else:
+                        self.write('What did you mean to remove?')
+                    return True
+            
+            if cmd == 'mkdir':
+                if self.user.wprivilages:
+                    if len(self.words) > 1:
+                        filename = self.words[1]
+                        if not os.path.exists(self.current_directory+'/'+filename):
+                            os.mkdir(self.current_directory+'/'+filename)
+                        else:
+                            self.write('Error, A directory named %s already exits!' % filename)
+                    else:
+                        self.write('mkdir requires a directory name')
+                    return True
+            
+            if cmd == 'rmdir':
+                if self.user.wprivilages:
+                    if len(self.words) > 1:
+                        filename = self.words[1]
+                        try:
+                            os.rmdir(self.current_directory+'/'+filename)
+                        except FileNotFoundError:
+                            self.write('Error, no directory named %s exits.' % filename)
+                        except OSError:
+                            self.write('Error, only empty directories may be removed.')
+                    return True
+            
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
             if cmd in game_file_cmds:
@@ -473,6 +571,11 @@ class Console:
             self.user.password = command
             self.changing_passwords = False
             self.input_redirect = None
+        elif self.removing_directory:
+            if command in ['yes','y','Y','Yes','YES']:
+                os.remove(self.removing_directory)
+                self.removing_directory = False
+                self.input_redirect = None
 
     def take_input(self):
         if self.file_input:
