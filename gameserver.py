@@ -39,7 +39,9 @@ class Game():
         self.dbg = dbg
         self.users = []
 
-        self.shutdown_console = None        
+        self.shutdown_console = None
+        self.player_read_privilages = {'scott':['domains','home']}     # Note: administrators are responsible for making sure that 
+        self.player_edit_privilages = {'scott':['domains','home/scott']} # wizards can view and edit their own files
 
     def save_game(self, filename):
         raise NotImplementedError("Saving games no longer works.")

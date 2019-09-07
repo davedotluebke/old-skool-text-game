@@ -252,13 +252,24 @@ class Console:
             
             if cmd == 'upload':
                 if self.user.wprivilages:
-                    if len(self.words) > 1 and self.words[1]:
-                        self.uploading_filename = self.words[1] #TODO: make sure this is a valid filename
+                    allow_edits = False
+                    try:
+                        for i in self.game.player_edit_privilages[self.user.names[0]]:
+                            if self.current_directory.startswith(i):
+                                allow_edits = True
+                                break
+                    except KeyError:
+                        pass
+                    if allow_edits:
+                        if len(self.words) > 1 and self.words[1]:
+                            self.uploading_filename = self.words[1] #TODO: make sure this is a valid filename
+                        else:
+                            self.uploading_filename = 'default_filename.py'
+                        if '.' not in self.uploading_filename:
+                            self.uploading_filename += '.py'
+                        self.write('Please select a file to #upload:')
                     else:
-                        self.uploading_filename = 'default_filename.py'
-                    if '.' not in self.uploading_filename:
-                        self.uploading_filename += '.py'
-                    self.write('Please select a file to #upload:')
+                        self.write('You do not have permission to write to this directory.')
                     return True
 
             if cmd == 'download':
@@ -281,6 +292,8 @@ class Console:
                             cont_path += j+'/'
                         path = path.replace('..','')
                         dot_idx = True
+                    elif self.current_directory == '.':
+                        cont_path = ''
                     else:
                         cont_path = self.current_directory+'/'
                     path = path.replace('\\','/')
@@ -293,10 +306,23 @@ class Console:
                         path = path[:-1]
                     if path == '':
                         path = '.'
-                    if os.path.exists(path):
-                        self.current_directory = path
+                    allow_reads = False
+                    if path == '.':
+                        allow_reads = True
+                    try:
+                        for i in self.game.player_read_privilages[self.user.names[0]]:
+                            if path.startswith(i):
+                                allow_reads = True
+                                break
+                    except KeyError:
+                        pass
+                    if allow_reads:
+                        if os.path.exists(path):
+                            self.current_directory = path
+                        else:
+                            self.write('Error! No such file or directory.')
                     else:
-                        self.write('Error! No such file or directory.')
+                        self.write('You do not have permission to view this directory.')
                     return True
             
             if cmd == 'ls':
@@ -327,16 +353,27 @@ class Console:
             
             if cmd == 'rm':
                 if self.user.wprivilages:
-                    if len(self.words) > 1:
-                        filename = self.words[1]
-                        if os.path.exists(self.current_directory+'/'+filename):
-                            self.removing_directory = self.current_directory+'/'+filename
-                            self.input_redirect = self
-                            self.write('Are you sure you would like to complete this operation? Y/n:')
+                    allow_edits = False
+                    try:
+                        for i in self.game.player_edit_privilages[self.user.names[0]]:
+                            if self.current_directory.startswith(i):
+                                allow_edits = True
+                                break 
+                    except KeyError:
+                        pass
+                    if allow_edits:
+                        if len(self.words) > 1:
+                            filename = self.words[1]
+                            if os.path.exists(self.current_directory+'/'+filename):
+                                self.removing_directory = self.current_directory+'/'+filename
+                                self.input_redirect = self
+                                self.write('Are you sure you would like to complete this operation? Y/n:')
+                            else:
+                                self.write('Error, no file named %s exists.' % filename)
                         else:
-                            self.write('Error, no file named %s exists.' % filename)
+                            self.write('What did you mean to remove?')
                     else:
-                        self.write('What did you mean to remove?')
+                        self.write('You do not have permission to remove files from this directory.')
                     return True
             
             if cmd == 'mkdir':
