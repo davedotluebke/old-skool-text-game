@@ -1,4 +1,5 @@
 import asyncio
+import subprocess.run
 import connections_websock
 import os.path
 import re
@@ -462,6 +463,8 @@ class Console:
             f.close()
             self.write('Sucessfully uploaded file.')
             self.file_input = bytes()
+            add_return = subprocess.run(["git","add","-A"])
+            commit_return = subprocess.run(["git","commit","-m","%s uploaded file %s" % (self.user.names[0], self.uploading_filename)])
         else:
             self.write('A file named %s already exits. Would you liek to replace it with the new version you\'ve uploaded? Y/n:' % (self.current_directory+'/'+self.uploading_filename))
             self.confirming_replace = True
