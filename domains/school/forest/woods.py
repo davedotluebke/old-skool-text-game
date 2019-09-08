@@ -16,7 +16,7 @@ def load():
     bag = gametools.clone('domains.school.forest.bag')
     woods.insert(bag)
 
-    flashlight = gametools.clone('domains.school.forest.flashlight')
+    flashlight = gametools.clone('domains.school.flashlight')
     woods.insert(flashlight)
 
     beech = scenery.Scenery("beech", "old beech tree full of carvings", 

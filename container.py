@@ -86,29 +86,18 @@ class Container(Thing):
                   % (obj.get_weight(), obj.get_volume(), obj.id, self.id, self.max_weight_carried, self.max_volume_carried, contents_weight, contents_volume), 2)
             return True
 
-    def extract(self, obj, count=1):
-        """Remove <count> copies of obj from this Container, returning the extracted object(s) or returning True if the operation failed"""
+    def extract(self, obj):
+        """Remove obj (which may be plural) from this Container, returning 
+        the extracted object or returning True if the operation failed."""
         # TODO: raise exceptions specific to "object not found" or "not enough objects"
 
         if obj not in self.contents:
             dbg.debug("Error! "+str(self)+" doesn't contain item "+str(obj.id), 0)
             return True
-        if count != 'all' and obj.plurality < count:
-            dbg.debug("Error! Tried to remove %d copies of %s from %s, but %s contains only %d %s" %
-                      (count, str(obj), str(self), str(self), obj.count, 'copies' if obj.count>1 else 'copy'))
-            return True  
         
-        if count != 'all' and count < obj.plurality:
-            # extracting only some of the identical objects in this container
-            obj.plurality -= count
-            new_obj = obj.replicate()  # create new plurality of <count> objects
-            new_obj.plurality = count
-            return new_obj
-        else:
-            # extracting exactly as many copies of obj as are in the container 
-            i = self.contents.index(obj)  # no need for try..except since we already know obj in list
-            del self.contents[i]
-            return obj
+        i = self.contents.index(obj)  # no need for try..except since we already know obj in list
+        del self.contents[i]
+        return obj
 
     def close(self):
             self.closed = True

@@ -185,7 +185,7 @@ class Parser:
                         ord_str, 
                         i-1, 
                         'objects' if i-1 > 1 else 'object', 
-                        ' '.join(x for x in sAdjectives_list if x not in Parser.ordinals), 
+                        ' '.join(x for x in sAdjectives_list if x not in Parser.ordinals).strip(), 
                         sNoun))
                     return False
 
@@ -200,15 +200,16 @@ class Parser:
                 return []
             else:   # exactly one object in local_matches 
                 obj = local_matches[0]
-                if number > 1:  # they specified a number of objects, split plurality if needed
-                    if number > obj.plurality:
-                        pl = obj.plural_names
-                        cons.write("You specified %d %s, but I don't see that many %s!" % (number, pl, pl))
-                        return False
-                    if number < obj.plurality:
-                        obj_copy = obj.replicate()
-                        obj_copy.plurality = obj.plurality - number
-                        obj.plurality = number
+                # If object is plural, split off 1 (or the specified number) from the plurality
+                if number > obj.plurality:
+                    pl = obj.plural_names
+                    cons.write("You specified %d %s, but I don't see that many %s!" % (number, pl, pl))
+                    return False
+                if number < obj.plurality:  # if no plural specified, number == 1
+                    obj_copy = obj.replicate()
+                    obj_copy.plurality = obj.plurality - number
+                    objs.append(obj_copy)
+                    obj.plurality = number
                 matched_objects += [obj]
         
         dbg.debug("matched_objects in '%s' are: %s" % (sObj, ' '.join(obj.id for obj in matched_objects)), 3)
@@ -221,33 +222,12 @@ class Parser:
         this is a valid usage of the verb function and the appropriate action
         has been performed; otherwise it returns an error message string.
 
+        TODO: update & move below text to find_matching_objects() or parse()
         If obj, oDO, or oIDO are plural, peel off a singular copy before 
         trying to enact the verb, then afterwards compare the enacted object
         to the remaining copies to see if the action has changed the object. 
         If not, merge the unchanged object back into the plurality. 
-        """
-        #  If obj is plural, peel off extra copies before trying to enact the verb
-        # TODO: support peeling off a plurality, e.g. "drop three coins"
-        plural = obj.plurality > 1
-        if plural:  
-            obj_copy = obj.replicate()
-            obj_copy.plurality = obj.plurality - 1
-            obj.plurality = 1
-        # Check direct/indirect object plurality, peel off extra copies. 
-        # Note: often oDO or oIDO points to obj, so test this AFTER un-pluralizing obj
-        oDO_plural = (oDO.plurality > 1) if oDO else False
-        if oDO_plural:  
-            oDO_copy = oDO.replicate()
-            # TODO: support peeling off a plurality, e.g. "drop three coins"
-            oDO_copy.plurality = oDO.plurality - 1
-            oDO.plurality = 1
-        oIDO_plural = (oIDO.plurality > 1) if oIDO else False
-        if oIDO_plural:
-            oIDO_copy = oIDO.replicate()
-            # TODO: support peeling off a plurality, e.g. "drop three coins"
-            oIDO_copy.plurality = oIDO.plurality - 1
-            oIDO.plurality = 1
-        
+        """        
         act = obj.actions[sV]
         try:  ### ENACT THE VERB ###
             result = act.func(obj, self, cons, oDO, oIDO) 
@@ -255,45 +235,7 @@ class Parser:
             console.write('An error has occured. Please try a different action until the problem is resolved.')
             dbg.debug(traceback.format_exc(), 0)
             dbg.debug("Error caught!", 0)
-            if plural: 
-                obj.plurality += obj_copy.plurality 
-                obj_copy.destroy()
-            if oDO_plural:
-                oDO.plurality += oDO_copy.plurality
-                oDO_copy.destroy()
-            if oIDO_plural:
-                oIDO.plurality += oIDO_copy.plurality
-                oIDO_copy.destroy()
             result = True   # upon error, don't go do a different action - user probably intended this one
-        """
-        if plural:  # did the action change obj so we need to remove from plurality?
-            if obj.is_identical_to(obj_copy):  
-                # no, obj_copy is identical to obj, merge back into a single plurality
-                obj.plurality += obj_copy.plurality 
-                obj_copy.destroy()
-            else:
-                # yes, obj_copy remains, register heartbeat for obj_copy if needed
-                if obj in Container.game.heartbeat_users:
-                    Container.game.register_heartbeat(obj_copy)
-        if oDO_plural:  # did the action change oDO so we need to remove from plurality?                
-            if oDO.is_identical_to(oDO_copy):  
-                # no, oDO_copy is identical to oDO, merge back into a single plurality
-                oDO.plurality += oDO_copy.plurality 
-                oDO_copy.destroy()
-            else:
-                # yes, oDO_copy remains, register heartbeat for oDO_copy if needed
-                if oDO in Container.game.heartbeat_users:
-                    Container.game.register_heartbeat(oDO_copy)
-        if oIDO_plural:  # did the action change oIDO so we need to remove from plurality?
-            if oIDO.is_identical_to(oIDO_copy):  
-                # no, oIDO_copy is identical to oIDO, merge back into a single plurality
-                oIDO.plurality += oIDO_copy.plurality 
-                oIDO_copy.destroy()
-            else:
-                # yes, oIDO_copy remains, register heartbeat for oIDO_copy if needed
-                if oIDO in Container.game.heartbeat_users:
-                    Container.game.register_heartbeat(oIDO_copy)
-        """
         return result
 
     def _merge_identical_objects(self, obj_list:list):

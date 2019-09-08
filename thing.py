@@ -276,7 +276,7 @@ class Thing(object):
         """Removes and object from Thing.ID_dict, extracts it, and deregisters its heartbeat."""
         del Thing.ID_dict[self.id]
         if self.location:
-            self.location.extract(self, count='all')
+            self.location.extract(self)
             self.location = None
         if self in Thing.game.heartbeat_users:
             Thing.game.deregister_heartbeat(self)
@@ -359,7 +359,9 @@ class Thing(object):
         re-insert into the original location and returns False.  
         If <force_move> is True, ignores the <fixed> attribute.
         If <merge_pluralities is True, checks if this object is identical to any 
-        objects currently in dest.contents; if so, merges them into a plurality."""
+        objects currently in dest.contents; if so, merges them into a plurality.
+        Note that the parser would have already split off the object from a 
+        plurality in the origin, if necessary."""
         origin = self.location
         if self.fixed and force_move == False:
             if hasattr(self, 'is_liquid'):

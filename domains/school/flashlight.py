@@ -93,6 +93,8 @@ class Flashlight(Thing):
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
 #
-# XXX for historic reasons this file is called as a module from 
-# XXX domains.school.forest.flashlight.py, so the clone() function
-# XXX is defined there. 
+
+def clone():
+    flashlight = Flashlight('flashlight', __file__)
+    flashlight.set_description('old flashlight', 'An old metal flashlight.')
+    return flashlight
