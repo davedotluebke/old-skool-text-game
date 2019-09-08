@@ -32,6 +32,7 @@ class Player(Creature):
         Creature.__init__(self, ID, path)
         self.cons = console
         self.login_state = None
+        self.password = None
         self.start_loc_id = None
         self.set_description("formless soul", "A formless player without a name")
         self.set_weight(175/2.2)
@@ -59,7 +60,7 @@ class Player(Creature):
         self.adj2 = None
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
-        self.versions[gametools.findGamePath(__file__)] = 1
+        self.versions[gametools.findGamePath(__file__)] = 2
 
     def get_saveable(self):
         saveable = super().get_saveable()
@@ -79,6 +80,16 @@ class Player(Creature):
 
     def save_cons_attributes(self):
         self.saved_cons_attributes = [self.cons.alias_map, self.cons.measurement_system]
+    
+    def update_version(self):
+        if hasattr(self, 'version_number'):
+            self.versions[gametools.findGamePath(__file__)] = 1
+        
+        super().update_version()
+
+        if self.versions[gametools.findGamePath(__file__)] == 1:
+            self.password = "{\"F\":[1779033703,-1150833019,1013904242,-1521486534,1359893119,-1694144372,528734635,1541459225],\"A\":[1634952294],\"l\":32}"
+            self.versions[gametools.findGamePath(__file__)] = 2
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
@@ -95,7 +106,7 @@ class Player(Creature):
             try:
                 f = open(filename, 'r+b')
                 f.close()  # success, player exists, so close file for now & check password
-                self.cons.write("Welcome back, %s!<br>Please enter your password: " % self.names[0])
+                self.cons.write("Welcome back, %s!<br>Please enter your #password: " % self.names[0])
                 self.login_state = 'AWAITING_PASSWORD'
             except FileNotFoundError:
                 self.cons.write("No player named "+self.names[0]+" found. "
@@ -104,7 +115,7 @@ class Player(Creature):
             return
         elif state == 'AWAITING_CREATE_CONFIRM':
             if cmd == "yes": 
-                self.cons.write("Welcome, %s!<br>Please create a password:" % self.names[0])
+                self.cons.write("Welcome, %s!<br>Please create a #password:" % self.names[0])
                 self.login_state = 'AWAITING_NEW_PASSWORD'
                 return
             elif cmd == "no":
@@ -116,7 +127,8 @@ class Player(Creature):
                 return
         elif state == 'AWAITING_NEW_PASSWORD':
             passwd = cmd
-            # XXX ignoring for now. 
+            # XXX temporary fix for now
+            self.password = passwd
             # TODO secure password authentication goes here
             self.id = self._add_ID(self.names[0])            
             self.proper_name = self.names[0].capitalize()
@@ -131,22 +143,24 @@ class Player(Creature):
             return
         elif state == 'AWAITING_PASSWORD':
             passwd = cmd
-            # XXX ignoring for now. 
-            # TODO secure password authentication goes here
+            # XXX temporary fix, need more security
+            # TODO more secure password authentication goes here
             filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
             try:
-                newuser = self.game.load_player(filename, self.cons)
-                dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]), 0)
-                newuser.login_state = None
-                self.login_state = None
-                self.game.deregister_heartbeat(self)
-                del Thing.ID_dict[self.id]
+                try:
+                    newuser = self.game.load_player(filename, self.cons, password=passwd)
+                    dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]), 0)
+                    newuser.login_state = None
+                    self.login_state = None
+                    self.game.deregister_heartbeat(self)
+                    del Thing.ID_dict[self.id]
+                except gametools.IncorrectPasswordError:
+                    self.cons.write("Your username or password is incorrect. Please try again.")
+                    self.login_state = "AWAITING_USERNAME"
             except gametools.PlayerLoadError:
                 self.cons.write("Error loading data for player %s from file %s. <br>"
                                 "Please try again.<br>Please enter your username: " % (self.names[0], filename))
                 self.login_state = "AWAITING_USERNAME"
-            return
-
     #
     # SET/GET METHODS (methods to set or query attributes)
     #
@@ -169,7 +183,7 @@ class Player(Creature):
         if not nocons:
             self.cons.detach(self)
         self.cons = None
-        Thing.game.deregister_heartbeat(self)
+        self.destroy()
         
     def heartbeat(self):
         if self.cons == None:
@@ -180,14 +194,13 @@ class Player(Creature):
         
         cmd = self.cons.take_input()
         if self.login_state != None:
-            if cmd != None:
+            if cmd != None and cmd != '__noparse__' and cmd != '__quit__':
                 self._handle_login(cmd)
             return
         if cmd:
             if cmd != '__noparse__' and cmd != '__quit__':
                 old_keep_going = Thing.game.parser.parse(self, self.cons, cmd)
             elif cmd == '__quit__':
-                self.move_to(Thing.ID_dict['nulspace'])
                 self.detach()
            
 
@@ -225,7 +238,7 @@ class Player(Creature):
         else:
             self.cons.write("Uh-oh! You don't have a starting location. You are in a great void...")
 
-    def perceive(self, message, silent=False):
+    def perceive(self, message, silent=False, force=False):
         '''Parse a string passed to `emit()` and customize it for this
         player. Searches the string for special tags (indicated with the '&'
         symbol) and replaces the substring following that tag (up to a 
@@ -270,8 +283,11 @@ class Player(Creature):
 
         If the <silent> flag is set, do not actually write the constructed message
         to the player's console, but instead return it as a string.
+
+        If the [force] flag is set, make the player print the message even if the 
+        room is dark.
         '''
-        if not self.location.is_dark():
+        if not self.location.is_dark() or force:
             # replace any & tags in the message 
             while True:
                 # first, replace any occurrence of '&u' with the user's ID
@@ -453,31 +469,57 @@ class Player(Creature):
         return True                    
     
     def reload(self, p, cons, oDO, oIDO):
-        '''Reloads the specified room, or the room containing the player if none is given.
-        First moves all objects out of the room into nulspace, then re-imports the room 
-        module, calls `load()` in the new module, then finally moves any creatures including
+        '''Reloads the specified object, or the room containing the player if none is given.
+        First moves all objects out of the room into nulspace, then re-imports the object 
+        module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
         players back to the new room.'''
-        room = None
+        obj = None
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incatation correctly."
+        if isinstance(obj, Creature):
+            return "You cannot reload players or NPCs!"
         if len(p.words) < 2: 
-            room = self.location
+            obj = self.location
         elif len(p.words) == 2:
-            room = gametools.load_room(p.words[1])
-            if room == None: 
-                return "Error, room '%s' doesn't seem to exist!" % p.words[1]
+            obj = gametools.load_room(p.words[1])
+            if obj == None:
+                obj = gametools.clone(p.words[1])
+                if obj == None:
+                    return "Error, room or object '%s' doesn't seem to exist!" % p.words[1]
         else: 
-            return "Usage: 'reload' [room path]\n\t<room path> is optional, if none is given will reload the current room."
+            return "Usage: 'reload' [object path]\n\t[object path\ is optional, if none is given will reload the current room."
 
-        alive = [x for x in room.contents if isinstance(x, Creature)] # all Creatures incl NPCs & players
-        if room.detach(room.path) == False:
-            return "Error while detaching room %s!" % room.path
-        mod = importlib.reload(room.mod)
-        newroom = mod.load()  # TODO: store and re-use parameters of original load() call?
-        newroom.mod = mod
-        for c in alive: 
-            c.move_to(newroom, force_move = True)
+        if obj.contents != None:
+            alive = [x for x in obj.contents if isinstance(x, Creature)] # all Creatures incl NPCs & players (usefull if room)
+            if obj.detach(obj.path) == False:
+                return "Error while detaching object %s!" % obj.path
+        else:
+            alive = []
+        mod = importlib.reload(obj.mod)
+        try:
+            if isinstance(obj, Room):
+                newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
+        except Exception:
+            dbg.debug('Error reloading object %s!' % obj)
+            cons.user.perceive('An error occured while reloading %s.' % obj)
+            for c in alive:
+                c.move_t(obj)
+            return True
+        if isinstance(obj, Room):
+            for c in alive: 
+                c.move_to(newobj, force_move = True)
+        else:
+            thing_id_list = list(Thing.ID_dict)
+            for cidx in thing_id_list:
+                c = Thing.ID_dict[cidx]
+                if c.path == obj.path and obj is not c:
+                    new_c = gametools.clone(obj.path)
+                    if c.location:
+                        new_c.move_to(c.location, merge_pluralities=False)
+                    c.destroy()
         cons.write('You make a magical gesture and scene around you suddenly changes.')
         self.emit('&nD%s makes a magical gesture, and you sense something has changed.' % self.id)
-        del room  # XXX unclear if this will do anything
+        obj.destroy()
         return True
 
     def apparate(self, p, cons, oDO, oIDO):
@@ -510,7 +552,7 @@ class Player(Creature):
             return "I don't quite get what you are trying to say."
         if len(p.words) < 2:
             return "What do you want to say?"
-        self.emit("&nD%s %ss: %s" % (self.names[0], p.words[0], " ".join(p.words[1:])), ignore = [self])
+        self.emit("&nD%s %ss: %s" % (self.id, p.words[0], " ".join(p.words[1:])), ignore = [self])
         cons.write("You %s: %s" % (p.words[0], " ".join(p.words[1:])))
         return True
     
