@@ -52,6 +52,7 @@ class Console:
         self.measurement_system = Console.default_measurement_system
         self.changing_passwords = False
         self.removing_directory = False
+        self.confirming_replace = False
         self.alias_map = {'n':       'go north',
                           's':       'go south',
                           'e':       'go east', 
@@ -444,7 +445,9 @@ class Console:
 
         return False
     
-    def upload_file(self, file):
+    def upload_file(self, file, confirm_r=True):
+        if self.confirming_replace:
+            return
         replacing_file = True
         try:
             f = open(self.current_directory+'/'+self.uploading_filename, 'r')
@@ -453,15 +456,16 @@ class Console:
         except FileNotFoundError:
             replacing_file = False
         
-        if not replacing_file:
+        if not replacing_file or not confirm_r:
             f = open(self.current_directory+'/'+self.uploading_filename, 'wb')
             f.write(file)
             f.close()
             self.write('Sucessfully uploaded file.')
             self.file_input = bytes()
         else:
-            self.write('A file named %s already exits.' % (self.current_directory+'/'+self.uploading_filename))
-            self.file_input = bytes()
+            self.write('A file named %s already exits. Would you liek to replace it with the new version you\'ve uploaded? Y/n:' % (self.current_directory+'/'+self.uploading_filename))
+            self.confirming_replace = True
+            self.input_redirect = self
 
     def download_file(self, filename_words):
         filename = ''
@@ -618,6 +622,16 @@ class Console:
                 os.remove(self.removing_directory)
                 self.removing_directory = False
                 self.input_redirect = None
+        elif self.confirming_replace:
+            if command in ['yes','y','Y','Yes','YES']:
+                self.input_redirect = None
+                self.confirming_replace = False
+                self.upload_file(self.file_input, False)
+            else:
+                self.write('Okay, keeping old file.')
+                self.input_redirect = None
+                self.confirming_replace = False
+                self.file_input = bytes()
 
     def take_input(self):
         if self.file_input:
