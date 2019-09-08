@@ -1,5 +1,5 @@
 import asyncio
-import subprocess.run
+import subprocess
 import connections_websock
 import os.path
 import re
@@ -623,6 +623,8 @@ class Console:
         elif self.removing_directory:
             if command in ['yes','y','Y','Yes','YES']:
                 os.remove(self.removing_directory)
+                add_return = subprocess.run(['git','add','-A'])
+                commit_return = subprocess.run(['git','commit','-m','%s removed file %s.' % (self.user.names[0], self.removing_directory)])
                 self.removing_directory = False
                 self.input_redirect = None
         elif self.confirming_replace:
