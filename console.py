@@ -385,12 +385,16 @@ class Console:
                                 for i in filenames:
                                     if os.path.exists(self.current_directory+'/'+i):
                                         os.replace(self.current_directory+'/'+i, dest_path+'/'+i)
+                                        add_return = subprocess.run(["git","add","-A"])
+                                        commit_return = subprocess.run(["git","commit","-m","%s moved file %s" % (self.user.names[0], i)])
                                     else:
                                         self.write('Error, no file named %s.' % i)
                             else:
                                 if len(self.words) == 3:
                                     if os.path.exists(self.current_directory+'/'+filenames[0]):
                                         os.replace(self.current_directory+'/'+filenames[0], dest_path)
+                                        add_return = subprocess.run(["git","add","-A"])
+                                        commit_return = subprocess.run(["git","commit","-m","%s renamed file %s" % (self.user.names[0], filenames[0])])
                                     else:
                                         self.write('Error, no file named %s.' % filenames[0])
                                 else:
