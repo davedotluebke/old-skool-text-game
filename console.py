@@ -369,21 +369,34 @@ class Console:
                         dest = self.words[-1]
 
                         dest_path = self._findPath([dest])
+                        allow_edits = False
+                        allow_dest_edits = False
+                        try:
+                            for i in self.game.player_edit_privilages[self.user.names[0]]:
+                                if re.fullmatch(i, self.current_directory):
+                                    allow_edits = True
+                                if re.fullmatch(i, dest_path):
+                                    allow_dest_edits = True
+                        except KeyError:
+                            pass
 
-                        if '.' not in dest_path.split('/')[-1]:
-                            for i in filenames:
-                                if os.path.exists(i):
-                                    os.replace(self.current_directory+'/'+i, dest_path+'/'+i)
-                                else:
-                                    self.write('Error, no file named %s.' % i)
-                        else:
-                            if len(self.words) == 3:
-                                if os.path.exists(self.current_directory+'/'+filenames[0]):
-                                    os.replace(self.current_directory+'/'+filenames[0], dest_path)
-                                else:
-                                    self.write('Error, no file named %s.' % filenames[0])
+                        if allow_dest_edits and allow_edits:
+                            if '.' not in dest_path.split('/')[-1]:
+                                for i in filenames:
+                                    if os.path.exists(self.current_directory+'/'+i):
+                                        os.replace(self.current_directory+'/'+i, dest_path+'/'+i)
+                                    else:
+                                        self.write('Error, no file named %s.' % i)
                             else:
-                                self.write('Error, input invalid.')
+                                if len(self.words) == 3:
+                                    if os.path.exists(self.current_directory+'/'+filenames[0]):
+                                        os.replace(self.current_directory+'/'+filenames[0], dest_path)
+                                    else:
+                                        self.write('Error, no file named %s.' % filenames[0])
+                                else:
+                                    self.write('Error, input invalid.')
+                        else:
+                            self.write('You do not have permission to perform this action.')
                     else:
                         self.write('Usage: mv [src] [dest]')
                     return True
