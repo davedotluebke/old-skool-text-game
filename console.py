@@ -1,7 +1,7 @@
 import asyncio
 import subprocess
 import connections_websock
-import os.path
+import os
 import re
 
 from debug import dbg
@@ -198,6 +198,36 @@ class Console:
             return
         self.write(self._set_verbosity(level))
     
+    def _findPath(self, pathwords):
+        path = ''
+        cont_path = ''
+        dot_idx = False
+        for i in pathwords:
+            path += i+' '
+        path = path[:-1]
+        if '..' in path: #TODO: Handle multiple '..' correctly
+            num_back = path.count('..')
+            dirlist = self.current_directory.split('/')[0:-num_back]
+            for j in dirlist:
+                cont_path += j+'/'
+            path = path.replace('..','')
+            dot_idx = True
+        elif self.current_directory == '.':
+            cont_path = ''
+        else:
+            cont_path = self.current_directory+'/'
+        path = path.replace('\\','/')
+        if path.startswith('/') and not dot_idx:
+            path = path[1:]
+            cont_path = ''
+        path = cont_path + path
+        path = path.replace('//','/')
+        if path.endswith('/'):
+            path = path[:-1]
+        if path == '':
+            path = '.'
+        return path
+    
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
         if len(self.words) > 0:
@@ -282,33 +312,7 @@ class Console:
             
             if cmd == 'cd':
                 if self.user.wprivilages:
-                    path = ''
-                    cont_path = ''
-                    dot_idx = False
-                    for i in self.words[1:]:
-                        path += i+' '
-                    path = path[:-1]
-                    if '..' in path: #TODO: Handle multiple '..' correctly
-                        num_back = path.count('..')
-                        dirlist = self.current_directory.split('/')[0:-num_back]
-                        for j in dirlist:
-                            cont_path += j+'/'
-                        path = path.replace('..','')
-                        dot_idx = True
-                    elif self.current_directory == '.':
-                        cont_path = ''
-                    else:
-                        cont_path = self.current_directory+'/'
-                    path = path.replace('\\','/')
-                    if path.startswith('/') and not dot_idx:
-                        path = path[1:]
-                        cont_path = ''
-                    path = cont_path + path
-                    path = path.replace('//','/')
-                    if path.endswith('/'):
-                        path = path[:-1]
-                    if path == '':
-                        path = '.'
+                    path = self._findPath(self.words[1:])
                     allow_reads = False
                     if path == '.':
                         allow_reads = True
@@ -357,6 +361,32 @@ class Console:
                         except FileNotFoundError:
                             self.write('Error! No file named %s.' % filename)
                         return True
+            
+            if cmd == 'mv':
+                if self.user.wprivilages:
+                    if len(self.words) > 2:
+                        filenames = self.words[1:-1]
+                        dest = self.words[-1]
+
+                        dest_path = self._findPath([dest])
+
+                        if '.' not in dest_path.split('/')[-1]:
+                            for i in filenames:
+                                if os.path.exists(i):
+                                    os.replace(self.current_directory+'/'+i, dest_path+'/'+i)
+                                else:
+                                    self.write('Error, no file named %s.' % i)
+                        else:
+                            if len(self.words) == 3:
+                                if os.path.exists(self.current_directory+'/'+filenames[0]):
+                                    os.replace(self.current_directory+'/'+filenames[0], dest_path)
+                                else:
+                                    self.write('Error, no file named %s.' % filenames[0])
+                            else:
+                                self.write('Error, input invalid.')
+                    else:
+                        self.write('Usage: mv [src] [dest]')
+                    return True
             
             if cmd == 'rm':
                 if self.user.wprivilages:
