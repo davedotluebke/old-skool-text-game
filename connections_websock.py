@@ -31,10 +31,17 @@ async def ws_handler(websocket, path):
                     Thing.game.login_player(cons)
                 except gametools.PlayerLoadError:
                     Thing.game.create_new_player(name, cons)
+            except TypeError:
+                conn_to_client[websocket].file_input = message
     except websockets.exceptions.ConnectionClosed:
         websocket.close()
 
 async def ws_send(cons):
     output = cons.raw_output
     cons.raw_output = ''
+    await cons.connection.send(output)
+
+async def file_send(cons):
+    output = cons.file_output
+    cons.file_output = bytes()
     await cons.connection.send(output)

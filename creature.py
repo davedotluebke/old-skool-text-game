@@ -201,6 +201,9 @@ class Creature(Container):
         #What to do when 0 health
         self.emit("&nD%s dies!" % self.id, [self])
         corpse = gametools.clone('corpse', self)
+        corpse.names += self.names
+        corpse.adjectives += self.adjectives
+        corpse.adjectives += self.names
         self.location.insert(corpse)
         while self.contents:
             i = self.contents[0]

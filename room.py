@@ -98,7 +98,7 @@ class Room(Container):
         if sDO and (oDO is None): 
             return "I'm not sure what you are trying to look at!"
         if self.is_dark():
-            cons.user.perceive("It's too dark to see anything here.")
+            cons.user.perceive("It's too dark to see anything here.", force=True)
             return True
         cons.user.perceive(self._long_desc)
         if (len(self.exits) > 0):

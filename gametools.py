@@ -7,6 +7,7 @@ from walking_os import findAllPythonFiles
 gameroot = os.path.dirname(__file__) 
 
 PLAYER_DIR = os.path.join(gameroot, "saved_players")
+PLAYER_BACKUP_DIR = os.path.join(gameroot, "backup_saved_players")
 NEW_PLAYER_START_LOC = 'domains.character_creation.start_loc'
 DEFAULT_START_LOC = 'domains.school.school.great_hall'
 
@@ -14,6 +15,9 @@ class PlayerSaveError(Exception):
     pass
 
 class PlayerLoadError(Exception):
+    pass
+
+class IncorrectPasswordError(Exception):
     pass
 
 def validate_func(modpath, func):
@@ -38,6 +42,7 @@ def clone(obj_module, params=None):
             obj = mod.clone(params)
         else:
             obj = mod.clone()
+        obj.mod = mod
     except ImportError:
         dbg.debug("Error importing module %s" % obj_module, 0)
         return None
@@ -70,6 +75,16 @@ def findGamePath(filepath):
     (head, sep, tail) = gamePath.partition(".py")
     gamePath = head
     return gamePath
+
+def walklevel(some_dir, level=1):
+    some_dir = some_dir.rstrip(os.path.sep)
+    assert os.path.isdir(some_dir)
+    num_sep = some_dir.count(os.path.sep)
+    for root, dirs, files in os.walk(some_dir):
+        yield root, dirs, files
+        num_sep_this = root.count(os.path.sep)
+        if num_sep + level <= num_sep_this:
+            del dirs[:]
 
 def request_all_inputs(player, dest):
     Thing.ID_dict[player].cons.request_input(dest)

@@ -1,6 +1,8 @@
 import asyncio
+import subprocess
 import connections_websock
-import os.path
+import os
+import re
 
 from debug import dbg
 from parse import Parser
@@ -40,11 +42,18 @@ class Console:
         self.username = None
         self.raw_input = ''
         self.raw_output = ''
+        self.file_input = bytes()
+        self.file_output = bytes()
+        self.uploading_filename = ''
+        self.current_directory = 'domains'
         self.change_players = False
         self.connection = net_conn
         self.input_redirect = None
         self.width = Console.default_width
         self.measurement_system = Console.default_measurement_system
+        self.changing_passwords = False
+        self.removing_directory = False
+        self.confirming_replace = False
         self.alias_map = {'n':       'go north',
                           's':       'go south',
                           'e':       'go east', 
@@ -189,6 +198,36 @@ class Console:
             return
         self.write(self._set_verbosity(level))
     
+    def _findPath(self, pathwords):
+        path = ''
+        cont_path = ''
+        dot_idx = False
+        for i in pathwords:
+            path += i+' '
+        path = path[:-1]
+        if '..' in path: #TODO: Handle multiple '..' correctly
+            num_back = path.count('..')
+            dirlist = self.current_directory.split('/')[0:-num_back]
+            for j in dirlist:
+                cont_path += j+'/'
+            path = path.replace('..','')
+            dot_idx = True
+        elif self.current_directory == '.':
+            cont_path = ''
+        else:
+            cont_path = self.current_directory+'/'
+        path = path.replace('\\','/')
+        if path.startswith('/') and not dot_idx:
+            path = path[1:]
+            cont_path = ''
+        path = cont_path + path
+        path = path.replace('//','/')
+        if path.endswith('/'):
+            path = path[:-1]
+        if path == '':
+            path = '.'
+        return path
+    
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
         if len(self.words) > 0:
@@ -237,6 +276,184 @@ class Console:
                 self.write("Auto attack toggled to %s." % self.user.auto_attack)
                 return True
             
+            if cmd == 'change':
+                if self.words[1] == 'password':
+                    self.write("Please enter your new #password:")
+                    self.input_redirect = self
+                    self.changing_passwords = True
+                    return True
+            
+            if cmd == 'upload':
+                if self.user.wprivilages:
+                    allow_edits = False
+                    try:
+                        for i in self.game.player_edit_privilages[self.user.names[0]]:
+                            if re.fullmatch(i, self.current_directory):
+                                allow_edits = True
+                                break
+                    except KeyError:
+                        pass
+                    if allow_edits:
+                        if len(self.words) > 1 and self.words[1]:
+                            self.uploading_filename = self.words[1] #TODO: make sure this is a valid filename
+                        else:
+                            self.uploading_filename = 'default_filename.py'
+                        if '.' not in self.uploading_filename:
+                            self.uploading_filename += '.py'
+                        self.write('Please select a file to #upload:')
+                    else:
+                        self.write('You do not have permission to write to this directory.')
+                    return True
+
+            if cmd == 'download':
+                if self.user.wprivilages:
+                    self.download_file(self.words[1:])
+                    return True
+            
+            if cmd == 'cd':
+                if self.user.wprivilages:
+                    path = self._findPath(self.words[1:])
+                    allow_reads = False
+                    if path == '.':
+                        allow_reads = True
+                    try:
+                        for i in self.game.player_read_privilages[self.user.names[0]]:
+                            if re.fullmatch(i,path):
+                                allow_reads = True
+                                break
+                    except KeyError:
+                        pass
+                    if allow_reads:
+                        if os.path.exists(path):
+                            self.current_directory = path
+                        else:
+                            self.write('Error! No such file or directory.')
+                    else:
+                        self.write('You do not have permission to view this directory.')
+                    return True
+            
+            if cmd == 'ls':
+                if self.user.wprivilages:
+                    ls_info = '<div style="column-count:4">'
+                    try:
+                        param = self.words[1]
+                    except IndexError:
+                        param = None
+                    dirs, files = [[x[1],x[2]] for x in os.walk(self.current_directory)][0]
+                    for d in dirs:
+                        if (not d.startswith('.') and d != '__pycache__') or param == '-a':
+                            ls_info += d+' '
+                    for f in files:
+                        if not f.startswith('.') or param == '-a':
+                            ls_info += f+' '
+                    ls_info += '</div>'
+                    self.write(ls_info)
+                    return True
+            
+            if cmd == 'cat':
+                if self.user.wprivilages:
+                    if len(self.words) > 1:
+                        filename = self.words[1] #TODO: make sure this is a valid filename
+                        try:
+                            f = open(self.current_directory+'/'+filename, 'r')
+                            self.write(f.read())
+                            f.close()
+                        except FileNotFoundError:
+                            self.write('Error! No file named %s.' % filename)
+                        return True
+            
+            if cmd == 'mv':
+                if self.user.wprivilages:
+                    if len(self.words) > 2:
+                        filenames = self.words[1:-1]
+                        dest = self.words[-1]
+
+                        dest_path = self._findPath([dest])
+                        allow_edits = False
+                        allow_dest_edits = False
+                        try:
+                            for i in self.game.player_edit_privilages[self.user.names[0]]:
+                                if re.fullmatch(i, self.current_directory):
+                                    allow_edits = True
+                                if re.fullmatch(i, dest_path):
+                                    allow_dest_edits = True
+                        except KeyError:
+                            pass
+
+                        if allow_dest_edits and allow_edits:
+                            if '.' not in dest_path.split('/')[-1]:
+                                for i in filenames:
+                                    if os.path.exists(self.current_directory+'/'+i):
+                                        os.replace(self.current_directory+'/'+i, dest_path+'/'+i)
+                                        add_return = subprocess.run(["git","add","-A"])
+                                        commit_return = subprocess.run(["git","commit","-m","%s moved file %s" % (self.user.names[0], i)])
+                                    else:
+                                        self.write('Error, no file named %s.' % i)
+                            else:
+                                if len(self.words) == 3:
+                                    if os.path.exists(self.current_directory+'/'+filenames[0]):
+                                        os.replace(self.current_directory+'/'+filenames[0], dest_path)
+                                        add_return = subprocess.run(["git","add","-A"])
+                                        commit_return = subprocess.run(["git","commit","-m","%s renamed file %s" % (self.user.names[0], filenames[0])])
+                                    else:
+                                        self.write('Error, no file named %s.' % filenames[0])
+                                else:
+                                    self.write('Error, input invalid.')
+                        else:
+                            self.write('You do not have permission to perform this action.')
+                    else:
+                        self.write('Usage: mv [src] [dest]')
+                    return True
+            
+            if cmd == 'rm':
+                if self.user.wprivilages:
+                    allow_edits = False
+                    try:
+                        for i in self.game.player_edit_privilages[self.user.names[0]]:
+                            if re.fullmatch(i, self.current_directory):
+                                allow_edits = True
+                                break 
+                    except KeyError:
+                        pass
+                    if allow_edits:
+                        if len(self.words) > 1:
+                            filename = self.words[1]
+                            if os.path.exists(self.current_directory+'/'+filename):
+                                self.removing_directory = self.current_directory+'/'+filename
+                                self.input_redirect = self
+                                self.write('Are you sure you would like to complete this operation? Y/n:')
+                            else:
+                                self.write('Error, no file named %s exists.' % filename)
+                        else:
+                            self.write('What did you mean to remove?')
+                    else:
+                        self.write('You do not have permission to remove files from this directory.')
+                    return True
+            
+            if cmd == 'mkdir':
+                if self.user.wprivilages:
+                    if len(self.words) > 1:
+                        filename = self.words[1]
+                        if not os.path.exists(self.current_directory+'/'+filename):
+                            os.mkdir(self.current_directory+'/'+filename)
+                        else:
+                            self.write('Error, A directory named %s already exits!' % filename)
+                    else:
+                        self.write('mkdir requires a directory name')
+                    return True
+            
+            if cmd == 'rmdir':
+                if self.user.wprivilages:
+                    if len(self.words) > 1:
+                        filename = self.words[1]
+                        try:
+                            os.rmdir(self.current_directory+'/'+filename)
+                        except FileNotFoundError:
+                            self.write('Error, no directory named %s exits.' % filename)
+                        except OSError:
+                            self.write('Error, only empty directories may be removed.')
+                    return True
+            
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
             if cmd in game_file_cmds:
@@ -267,12 +484,54 @@ class Console:
             if cmd == 'quit':
                 self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user, self.user))
                 self.game.save_player(os.path.join(gametools.PLAYER_DIR, self.user.names[0]), self.user)
+                self.game.create_backups(os.path.join(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, os.path.join(gametools.PLAYER_DIR, self.user.names[0]))
                 self.write("#quit")
-                if self.words[1] == 'game' and self.user.wprivilages:
+                if len(self.words) > 1 and self.words[1] == 'game' and self.user.wprivilages:
+                    self.game.shutdown_console = self
                     self.game.keep_going = False
                 return "__quit__"
 
         return False
+    
+    def upload_file(self, file, confirm_r=True):
+        if self.confirming_replace:
+            return
+        replacing_file = True
+        try:
+            f = open(self.current_directory+'/'+self.uploading_filename, 'r')
+            dbg.debug('Found a file. Contents: %s' % f.read())
+            f.close()
+        except FileNotFoundError:
+            replacing_file = False
+        
+        if not replacing_file or not confirm_r:
+            f = open(self.current_directory+'/'+self.uploading_filename, 'wb')
+            f.write(file)
+            f.close()
+            self.write('Sucessfully uploaded file.')
+            self.file_input = bytes()
+            add_return = subprocess.run(["git","add","-A"])
+            commit_return = subprocess.run(["git","commit","-m","%s uploaded file %s" % (self.user.names[0], self.uploading_filename)])
+        else:
+            self.write('A file named %s already exits. Would you like to replace it with the new version you\'ve uploaded? Y/n:' % (self.current_directory+'/'+self.uploading_filename))
+            self.confirming_replace = True
+            self.input_redirect = self
+
+    def download_file(self, filename_words):
+        filename = ''
+        for x in filename_words:
+            filename += x
+
+        try:
+            f = open(self.current_directory+'/'+filename, 'rb')
+        except FileNotFoundError:
+            self.write("Couldn't find a file named %s." % filename)
+            return
+
+        self.file_output = f.read()
+        asyncio.ensure_future(connections_websock.file_send(self))
+        f.close()
+        self.write('Downloading file %s...' % filename)
 
     def sanitizeHTML(self, html):
         html = html.replace('<', '(#*tag)(||istag)').replace('>', '(#*tag)')
@@ -401,8 +660,34 @@ class Console:
     def request_input(self, dest):
         self.input_redirect = dest
         dbg.debug("Input from console %s given to %s!" % (self, dest))
+    
+    def console_recv(self, command):
+        """Temporarily recieve information as a two-part command, e.g. changing passwords."""
+        if self.changing_passwords:
+            self.user.password = command
+            self.changing_passwords = False
+            self.input_redirect = None
+        elif self.removing_directory:
+            if command in ['yes','y','Y','Yes','YES']:
+                os.remove(self.removing_directory)
+                add_return = subprocess.run(['git','add','-A'])
+                commit_return = subprocess.run(['git','commit','-m','%s removed file %s.' % (self.user.names[0], self.removing_directory)])
+                self.removing_directory = False
+                self.input_redirect = None
+        elif self.confirming_replace:
+            if command in ['yes','y','Y','Yes','YES']:
+                self.input_redirect = None
+                self.confirming_replace = False
+                self.upload_file(self.file_input, False)
+            else:
+                self.write('Okay, keeping old file.')
+                self.input_redirect = None
+                self.confirming_replace = False
+                self.file_input = bytes()
 
     def take_input(self):
+        if self.file_input:
+            self.upload_file(self.file_input)
         if (self.raw_input == ''):
             return None
         (self.command, sep, self.raw_input) = self.raw_input.partition('\n')

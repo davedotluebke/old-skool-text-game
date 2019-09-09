@@ -1,4 +1,6 @@
 import io
+import os
+import sys
 import traceback
 import random
 import time
@@ -28,6 +30,7 @@ class Game():
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
+        self.start_time = 0
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
         self.time = 0  # number of heartbeats since game began
@@ -36,7 +39,10 @@ class Game():
         self.parser = Parser()
         self.dbg = dbg
         self.users = []
-        
+
+        self.shutdown_console = None
+        self.player_read_privilages = {'scott':['.*']}     # Note: administrators are responsible for making sure that 
+        self.player_edit_privilages = {'scott':['domains.*','home/scott.*']} # wizards can view and edit their own files
 
     def save_game(self, filename):
         raise NotImplementedError("Saving games no longer works.")
@@ -99,23 +105,68 @@ class Game():
     
         f.close()
     
+    def create_backups(self, filename, player, other_filename):        
+        if not other_filename.endswith('.OADplayer'):
+            other_filename += '.OADplayer'
+        
+        former_files = []
+        try:
+            f = open(other_filename, 'r')
+            former_files.append(f.read())
+            f.close()
+        except FileNotFoundError:
+            return
+        
+        for i in range(0, 20):
+            try:
+                f = open(filename+str(i)+'.OADplayer', 'r')
+                former_files.append(f.read())
+                f.close()
+            except FileNotFoundError:
+                pass
+        
+        for j in range(0, len(former_files)):
+            try:
+                f = open(filename+str(j)+'.OADplayer', 'w')
+                f.write(former_files[j])
+                f.close()
+            except FileNotFoundError:
+                pass
+    
     def save_player(self, filename, player):
-        player.save_cons_attributes()
+        try:
+            player.save_cons_attributes()
+        except Exception:
+            dbg.debug('Error saving console attributes for player %s!' % player, 0)
+
+        # Keep a list of "broken objects" to destroy
+        broken_objs = []
         # Uniquify the ID string of every object carried by the player
         tag = '-saveplayer'+str(random.randint(100000,999999))
         l = [player] 
         for obj in l:
             # change object ID and corresponding entry in ID_dict
-            del Thing.ID_dict[obj.id]
-            obj.id = obj.id + tag  
-            obj._add_ID(obj.id)
-            # recursively add associated objects
-            if obj.contents != None:
-                l += obj.contents
-            if hasattr(obj, 'default_weapon'):
-                l += [obj.default_weapon]
-            if hasattr(obj, 'default_armor'):
-                l += [obj.default_armor]
+            try:
+                del Thing.ID_dict[obj.id]
+                obj.id = obj.id + tag  
+                obj._add_ID(obj.id)
+                # recursively add associated objects
+                if obj.contents != None:
+                    l += obj.contents
+                if hasattr(obj, 'default_weapon'):
+                    l += [obj.default_weapon]
+                if hasattr(obj, 'default_armor'):
+                    l += [obj.default_armor]
+            except Exception:
+                dbg.debug('Error uniquifying the ID of %s. Removing from player inventory.' % obj)
+                broken_objs.append(obj)
+                
+        for obj in broken_objs:
+            try:
+                obj.destroy()
+            except Exception:
+                dbg.debug('Error destroying object %s!' % obj, 0)
+                # TODO: figure out what to do here
 
         if not filename.endswith('.OADplayer'): 
             filename += '.OADplayer'
@@ -136,7 +187,14 @@ class Game():
             player.cons.write("Error writing to file %s" % filename)
         # restore location & contents etc to obj references:
         for obj in l:
-            obj._restore_objs_from_IDs()
+            try:
+                obj._restore_objs_from_IDs()
+            except Exception:
+                broken_objs.append(obj)
+                dbg.debug('An error occured while loading %s! Printing below:', 0)
+                dbg.debug(traceback.format_exc(), 0)
+                dbg.debug('Error caught!', 0)
+
         # restore original IDs by removing tag
         for obj in l:
             del Thing.ID_dict[obj.id]  # get rid of uniquified entry in ID_dict
@@ -145,7 +203,7 @@ class Game():
             obj._add_ID(obj.id)  # re-create original entry in ID_dict
         
 
-    def load_player(self, filename, cons, oldplayer=None):
+    def load_player(self, filename, cons, oldplayer=None, password=None):
         """Load a single player and his/her inventory from a saved file.
 
         Objects in the player's inventory (and their contents, recursively) 
@@ -172,12 +230,18 @@ class Game():
                 obj = gametools.clone(x['path'])
                 if not obj:
                     continue
+                del Thing.ID_dict[obj.id] # Delete the temporary ID created by the `clone` function
                 obj.update_obj(x)
                 l.append(obj)
         except EOFError:
             cons.write("The file you are trying to load appears to be corrupt.")
             raise gametools.PlayerLoadError
         newplayer = l[0]  # first object saved is the player
+        if password:
+            if password != newplayer.password:
+                raise gametools.IncorrectPasswordError
+        
+        broken_objs = [] # Make sure to remove all of the broken objects from the player's inventory
 
         if oldplayer:
             # TODO: move below code for deleting player to Player.__del__()
@@ -213,18 +277,56 @@ class Game():
         
         # Now fix up location & contents[] to list object refs, not ID strings
         for o in l:
-            o._restore_objs_from_IDs()
+            try:
+                o._restore_objs_from_IDs()
+            except Exception:
+                broken_objs.append(o)
+                dbg.debug('An error occured while loading %s! Printing below:', 0)
+                dbg.debug(traceback.format_exc(), 0)
+                dbg.debug('Error caught!', 0)
         # Now de-uniquify all IDs, replace object.id and ID_dict{} entry
         for o in l:
-            del Thing.ID_dict[o.id]
-            (head, sep, tail) = o.id.partition('-saveplayer')
-            o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
+            try:
+                del Thing.ID_dict[o.id]
+                (head, sep, tail) = o.id.partition('-saveplayer')
+                o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
+            except Exception:
+                broken_objs.append(o)
+                dbg.debug('An error occured while loading %s! Printing below:', 0)
+                dbg.debug(traceback.format_exc(), 0)
+                dbg.debug('Error caught!', 0)
+
+        # Make sure that broken objects are removed from their container's contents list
+        reference_check = [newplayer]
+        for obj in reference_check:
+            if obj.contents and isinstance(obj.contents, list):
+                for o in obj.contents:
+                    if o in broken_objs:
+                        del obj.contents[obj.contents.index(o)]
+                    # Catch a few specific errors
+                    if o.location != obj:
+                        broken_objs.append(o)
+                        del obj.contents[obj.contents.index(o)]
+        
+        for o in broken_objs:
+            try:
+                o.destroy()
+            except Exception:
+                dbg.debug('Error destroying object %s!' % o, 0)
+                #TODO: Figure out what to do here
 
         room = newplayer.location
-        room.insert(newplayer)  # insert() does some necessary bookkeeping
-        cons.write("Restored game state from file %s" % filename)
-        room.report_arrival(newplayer, silent=True)
-        room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
+        try:
+            room.insert(newplayer)  # insert() does some necessary bookkeeping
+            cons.write("Restored game state from file %s" % filename)
+            room.report_arrival(newplayer, silent=True)
+            room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
+        except Exception:
+            dbg.debug('Error inserting player into location! Moving player back to default start location', 0)
+            room = gametools.load_room(newplayer.start_loc_id)
+            cons.write("Restored game state from file %s" % filename)
+            room.report_arrival(newplayer, silent=True)
+            room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         return newplayer
     
     def login_player(self, cons):
@@ -257,9 +359,10 @@ class Game():
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-        dbg.debug("Beat! Time = %s" % self.time, 4)
+        dbg.debug("Beat! game.time = %s" % self.time, 4)
+        dbg.debug("Time since game began (in seconds): %s" % (time.time() - self.start_time), 4)
         
-        current_events = self.events.check_for_event(self.time)            
+        current_events = self.events.check_for_event(self.time)       
         for event in current_events:
             if (self.handle_exceptions):
                 try:
@@ -282,16 +385,20 @@ class Game():
             else:
                 h.heartbeat()
         
+        if time.time() > (self.start_time + 86400):
+            self.keep_going == False
+        
         if self.keep_going:
             # schedule the next heartbeat
             asyncio.get_event_loop().call_later(1,self.beat)
         else:
             # quit the game
             asyncio.get_event_loop().stop()
-            # TODO: Make sure all players are saved before we do this
-            asyncio.get_event_loop().close()
 
     def start_loop(self):
+        # To have a consistant 24 hour shutdown time
+        # The start time is always the last midnight the occured.
+        self.start_time = (time.time() // 86400)*86400
         print("Starting game...")
         ip_address = input('IP Address: ')
         asyncio.get_event_loop().run_until_complete(
@@ -299,9 +406,27 @@ class Game():
         print("Listening on port 9124...")
         asyncio.get_event_loop().call_later(1,self.beat)
         asyncio.get_event_loop().run_forever()
-        # XXX add callbacks to handle game exit? 
+        # XXX add callbacks to handle game exit?
+        # Go through and save every player
+        players = [Thing.ID_dict[x] for x in Thing.ID_dict if isinstance(Thing.ID_dict[x], Player)]
+        consoles = [x.cons for x in players]
+        restart_code = 0
+        if self.shutdown_console:
+            consoles.append(self.shutdown_console)
+            restart_code = 1
+        for i in players:
+            if i.cons:
+                i.cons.write('The game is now shutting down.')
+                self.save_player(os.path.join(gametools.PLAYER_DIR, i.names[0]), i)
+                i.cons.write('#quit')
+        
+        for j in consoles:
+            if j: # Make sure to send all messages from consoles before fully quitting game
+                asyncio.get_event_loop().run_until_complete(connections_websock.ws_send(j))                
+
         dbg.debug("Exiting main game loop!")
         dbg.shut_down()
+        sys.exit(restart_code)
 
     def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
         dbg.debug("Game.clear_nulspace() called! Currently does nothing.")
