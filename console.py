@@ -170,10 +170,10 @@ class Console:
     def _set_verbosity(self, level=-1):
         if level != -1:
             dbg.set_verbosity(level, self.user.id)
-            return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity)
-        if dbg.verbosity[self.user.id] == 0:
+            return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity[self.user.id])
+        if self.user.id not in dbg.verbosity or dbg.verbosity[self.user.id] == 0:
             dbg.set_verbosity(1, self.user.id)
-            return "Verbose debug output now on, verbosity level %s." % dbg.verbosity
+            return "Verbose debug output now on, verbosity level %s." % dbg.verbosity[self.user.id]
         else:
             dbg.set_verbosity(0, self.user.id)
             return "Verbose debug output now off."
@@ -261,6 +261,12 @@ class Console:
                     return True
                 else:
                     self.write("Type \"terse\" to print short descriptions when entering a room.")
+                    return True
+            
+            if cmd == 'profile':
+                # check wizard privilages before allowing
+                if self.user.wprivilages:
+                    self.write(self.game.get_profiling_report())
                     return True
 
             if cmd == "escape":

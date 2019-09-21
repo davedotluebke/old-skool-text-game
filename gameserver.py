@@ -44,6 +44,10 @@ class Game():
         self.player_read_privilages = {'scott':['.*']}     # Note: administrators are responsible for making sure that 
         self.player_edit_privilages = {'scott':['domains.*','home/scott.*']} # wizards can view and edit their own files
 
+        self.total_times = {}
+        self.numrun_times = {}
+        self.maximum_times = {}
+
     def save_game(self, filename):
         raise NotImplementedError("Saving games no longer works.")
         if not filename.endswith('.OAD'): 
@@ -341,6 +345,18 @@ class Game():
         cons.user = user
         cons.write("Please enter your username: ")
         user.login_state = "AWAITING_USERNAME"
+    
+    def get_profiling_report(self):
+        report_str = ''
+        all_time_spent = sum([self.total_times[x] for x in self.total_times])
+        for i in self.total_times:
+            report_str += '\n%s:\n' % i
+            report_str += 'Total time running: %s\n' % self.total_times[i]
+            if i in self.maximum_times:
+                report_str += 'Average time running: %s\n' % ((self.total_times[i])/(self.numrun_times[i]))
+                report_str += 'Maximum time running: %s\n' % self.maximum_times[i]
+            report_str += 'Percentage of total time: %s\n' % ((self.total_times[i]/all_time_spent)*100)
+        return report_str
 
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""
@@ -376,6 +392,10 @@ class Game():
                 event.callback(event.payload)
             profile_et = time.time()
             profile_t = profile_et - profile_st
+            if str(event) in self.total_times:
+                self.total_times[str(event)] += profile_t
+            else:
+                self.total_times[str(event)] = profile_t
             dbg.debug("Event %s took %s seconds" % (event, profile_t), 4)
 
         for h in self.heartbeat_users:
@@ -391,6 +411,17 @@ class Game():
                 h.heartbeat()
             profile_et = time.time()
             profile_t = profile_et - profile_st
+            if not hasattr(h, 'id'):
+                continue
+            if h.id in self.total_times:
+                self.total_times[h.id] += profile_t
+                self.numrun_times[h.id] += 1
+                if profile_t > self.maximum_times[h.id]:
+                    self.maximum_times[h.id] = profile_t
+            else:
+                self.total_times[h.id] = profile_t
+                self.numrun_times[h.id] = 1
+                self.maximum_times[h.id] = profile_t
             dbg.debug("Heartbeat for %s took %s seconds" % (h.id, profile_t), 4)
         
         if time.time() > (self.start_time + 86400):
