@@ -374,7 +374,8 @@ class Game():
                     dbg.debug('Error caught!')
             else:
                 event.callback(event.payload)
-            profile_t = time.time() - profile_st
+            profile_et = time.time()
+            profile_t = profile_et - profile_st
             dbg.debug("Event %s took %s seconds" % (event, profile_t), 4)
 
         for h in self.heartbeat_users:
@@ -388,7 +389,8 @@ class Game():
                     dbg.debug('Error caught!')
             else:
                 h.heartbeat()
-            profile_t = time.time() - profile_st
+            profile_et = time.time()
+            profile_t = profile_et - profile_st
             dbg.debug("Heartbeat for %s took %s seconds" % (h.id, profile_t), 4)
         
         if time.time() > (self.start_time + 86400):
