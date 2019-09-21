@@ -29,8 +29,8 @@ class Room(Container):
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
     def detach(self, room_path):
-        '''Remove the room from Thing.ID_dict[] and moves all objects in the room 
-        to nulspace (this removes references to the room instance, specifically 
+        '''Remove the room from Thing.ID_dict[] and extracts all objects in the room 
+        (this removes references to the room instance, specifically 
         the location field of contained objects). This should be called preparatory
         to deleting or reloading the room.
         
@@ -38,7 +38,7 @@ class Room(Container):
         try:
             room = Thing.ID_dict[room_path]
             for o in room.contents:
-                o.move_to(Thing.ID_dict['nulspace'], force_move=True)
+                room.extract(o, count='all')
             del Thing.ID_dict[room_path]
             return True
         except KeyError:

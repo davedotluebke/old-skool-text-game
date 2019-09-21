@@ -43,7 +43,7 @@ class Emerald(Gem):
         self._long_desc = head + ' It is about %s millimeters in all dimensions.' % self.power_num
         if self.power_num <= 0:
             self.emit('The emerald shrinks and vanishes!')
-            self.move_to(Thing.ID_dict['nulspace'])
+            self.destroy()
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #

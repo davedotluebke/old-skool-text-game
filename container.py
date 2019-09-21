@@ -51,8 +51,8 @@ class Container(Thing):
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
     def detach(self, container_path):
-        '''Remove the container from Thing.ID_dict[] and moves all objects in the container
-        to nulspace (this removes references to the container instance, specifically
+        '''Remove the container from Thing.ID_dict[] and extracts all objects in the container
+        (this removes references to the container instance, specifically
         the location field of contained objects). This should be called preparatory
         to deleting or reloading the container.
 
@@ -60,7 +60,7 @@ class Container(Thing):
         try:
             container = Thing.ID_dict[container_path]
             for o in container.contents:
-                o.move_to(Thing.ID_dict['nulspace'], force_move=True)
+                container.extract(o, count='all')
             del Thing.ID_dict[container_path]
             return True
         except KeyError:

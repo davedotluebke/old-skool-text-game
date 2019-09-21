@@ -20,7 +20,7 @@ class Door(thing.Thing):
                 self.emit('The wooden door burns in a flickering of flames.')
                 if isinstance(obj.location, player.Player):
                     obj.location.cons.write("You can't hold onto the torch anymore, it's burning everywhere.")
-                obj.move_to(thing.Thing.ID_dict['nulspace'])
+                obj.destroy()
                 self.emit('You can now go through the doorway to the west.')
                 self.location.add_exit('west', 'domains.school.elementQuest.portal_room')
                 self.location.extract(self)

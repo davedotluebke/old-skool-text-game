@@ -83,7 +83,7 @@ class MasterGoblin(NPC):
     # SPECIAL METHODS (i.e __method__() format)
     #
     def __init__(self, path):
-        NPC.__init__(self, 'goblin', path, Thing.ID_dict['nulspace'].game)
+        NPC.__init__(self, 'goblin', path, Thing.game)
         self.set_description('old mean goblin', 'This goblin is standing straight in front of the passage west. He is holding a piece of paper in his hand.')
         self.add_adjectives('old', 'horrid', 'mean')
         self.add_script('''Listen. If you intend to walk straight past here invisible, I tell you that you will not get away with it.

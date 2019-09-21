@@ -23,7 +23,7 @@ class Vines(scenery.Scenery):
         self.emit('&nD%s clears the vines away, revealing a cave entrance to the north.',[cons.user])
         self.location.add_exit('north','domains.school.forest.abandoned_fire')
         self.location.set_description('forest cave entry','You find yourself in front of a hill with a cave entrance.')
-        self.move_to(thing.Thing.ID_dict['nulspace'])
+        self.destroy()
         return True
 
 # Scenery makes a per-object copy of actions[] so add actions in load()

@@ -17,7 +17,7 @@ class FireQuestCloth(thing.Thing):
         torch.soaked = oDO.soaked
         torch.move_to(oIDO.location)
         for i in [oDO, oIDO]:
-            i.move_to(thing.Thing.ID_dict['nulspace'])
+            i.destroy()
         return True
 
     actions = dict(Thing.actions)  # make a copy, don't change Thing's dict!

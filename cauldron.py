@@ -48,14 +48,14 @@ class Cauldron(Container):
     def explode(self, none=None):
         self.emit('The cauldron explodes with a bang, scattering broken glass and spilling its contents all over the floor')
         for i in self.contents:
-            i.move_to(Thing.ID_dict['nulspace'])
-        self.move_to(Thing.ID_dict['nulspace'])
+            i.destroy()
+        self.destroy()
 
     def create_potion(self, i):
         while self.contents:
             a = self.contents[0]
             self.extract(a)
-            Thing.ID_dict['nulspace'].insert(a)
+            a.destroy()
         try:
             created = gametools.clone(i[1].replace(' ', '_'))
             created.move_to(self)

@@ -474,7 +474,7 @@ class Player(Creature):
     
     def reload(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.
-        First moves all objects out of the room into nulspace, then re-imports the object 
+        First extracts all of the objects from the room, then re-imports the object 
         module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
         players back to the new room.'''
         obj = None

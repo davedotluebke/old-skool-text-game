@@ -24,7 +24,7 @@ class Statue(scenery.Scenery):
             cons.user.emit('&nD%s puts the pearl in the eye of the statue.', ignore=[cons.user])
             cons.user.perceive('You put the pearl in the eye of the statue and see it start to glow.')
             self._long_desc = 'This giant stone statue solemnly stands in the middle of the room. Its eyes are pearls, and they both glow.'
-            oDO.move_to(thing.Thing.ID_dict['nulspace'])
+            oDO.destroy()
             doorway.load()
             doorway.Doorway.open(doorway.Doorway.instance)
             return True

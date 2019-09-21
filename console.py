@@ -644,25 +644,6 @@ class Console:
         self.raw_output = self.sanatizeHTML(self.raw_output)
         asyncio.ensure_future(connections_websock.ws_send(self))
 
-    '''
-    def new_user(self):
-        self.write("Create your new user.")
-        user_default_name = input("User default name: ")    #TODO: Simplify and make text more user-friendly.
-        user_short_description = input("User short description: ")
-        user_long_description = input("User long description: ")
-        new_user = Player(user_default_name, self)
-        new_user.set_description(user_short_description, user_long_description)
-        new_user.set_max_weight_carried(750000)
-        new_user.set_max_volume_carried(2000)
-        new_user.move_to(self.user.location)
-        for i in self.user.contents:
-            i.move_to(new_user)
-        self.write("You are now %s!" % new_user.id)
-        self.user.move_to(Thing.ID_dict['nulspace'])
-        self.user.cons = None
-        self.set_user(new_user)
-        self.game.user = new_user
-    '''
     def request_input(self, dest):
         self.input_redirect = dest
         dbg.debug("Input from console %s given to %s!" % (self, dest), 2)

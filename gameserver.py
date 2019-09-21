@@ -466,12 +466,3 @@ class Game():
         dbg.debug("Exiting main game loop!")
         dbg.shut_down()
         sys.exit(restart_code)
-
-    def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
-        dbg.debug("Game.clear_nulspace() called! Currently does nothing.")
-        '''
-        for i in self.nulspace.contents:
-            if not hasattr(i, 'cons'): #if it is not player
-                i.delete()
-        self.events.schedule(self.time+5, self.clear_nulspace)
-        '''

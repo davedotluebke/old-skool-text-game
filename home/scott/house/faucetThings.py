@@ -76,7 +76,7 @@ class FaucetThing(Thing):
             return "Imposible to pour out a %s in a %s." % (self.type, self.type)
         cons.write('You pour the %s into the %s, and it goes down the drain.' % (obj, self.type))
         self.emit('&nD%s pours the %s into the %s, and it goes down the drain.' % (cons.user.id, obj, self.type))
-        obj.move_to(Thing.ID_dict['nulspace'])
+        obj.destroy()
         return True
 
     actions = dict(Thing.actions)  # make a copy
