@@ -70,7 +70,7 @@ class Thing(object):
         if isinstance(self.location, str):
             self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet?
         if self.contents != None:
-            self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str)]
+            self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str) and id in Thing.ID_dict]
 
     #
     # SET/GET METHODS (methods to set or query attributes)
