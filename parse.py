@@ -55,8 +55,8 @@ class Parser:
         if sDO == "": sDO = None    # no direct object
         if sIDO == "": sIDO = None  # no indirect object 
         if not sIDO: 
-            dbg.debug("Possibly malformed input: found preposition %s but missing indirect object." % sPrep)
-            dbg.debug("Ending a sentence in a preposition is something up with which I will not put.")
+            dbg.debug("Possibly malformed input: found preposition %s but missing indirect object." % sPrep, 2)
+            dbg.debug("Ending a sentence in a preposition is something up with which I will not put.", 2)
         return (sV, sDO, sPrep, sIDO)
 
     def _find_matching_objects(self, sObj, objs, cons):
@@ -108,7 +108,7 @@ class Parser:
                     ' '.join(x for x in sAdjectives_list if x not in Parser.ordinals), 
                     sNoun))
                 return False
-        dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects), 3)        
+        dbg.debug("matched_objects are: %s" % ' '.join(obj.id for obj in matched_objects), 4)        
         if len(matched_objects) > 1:
             candidates = ", or the ".join(o._short_desc for o in matched_objects)
             cons.write("By '%s', do you mean the %s? Please provide more adjectives, or specify 'first', 'second', 'third', etc." % (sObj, candidates))
@@ -122,7 +122,7 @@ class Parser:
 
     def parse(self, user, console, command):
         """Parse and enact the user's command. """
-        dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
+        dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console), 3)
         
         self.words = command.split()
         if len(self.words) == 0:
@@ -178,7 +178,7 @@ class Parser:
                              + " verb %s!" % sV)
             # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
             return True
-        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
+        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 4)
 
         # If direct or indirect object supports the verb, try first in that order
         p = possible_verb_objects  # terser reference to possible_verb_objects
@@ -222,8 +222,8 @@ class Parser:
                 result = act.func(obj, self, console, oDO, oIDO) # <-- ENACT THE VERB
             except Exception as isnt:
                 console.write('An error has occured. Please try a different action until the problem is resolved.')
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug("Error caught!", 0)
+                dbg.debug(traceback.format_exc())
+                dbg.debug("Error caught!")
                 if plural: 
                     obj.plurality += obj_copy.plurality 
                     obj_copy.destroy()

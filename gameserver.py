@@ -137,7 +137,7 @@ class Game():
         try:
             player.save_cons_attributes()
         except Exception:
-            dbg.debug('Error saving console attributes for player %s!' % player, 0)
+            dbg.debug('Error saving console attributes for player %s!' % player)
 
         # Keep a list of "broken objects" to destroy
         broken_objs = []
@@ -165,7 +165,7 @@ class Game():
             try:
                 obj.destroy()
             except Exception:
-                dbg.debug('Error destroying object %s!' % obj, 0)
+                dbg.debug('Error destroying object %s!' % obj)
                 # TODO: figure out what to do here
 
         if not filename.endswith('.OADplayer'): 
@@ -191,9 +191,9 @@ class Game():
                 obj._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(obj)
-                dbg.debug('An error occured while loading %s! Printing below:', 0)
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug('Error caught!', 0)
+                dbg.debug('An error occured while loading %s! Printing below:')
+                dbg.debug(traceback.format_exc())
+                dbg.debug('Error caught!')
 
         # restore original IDs by removing tag
         for obj in l:
@@ -265,7 +265,7 @@ class Game():
         loc_str = newplayer.location
         newplayer.location = gametools.load_room(loc_str) 
         if newplayer.location == None: 
-            dbg.debug("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer), 0)
+            dbg.debug("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer))
             cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
             newplayer.location = gametools.load_room('domains.school.school.great_hall')
 
@@ -279,9 +279,9 @@ class Game():
                 o._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(o)
-                dbg.debug('An error occured while loading %s! Printing below:', 0)
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug('Error caught!', 0)
+                dbg.debug('An error occured while loading %s! Printing below:')
+                dbg.debug(traceback.format_exc())
+                dbg.debug('Error caught!')
         # Now de-uniquify all IDs, replace object.id and ID_dict{} entry
         for o in l:
             try:
@@ -290,9 +290,9 @@ class Game():
                 o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
             except Exception:
                 broken_objs.append(o)
-                dbg.debug('An error occured while loading %s! Printing below:', 0)
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug('Error caught!', 0)
+                dbg.debug('An error occured while loading %s! Printing below:')
+                dbg.debug(traceback.format_exc())
+                dbg.debug('Error caught!')
 
         # Make sure that broken objects are removed from their container's contents list
         reference_check = [newplayer]
@@ -310,7 +310,7 @@ class Game():
             try:
                 o.destroy()
             except Exception:
-                dbg.debug('Error destroying object %s!' % o, 0)
+                dbg.debug('Error destroying object %s!' % o)
                 #TODO: Figure out what to do here
 
         room = newplayer.location
@@ -320,7 +320,7 @@ class Game():
             room.report_arrival(newplayer, silent=True)
             room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         except Exception:
-            dbg.debug('Error inserting player into location! Moving player back to default start location', 0)
+            dbg.debug('Error inserting player into location! Moving player back to default start location')
             room = gametools.load_room(newplayer.start_loc_id)
             cons.write("Restored game state from file %s" % filename)
             room.report_arrival(newplayer, silent=True)
@@ -357,31 +357,37 @@ class Game():
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-        dbg.debug("Beat! game.time = %s" % self.time, 4)
-        dbg.debug("Time since game began (in seconds): %s" % (time.time() - self.start_time), 4)
+        dbg.debug("Beat! game.time = %s" % self.time, 5)
+        dbg.debug("Time since game began (in seconds): %s" % (time.time() - self.start_time), 5)
         
         current_events = self.events.check_for_event(self.time)       
         for event in current_events:
+            profile_st = time.time()
             if (self.handle_exceptions):
                 try:
                     event.callback(event.payload)
                 except Exception as inst:
-                    dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (event.timestamp, event.callback, event.payload), 0)
-                    dbg.debug(traceback.format_exc(), 0)
-                    dbg.debug('Error caught!', 0)
+                    dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (event.timestamp, event.callback, event.payload))
+                    dbg.debug(traceback.format_exc())
+                    dbg.debug('Error caught!')
             else:
                 event.callback(event.payload)
+            profile_t = time.time() - profile_st
+            dbg.debug("Event %s took %s seconds" % (event, profile_t), 4)
 
         for h in self.heartbeat_users:
+            profile_st = time.time()
             if (self.handle_exceptions):
                 try:
                     h.heartbeat()
                 except Exception as inst:
-                    dbg.debug("An error occured inside code for %s! Printing below:" % h, 0)
-                    dbg.debug(traceback.format_exc(), 0)
-                    dbg.debug('Error caught!', 0)
+                    dbg.debug("An error occured inside code for %s! Printing below:" % h)
+                    dbg.debug(traceback.format_exc())
+                    dbg.debug('Error caught!')
             else:
                 h.heartbeat()
+            profile_t = time.time() - profile_st
+            dbg.debug("Heartbeat for %s took %s seconds" % (h.id, profile_t), 4)
         
         if time.time() > (self.start_time + 86400):
             self.keep_going == False

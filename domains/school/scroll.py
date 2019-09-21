@@ -30,7 +30,7 @@ class Scroll(Thing):
                 if isinstance(r, Room):
                     break
         except AttributeError:
-            dbg.debug('Error! Scroll has no attribute location', 0)
+            dbg.debug('Error! Scroll has no attribute location')
             return
         if r.id in list(self.messages):
             if self.messages[r.id][1] == True:

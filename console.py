@@ -160,18 +160,18 @@ class Console:
         for t in self.words:
             if t in self.alias_map:
                 cmd += self.alias_map[t] + " "
-                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]), 3)
+                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]), 4)
             else:
                 cmd += t + " "
         cmd = cmd[:-1]   # strip trailing space added above
-        dbg.debug("User input with aliases resolved:\n    %s" % (cmd), 3)
+        dbg.debug("User input with aliases resolved:\n    %s" % (cmd), 4)
         return cmd
     
     def _set_verbosity(self, level=-1):
         if level != -1:
             dbg.set_verbosity(level, self.user.id)
             return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity)
-        if dbg.verbosity == 0:
+        if dbg.verbosity[self.user.id] == 0:
             dbg.set_verbosity(1, self.user.id)
             return "Verbose debug output now on, verbosity level %s." % dbg.verbosity
         else:
@@ -499,7 +499,7 @@ class Console:
         replacing_file = True
         try:
             f = open(self.current_directory+'/'+self.uploading_filename, 'r')
-            dbg.debug('Found a file. Contents: %s' % f.read())
+            dbg.debug('Found a file. Contents: %s' % f.read(), 2)
             f.close()
         except FileNotFoundError:
             replacing_file = False
@@ -549,7 +549,7 @@ class Console:
                 nontags.append(i)
                 if first == None:
                     first = 'nontag'
-        #dbg.debug('Output tags are:'+tags, 0)
+        #dbg.debug('Output tags are:'+tags, 1)
         tag_lists = []
         for j in tags:
             tag_and_attributes = j.split(' ')
@@ -659,7 +659,7 @@ class Console:
     '''
     def request_input(self, dest):
         self.input_redirect = dest
-        dbg.debug("Input from console %s given to %s!" % (self, dest))
+        dbg.debug("Input from console %s given to %s!" % (self, dest), 2)
     
     def console_recv(self, command):
         """Temporarily recieve information as a two-part command, e.g. changing passwords."""

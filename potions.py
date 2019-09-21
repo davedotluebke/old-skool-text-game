@@ -93,7 +93,7 @@ class ExplorationPotion(Liquid):
             if r != None:
                 cons.user.move_to(r)
                 cons.user.perceive("You find yourself sinking into a new place.")
-                dbg.debug("Exploration potion moved user %s to location %s" % (cons.user, dest))
+                dbg.debug("Exploration potion moved user %s to location %s" % (cons.user, dest), 2)
                 r.report_arrival(cons.user)
                 break
         return True

@@ -132,7 +132,7 @@ class Player(Creature):
             # TODO secure password authentication goes here
             self.id = self._add_ID(self.names[0])            
             self.proper_name = self.names[0].capitalize()
-            dbg.debug("Creating player id %s with default name %s" % (self.id, self.names[0]), 0)
+            dbg.debug("Creating player id %s with default name %s" % (self.id, self.names[0]))
             start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
             start_room.insert(self)
             self.perceive("\nWelcome to Firlefile Sorcery School!\n\n"
@@ -149,7 +149,7 @@ class Player(Creature):
             try:
                 try:
                     newuser = self.game.load_player(filename, self.cons, password=passwd)
-                    dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]), 0)
+                    dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]))
                     newuser.login_state = None
                     self.login_state = None
                     self.game.deregister_heartbeat(self)
@@ -180,6 +180,10 @@ class Player(Creature):
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
     def detach(self, nocons=False):
+        try:
+            del dbg.verbosity[self.id]
+        except KeyError:
+            pass
         if not nocons:
             self.cons.detach(self)
         self.cons = None

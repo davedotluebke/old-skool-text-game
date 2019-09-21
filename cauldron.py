@@ -60,7 +60,7 @@ class Cauldron(Container):
             created = gametools.clone(i[1].replace(' ', '_'))
             created.move_to(self)
         except FileNotFoundError:
-            dbg.debug('Error! Cauldron recipies dictionary called for the creation of %s, but no file was found!', 0)
+            dbg.debug('Error! Cauldron recipies dictionary called for the creation of %s, but no file was found!')
         self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.get_short_desc()))
         
     #
