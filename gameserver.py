@@ -5,6 +5,7 @@ import traceback
 import random
 import time
 import asyncio
+import functools
 import websockets
 import connections_websock
 import json
@@ -16,7 +17,6 @@ from thing import Thing
 from player import Player
 from parse import Parser
 from console import Console
-from event_nsl import EventQueue
 from parse import Parser
 
 class Game():
@@ -34,7 +34,7 @@ class Game():
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
         self.time = 0  # number of heartbeats since game began
-        self.events = EventQueue()  # events to occur in future 
+        self.events = asyncio.get_event_loop()
 
         self.parser = Parser()
         self.dbg = dbg
@@ -372,67 +372,54 @@ class Game():
         else:
             dbg.debug("object %s, not in heartbeat_users, tried to deregister heartbeat!" % obj, 2)
     
+    def schedule_event(self, delay, func, *params):
+        """Helper function to guarentee that all asyncio event calls are in a try/except statement."""
+        self.events.call_later(delay, functools.partial(self.catch_func_errs, func, *params))
+    
+    def catch_func_errs(self, func, *params):
+        profile_st = time.time()
+        if (self.handle_exceptions):
+            try:
+                func(*params)
+            except:
+                dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, list(*params)))
+                dbg.debug(traceback.format_exc())
+                dbg.debug('Error caught!')
+        else:
+            func(*params)
+        profile_et = time.time()
+        profile_t = profile_et - profile_st
+        funcname = str(func).replace('<','[').replace('>',']')
+        if funcname in self.total_times:
+            self.total_times[funcname] += profile_t
+            self.numrun_times[funcname] += 1
+            if profile_t > self.maximum_times[funcname]:
+                self.maximum_times[funcname] = profile_t
+        else:
+            self.total_times[funcname] = profile_t
+            self.numrun_times[funcname] = 1
+            self.maximum_times[funcname] = profile_t
+        dbg.debug("Function %s took %s seconds" % (funcname, profile_t), 4)
+        
+    
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
         dbg.debug("Beat! game.time = %s" % self.time, 5)
         dbg.debug("Time since game began (in seconds): %s" % (time.time() - self.start_time), 5)
-        
-        current_events = self.events.check_for_event(self.time)       
-        for event in current_events:
-            profile_st = time.time()
-            if (self.handle_exceptions):
-                try:
-                    event.callback(event.payload)
-                except Exception as inst:
-                    dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (event.timestamp, event.callback, event.payload))
-                    dbg.debug(traceback.format_exc())
-                    dbg.debug('Error caught!')
-            else:
-                event.callback(event.payload)
-            profile_et = time.time()
-            profile_t = profile_et - profile_st
-            if str(event) in self.total_times:
-                self.total_times[str(event)] += profile_t
-            else:
-                self.total_times[str(event)] = profile_t
-            dbg.debug("Event %s took %s seconds" % (event, profile_t), 4)
 
         for h in self.heartbeat_users:
-            profile_st = time.time()
-            if (self.handle_exceptions):
-                try:
-                    h.heartbeat()
-                except Exception as inst:
-                    dbg.debug("An error occured inside code for %s! Printing below:" % h)
-                    dbg.debug(traceback.format_exc())
-                    dbg.debug('Error caught!')
-            else:
-                h.heartbeat()
-            profile_et = time.time()
-            profile_t = profile_et - profile_st
-            if not hasattr(h, 'id'):
-                continue
-            if h.id in self.total_times:
-                self.total_times[h.id] += profile_t
-                self.numrun_times[h.id] += 1
-                if profile_t > self.maximum_times[h.id]:
-                    self.maximum_times[h.id] = profile_t
-            else:
-                self.total_times[h.id] = profile_t
-                self.numrun_times[h.id] = 1
-                self.maximum_times[h.id] = profile_t
-            dbg.debug("Heartbeat for %s took %s seconds" % (h.id, profile_t), 4)
-        
+            self.schedule_event(0, h.heartbeat)
+
         if time.time() > (self.start_time + 86400):
             self.keep_going == False
         
         if self.keep_going:
             # schedule the next heartbeat
-            asyncio.get_event_loop().call_later(1,self.beat)
+            self.events.call_later(1,self.beat)
         else:
             # quit the game
-            asyncio.get_event_loop().stop()
+            self.events.stop()       
 
     def start_loop(self):
         # To have a consistant 24 hour shutdown time
@@ -440,11 +427,11 @@ class Game():
         self.start_time = (time.time() // 86400)*86400
         print("Starting game...")
         ip_address = input('IP Address: ')
-        asyncio.get_event_loop().run_until_complete(
+        self.events.run_until_complete(
             websockets.serve(connections_websock.ws_handler, ip_address, 9124))
         print("Listening on port 9124...")
-        asyncio.get_event_loop().call_later(1,self.beat)
-        asyncio.get_event_loop().run_forever()
+        self.events.call_later(1,self.beat)
+        self.events.run_forever()
         # XXX add callbacks to handle game exit?
         # Go through and save every player
         players = [Thing.ID_dict[x] for x in Thing.ID_dict if isinstance(Thing.ID_dict[x], Player)]
@@ -460,8 +447,8 @@ class Game():
                 i.cons.write('#quit')
         
         for j in consoles:
-            if j: # Make sure to send all messages from consoles before fully quitting game
-                asyncio.get_event_loop().run_until_complete(connections_websock.ws_send(j))                
+            if j and j.user: # Make sure to send all messages from consoles before fully quitting game
+                self.events.run_until_complete(connections_websock.ws_send(j))                
 
         dbg.debug("Exiting main game loop!")
         dbg.shut_down()

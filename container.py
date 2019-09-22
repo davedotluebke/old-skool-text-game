@@ -39,7 +39,7 @@ class Container(Thing):
 
     def set_spawn(self, path, interval):
         g = Thing.game
-        g.events.schedule(g.time+interval, self.spawn_obj, (path, interval, g))
+        g.schedule_event(interval, self.spawn_obj, path, interval)
 
     def set_max_weight_carried(self, max_grams_carried):
         self.max_weight_carried = max_grams_carried
@@ -135,12 +135,9 @@ class Container(Thing):
             if "closed" not in self._short_desc:
                 self._short_desc = "closed " + self._short_desc
 
-    def spawn_obj(self, info):
-        path = info[0]
-        interval = info[1]
-        game = info[2]
+    def spawn_obj(self, path, interval):
         g = Thing.game
-        g.events.schedule(game.time+interval, self.spawn_obj, (path, interval, game))
+        g.schedule_event(interval, self.spawn_obj, path, interval)
         for i in self.contents:
             if i.path == path:
                 return

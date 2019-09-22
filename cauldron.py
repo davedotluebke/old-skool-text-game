@@ -40,9 +40,9 @@ class Cauldron(Container):
             ingredients = {x.names[0] for x in self.contents}
             if i[0] == ingredients:  # set comparison
                 if i[1] == 'explode':
-                    Thing.game.events.schedule(Thing.game.time+1, self.explode)
+                    Thing.game.schedule_event(1, self.explode)
                 else:
-                    Thing.game.events.schedule(Thing.game.time+3, self.create_potion, i)
+                    Thing.game.schedule_event(3, self.create_potion, i)
         return False
     
     def explode(self, none=None):
