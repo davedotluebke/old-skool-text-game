@@ -5,6 +5,6 @@ until [ $KEEP_GOING -gt 0 ]
 do
     git add -A
     git commit -m "Daily commit to add wizard-generated files to GitHub."
-    python3 startup.py
+    python3 startup.py --server 127.0.0.1
     KEEP_GOING=$?
 done
