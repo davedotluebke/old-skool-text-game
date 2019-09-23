@@ -12,8 +12,8 @@ from thing import Thing
 from room import Room  
 from console import Console
 
-argparser = argparse.ArgumentParser(description="Start the game server for the Old Skool Text Adventure Game")
-argparser.add_argument("-s", "--server", help="IP address at which the server should listen for clients")
+argparser = argparse.ArgumentParser(description="Start the game server")
+argparser.add_argument("-s", "--server", help="IP address at which the server will listen for clients")
 args = argparser.parse_args()
 if args.server:
     try:  # validate the ip address passed as an argument, if any

@@ -24,8 +24,7 @@ class Game():
     """
         The Game class contains a parser, a list of players, a time counter, 
         a list of objects that have a heartbeat (a function that runs 
-        periodically). It should also probably house the Twisted event loop 
-        and associated factory for creating protocols (connections to clients)
+        periodically), and the IP address of the server. 
     """
     def __init__(self, server=None):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
