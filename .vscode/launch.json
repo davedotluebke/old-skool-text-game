@@ -1,7 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
-
+        
         {
             "name": "Webserving Game",
             "type": "python",
@@ -9,6 +9,19 @@
             "stopOnEntry": false,
             "pythonPath": "${config:python.pythonPath}",
             "program": "${workspaceRoot}/startup.py",
+            "cwd": "",
+            "console": "integratedTerminal",
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },        
+        {
+            "name": "Webserving Game: Localhost",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceRoot}/startup.py",
+            "args": ["--server", "127.0.0.1"],
             "cwd": "",
             "console": "integratedTerminal",
             "env": {},

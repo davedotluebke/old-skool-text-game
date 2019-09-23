@@ -1,5 +1,9 @@
+import sys
+import argparse
+import ipaddress
 import importlib
 import traceback
+
 from debug import dbg
 import gametools
 
@@ -8,11 +12,24 @@ from thing import Thing
 from room import Room  
 from console import Console
 
+argparser = argparse.ArgumentParser(description="Start the game server")
+argparser.add_argument("-s", "--server", help="IP address at which the server will listen for clients")
+args = argparser.parse_args()
+if args.server:
+    try:  # validate the ip address passed as an argument, if any
+        ipaddress.ip_address(args.server)
+        ip = args.server
+    except ValueError:
+        dbg.debug("Error: %s is not a valid IP address! Exiting..." % args.server)
+        sys.exit("Invalid IP address specified on command line")
+else:
+    ip = None
+
 ## 
 ## "game" is a special global variable, an object of class Game that holds
 ## the actual game state. 
 ## 
-game = Game()
+game = Game(ip)
 nulspace = Room('nulspace', pref_id=None)         #"nulspace" is a room for objects that should be deleted. TODO: Automaticly delete items from nulspace every 10 heartbeats.
 nulspace.game = game
 nulspace.set_description('void', 'This is an empty void where dead and destroyed things go. Good luck getting out!')
