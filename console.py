@@ -205,6 +205,8 @@ class Console:
         for i in pathwords:
             path += i+' '
         path = path[:-1]
+        if path.startswith("~"):
+            path = path.replace("~", "/home/%s" % self.user.default_name)
         if '..' in path: #TODO: Handle multiple '..' correctly
             num_back = path.count('..')
             dirlist = self.current_directory.split('/')[0:-num_back]

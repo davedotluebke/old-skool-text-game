@@ -271,6 +271,11 @@
                     setTimeout(updateWindowStyle, 1, mode);
                     e.preventDefault();
                 }
+                if (key == 9) {
+                    if (document.activeElement === document.getElementById("inputLine")) {
+                        e.preventDefault();
+                    }
+                }
             }
             document.addEventListener("contextmenu", function(e){
                 if (!allow_right_clicks[mode]) {
