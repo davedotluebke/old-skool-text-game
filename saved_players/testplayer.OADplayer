@@ -9,15 +9,15 @@
             "happy",
             "green-eyed"
         ],
-        "armor_worn": "skin188-saveplayer398670",
+        "armor_worn": "skin188-saveplayer404506",
         "contents": [
-            "scroll018-saveplayer398670"
+            "scroll018-saveplayer404506"
         ],
-        "default_armor": "skin188-saveplayer398670",
-        "default_weapon": "bare hands8441-saveplayer398670",
+        "default_armor": "skin188-saveplayer404506",
+        "default_weapon": "bare hands8441-saveplayer404506",
         "gender": "female",
-        "id": "testplayer10-saveplayer398670",
-        "location": "domains.school.forest.waterfall",
+        "id": "testplayer10-saveplayer404506",
+        "location": "domains.school.forest.field",
         "names": [
             "testplayer",
             "elf"
@@ -51,19 +51,19 @@
             "player": 2,
             "thing": 3
         },
-        "weapon_wielding": "bare hands8441-saveplayer398670",
+        "weapon_wielding": "bare hands8441-saveplayer404506",
         "wprivilages": true
     },
     {
-        "id": "scroll018-saveplayer398670",
-        "location": "testplayer10-saveplayer398670",
+        "id": "scroll018-saveplayer404506",
+        "location": "testplayer10-saveplayer404506",
         "path": "domains.school.scroll",
         "versions": {
             "thing": 3
         }
     },
     {
-        "id": "bare hands8441-saveplayer398670",
+        "id": "bare hands8441-saveplayer404506",
         "path": "default_weapon",
         "versions": {
             "thing": 3,
@@ -71,7 +71,7 @@
         }
     },
     {
-        "id": "skin188-saveplayer398670",
+        "id": "skin188-saveplayer404506",
         "path": "default_armor",
         "versions": {
             "armor": 1,

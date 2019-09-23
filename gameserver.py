@@ -1,6 +1,7 @@
 import io
 import os
 import sys
+import ipaddress
 import traceback
 import random
 import time
@@ -23,11 +24,11 @@ class Game():
     """
         The Game class contains a parser, a list of players, a time counter, 
         a list of objects that have a heartbeat (a function that runs 
-        periodically). It should also probably house the Twisted event loop 
-        and associated factory for creating protocols (connections to clients)
+        periodically), and the IP address of the server. 
     """
-    def __init__(self):
+    def __init__(self, server=None):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
+        self.server_ip = server  # IP address of server, if specified
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         self.start_time = 0
@@ -426,20 +427,20 @@ class Game():
         # The start time is always the last midnight the occured.
         self.start_time = (time.time() // 86400)*86400
         print("Starting game...")
-        try:
-            ipfile = open('.ipaddressstore', 'r')
-            ip_address = ipfile.read()
-            ipfile.close()
-        except FileNotFoundError:
-            ip_address = input('IP Address: ')
-            ipfile = open('.ipaddressstore', 'w')
-            ipfile.write(ip_address)
-            ipfile.close()
+
+        while not self.server_ip:
+            input_ip = input('IP Address: ')
+            try:  # validate the ip address passed as an argument, if any
+                ipaddress.ip_address(input_ip)
+                self.server_ip = input_ip
+            except ValueError:
+                print("Error: %s is not a valid IP address! Please try again." % input_ip)
         self.events.run_until_complete(
-            websockets.serve(connections_websock.ws_handler, ip_address, 9124))
-        print("Listening on port 9124...")
+            websockets.serve(connections_websock.ws_handler, self.server_ip, 9124))
+        print("Listening on %s port 9124..." % self.server_ip)
         self.events.call_later(1,self.beat)
         self.events.run_forever()
+
         # XXX add callbacks to handle game exit?
         # Go through and save every player
         players = [Thing.ID_dict[x] for x in Thing.ID_dict if isinstance(Thing.ID_dict[x], Player)]
