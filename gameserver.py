@@ -6,6 +6,8 @@ import traceback
 import random
 import time
 import asyncio
+import pathlib
+import ssl
 import functools
 import websockets
 import connections_websock
@@ -435,8 +437,10 @@ class Game():
                 self.server_ip = input_ip
             except ValueError:
                 print("Error: %s is not a valid IP address! Please try again." % input_ip)
+        
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         self.events.run_until_complete(
-            websockets.serve(connections_websock.ws_handler, self.server_ip, 9124))
+            websockets.serve(connections_websock.ws_handler, self.server_ip, 9124, ssl=ssl_context))
         print("Listening on %s port 9124..." % self.server_ip)
         self.events.call_later(1,self.beat)
         self.events.run_forever()

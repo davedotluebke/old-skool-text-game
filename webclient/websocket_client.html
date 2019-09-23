@@ -325,7 +325,7 @@
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
             function openWebSocket(ip_address, ip_index) {
                 setTimeout(receiveMessage,1,"Trying to connect to " + ip_address + "...");
-                ws = new WebSocket("ws://" + ip_address + ":9124/");
+                ws = new WebSocket("wss://" + ip_address + ":9124/");
                 ws.binaryType = "arraybuffer";
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
