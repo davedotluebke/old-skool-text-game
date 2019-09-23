@@ -360,7 +360,8 @@
                         if (user_input == 'exit') {
                             window.close();
                         }
-                        setTimeout(receiveMessage,1,"I didn't understand your input.");
+                        //setTimeout(receiveMessage,1,"I didn't understand your input.");
+                        openWebSocket(user_input)
                     }
                 }
             }

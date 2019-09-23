@@ -412,7 +412,7 @@ class Game():
             self.schedule_event(0, h.heartbeat)
 
         if time.time() > (self.start_time + 86400):
-            self.keep_going == False
+            self.keep_going = False
         
         if self.keep_going:
             # schedule the next heartbeat
@@ -426,7 +426,15 @@ class Game():
         # The start time is always the last midnight the occured.
         self.start_time = (time.time() // 86400)*86400
         print("Starting game...")
-        ip_address = input('IP Address: ')
+        try:
+            ipfile = open('.ipaddressstore', 'r')
+            ip_address = ipfile.read()
+            ipfile.close()
+        except FileNotFoundError:
+            ip_address = input('IP Address: ')
+            ipfile = open('.ipaddressstore', 'w')
+            ipfile.write(ip_address)
+            ipfile.close()
         self.events.run_until_complete(
             websockets.serve(connections_websock.ws_handler, ip_address, 9124))
         print("Listening on port 9124...")
