@@ -10,6 +10,7 @@ import functools
 from thing import Thing
 from console import Console
 import gametools
+import dbg
 
 # From the websockets.serve() documentation:
 # Since there's no useful way to propagate exceptions triggered in handlers,
@@ -50,6 +51,7 @@ async def ws_handler(websocket, path):
                     Thing.game.create_new_player(name, cons)
             except TypeError:
                 conn_to_client[websocket].file_input = message
+                dbg.debug('File added to file input!', 2)
     except websockets.exceptions.ConnectionClosed:
         websocket.close()
 
