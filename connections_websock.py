@@ -52,6 +52,7 @@ async def ws_handler(websocket, path):
             except TypeError:
                 conn_to_client[websocket].file_input = message
                 dbg.debug('File added to file input!', 2)
+                print('File added to file input!')
     except websockets.exceptions.ConnectionClosed:
         websocket.close()
 
