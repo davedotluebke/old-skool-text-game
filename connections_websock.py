@@ -10,7 +10,7 @@ import functools
 from thing import Thing
 from console import Console
 import gametools
-import dbg
+from debug import dbg
 
 # From the websockets.serve() documentation:
 # Since there's no useful way to propagate exceptions triggered in handlers,
