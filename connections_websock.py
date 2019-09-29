@@ -39,6 +39,7 @@ async def ws_handler(websocket, path):
                 message['salt'] = message['salt'].encode('utf-8')
                 #print(time.time() - start_time)
                 message = crypto_obj.decrypt(message, cons.encode_str)
+                print(message)
                 #print(time.time() - start_time)
                 cons.raw_input += str(message, 'utf-8')
                 #print(time.time() - start_time)
@@ -52,7 +53,7 @@ async def ws_handler(websocket, path):
             except TypeError:
                 conn_to_client[websocket].file_input = message
                 dbg.debug('File added to file input!', 2)
-                print('File added to file input!')
+                #print('File added to file input!')
     except websockets.exceptions.ConnectionClosed:
         websocket.close()
 
