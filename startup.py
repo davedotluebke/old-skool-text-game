@@ -14,6 +14,7 @@ from console import Console
 
 argparser = argparse.ArgumentParser(description="Start the game server")
 argparser.add_argument("-s", "--server", help="IP address at which the server will listen for clients")
+argparser.add_argument("-m", "--mode", help="Whether or not to use https and ssl")
 args = argparser.parse_args()
 if args.server:
     try:  # validate the ip address passed as an argument, if any
@@ -25,12 +26,13 @@ if args.server:
 else:
     ip = None
 
+
 ## 
 ## "game" is a special global variable, an object of class Game that holds
 ## the actual game state. 
 ## 
 
-game = Game(ip)
+game = Game(ip, args.mode)
 
 Thing.game = game
 

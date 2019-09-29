@@ -127,6 +127,7 @@
             var left_offset = 0;
             var caret_on = true;
             var ws = undefined;
+            var random_number = Math.random().toString();
 
             document.getElementById('inputLine').focus();
 
@@ -282,15 +283,38 @@
                     e.preventDefault();
                 }
             }, false);
+            function pack(bytes) {
+                var chars = [];
+                for(var i = 0, n = bytes.length; i < n;) {
+                    chars.push(((bytes[i++] & 0xff) << 8) | (bytes[i++] & 0xff));
+                }
+                return String.fromCharCode.apply(null, chars);
+            }
+
+            function unpack(str) {
+                var bytes = [];
+                for(var i = 0, n = str.length; i < n; i++) {
+                    var char = str.charCodeAt(i);
+                    bytes.push(char >>> 8, char & 0xFF);
+                }
+                return bytes;
+            }
             function receiveMessage(event) {
                 var messages = document.getElementsByTagName('div')[0],
-                    message = document.createElement('div');
-                if (event.data instanceof ArrayBuffer) {
-                    receiveFile(event.data);
-                    return
-                }
+                message = document.createElement('div');
                 if (state == 'PLAY_GAME') {
-                    message.innerHTML = event.data;
+                    /*var jobj = JSON.parse(event.data);
+                    for (i = 0; i < jobj.length; i++) {
+                        if (jobj[i] == jobj[i].toString()) {
+                            jobj[i] = unpack(jobj[i]);
+                        }
+                    }*/
+                    var msg = sjcl.decrypt(random_number, event.data);
+                    if (msg instanceof ArrayBuffer) {
+                        receiveFile(msg);
+                        return;
+                    }
+                    message.innerHTML = msg;
                 }
                 if (state == 'MAKE_CONNECTION') {
                     message.innerHTML = event;
@@ -322,10 +346,15 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
             }
+            function encryptAndSend(message) {
+                var data = sjcl.encrypt(random_number, message);
+                //data = JSON.stringify(data);
+                ws.send(data);
+            }
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
             function openWebSocket(ip_address, ip_index) {
                 setTimeout(receiveMessage,1,"Trying to connect to " + ip_address + "...");
-                ws = new WebSocket("wss://" + ip_address + ":9124/");
+                ws = new WebSocket("ws://" + ip_address + ":9124/");
                 ws.binaryType = "arraybuffer";
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
@@ -335,7 +364,7 @@
                         former_ip_addresses.unshift(ip_address);
                         setCookie('formip', former_ip_addresses, 60*24*7*4);
                     }
-                    ws.send('PING!');
+                    ws.send(random_number); //XXX this is not a secure solution
                 };
                 ws.onerror = function (event) {
                     setTimeout(receiveMessage,1,"No server was found at " + ip_address);
@@ -384,13 +413,13 @@
                 }
                 contentBlock.style = b_style_modes[mode];
                 if (state == 'PLAY_GAME') {
-                    ws.send(user_input + '\n');
+                    encryptAndSend(user_input + '\n');
                 }
                 if (state == 'SEND_PASSWORD') {
                     var hashed_key = new sjcl.hash.sha256();
                     hashed_key.update(user_input);
                     key_to_send = JSON.stringify(hashed_key);
-                    ws.send(key_to_send);
+                    encryptAndSend(key_to_send);
                     user_input = '';
                     document.getElementById('inputLine').type = 'text';
                     state = 'PLAY_GAME';
@@ -417,7 +446,7 @@
                     }
                     reader.onload = function(e) {
                         rawData = e.target.result;
-                        ws.send(rawData);
+                        encryptAndSend(rawData);
                         console.log("the File has been transferred.")
                     }
                     reader.readAsArrayBuffer(file);

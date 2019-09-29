@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import connections_websock
+import secrets
 import os
 import re
 
@@ -36,7 +37,7 @@ class Console:
                Type 'quit' to save your progress and leave 
                the game."""
 
-    def __init__(self, net_conn, game = None):
+    def __init__(self, net_conn, game = None, encode_str='88838_defaultencodestr_9yq9h'):
         self.game = game
         self.user = None
         self.username = None
@@ -51,6 +52,7 @@ class Console:
         self.input_redirect = None
         self.width = Console.default_width
         self.measurement_system = Console.default_measurement_system
+        self.encode_str = str(encode_str)
         self.changing_passwords = False
         self.removing_directory = False
         self.confirming_replace = False

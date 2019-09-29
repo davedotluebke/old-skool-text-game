@@ -28,9 +28,10 @@ class Game():
         a list of objects that have a heartbeat (a function that runs 
         periodically), and the IP address of the server. 
     """
-    def __init__(self, server=None):
+    def __init__(self, server=None, is_ssl=False):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.server_ip = server  # IP address of server, if specified
+        self.is_ssl = is_ssl
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         self.start_time = 0
@@ -438,9 +439,15 @@ class Game():
             except ValueError:
                 print("Error: %s is not a valid IP address! Please try again." % input_ip)
         
-        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        self.events.run_until_complete(
-            websockets.serve(connections_websock.ws_handler, self.server_ip, 9124, ssl=ssl_context))
+        if self.is_ssl:
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ssl_context.load_default_certs()
+            ssl_context.load_cert_chain("certificate.pem", "private_key.pem")
+            ssl_context.set_ciphers("ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:RSA-AES128-GCM-SHA256:RSA-AES256-GCM-SHA384:RSA-AES128-SHA:RSA-AES256-SHA:RSA-3DES-EDE-SHA")
+            self.events.run_until_complete(
+                websockets.serve(connections_websock.ws_handler, self.server_ip, 9124, ssl=ssl_context))
+        else:
+            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, 9124))
         print("Listening on %s port 9124..." % self.server_ip)
         self.events.call_later(1,self.beat)
         self.events.run_forever()
