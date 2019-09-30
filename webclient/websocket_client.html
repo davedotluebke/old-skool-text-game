@@ -445,7 +445,7 @@
                     reader.loadend = function() {
                     }
                     reader.onload = function(e) {
-                        rawData = e.target.result;
+                        rawData = new Int32Array(e.target.result);
                         encryptAndSend(JSON.stringify(rawData));
                         console.log("the File has been transferred.")
                     }
