@@ -28,21 +28,20 @@ async def ws_handler(websocket, path):
     try: 
         async for message in websocket:
             try:
-                start_time = time.time()
-                #print('------')
                 cons = conn_to_client[websocket]
-                #print(time.time() - start_time)
                 message = json.loads(message)
-                #print(time.time() - start_time)
                 message['ct'] = message['ct'].encode('utf-8')
                 message['iv'] = message['iv'].encode('utf-8')
                 message['salt'] = message['salt'].encode('utf-8')
-                #print(time.time() - start_time)
                 message = crypto_obj.decrypt(message, cons.encode_str)
                 print(message)
-                #print(time.time() - start_time)
-                cons.raw_input += str(message, 'utf-8')
-                #print(time.time() - start_time)
+                message = json.loads(message)
+                try:
+                    if message['type'] == 'command':
+                        cons.raw_input += message['data']
+                    elif message['type'] == 'file':
+                        conn_to_client[websocket].file_input = message['data']
+                        dbg.debug('File added to file input!', 2)
             except KeyError:
                 cons = Console(websocket, Thing.game, message)
                 conn_to_client[websocket] = cons
@@ -50,26 +49,19 @@ async def ws_handler(websocket, path):
                     Thing.game.login_player(cons)
                 except gametools.PlayerLoadError:
                     Thing.game.create_new_player(name, cons)
-            except TypeError:
-                conn_to_client[websocket].file_input = message
-                dbg.debug('File added to file input!', 2)
-                #print('File added to file input!')
+            except IndexError:
+                pass
     except websockets.exceptions.ConnectionClosed:
         websocket.close()
 
 async def ws_send(cons):
-    start_time = time.time()
-    #print('------')
-    output = bytes(cons.raw_output, 'utf-8')
-    #print(time.time() - start_time)
+    output = json.dumps({"type": "response", "data": cons.raw_output})
+    output = bytes(output, 'utf-8')
     output = crypto_obj.encrypt(output, cons.encode_str)
-    #print(time.time() - start_time)
     for i in output:
         if isinstance(output[i], bytes):
             output[i] = output[i].decode('utf-8')
-    #print(time.time() - start_time)
     output = json.dumps(output)
-    #print(time.time() - start_time)
     cons.raw_output = ''
     await cons.connection.send(output)
 

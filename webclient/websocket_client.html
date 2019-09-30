@@ -310,11 +310,12 @@
                         }
                     }*/
                     var msg = sjcl.decrypt(random_number, event.data);
-                    if (msg instanceof ArrayBuffer) {
-                        receiveFile(msg);
+                    msg = JSON.parse(msg);
+                    if (msg['type'] == 'file') {
+                        receiveFile(msg['data']);
                         return;
                     }
-                    message.innerHTML = msg;
+                    message.innerHTML = msg['data'];
                 }
                 if (state == 'MAKE_CONNECTION') {
                     message.innerHTML = event;
@@ -346,9 +347,12 @@
                 a.click();
                 window.URL.revokeObjectURL(url);
             }
-            function encryptAndSend(message) {
-                var data = sjcl.encrypt(random_number, message);
-                //data = JSON.stringify(data);
+            function encryptAndSend(message, type) {
+                if (type == undefined) {
+                    type = "command";
+                }
+                var data = JSON.stringify({"type": type, "data": data});
+                data = sjcl.encrypt(random_number, message);
                 ws.send(data);
             }
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
@@ -445,11 +449,11 @@
                     reader.loadend = function() {
                     }
                     reader.onload = function(e) {
-                        rawData = new Int32Array(e.target.result);
-                        encryptAndSend(JSON.stringify(rawData));
+                        rawData = e.target.result;
+                        encryptAndSend(rawData, "file");
                         console.log("the File has been transferred.")
                     }
-                    reader.readAsArrayBuffer(file);
+                    reader.readAsDataURL(file);
                 }
             }
         </script>
