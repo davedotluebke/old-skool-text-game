@@ -35,6 +35,7 @@ async def ws_handler(websocket, path):
                 message['salt'] = message['salt'].encode('utf-8')
                 message = crypto_obj.decrypt(message, cons.encode_str)
                 print(message)
+                message = str(message, 'utf-8')
                 message = json.loads(message)
                 if message['type'] == 'command':
                     cons.raw_input += message['data']
