@@ -5,6 +5,7 @@ import random
 import time
 import sjcl
 import json
+import base64
 import functools
 
 from thing import Thing
@@ -34,13 +35,13 @@ async def ws_handler(websocket, path):
                 message['iv'] = message['iv'].encode('utf-8')
                 message['salt'] = message['salt'].encode('utf-8')
                 message = crypto_obj.decrypt(message, cons.encode_str)
-                print(message)
                 message = str(message, 'utf-8')
                 message = json.loads(message)
                 if message['type'] == 'command':
                     cons.raw_input += message['data']
                 elif message['type'] == 'file':
-                    conn_to_client[websocket].file_input = bytes(message['data'], "utf-8")
+                    message = base64.b64decode(message) 
+                    cons.file_input = bytes(message['data'], "utf-8")
                     dbg.debug('File added to file input!', 2)
             except KeyError:
                 cons = Console(websocket, Thing.game, message)
