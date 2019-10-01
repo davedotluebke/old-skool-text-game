@@ -1,4 +1,4 @@
-u«Zµìmþ™ZŠvÚ±î¸import gametools
+import gametools
 import scenery
 import room
 
