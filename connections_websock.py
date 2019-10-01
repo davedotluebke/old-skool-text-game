@@ -37,11 +37,12 @@ async def ws_handler(websocket, path):
                 message = crypto_obj.decrypt(message, cons.encode_str)
                 message = str(message, 'utf-8')
                 message = json.loads(message)
+                data = message['data']
                 if message['type'] == 'command':
                     cons.raw_input += message['data']
                 elif message['type'] == 'file':
-                    message = base64.b64decode(message) 
-                    cons.file_input = bytes(message['data'], "utf-8")
+                    data = base64.b64decode(data) 
+                    cons.file_input = bytes(data, "utf-8")
                     dbg.debug('File added to file input!', 2)
             except KeyError:
                 cons = Console(websocket, Thing.game, message)
