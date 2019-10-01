@@ -515,6 +515,7 @@ class Console:
             replacing_file = False
         
         if not replacing_file or not confirm_r:
+            dbg.debug('Decided to write file.', 2)
             f = open(self.current_directory+'/'+self.uploading_filename, 'wb')
             f.write(file)
             f.close()
