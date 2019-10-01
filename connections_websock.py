@@ -69,6 +69,7 @@ async def ws_send(cons):
 
 async def file_send(cons):
     output = cons.file_output
+    print(output)
     output = crypto_obj.encrypt(output, cons.encode_str)
     cons.file_output = bytes()
     await cons.connection.send(output)
