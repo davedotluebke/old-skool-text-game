@@ -518,7 +518,7 @@ class Console:
         if not replacing_file or not confirm_r:
             dbg.debug('Decided to write file.', 2)
             if platform.system() != 'Windows' and b'\r\n' in file:
-                file = bytes(str(file, "utf-8").replace("\r\n", "\n"), "utf-8")
+                file = file.replace(b'\r\n', b'\n') 
             f = open(self.current_directory+'/'+self.uploading_filename, 'wb')
             f.write(file)
             f.close()
