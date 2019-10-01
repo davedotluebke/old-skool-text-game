@@ -5,6 +5,7 @@ import random
 import time
 import sjcl
 import json
+import base64
 import functools
 
 from thing import Thing
@@ -34,13 +35,14 @@ async def ws_handler(websocket, path):
                 message['iv'] = message['iv'].encode('utf-8')
                 message['salt'] = message['salt'].encode('utf-8')
                 message = crypto_obj.decrypt(message, cons.encode_str)
-                print(message)
                 message = str(message, 'utf-8')
                 message = json.loads(message)
+                data = message['data']
                 if message['type'] == 'command':
                     cons.raw_input += message['data']
                 elif message['type'] == 'file':
-                    conn_to_client[websocket].file_input = message['data']
+                    data = base64.b64decode(data) 
+                    cons.file_input = data 
                     dbg.debug('File added to file input!', 2)
             except KeyError:
                 cons = Console(websocket, Thing.game, encrypted_message)
@@ -66,7 +68,14 @@ async def ws_send(cons):
     await cons.connection.send(output)
 
 async def file_send(cons):
-    output = cons.file_output
-    output = crypto_obj.encrypt(output, cons.encode_str)
+    raw_file = cons.file_output
+    file_output = str(base64.b64encode(raw_file), "utf-8")
+    json_output = json.dumps({"type": "file", "data": file_output})
+    json_bytes = bytes(json_output, "utf-8")
+    output = crypto_obj.encrypt(json_bytes, cons.encode_str)
+    for i in output:
+        if isinstance(output[i], bytes):
+            output[i] = output[i].decode('utf-8')
     cons.file_output = bytes()
-    await cons.connection.send(output)
+    final_output = json.dumps(output)
+    await cons.connection.send(final_output)

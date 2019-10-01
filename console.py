@@ -4,6 +4,7 @@ import connections_websock
 import secrets
 import os
 import re
+import platform
 
 from debug import dbg
 from parse import Parser
@@ -516,6 +517,8 @@ class Console:
         
         if not replacing_file or not confirm_r:
             dbg.debug('Decided to write file.', 2)
+            if platform.system() != 'Windows' and b'\r\n' in file:
+                file = file.replace(b'\r\n', b'\n') 
             f = open(self.current_directory+'/'+self.uploading_filename, 'wb')
             f.write(file)
             f.close()
