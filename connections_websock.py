@@ -26,10 +26,10 @@ crypto_obj = sjcl.SJCL()
 
 async def ws_handler(websocket, path):
     try: 
-        async for message in websocket:
+        async for encrypted_message in websocket:
             try:
                 cons = conn_to_client[websocket]
-                message = json.loads(message)
+                message = json.loads(encrypted_message)
                 message['ct'] = message['ct'].encode('utf-8')
                 message['iv'] = message['iv'].encode('utf-8')
                 message['salt'] = message['salt'].encode('utf-8')
@@ -43,7 +43,7 @@ async def ws_handler(websocket, path):
                     conn_to_client[websocket].file_input = message['data']
                     dbg.debug('File added to file input!', 2)
             except KeyError:
-                cons = Console(websocket, Thing.game, message)
+                cons = Console(websocket, Thing.game, encrypted_message)
                 conn_to_client[websocket] = cons
                 try:
                     Thing.game.login_player(cons)
