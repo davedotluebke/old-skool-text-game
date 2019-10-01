@@ -73,5 +73,8 @@ async def file_send(cons):
     json_output = json.dumps({"type": "file", "data": file_output})
     json_bytes = bytes(json_output, "utf-8")
     output = crypto_obj.encrypt(json_bytes, cons.encode_str)
+    for i in output:
+        if isinstance(output[i], bytes):
+            output[i] = output[i].decode('utf-8')
     cons.file_output = bytes()
     await cons.connection.send(output)
