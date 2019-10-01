@@ -69,8 +69,9 @@ async def ws_send(cons):
 
 async def file_send(cons):
     raw_file = cons.file_output
-    file_output = base64.b64encode(raw_file)
+    file_output = str(base64.b64encode(raw_file), "utf-8")
     json_output = json.dumps({"type": "file", "data": file_output})
-    output = crypto_obj.encrypt(json_output, cons.encode_str)
+    json_bytes = bytes(json_output, "utf-8")
+    output = crypto_obj.encrypt(json_bytes, cons.encode_str)
     cons.file_output = bytes()
     await cons.connection.send(output)
