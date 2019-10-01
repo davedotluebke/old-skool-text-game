@@ -77,5 +77,5 @@ async def file_send(cons):
         if isinstance(output[i], bytes):
             output[i] = output[i].decode('utf-8')
     cons.file_output = bytes()
-    print(output)
-    await cons.connection.send(output)
+    final_output = json.dumps(output)
+    await cons.connection.send(final_output)
