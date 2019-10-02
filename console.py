@@ -45,6 +45,7 @@ class Console:
         self.raw_input = ''
         self.raw_output = ''
         self.file_input = bytes()
+        self.filename_input = ''
         self.file_output = bytes()
         self.uploading_filename = ''
         self.current_directory = 'domains'
@@ -308,7 +309,7 @@ class Console:
                         if len(self.words) > 1 and self.words[1]:
                             self.uploading_filename = self.words[1] #TODO: make sure this is a valid filename
                         else:
-                            self.uploading_filename = 'default_filename.py'
+                            self.uploading_filename = self.filename_input
                         if '.' not in self.uploading_filename:
                             self.uploading_filename += '.py'
                         self.write('Please select a file to #upload:')
