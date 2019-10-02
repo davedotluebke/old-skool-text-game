@@ -34,15 +34,19 @@ async def ws_handler(websocket, path):
                 message['ct'] = message['ct'].encode('utf-8')
                 message['iv'] = message['iv'].encode('utf-8')
                 message['salt'] = message['salt'].encode('utf-8')
-                message = crypto_obj.decrypt(message, cons.encode_str)
-                message = str(message, 'utf-8')
-                message = json.loads(message)
-                data = message['data']
-                if message['type'] == 'command':
-                    cons.raw_input += message['data']
-                elif message['type'] == 'file':
+                decrypted_message = crypto_obj.decrypt(message, cons.encode_str)
+                text_message = str(decrypted_message, 'utf-8')
+                message_dict = json.loads(text_message)
+                data = message_dict['data']
+                if message_dict['type'] == 'command':
+                    cons.raw_input += data
+                elif message_dict['type'] == 'file':
                     data = base64.b64decode(data) 
                     cons.file_input = data 
+                    if 'filename' in message_dict and message_dict['filename'] != '':
+                        cons.filename_input = message_dict['filename']
+                    else:
+                        cons.filename_input = 'default_filename.py'
                     dbg.debug('File added to file input!', 2)
             except KeyError:
                 cons = Console(websocket, Thing.game, encrypted_message)
@@ -52,7 +56,7 @@ async def ws_handler(websocket, path):
                 except gametools.PlayerLoadError:
                     Thing.game.create_new_player(name, cons)
             except IndexError:
-                pass
+                dbg.debug('IndexError in connections_websock!')
     except websockets.exceptions.ConnectionClosed:
         websocket.close()
 
@@ -69,8 +73,8 @@ async def ws_send(cons):
 
 async def file_send(cons):
     raw_file = cons.file_output
-    file_output = str(base64.b64encode(raw_file), "utf-8")
-    json_output = json.dumps({"type": "file", "data": file_output})
+    b64_file = str(base64.b64encode(raw_file), "utf-8")
+    json_output = json.dumps({"type": "file", "data": b64_file})
     json_bytes = bytes(json_output, "utf-8")
     output = crypto_obj.encrypt(json_bytes, cons.encode_str)
     for i in output:

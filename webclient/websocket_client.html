@@ -341,19 +341,23 @@
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                // the filename you want
+                // TODO: the filename you want
                 a.download = 'gamefile.py';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
             }
-            function encryptAndSend(message, type) {
+            function encryptAndSend(message, type, filename) {
                 if (type == undefined) {
                     type = "command";
                 }
-                var data = JSON.stringify({"type": type, "data": data});
-                data = sjcl.encrypt(random_number, message);
-                ws.send(data);
+                var data_dict = {"type": type, "data": message};
+                if (filename != undefined) {
+                    data_dict['filename'] = filename;
+                }
+                var data = JSON.stringify(data_dict);
+                var encrypted_data = sjcl.encrypt(random_number, data);
+                ws.send(encrypted_data);
             }
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
             function openWebSocket(ip_address, ip_index) {
@@ -444,13 +448,14 @@
                 var file = document.getElementById('filename').files[0];
                 if (file) {
                     var reader = new FileReader();
+                    reader.fileName = file.name;
                     var rawData = new ArrayBuffer();           
                     console.log(file.name);
                     reader.loadend = function() {
                     }
                     reader.onload = function(e) {
                         rawData = e.target.result;
-                        encryptAndSend(rawData, "file");
+                        encryptAndSend(rawData, "file", e.target.fileName);
                         console.log("the File has been transferred.")
                     }
                     reader.readAsDataURL(file);
