@@ -367,10 +367,19 @@
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
                     state = 'PLAY_GAME';
+                    var ip_address_already_exists = false;
                     if (ip_address != '127.0.0.1') {
-                        former_ip_addresses = former_ip_addresses.slice(0,3);
-                        former_ip_addresses.unshift(ip_address);
-                        setCookie('formip', former_ip_addresses, 60*24*7*4);
+                        for (i = 0; i < 4; i++) {
+                            if (former_ip_addresses[i] == ip_address) {
+                                ip_address_already_exists = true;
+                                break;
+                            }
+                        }
+                        if (ip_address_already_exists != true) {
+                            former_ip_addresses = former_ip_addresses.slice(0,3);
+                            former_ip_addresses.unshift(ip_address);
+                            setCookie('formip', former_ip_addresses, 60*24*7*4);
+                        }
                     }
                     ws.send(random_number); //XXX this is not a secure solution
                 };
