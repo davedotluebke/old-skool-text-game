@@ -81,7 +81,7 @@ class DeepPocketSignUpWizard(NPC):
         DeepPocket.customer = None
         new_pocket.move_to(customer)
         customer.cons.write('Silemon says: Ok, this will just take a second...')
-        Thing.game.events.schedule(Thing.game.time+3, self.finish_pocket, customer)
+        Thing.game.schedule_event(3, self.finish_pocket, customer)
         self.in_process = True
         self.deep_pockets.append(new_pocket)
 

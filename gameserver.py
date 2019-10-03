@@ -1,10 +1,14 @@
 import io
 import os
 import sys
+import ipaddress
 import traceback
 import random
 import time
 import asyncio
+import pathlib
+import ssl
+import functools
 import websockets
 import connections_websock
 import json
@@ -16,25 +20,25 @@ from thing import Thing
 from player import Player
 from parse import Parser
 from console import Console
-from event_nsl import EventQueue
 from parse import Parser
 
 class Game():
     """
         The Game class contains a parser, a list of players, a time counter, 
         a list of objects that have a heartbeat (a function that runs 
-        periodically). It should also probably house the Twisted event loop 
-        and associated factory for creating protocols (connections to clients)
+        periodically), and the IP address of the server. 
     """
-    def __init__(self):
+    def __init__(self, server=None, is_ssl=False):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
+        self.server_ip = server  # IP address of server, if specified
+        self.is_ssl = is_ssl
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         self.start_time = 0
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
         self.time = 0  # number of heartbeats since game began
-        self.events = EventQueue()  # events to occur in future 
+        self.events = asyncio.get_event_loop()
 
         self.parser = Parser()
         self.dbg = dbg
@@ -43,6 +47,10 @@ class Game():
         self.shutdown_console = None
         self.player_read_privilages = {'scott':['.*']}     # Note: administrators are responsible for making sure that 
         self.player_edit_privilages = {'scott':['domains.*','home/scott.*']} # wizards can view and edit their own files
+
+        self.total_times = {}
+        self.numrun_times = {}
+        self.maximum_times = {}
 
     def save_game(self, filename):
         raise NotImplementedError("Saving games no longer works.")
@@ -137,7 +145,7 @@ class Game():
         try:
             player.save_cons_attributes()
         except Exception:
-            dbg.debug('Error saving console attributes for player %s!' % player, 0)
+            dbg.debug('Error saving console attributes for player %s!' % player)
 
         # Keep a list of "broken objects" to destroy
         broken_objs = []
@@ -165,7 +173,7 @@ class Game():
             try:
                 obj.destroy()
             except Exception:
-                dbg.debug('Error destroying object %s!' % obj, 0)
+                dbg.debug('Error destroying object %s!' % obj)
                 # TODO: figure out what to do here
 
         if not filename.endswith('.OADplayer'): 
@@ -191,9 +199,9 @@ class Game():
                 obj._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(obj)
-                dbg.debug('An error occured while loading %s! Printing below:', 0)
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug('Error caught!', 0)
+                dbg.debug('An error occured while loading %s! Printing below:')
+                dbg.debug(traceback.format_exc())
+                dbg.debug('Error caught!')
 
         # restore original IDs by removing tag
         for obj in l:
@@ -267,7 +275,7 @@ class Game():
         loc_str = newplayer.location
         newplayer.location = gametools.load_room(loc_str) 
         if newplayer.location == None: 
-            dbg.debug("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer), 0)
+            dbg.debug("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer))
             cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
             newplayer.location = gametools.load_room('domains.school.school.great_hall')
 
@@ -281,9 +289,9 @@ class Game():
                 o._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(o)
-                dbg.debug('An error occured while loading %s! Printing below:', 0)
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug('Error caught!', 0)
+                dbg.debug('An error occured while loading %s! Printing below:')
+                dbg.debug(traceback.format_exc())
+                dbg.debug('Error caught!')
         # Now de-uniquify all IDs, replace object.id and ID_dict{} entry
         for o in l:
             try:
@@ -292,9 +300,9 @@ class Game():
                 o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
             except Exception:
                 broken_objs.append(o)
-                dbg.debug('An error occured while loading %s! Printing below:', 0)
-                dbg.debug(traceback.format_exc(), 0)
-                dbg.debug('Error caught!', 0)
+                dbg.debug('An error occured while loading %s! Printing below:')
+                dbg.debug(traceback.format_exc())
+                dbg.debug('Error caught!')
 
         # Make sure that broken objects are removed from their container's contents list
         reference_check = [newplayer]
@@ -312,7 +320,7 @@ class Game():
             try:
                 o.destroy()
             except Exception:
-                dbg.debug('Error destroying object %s!' % o, 0)
+                dbg.debug('Error destroying object %s!' % o)
                 #TODO: Figure out what to do here
 
         room = newplayer.location
@@ -322,7 +330,7 @@ class Game():
             room.report_arrival(newplayer, silent=True)
             room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         except Exception:
-            dbg.debug('Error inserting player into location! Moving player back to default start location', 0)
+            dbg.debug('Error inserting player into location! Moving player back to default start location')
             room = gametools.load_room(newplayer.start_loc_id)
             cons.write("Restored game state from file %s" % filename)
             room.report_arrival(newplayer, silent=True)
@@ -341,6 +349,18 @@ class Game():
         cons.user = user
         cons.write("Please enter your username: ")
         user.login_state = "AWAITING_USERNAME"
+    
+    def get_profiling_report(self):
+        report_str = ''
+        all_time_spent = sum([self.total_times[x] for x in self.total_times])
+        for i in self.total_times:
+            report_str += '\n%s:\n' % i
+            report_str += 'Total time running: %s\n' % self.total_times[i]
+            if i in self.maximum_times:
+                report_str += 'Average time running: %s\n' % ((self.total_times[i])/(self.numrun_times[i]))
+                report_str += 'Maximum time running: %s\n' % self.maximum_times[i]
+            report_str += 'Percentage of total time: %s\n' % ((self.total_times[i]/all_time_spent)*100)
+        return report_str
 
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""
@@ -356,56 +376,82 @@ class Game():
         else:
             dbg.debug("object %s, not in heartbeat_users, tried to deregister heartbeat!" % obj, 2)
     
+    def schedule_event(self, delay, func, *params):
+        """Helper function to guarentee that all asyncio event calls are in a try/except statement."""
+        self.events.call_later(delay, functools.partial(self.catch_func_errs, func, *params))
+    
+    def catch_func_errs(self, func, *params):
+        profile_st = time.time()
+        if (self.handle_exceptions):
+            try:
+                func(*params)
+            except:
+                dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, list(*params)))
+                dbg.debug(traceback.format_exc())
+                dbg.debug('Error caught!')
+        else:
+            func(*params)
+        profile_et = time.time()
+        profile_t = profile_et - profile_st
+        funcname = str(func).replace('<','[').replace('>',']')
+        if funcname in self.total_times:
+            self.total_times[funcname] += profile_t
+            self.numrun_times[funcname] += 1
+            if profile_t > self.maximum_times[funcname]:
+                self.maximum_times[funcname] = profile_t
+        else:
+            self.total_times[funcname] = profile_t
+            self.numrun_times[funcname] = 1
+            self.maximum_times[funcname] = profile_t
+        dbg.debug("Function %s took %s seconds" % (funcname, profile_t), 4)
+        
+    
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-        dbg.debug("Beat! game.time = %s" % self.time, 4)
-        dbg.debug("Time since game began (in seconds): %s" % (time.time() - self.start_time), 4)
-        
-        current_events = self.events.check_for_event(self.time)       
-        for event in current_events:
-            if (self.handle_exceptions):
-                try:
-                    event.callback(event.payload)
-                except Exception as inst:
-                    dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (event.timestamp, event.callback, event.payload), 0)
-                    dbg.debug(traceback.format_exc(), 0)
-                    dbg.debug('Error caught!', 0)
-            else:
-                event.callback(event.payload)
+        dbg.debug("Beat! game.time = %s" % self.time, 5)
+        dbg.debug("Time since game began (in seconds): %s" % (time.time() - self.start_time), 5)
 
         for h in self.heartbeat_users:
-            if (self.handle_exceptions):
-                try:
-                    h.heartbeat()
-                except Exception as inst:
-                    dbg.debug("An error occured inside code for %s! Printing below:" % h, 0)
-                    dbg.debug(traceback.format_exc(), 0)
-                    dbg.debug('Error caught!', 0)
-            else:
-                h.heartbeat()
-        
+            self.schedule_event(0, h.heartbeat)
+
         if time.time() > (self.start_time + 86400):
-            self.keep_going == False
+            self.keep_going = False
         
         if self.keep_going:
             # schedule the next heartbeat
-            asyncio.get_event_loop().call_later(1,self.beat)
+            self.events.call_later(1,self.beat)
         else:
             # quit the game
-            asyncio.get_event_loop().stop()
+            self.events.stop()       
 
     def start_loop(self):
         # To have a consistant 24 hour shutdown time
         # The start time is always the last midnight the occured.
         self.start_time = (time.time() // 86400)*86400
         print("Starting game...")
-        ip_address = input('IP Address: ')
-        asyncio.get_event_loop().run_until_complete(
-            websockets.serve(connections_websock.ws_handler, ip_address, 9124))
-        print("Listening on port 9124...")
-        asyncio.get_event_loop().call_later(1,self.beat)
-        asyncio.get_event_loop().run_forever()
+
+        while not self.server_ip:
+            input_ip = input('IP Address: ')
+            try:  # validate the ip address passed as an argument, if any
+                ipaddress.ip_address(input_ip)
+                self.server_ip = input_ip
+            except ValueError:
+                print("Error: %s is not a valid IP address! Please try again." % input_ip)
+        
+        if self.is_ssl:
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ssl_context.load_default_certs()
+            ssl_context.load_cert_chain("certificate.pem", "private_key.pem")
+            ssl_context.set_ciphers("ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:RSA-AES128-GCM-SHA256:RSA-AES256-GCM-SHA384:RSA-AES128-SHA:RSA-AES256-SHA:RSA-3DES-EDE-SHA")
+            self.events.run_until_complete(
+                websockets.serve(connections_websock.ws_handler, self.server_ip, 9124, ssl=ssl_context))
+        else:
+            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, 9124))
+        print("Listening on %s port 9124..." % self.server_ip)
+        self.events.call_later(1,self.beat)
+        self.events.run_forever()
+
         # XXX add callbacks to handle game exit?
         # Go through and save every player
         players = [Thing.ID_dict[x] for x in Thing.ID_dict if isinstance(Thing.ID_dict[x], Player)]
@@ -421,18 +467,9 @@ class Game():
                 i.cons.write('#quit')
         
         for j in consoles:
-            if j: # Make sure to send all messages from consoles before fully quitting game
-                asyncio.get_event_loop().run_until_complete(connections_websock.ws_send(j))                
+            if j and j.user: # Make sure to send all messages from consoles before fully quitting game
+                self.events.run_until_complete(connections_websock.ws_send(j))                
 
         dbg.debug("Exiting main game loop!")
         dbg.shut_down()
         sys.exit(restart_code)
-
-    def clear_nulspace(self, x): #XXX temp problem events always returns a payload, often None.
-        dbg.debug("Game.clear_nulspace() called! Currently does nothing.")
-        '''
-        for i in self.nulspace.contents:
-            if not hasattr(i, 'cons'): #if it is not player
-                i.delete()
-        self.events.schedule(self.time+5, self.clear_nulspace)
-        '''

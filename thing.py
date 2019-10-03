@@ -36,7 +36,7 @@ class Thing(object):
         self.spawn_message = None
 
     def __del__(self):
-        dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id), 0)
+        dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id))
 
     def __str__(self): 
         return self.names[0]
@@ -96,7 +96,7 @@ class Thing(object):
 
     def set_weight(self, grams):
         if (grams < 0):
-            dbg.debug("Error: weight cannot be negative", 0)
+            dbg.debug("Error: weight cannot be negative")
             raise
         else:
             self._weight = grams
@@ -107,7 +107,7 @@ class Thing(object):
 
     def set_volume(self, liters):
         if (liters < 0):
-            dbg.debug("Error: volume cannot be negative", 0)
+            dbg.debug("Error: volume cannot be negative")
             raise
         else:
             self._volume = liters
@@ -283,7 +283,7 @@ class Thing(object):
         try:
             del Thing.ID_dict[self.id]
         except KeyError:
-            dbg.debug('%s was already removed from Thing.ID_dict' % self)
+            dbg.debug('%s was already moved from Thing.ID_dict' % self, 2)
         if self.location:
             self.location.extract(self)
             self.location = None
@@ -352,13 +352,13 @@ class Thing(object):
         try:
             if holder not in ignore and hasattr(holder, 'perceive'):
                 # immediate container can see messages, probably a creature/player
-                dbg.debug("creature holding this object is: " + holder.id, 3)
+                dbg.debug("creature holding this object is: " + holder.id, 4)
                 holder.perceive(message)
         except TypeError:
-            dbg.debug("Warning, emit() called with non-list ignore parameter!", level=0)
+            dbg.debug("Warning, emit() called with non-list ignore parameter!")
         # now get list of recipients (usually creatures) contained by holder (usually a Room)
         recipients = [x for x in holder.contents if hasattr(x, 'perceive') and (x is not self) and (x not in ignore)]
-        dbg.debug("other creatures in this room include: " + str(recipients), 3)
+        dbg.debug("other creatures in this room include: " + str(recipients), 4)
         for recipient in recipients:
             recipient.perceive(message)
 

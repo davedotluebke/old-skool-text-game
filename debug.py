@@ -53,6 +53,8 @@ class DebugLog():
             s = func_name + ": " + s
         except KeyError:
             s = "Error tracing stack, but debug message = %s" % s
+        if level < 1:
+            s = "[Item debug level %s invalid] %s" % (level, s)
         for player_id in list(self.verbosity):
             if level <= self.verbosity[player_id]:
                 try:

@@ -1,8 +1,10 @@
 import asyncio
 import subprocess
 import connections_websock
+import secrets
 import os
 import re
+import platform
 
 from debug import dbg
 from parse import Parser
@@ -36,13 +38,14 @@ class Console:
                Type 'quit' to save your progress and leave 
                the game."""
 
-    def __init__(self, net_conn, game = None):
+    def __init__(self, net_conn, game = None, encode_str='88838_defaultencodestr_9yq9h'):
         self.game = game
         self.user = None
         self.username = None
         self.raw_input = ''
         self.raw_output = ''
         self.file_input = bytes()
+        self.filename_input = ''
         self.file_output = bytes()
         self.uploading_filename = ''
         self.current_directory = 'domains'
@@ -51,6 +54,7 @@ class Console:
         self.input_redirect = None
         self.width = Console.default_width
         self.measurement_system = Console.default_measurement_system
+        self.encode_str = str(encode_str)
         self.changing_passwords = False
         self.removing_directory = False
         self.confirming_replace = False
@@ -160,20 +164,20 @@ class Console:
         for t in self.words:
             if t in self.alias_map:
                 cmd += self.alias_map[t] + " "
-                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]), 3)
+                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]), 4)
             else:
                 cmd += t + " "
         cmd = cmd[:-1]   # strip trailing space added above
-        dbg.debug("User input with aliases resolved:\n    %s" % (cmd), 3)
+        dbg.debug("User input with aliases resolved:\n    %s" % (cmd), 4)
         return cmd
     
     def _set_verbosity(self, level=-1):
         if level != -1:
             dbg.set_verbosity(level, self.user.id)
-            return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity)
-        if dbg.verbosity == 0:
+            return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity[self.user.id])
+        if self.user.id not in dbg.verbosity or dbg.verbosity[self.user.id] == 0:
             dbg.set_verbosity(1, self.user.id)
-            return "Verbose debug output now on, verbosity level %s." % dbg.verbosity
+            return "Verbose debug output now on, verbosity level %s." % dbg.verbosity[self.user.id]
         else:
             dbg.set_verbosity(0, self.user.id)
             return "Verbose debug output now off."
@@ -205,6 +209,8 @@ class Console:
         for i in pathwords:
             path += i+' '
         path = path[:-1]
+        if path.startswith("~"):
+            path = path.replace("~", "/home/%s" % self.user.names[0])
         if '..' in path: #TODO: Handle multiple '..' correctly
             num_back = path.count('..')
             dirlist = self.current_directory.split('/')[0:-num_back]
@@ -262,6 +268,12 @@ class Console:
                 else:
                     self.write("Type \"terse\" to print short descriptions when entering a room.")
                     return True
+            
+            if cmd == 'profile':
+                # check wizard privilages before allowing
+                if self.user.wprivilages:
+                    self.write(self.game.get_profiling_report())
+                    return True
 
             if cmd == "escape":
                 if self.input_redirect != None:
@@ -297,7 +309,7 @@ class Console:
                         if len(self.words) > 1 and self.words[1]:
                             self.uploading_filename = self.words[1] #TODO: make sure this is a valid filename
                         else:
-                            self.uploading_filename = 'default_filename.py'
+                            self.uploading_filename = self.filename_input
                         if '.' not in self.uploading_filename:
                             self.uploading_filename += '.py'
                         self.write('Please select a file to #upload:')
@@ -499,12 +511,15 @@ class Console:
         replacing_file = True
         try:
             f = open(self.current_directory+'/'+self.uploading_filename, 'r')
-            dbg.debug('Found a file. Contents: %s' % f.read())
+            dbg.debug('Found a file. Contents: %s' % f.read(), 2)
             f.close()
         except FileNotFoundError:
             replacing_file = False
         
         if not replacing_file or not confirm_r:
+            dbg.debug('Decided to write file.', 2)
+            if platform.system() != 'Windows' and b'\r\n' in file:
+                file = file.replace(b'\r\n', b'\n') 
             f = open(self.current_directory+'/'+self.uploading_filename, 'wb')
             f.write(file)
             f.close()
@@ -549,7 +564,7 @@ class Console:
                 nontags.append(i)
                 if first == None:
                     first = 'nontag'
-        #dbg.debug('Output tags are:'+tags, 0)
+        #dbg.debug('Output tags are:'+tags, 1)
         tag_lists = []
         for j in tags:
             tag_and_attributes = j.split(' ')
@@ -638,28 +653,9 @@ class Console:
         self.raw_output = self.sanitizeHTML(self.raw_output)
         asyncio.ensure_future(connections_websock.ws_send(self))
 
-    '''
-    def new_user(self):
-        self.write("Create your new user.")
-        user_default_name = input("User default name: ")    #TODO: Simplify and make text more user-friendly.
-        user_short_description = input("User short description: ")
-        user_long_description = input("User long description: ")
-        new_user = Player(user_default_name, self)
-        new_user.set_description(user_short_description, user_long_description)
-        new_user.set_max_weight_carried(750000)
-        new_user.set_max_volume_carried(2000)
-        new_user.move_to(self.user.location)
-        for i in self.user.contents:
-            i.move_to(new_user)
-        self.write("You are now %s!" % new_user.id)
-        self.user.move_to(Thing.ID_dict['nulspace'])
-        self.user.cons = None
-        self.set_user(new_user)
-        self.game.user = new_user
-    '''
     def request_input(self, dest):
         self.input_redirect = dest
-        dbg.debug("Input from console %s given to %s!" % (self, dest))
+        dbg.debug("Input from console %s given to %s!" % (self, dest), 2)
     
     def console_recv(self, command):
         """Temporarily recieve information as a two-part command, e.g. changing passwords."""

@@ -127,6 +127,7 @@
             var left_offset = 0;
             var caret_on = true;
             var ws = undefined;
+            var random_number = Math.random().toString();
 
             document.getElementById('inputLine').focus();
 
@@ -271,21 +272,50 @@
                     setTimeout(updateWindowStyle, 1, mode);
                     e.preventDefault();
                 }
+                if (key == 9) {
+                    if (document.activeElement === document.getElementById("inputLine")) {
+                        e.preventDefault();
+                    }
+                }
             }
             document.addEventListener("contextmenu", function(e){
                 if (!allow_right_clicks[mode]) {
                     e.preventDefault();
                 }
             }, false);
+            function pack(bytes) {
+                var chars = [];
+                for(var i = 0, n = bytes.length; i < n;) {
+                    chars.push(((bytes[i++] & 0xff) << 8) | (bytes[i++] & 0xff));
+                }
+                return String.fromCharCode.apply(null, chars);
+            }
+
+            function unpack(str) {
+                var bytes = [];
+                for(var i = 0, n = str.length; i < n; i++) {
+                    var char = str.charCodeAt(i);
+                    bytes.push(char >>> 8, char & 0xFF);
+                }
+                return bytes;
+            }
             function receiveMessage(event) {
                 var messages = document.getElementsByTagName('div')[0],
-                    message = document.createElement('div');
-                if (event.data instanceof ArrayBuffer) {
-                    receiveFile(event.data);
-                    return
-                }
+                message = document.createElement('div');
                 if (state == 'PLAY_GAME') {
-                    message.innerHTML = event.data;
+                    /*var jobj = JSON.parse(event.data);
+                    for (i = 0; i < jobj.length; i++) {
+                        if (jobj[i] == jobj[i].toString()) {
+                            jobj[i] = unpack(jobj[i]);
+                        }
+                    }*/
+                    var msg = sjcl.decrypt(random_number, event.data);
+                    msg = JSON.parse(msg);
+                    if (msg['type'] == 'file') {
+                        receiveFile(msg['data']);
+                        return;
+                    }
+                    message.innerHTML = msg['data'];
                 }
                 if (state == 'MAKE_CONNECTION') {
                     message.innerHTML = event;
@@ -311,11 +341,23 @@
                 const a = document.createElement('a');
                 a.style.display = 'none';
                 a.href = url;
-                // the filename you want
+                // TODO: the filename you want
                 a.download = 'gamefile.py';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
+            }
+            function encryptAndSend(message, type, filename) {
+                if (type == undefined) {
+                    type = "command";
+                }
+                var data_dict = {"type": type, "data": message};
+                if (filename != undefined) {
+                    data_dict['filename'] = filename;
+                }
+                var data = JSON.stringify(data_dict);
+                var encrypted_data = sjcl.encrypt(random_number, data);
+                ws.send(encrypted_data);
             }
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
             function openWebSocket(ip_address, ip_index) {
@@ -325,12 +367,21 @@
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
                     state = 'PLAY_GAME';
+                    var ip_address_already_exists = false;
                     if (ip_address != '127.0.0.1') {
-                        former_ip_addresses = former_ip_addresses.slice(0,3);
-                        former_ip_addresses.unshift(ip_address);
-                        setCookie('formip', former_ip_addresses, 60*24*7*4);
+                        for (i = 0; i < 4; i++) {
+                            if (former_ip_addresses[i] == ip_address) {
+                                ip_address_already_exists = true;
+                                break;
+                            }
+                        }
+                        if (ip_address_already_exists != true) {
+                            former_ip_addresses = former_ip_addresses.slice(0,3);
+                            former_ip_addresses.unshift(ip_address);
+                            setCookie('formip', former_ip_addresses, 60*24*7*4);
+                        }
                     }
-                    ws.send('PING!');
+                    ws.send(random_number); //XXX this is not a secure solution
                 };
                 ws.onerror = function (event) {
                     setTimeout(receiveMessage,1,"No server was found at " + ip_address);
@@ -360,7 +411,8 @@
                         if (user_input == 'exit') {
                             window.close();
                         }
-                        setTimeout(receiveMessage,1,"I didn't understand your input.");
+                        //setTimeout(receiveMessage,1,"I didn't understand your input.");
+                        openWebSocket(user_input)
                     }
                 }
             }
@@ -378,13 +430,13 @@
                 }
                 contentBlock.style = b_style_modes[mode];
                 if (state == 'PLAY_GAME') {
-                    ws.send(user_input + '\n');
+                    encryptAndSend(user_input + '\n');
                 }
                 if (state == 'SEND_PASSWORD') {
                     var hashed_key = new sjcl.hash.sha256();
                     hashed_key.update(user_input);
                     key_to_send = JSON.stringify(hashed_key);
-                    ws.send(key_to_send);
+                    encryptAndSend(key_to_send);
                     user_input = '';
                     document.getElementById('inputLine').type = 'text';
                     state = 'PLAY_GAME';
@@ -405,16 +457,17 @@
                 var file = document.getElementById('filename').files[0];
                 if (file) {
                     var reader = new FileReader();
+                    reader.fileName = file.name;
                     var rawData = new ArrayBuffer();           
                     console.log(file.name);
                     reader.loadend = function() {
                     }
                     reader.onload = function(e) {
                         rawData = e.target.result;
-                        ws.send(rawData);
+                        encryptAndSend(rawData, "file", e.target.fileName);
                         console.log("the File has been transferred.")
                     }
-                    reader.readAsArrayBuffer(file);
+                    reader.readAsDataURL(file);
                 }
             }
         </script>

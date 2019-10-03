@@ -36,7 +36,7 @@ class Liquid(Scenery):
                 # e.g. "pour out potion" or "pour potion out"
                 cons.write("You pour out the %s on the ground." % self)
                 cons.user.emit("&nD%s pours something on the ground." % cons.user.id)
-                self.move_to(Thing.ID_dict['nulspace'])
+                self.destroy()
                 # TODO: actually delete the object
                 return True
         if oDO == self and sPrep in ("in", 'into') and isinstance(oIDO, Container) and oIDO.liquid:
@@ -57,6 +57,6 @@ class Liquid(Scenery):
             return "Did you meant to drink the %s?" % self._short_desc
         self.emit("&nD%s drinks something." % cons.user.id, [cons.user])
         cons.user.perceive("You drink the %s." % self._short_desc)
-        self.move_to(Thing.ID_dict['nulspace'])
+        self.destroy()
         return True
     

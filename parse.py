@@ -93,8 +93,8 @@ class Parser:
         if sDO == "": sDO = None    # no direct object
         if sIDO == "": sIDO = None  # no indirect object 
         if not sIDO: 
-            dbg.debug("Possibly malformed input: found preposition %s but missing indirect object." % sPrep)
-            dbg.debug("Ending a sentence in a preposition is something up with which I will not put.")
+            dbg.debug("Possibly malformed input: found preposition %s but missing indirect object." % sPrep, 2)
+            dbg.debug("Ending a sentence in a preposition is something up with which I will not put.", 2)
         return (sV, sDO, sPrep, sIDO)
 
     def _collect_possible_objects(self, user:Player):
@@ -212,7 +212,7 @@ class Parser:
                     obj.plurality = number
                 matched_objects += [obj]
         
-        dbg.debug("matched_objects in '%s' are: %s" % (sObj, ' '.join(obj.id for obj in matched_objects)), 3)
+        dbg.debug("matched_objects in '%s' are: %s" % (sObj, ' '.join(obj.id for obj in matched_objects)), 4)
         return matched_objects
 
     def _try_verb_from_obj(self, sV, obj, oDO, oIDO, cons):
@@ -271,6 +271,7 @@ class Parser:
         verb on each direct object in turn, passing the full list of indirect
         objects (if any) each time. 
         """
+
         dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console), 3)
         
         # Split command into words, remove articles, convert to lowercase--but
@@ -311,7 +312,7 @@ class Parser:
                              + " verb %s!" % sV)
             # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
             return True
-        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 3)
+        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 4)
 
         # If multiple direct or indirect objects, enact the verb on each in turn.
         # See discussion in issue #89: the correct verb function (action) could come from 

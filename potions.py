@@ -29,7 +29,7 @@ class InvisibilityPotion(Liquid):
         if self != oDO: 
             return "Did you meant to drink the %s?" % self._short_desc
         cons.user.invisible = True      #TODO: Cleanup
-        cons.game.events.schedule(cons.game.time+10, self.reappear, cons.user)
+        cons.game.schedule_event(10, self.reappear, cons.user)
         self.emit('&nD%s drinks a potion and fades from sight.' % cons.user, [cons.user])
         cons.user.perceive('You drink the potion, and notice yourself fading away.')
         return True
@@ -50,7 +50,7 @@ class StrengthPotion(Liquid):
         cons.user.perceive("You drink the potion, and feel stronger than you did before.")
         cons.user.emit('&nD%s drinks a potion. Nothing obvious happens...' % cons.user, ignore=[cons.user])
         cons.user.strength += 70
-        cons.game.events.schedule(cons.game.time+15, self.wear_off, cons.user)
+        cons.game.schedule_event(15, self.wear_off, cons.user)
     
     def wear_off(self, user):
         user.strength -= 70
@@ -93,7 +93,7 @@ class ExplorationPotion(Liquid):
             if r != None:
                 cons.user.move_to(r)
                 cons.user.perceive("You find yourself sinking into a new place.")
-                dbg.debug("Exploration potion moved user %s to location %s" % (cons.user, dest))
+                dbg.debug("Exploration potion moved user %s to location %s" % (cons.user, dest), 2)
                 r.report_arrival(cons.user)
                 break
         return True

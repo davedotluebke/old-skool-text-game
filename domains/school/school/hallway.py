@@ -38,7 +38,7 @@ class StaffDoorway(scenery.Scenery):
         if hasattr(oDO, 'qkey_number') and oDO.qkey_number == self.keyq:
             cons.user.perceive('You unlock the door.')
             self.locked = False
-            oDO.move_to(thing.Thing.ID_dict['nulspace'])
+            oDO.destroy()
             return True
         else:
             cons.user.perceive("You try to put the %s in the keyhole, but it doesn't fit." % oDO.names[0])

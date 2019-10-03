@@ -29,8 +29,8 @@ class Room(Container):
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
     def detach(self, room_path):
-        '''Remove the room from Thing.ID_dict[] and moves all objects in the room 
-        to nulspace (this removes references to the room instance, specifically 
+        '''Remove the room from Thing.ID_dict[] and extracts all objects in the room 
+        (this removes references to the room instance, specifically 
         the location field of contained objects). This should be called preparatory
         to deleting or reloading the room.
         
@@ -38,7 +38,7 @@ class Room(Container):
         try:
             room = Thing.ID_dict[room_path]
             for o in room.contents:
-                o.move_to(Thing.ID_dict['nulspace'], force_move=True)
+                room.extract(o, count='all')
             del Thing.ID_dict[room_path]
             return True
         except KeyError:
@@ -58,7 +58,7 @@ class Room(Container):
             if isinstance(obj, Container) and (obj.see_inside or hasattr(obj, 'cons')):
                 if obj.contents: 
                     obj_list += obj.contents 
-        dbg.debug('Room %s: light level is %s' % (self.id, total_light), 3)
+        dbg.debug('Room %s: light level is %s' % (self.id, total_light), 4)
         return (total_light <= 0)
 
     def report_arrival(self, user, silent=False):
@@ -125,7 +125,7 @@ class Room(Container):
                 destPath = self.exits[sExit]  # filename of the destination room module
                 dest = gametools.load_room(destPath)
             except KeyError:
-                dbg.debug("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]), 0)
+                dbg.debug("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]))
                 cons.write("There was an internal error with the exit. ")
                 return True
             if cons.user.move_to(dest):

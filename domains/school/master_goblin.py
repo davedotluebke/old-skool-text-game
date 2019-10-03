@@ -83,7 +83,7 @@ class MasterGoblin(NPC):
     # SPECIAL METHODS (i.e __method__() format)
     #
     def __init__(self, path):
-        NPC.__init__(self, 'goblin', path, Thing.ID_dict['nulspace'].game)
+        NPC.__init__(self, 'goblin', path, Thing.game)
         self.set_description('old mean goblin', 'This goblin is standing straight in front of the passage west. He is holding a piece of paper in his hand.')
         self.add_adjectives('old', 'horrid', 'mean')
         self.add_script('''Listen. If you intend to walk straight past here invisible, I tell you that you will not get away with it.
@@ -138,13 +138,13 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
     def throw_fireball(self, player):
         self.emit('The goblin yells, "You kept the emerald for yourself! I will punish you!"')
         self.emit('The old goblin makes a fireball in his hands, and prepares to throw it.')
-        Thing.game.events.schedlue(Thing.game.time+2, self.throw_fireball_two, player)
+        Thing.game.schedlue_event(2, self.throw_fireball_two, player)
 
     def throw_fireball_two(self, player):
         self.emit('The old goblin throws the fireball at the %s!' % player._short_desc, ignore=[player])
         player.cons.write('The old goblin throws the fireball at you! But for some reason the fireball does not feel hot. It feels warm, and you notice you are not burned.')
         self.emit('The fireball seemingly shatters at %s' % player._short_desc, ignore=[player])
-        Thing.game.events.schedlue(Thing.game.time+2, self.throw_fireball_three, player)
+        Thing.game.schedlue_event(2, self.throw_fireball_three, player)
 
     def throw_fireball_three(self, player):
         self.emit('The goblin smiles. "Correct! A new fire wizard!"')
@@ -156,7 +156,7 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
     def throw_boulder(self, player):
         self.emit('The goblin yells, "You kept the emerald for yourself! I will punish you!"')
         self.emit('The old goblin picks up a huge rock and prepares to throw it.')
-        Thing.game.events.schedlue(Thing.game.time+2, self.throw_boulder_two, player)
+        Thing.game.schedlue_event(2, self.throw_boulder_two, player)
 
     def throw_boulder_two(self, player):
         self.emit('The old goblin throws the huge rock at the %s!' % player._short_desc, ignore=[player])
@@ -164,7 +164,7 @@ If you do not give me the emerald, however, but keep it, you will be severely pu
         self.emit('The %s stops the rock in front of them with their bare hands!' % player._short_desc, ignore = [player])
         player.cons.write('You stop the rock in front of you with just your bare hands!')
         player.strength += 1
-        Thing.game.events.schedlue(Thing.game.time+2, self.throw_boulder_three, player)
+        Thing.game.schedlue_event(2, self.throw_boulder_three, player)
 
     def throw_boulder_three(self, player):
         self.emit('The goblin smiles. "Correct! A new earth wizard!"')

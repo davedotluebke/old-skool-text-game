@@ -19,7 +19,7 @@ class LakeRoom_surface(room.Room):
         cons.user.emit('&nd%s dives underwater and disappears from sight.' % cons.user)
         loc = gametools.load_room(self.underwater_loc)
         cons.user.move_to(loc)
-        Thing.game.events.schedule(Thing.game.time+15, loc.force_surface, cons.user)
+        Thing.game.schedule_event(15, loc.force_surface, cons.user)
         return True
     
     actions = dict(room.Room.actions)  # make a copy
