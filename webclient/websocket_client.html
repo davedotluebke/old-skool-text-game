@@ -128,6 +128,8 @@
             var caret_on = true;
             var ws = undefined;
             var encryption_on = true;
+            // Warning message to warn players not using encryption. The format is due to code reuse.
+            var warningMessage = {data: '{"type": "warning", "data": "<strong style=\'color: red\'>Warning! This is an insecure connection! Do not send private information as it could be stolen by attackers!</b>"}'}
             var random_number = Math.random().toString();
 
             document.getElementById('inputLine').focus();
@@ -284,39 +286,29 @@
                     e.preventDefault();
                 }
             }, false);
-            function pack(bytes) {
-                var chars = [];
-                for(var i = 0, n = bytes.length; i < n;) {
-                    chars.push(((bytes[i++] & 0xff) << 8) | (bytes[i++] & 0xff));
-                }
-                return String.fromCharCode.apply(null, chars);
-            }
-
-            function unpack(str) {
-                var bytes = [];
-                for(var i = 0, n = str.length; i < n; i++) {
-                    var char = str.charCodeAt(i);
-                    bytes.push(char >>> 8, char & 0xFF);
-                }
-                return bytes;
-            }
             function receiveMessage(event) {
                 var messages = document.getElementsByTagName('div')[0],
                 message = document.createElement('div');
                 if (state == 'PLAY_GAME') {
-                    /*var jobj = JSON.parse(event.data);
-                    for (i = 0; i < jobj.length; i++) {
-                        if (jobj[i] == jobj[i].toString()) {
-                            jobj[i] = unpack(jobj[i]);
-                        }
-                    }*/
                     if (encryption_on) {
-                        var msg = sjcl.decrypt(random_number, event.data);
+                        try {
+                            var msg = sjcl.decrypt(random_number, event.data);
+                        }
+                        catch(err) {
+                            encryption_on = false;
+                            msg = event.data;
+                            receiveMessage(warningMessage);
+                        }
                     }
                     else {
                         var msg = event.data;
                     }
                     msg = JSON.parse(msg);
+                    if (msg['type'] === undefined) {
+                        encryption_on = true;
+                        msg = sjcl.decrypt(random_number, event.data);
+                        msg = JSON.parse(msg);
+                    }
                     if (msg['type'] == 'file') {
                         receiveFile(msg['data']);
                         return;
