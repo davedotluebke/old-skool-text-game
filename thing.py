@@ -44,14 +44,18 @@ class Thing(object):
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
-    def _add_ID(self, preferred_id):
+    def _add_ID(self, preferred_id, remove_existing=False):
         """Add object to Thing.ID_dict (the dictionary mapping IDs to objects).
 
         Takes a preferred ID string and (if necessary) creates a unique ID
-        string from it. Returns the unique ID string. """
-        if hasattr(self, 'id'):
+        string from it. Returns the unique ID string. If <remove_existing> is
+        set to True, first attempts to delete this object's current ID from 
+        Thing.ID_dict (useful for assigning new IDs to existing objects)"""
+        if remove_existing:
             try:
                 del Thing.ID_dict[self.id]
+            except AttributeError:
+                dbg.debug('%s has no id attribute!' % self)
             except KeyError:
                 dbg.debug('%s.id was not in Thing.ID_dict!' % self)
         self.id = preferred_id
