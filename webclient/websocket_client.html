@@ -127,6 +127,7 @@
             var left_offset = 0;
             var caret_on = true;
             var ws = undefined;
+            var encryption_on = true;
             var random_number = Math.random().toString();
 
             document.getElementById('inputLine').focus();
@@ -309,7 +310,12 @@
                             jobj[i] = unpack(jobj[i]);
                         }
                     }*/
-                    var msg = sjcl.decrypt(random_number, event.data);
+                    if (encryption_on) {
+                        var msg = sjcl.decrypt(random_number, event.data);
+                    }
+                    else {
+                        var msg = event.data;
+                    }
                     msg = JSON.parse(msg);
                     if (msg['type'] == 'file') {
                         receiveFile(msg['data']);
@@ -356,7 +362,12 @@
                     data_dict['filename'] = filename;
                 }
                 var data = JSON.stringify(data_dict);
-                var encrypted_data = sjcl.encrypt(random_number, data);
+                if (encryption_on) {
+                    var encrypted_data = sjcl.encrypt(random_number, data);
+                }
+                else {
+                    var encrypted_data = data;
+                }
                 ws.send(encrypted_data);
             }
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
@@ -399,20 +410,26 @@
                 }
             }
             function handleInput(user_input) {
-                // Detect if input is IP Address
-                if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(user_input)) {
-                    openWebSocket(user_input)
+                if (user_input.length == 0) {
+                    openWebSocket('127.0.0.1', -1);
                 }
                 else {
-                    if (user_input.length == 0) {
-                        openWebSocket('127.0.0.1', -1);
+                    if (user_input == 'exit') {
+                        window.close();
                     }
                     else {
-                        if (user_input == 'exit') {
-                            window.close();
+                        if (user_input == 'encryption off') {
+                            encryption_on = false;
                         }
-                        //setTimeout(receiveMessage,1,"I didn't understand your input.");
-                        openWebSocket(user_input)
+                        else {
+                            if (user_input == 'encryption on') {
+                                encryption_on = true;
+                            }
+                            else {
+                                openWebSocket(user_input);
+                                //setTimeout(receiveMessage,1,"I didn't understand your input.");
+                            }
+                        }
                     }
                 }
             }

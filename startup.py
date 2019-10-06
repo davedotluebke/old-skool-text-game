@@ -14,7 +14,7 @@ from console import Console
 
 argparser = argparse.ArgumentParser(description="Start the game server")
 argparser.add_argument("-s", "--server", help="IP address at which the server will listen for clients")
-argparser.add_argument("-m", "--mode", help="Whether or not to use https and ssl")
+argparser.add_argument("-m", "--mode", help="Whether or not to use https, ssl, or encryption")
 args = argparser.parse_args()
 if args.server:
     try:  # validate the ip address passed as an argument, if any

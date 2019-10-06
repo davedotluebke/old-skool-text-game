@@ -28,10 +28,12 @@ class Game():
         a list of objects that have a heartbeat (a function that runs 
         periodically), and the IP address of the server. 
     """
-    def __init__(self, server=None, is_ssl=False):
+    def __init__(self, server=None, mode=False):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.server_ip = server  # IP address of server, if specified
-        self.is_ssl = is_ssl
+        self.is_ssl = 'ssl' in mode or 'https' in mode
+        self.encryption_setting = not ('nocrypt' in mode or 'no' in mode)
+        connections_websock.encryption_enabled = self.encryption_setting
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         self.start_time = 0

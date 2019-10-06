@@ -3,7 +3,12 @@ import websockets
 import os.path
 import random
 import time
-import sjcl
+try:
+    import sjcl
+    encryption_installed = True
+except ModuleNotFoundError:
+    print("sjcl not installed. Running wihtout...")
+    encryption_installed = False
 import json
 import base64
 import functools
@@ -23,7 +28,9 @@ logger.setLevel(logging.ERROR)
 logger.addHandler(logging.StreamHandler())   
 
 conn_to_client = {}
-crypto_obj = sjcl.SJCL()
+encryption_enabled = True
+if encryption_installed:
+    crypto_obj = sjcl.SJCL()
 
 async def ws_handler(websocket, path):
     try: 
@@ -31,12 +38,15 @@ async def ws_handler(websocket, path):
             try:
                 cons = conn_to_client[websocket]
                 message = json.loads(encrypted_message)
-                message['ct'] = message['ct'].encode('utf-8')
-                message['iv'] = message['iv'].encode('utf-8')
-                message['salt'] = message['salt'].encode('utf-8')
-                decrypted_message = crypto_obj.decrypt(message, cons.encode_str)
-                text_message = str(decrypted_message, 'utf-8')
-                message_dict = json.loads(text_message)
+                if encryption_enabled:
+                    message['ct'] = message['ct'].encode('utf-8')
+                    message['iv'] = message['iv'].encode('utf-8')
+                    message['salt'] = message['salt'].encode('utf-8')
+                    decrypted_message = crypto_obj.decrypt(message, cons.encode_str)
+                    text_message = str(decrypted_message, 'utf-8')
+                    message_dict = json.loads(text_message)
+                else:
+                    message_dict = message
                 data = message_dict['data']
                 if message_dict['type'] == 'command':
                     cons.raw_input += data
@@ -62,12 +72,13 @@ async def ws_handler(websocket, path):
 
 async def ws_send(cons):
     output = json.dumps({"type": "response", "data": cons.raw_output})
-    output = bytes(output, 'utf-8')
-    output = crypto_obj.encrypt(output, cons.encode_str)
-    for i in output:
-        if isinstance(output[i], bytes):
-            output[i] = output[i].decode('utf-8')
-    output = json.dumps(output)
+    if encryption_enabled:
+        output = bytes(output, 'utf-8')
+        output = crypto_obj.encrypt(output, cons.encode_str)
+        for i in output:
+            if isinstance(output[i], bytes):
+                output[i] = output[i].decode('utf-8')
+        output = json.dumps(output)
     cons.raw_output = ''
     await cons.connection.send(output)
 
@@ -75,11 +86,14 @@ async def file_send(cons):
     raw_file = cons.file_output
     b64_file = str(base64.b64encode(raw_file), "utf-8")
     json_output = json.dumps({"type": "file", "data": b64_file})
-    json_bytes = bytes(json_output, "utf-8")
-    output = crypto_obj.encrypt(json_bytes, cons.encode_str)
-    for i in output:
-        if isinstance(output[i], bytes):
-            output[i] = output[i].decode('utf-8')
+    if encryption_enabled:
+        json_bytes = bytes(json_output, "utf-8")
+        output = crypto_obj.encrypt(json_bytes, cons.encode_str)
+        for i in output:
+            if isinstance(output[i], bytes):
+                output[i] = output[i].decode('utf-8')
+        final_output = json.dumps(output)
+    else:
+        final_output = json_output
     cons.file_output = bytes()
-    final_output = json.dumps(output)
     await cons.connection.send(final_output)
