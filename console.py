@@ -548,7 +548,7 @@ class Console:
         f.close()
         self.write('Downloading file %s...' % filename)
 
-    def sanatizeHTML(self, html):
+    def sanitizeHTML(self, html):
         html = html.replace('<', '(#*tag)(||istag)').replace('>', '(#*tag)')
         possible_tags = html.split('(#*tag)')
         tags = []
@@ -650,7 +650,7 @@ class Console:
         self.raw_output += str(text) + '<br>'
         self.raw_output = self.raw_output.replace('\n','<br>').replace('\t', '&nbsp&nbsp&nbsp&nbsp')
         self.raw_output = self.choose_measurements(self.raw_output)
-        self.raw_output = self.sanatizeHTML(self.raw_output)
+        self.raw_output = self.sanitizeHTML(self.raw_output)
         asyncio.ensure_future(connections_websock.ws_send(self))
 
     def request_input(self, dest):

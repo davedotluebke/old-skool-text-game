@@ -127,6 +127,9 @@
             var left_offset = 0;
             var caret_on = true;
             var ws = undefined;
+            var encryption_on = true;
+            // Warning message to warn players not using encryption. The format is due to code reuse.
+            var warningMessage = {data: '{"type": "warning", "data": "<strong style=\'color: red\'>Warning! This is an insecure connection! Do not send private information as it could be stolen by attackers!</b>"}'}
             var random_number = Math.random().toString();
 
             document.getElementById('inputLine').focus();
@@ -283,34 +286,29 @@
                     e.preventDefault();
                 }
             }, false);
-            function pack(bytes) {
-                var chars = [];
-                for(var i = 0, n = bytes.length; i < n;) {
-                    chars.push(((bytes[i++] & 0xff) << 8) | (bytes[i++] & 0xff));
-                }
-                return String.fromCharCode.apply(null, chars);
-            }
-
-            function unpack(str) {
-                var bytes = [];
-                for(var i = 0, n = str.length; i < n; i++) {
-                    var char = str.charCodeAt(i);
-                    bytes.push(char >>> 8, char & 0xFF);
-                }
-                return bytes;
-            }
             function receiveMessage(event) {
                 var messages = document.getElementsByTagName('div')[0],
                 message = document.createElement('div');
                 if (state == 'PLAY_GAME') {
-                    /*var jobj = JSON.parse(event.data);
-                    for (i = 0; i < jobj.length; i++) {
-                        if (jobj[i] == jobj[i].toString()) {
-                            jobj[i] = unpack(jobj[i]);
+                    if (encryption_on) {
+                        try {
+                            var msg = sjcl.decrypt(random_number, event.data);
                         }
-                    }*/
-                    var msg = sjcl.decrypt(random_number, event.data);
+                        catch(err) {
+                            encryption_on = false;
+                            msg = event.data;
+                            receiveMessage(warningMessage);
+                        }
+                    }
+                    else {
+                        var msg = event.data;
+                    }
                     msg = JSON.parse(msg);
+                    if (msg['type'] === undefined) {
+                        encryption_on = true;
+                        msg = sjcl.decrypt(random_number, event.data);
+                        msg = JSON.parse(msg);
+                    }
                     if (msg['type'] == 'file') {
                         receiveFile(msg['data']);
                         return;
@@ -356,7 +354,12 @@
                     data_dict['filename'] = filename;
                 }
                 var data = JSON.stringify(data_dict);
-                var encrypted_data = sjcl.encrypt(random_number, data);
+                if (encryption_on) {
+                    var encrypted_data = sjcl.encrypt(random_number, data);
+                }
+                else {
+                    var encrypted_data = data;
+                }
                 ws.send(encrypted_data);
             }
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
@@ -367,10 +370,19 @@
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
                     state = 'PLAY_GAME';
+                    var ip_address_already_exists = false;
                     if (ip_address != '127.0.0.1') {
-                        former_ip_addresses = former_ip_addresses.slice(0,3);
-                        former_ip_addresses.unshift(ip_address);
-                        setCookie('formip', former_ip_addresses, 60*24*7*4);
+                        for (i = 0; i < 4; i++) {
+                            if (former_ip_addresses[i] == ip_address) {
+                                ip_address_already_exists = true;
+                                break;
+                            }
+                        }
+                        if (ip_address_already_exists != true) {
+                            former_ip_addresses = former_ip_addresses.slice(0,3);
+                            former_ip_addresses.unshift(ip_address);
+                            setCookie('formip', former_ip_addresses, 60*24*7*4);
+                        }
                     }
                     ws.send(random_number); //XXX this is not a secure solution
                 };
@@ -390,20 +402,26 @@
                 }
             }
             function handleInput(user_input) {
-                // Detect if input is IP Address
-                if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(user_input)) {
-                    openWebSocket(user_input)
+                if (user_input.length == 0) {
+                    openWebSocket('127.0.0.1', -1);
                 }
                 else {
-                    if (user_input.length == 0) {
-                        openWebSocket('127.0.0.1', -1);
+                    if (user_input == 'exit') {
+                        window.close();
                     }
                     else {
-                        if (user_input == 'exit') {
-                            window.close();
+                        if (user_input == 'encryption off') {
+                            encryption_on = false;
                         }
-                        //setTimeout(receiveMessage,1,"I didn't understand your input.");
-                        openWebSocket(user_input)
+                        else {
+                            if (user_input == 'encryption on') {
+                                encryption_on = true;
+                            }
+                            else {
+                                openWebSocket(user_input);
+                                //setTimeout(receiveMessage,1,"I didn't understand your input.");
+                            }
+                        }
                     }
                 }
             }

@@ -11,15 +11,17 @@ class Thing(object):
     #
     # SPECIAL METHODS (i.e __method__() format)
     #
-    def __init__(self, default_name, path, pref_id=None):
+    def __init__(self, default_name, path, pref_id=None, plural_name=None):
         self.unlisted = False # should this thing be listed in room description  
         self.path = gametools.findGamePath(path) if path else None
         self.versions = {gametools.findGamePath(__file__): 3}
         self.names = [default_name]
+        self.plural_names = [default_name+'s' if not plural_name else plural_name]
         self._add_ID(default_name if not pref_id else pref_id)
-        self.plurality = 1
+        self.plurality = 1  # how many identical objects this Thing represents
         self._weight = 0.0
         self._volume = 0.0
+        self._value = 0
         self.emits_light = False
         self.flammable = 0
         self.location = None
@@ -27,7 +29,7 @@ class Thing(object):
         self._short_desc = 'need_short_desc'
         self._plural_short_desc = 'need_plural_short_desc'
         self._long_desc = 'need_long_desc'
-        self.adjectives = []
+        self.adjectives = set()
         self.contents = None        # None - only Containers can contain things
         self.spawn_location = None
         self.spawn_interval = None
@@ -42,14 +44,18 @@ class Thing(object):
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
-    def _add_ID(self, preferred_id):
+    def _add_ID(self, preferred_id, remove_existing=False):
         """Add object to Thing.ID_dict (the dictionary mapping IDs to objects).
 
         Takes a preferred ID string and (if necessary) creates a unique ID
-        string from it. Returns the unique ID string. """
-        if hasattr(self, 'id'):
+        string from it. Returns the unique ID string. If <remove_existing> is
+        set to True, first attempts to delete this object's current ID from 
+        Thing.ID_dict (useful for assigning new IDs to existing objects)"""
+        if remove_existing:
             try:
                 del Thing.ID_dict[self.id]
+            except AttributeError:
+                dbg.debug('%s has no id attribute!' % self)
             except KeyError:
                 dbg.debug('%s.id was not in Thing.ID_dict!' % self)
         self.id = preferred_id
@@ -68,9 +74,9 @@ class Thing(object):
     def _restore_objs_from_IDs(self):
         """Update object references stored as ID strings to directly reference the objects, using Thing.ID_dict."""
         if isinstance(self.location, str):
-            self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet?
+            self.location = Thing.ID_dict[self.location] # XXX will this work correctly for the room if it isn't loaded yet? 
         if self.contents != None:
-            self.contents = [Thing.ID_dict[id] for id in self.contents if isinstance(id, str) and id in Thing.ID_dict]
+            self.contents = [Thing.ID_dict[id] for id in self.contents if (isinstance(id, str) and id in Thing.ID_dict)]
 
     #
     # SET/GET METHODS (methods to set or query attributes)
@@ -79,10 +85,19 @@ class Thing(object):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""
         self.names += list(sNames)
 
+    def add_plural_names(self, *sPluralNames):
+        """Add one or more strings as possible plural noun names for this object, each as a separate argument"""
+        self.plural_names += list(sPluralNames)
+
     def add_adjectives(self, *sAdjs):
         """Add one or more adjective strings, each as a separate argument"""
-        self.adjectives += list(sAdjs)
+        self.adjectives |= set(sAdjs)
     
+    def remove_adjectives(self, *sAdjs):
+        """Remove one or more adjective strings, each specified as a separate argument. 
+        Ignores any adjectives that are not associated with the object."""
+        self.adjectives -= set(sAdjs)
+
     def set_weight(self, grams):
         if (grams < 0):
             dbg.debug("Error: weight cannot be negative")
@@ -123,6 +138,23 @@ class Thing(object):
     def set_flammable(self, f):
         """Set flammability. 0 == non-flammable, 10 == very flammable."""
         self.flammable = f
+
+    def get_total_value(self):
+        """Return the value of the thing as an integer. 
+        The value returned will be multiplied by the plurality of the object.
+        Can be overloaded for more complicated functionality."""
+        return self.get_unit_value() * self.plurality
+    
+    def get_unit_value(self):
+        """Return the value of the thing as an integer.
+        The value returned will NOT be multiplied by the plurality of the object.
+        Can be overloaded for more complicated functionality."""
+        return self._value
+
+    def set_value(self, value):
+        """Set the value of the thing. Value must be an integer. 
+        Can be overloaded for more complicated functionality."""
+        self._value = value
     
     # XXX implement set_fire so flammable objects can be set on fire with e.g. a fireball
 
@@ -257,7 +289,8 @@ class Thing(object):
         except KeyError:
             dbg.debug('%s was already moved from Thing.ID_dict' % self, 2)
         if self.location:
-            self.location.extract(self, count='all')
+            self.location.extract(self)
+            self.location = None
         if self in Thing.game.heartbeat_users:
             Thing.game.deregister_heartbeat(self)
 
@@ -339,7 +372,9 @@ class Thing(object):
         re-insert into the original location and returns False.  
         If <force_move> is True, ignores the <fixed> attribute.
         If <merge_pluralities is True, checks if this object is identical to any 
-        objects currently in dest.contents; if so, merges them into a plurality."""
+        objects currently in dest.contents; if so, merges them into a plurality.
+        Note that the parser would have already split off the object from a 
+        plurality in the origin, if necessary."""
         origin = self.location
         if self.fixed and force_move == False:
             if hasattr(self, 'is_liquid'):
