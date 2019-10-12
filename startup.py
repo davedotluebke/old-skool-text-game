@@ -29,7 +29,7 @@ else:
 if args.mode:
     mode = args.mode
 else:
-    mode = 'nocrypt'
+    mode = 'encrypt'
 
 ## 
 ## "game" is a special global variable, an object of class Game that holds
