@@ -26,13 +26,17 @@ if args.server:
 else:
     ip = None
 
+if args.mode:
+    mode = args.mode
+else:
+    mode = 'nocrypt'
 
 ## 
 ## "game" is a special global variable, an object of class Game that holds
 ## the actual game state. 
 ## 
 
-game = Game(ip, args.mode)
+game = Game(ip, mode)
 
 Thing.game = game
 
