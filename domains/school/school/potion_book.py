@@ -17,6 +17,8 @@ def clone():
 | Invisibility Potion          1 |
 | Pink Potion                  2 |
 | Strength Potion              3 |
+| Jumping Potion               4 |
+| Exploration Potion           5 |
 ==================================
 #*
 Invisibility Potion
@@ -53,9 +55,33 @@ Step 1:
 Step 2:
 >   Put the ingredients in thy cauldron and put the cauldron over a burner.
 
-Step3:
+Step 3:
 >   Drink thy potion, and make thyself stronger.
 
     ** Beware: Thou will not be stronger forever! **
+#*
+Jumping Potion
+==============
+Step 1:
+>   Gather thyself a spring, a dragon's scale, and a piece of hay.
+
+Step 2:
+>   Put the ingredients in thy cauldron and put the cauldron over a burner.
+
+Step 3:
+>   Drink thy potion, and jump up into the air.
+    ** Beware: Thy powers of jumping will activate only once! **
+#*
+Exploration Potion
+==================
+Step 1:
+>   Gather thyself truffles, a dragon's scale, and molasses.
+
+Step 2:
+>   Put the ingredients in thy cauldron and put the cauldron over a burner.
+
+Step 3:
+>   Drink thy potion, and find thyself in an unknown place.
+    ** Beware: Thy destination may be far away! **
 ''')
     return potion_book

@@ -18,4 +18,7 @@ def load():
 
     table = gametools.clone('domains.school.forest.table')
     kitchen.insert(table)
+
+    sink = gametools.clone('domains.school.forest.sink')
+    kitchen.insert(sink)
     return kitchen

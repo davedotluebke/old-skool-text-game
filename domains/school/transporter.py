@@ -13,7 +13,7 @@ class TransportRoom(Room):
         for i in self.contents:
             i.move_to(self.dest)
             if isinstance(i, Player):
-                i.cons.write(self.long_desc)
+                i.cons.write(self._long_desc)
                 i.cons.write("You find yourself falling to the ground.")
-                i.cons.write("You land in a %s." % self.dest.short_desc)
-                i.cons.write(self.dest.long_desc)
+                i.cons.write("You land in a %s." % self.dest._short_desc)
+                i.cons.write(self.dest._long_desc)

@@ -1,33 +1,43 @@
 import room
-import thing
+from thing import Thing
+from action import Action
 import gametools
 
 class LakeRoom_surface(room.Room):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, roomPath, underwater_loc):
         super().__init__(default_name, roomPath)
-        self.actions.append(room.Action(self.dive, ['dive'], False, True))
-        for i in self.actions:
-            if i.verblist == ['go', 'walk']:
-                i.verblist == ['go', 'swim']
         self.underwater_loc = underwater_loc
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def dive(self, p, cons, oDO, oIDO):
         cons.user.perceive('You dive under the lake and find yourself in a different environment.')
         cons.user.emit('&nd%s dives underwater and disappears from sight.' % cons.user)
         loc = gametools.load_room(self.underwater_loc)
         cons.user.move_to(loc)
-        thing.Thing.game.events.schedule(thing.Thing.game.time+15, loc.force_surface, cons.user)
+        Thing.game.schedule_event(15, loc.force_surface, cons.user)
         return True
+    
+    actions = dict(room.Room.actions)  # make a copy
+    actions['dive'] = Action(dive, False, True)
+    actions['swim'] = actions['walk']  # replace walk with swim
+    del actions['walk']
 
 class LakeRoom_underwater(room.Room):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, roomPath, surface_loc):
         super().__init__(default_name, roomPath)
-        self.actions.append(room.Action(self.surface, ['surface'], False, True))
-        for i in self.actions:
-            if i.verblist == ['go', 'walk']:
-                i.verblist == ['go', 'swim']
         self.surface_loc = surface_loc
 
+    #
+    # OTHER EXTERNAL METHODS (callbacks & misc externally visible methods)
+    #
     def force_surface(self, user):
         if user not in self.contents:
             if isinstance(user.location, LakeRoom_underwater):
@@ -41,9 +51,17 @@ class LakeRoom_underwater(room.Room):
         user.move_to(loc)
         user.emit('&nD%s surfaces.' % user)
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def surface(self, p, cons, oDO, oIDO):
         cons.user.perceive('You swim upwards and resurface.')
         cons.user.emit('&nD%s swims upwards and disappears from sight.')
         loc = gametools.load_room(self.surface_loc)
         cons.user.move_to(loc)
         return True
+    
+    actions = dict(room.Room.actions)  # make a copy
+    actions['surface'] = Action(surface, False, True)
+    actions['swim'] = actions['walk']  # replace walk with swim
+    del actions['walk']

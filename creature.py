@@ -5,6 +5,7 @@ from thing import Thing
 from container import Container
 from weapon import Weapon
 from armor import Armor
+from action import Action
 
 class Creature(Container):
     def __init__(self, default_name, path, pref_id=None):
@@ -31,6 +32,8 @@ class Creature(Container):
         self.proper_name = default_name.capitalize()
         self.dead = False
         self.wizardry_element = None
+        self.healing = 0
+        self.versions[gametools.findGamePath(__file__)] = 1
 
     def get_saveable(self):
         saveable = super().get_saveable()
@@ -79,8 +82,8 @@ class Creature(Container):
         this creature has introduced itself to <perceiver> (usually the 
         player for whom the description is intended).'''
         if perceiver == None:
-            dbg.debug("%s.get_short_desc() called with no perceiver specified" % self)
-            return "<Error: no perceiver>" + self.short_desc
+            dbg.debug("%s.get_short_desc() called with no perceiver specified" % self, 2)
+            return "<Error: no perceiver>" + self._short_desc
         if self.id in perceiver.introduced:
             return self.proper_name
         else:
@@ -91,23 +94,23 @@ class Creature(Container):
         Weapons it is wielding and any armor it is wearing.'''
         self.viewed = cons.user
         if self == oDO or self == oIDO:
-            cons.write(self.long_desc)
+            cons.write(self._long_desc)
             if self.weapon_wielding and (self.weapon_wielding != self.default_weapon):
-                cons.write("It is wielding a %s." % (self.weapon_wielding.short_desc))        #if we use "bare hands" we will have to change this XXX not true anymore
+                cons.write("It is wielding a %s." % (self.weapon_wielding._short_desc))        #if we use "bare hands" we will have to change this XXX not true anymore
             if self.armor_worn and (self.armor_worn != self.default_armor):
-                cons.write("It is wearing %s." % (self.armor_worn.short_desc))
+                cons.write("It is wearing %s." % (self.armor_worn._short_desc))
             if self.visible_inventory and self.visible_inventory != [self.armor_worn, self.weapon_wielding] and self.visible_inventory != [self.weapon_wielding, self.armor_worn]:
                 cons.write('It is holding:')
                 for i in self.visible_inventory:
                     if i != self.armor_worn and i != self.weapon_wielding:
-                        cons.write('/na '+i.short_desc)
+                        cons.write('\na '+i._short_desc)
             return True
         else:
             return "Not sure what you are trying to look at!"
 
     def perceive(self, message):
         """Receive a message emitted by an object carried by or in vicinity of this creature."""
-        dbg.debug("%s perceived a message %s in Creature.perceive()" % (self.id, message), 2)
+        dbg.debug("%s perceived a message %s in Creature.perceive()" % (self.id, message), 3)
 
     def say(self, speech):
         """Emit a message to the room "The <creature> says: <speech>". """
@@ -132,17 +135,17 @@ class Creature(Container):
             for w in self.contents:
                 if isinstance(w, Weapon) and w.damage > self.default_weapon.damage:
                     self.weapon_wielding = w
-                    dbg.debug("weapon chosen: %s" % self.weapon_wielding)
+                    dbg.debug("weapon chosen: %s" % self.weapon_wielding, 2)
                     self.visible_inventory.append(self.weapon_wielding)
-                    self.perceive('You wield the %s, rather than using your %s.' % (self.weapon_wielding.short_desc, self.default_weapon.short_desc))
+                    self.perceive('You wield the %s, rather than using your %s.' % (self.weapon_wielding._short_desc, self.default_weapon._short_desc))
                     break
         if not self.armor_worn or self.armor_worn == self.default_armor:
             for a in self.contents:
                 if isinstance(a, Armor) and a.bonus > self.default_armor.bonus:
                     self.armor_worn = a
-                    dbg.debug("armor chosen: %s" % self.armor_worn)
+                    dbg.debug("armor chosen: %s" % self.armor_worn, 2)
                     self.visible_inventory.append(self.armor_worn)
-                    self.perceive('You wear the %s, rather than your %s.' % (self.armor_worn.short_desc, self.default_armor.short_desc))
+                    self.perceive('You wear the %s, rather than your %s.' % (self.armor_worn._short_desc, self.default_armor._short_desc))
                     break
     
     def get_damage_message(self, percent_damage):
@@ -168,7 +171,7 @@ class Creature(Container):
 
     def attack(self, enemy):
         if (self == enemy):
-            dbg.debug('Creature tried to attack self!', 0)
+            dbg.debug('Creature tried to attack self!')
             return
         chance_of_hitting = self.combat_skill + self.weapon_wielding.accuracy - enemy.get_armor_class()
         if random.randint(1, 100) <= chance_of_hitting:
@@ -198,16 +201,26 @@ class Creature(Container):
         #What to do when 0 health
         self.emit("&nD%s dies!" % self.id, [self])
         corpse = gametools.clone('corpse', self)
+        corpse.names += self.names
+        corpse.adjectives += self.adjectives
+        corpse.adjectives += self.names
         self.location.insert(corpse)
-        for i in self.contents:
+        while self.contents:
+            i = self.contents[0]
             i.move_to(corpse)
         if hasattr(self, 'cons'):
-            self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))     #Moves to a location for deletion. TODO: Make nulspace delete anything inside it.
+            self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))
         else:
-            self.move_to(Thing.ID_dict['nulspace'])
             self.dead = True
+            self.destroy()
         if message:
             self.emit(message)
+    
+    def heal(self):
+        self.healing -= 1
+        if self.healing < 0:
+            self.health += 1
+            self.healing = 20
 
     def attack_enemy(self, enemy=None):
         """Attack any enemies, if possible, or if a highly aggressive Creature, attack anyone in the room."""
@@ -227,10 +240,10 @@ class Creature(Container):
             self.enemies.append(attacking)
         
         if attacking == None:
-            dbg.debug("%s didn't have anyone to attack!" % self.id, 0)
+            dbg.debug("%s didn't have anyone to attack!" % self.id)
             return
         
-        dbg.debug("%s: attacking %s" % (self.id, attacking))
+        dbg.debug("%s: attacking %s" % (self.id, attacking), 2)
         self.attacking = attacking
         # Figured out who to attack, wield any weapons/armor
         self.weapon_and_armor_grab()
@@ -239,6 +252,10 @@ class Creature(Container):
             self.attack(attacking)
         else:
             self.attack_now += 1
+    
+    actions = dict(Container.actions)
+    actions['look'] = Action(look_at, True, False)
+    actions['examine'] = Action(look_at, True, False)
 
 class NPC(Creature):
     def __init__(self, ID, path, aggressive=0, pref_id=None):
@@ -268,6 +285,8 @@ class NPC(Creature):
     def heartbeat(self):
         if self.dead:
             return
+        if self.health < self.hitpoints:
+            self.heal()
         self.act_soon += 1
         if self.act_soon >= self.act_frequency or (set(self.enemies) and set(self.location.contents)) or self.attacking:
             acting = False
@@ -284,12 +303,12 @@ class NPC(Creature):
                             self.move_around()
                         acting = True
             except AttributeError:
-                dbg.debug('AttributeError, not in any room.', 0)
+                dbg.debug('AttributeError, not in any room.')
                 return
             if self.attacking:
                 if (self.attacking not in self.location.contents):
                     for l in self.location.exits:
-                        if l == self.attacking.location:
+                        if gametools.load_room(self.location.exits[l]) == self.attacking.location:
                             self.move_to(l)
                             moved = True
                             break
@@ -304,7 +323,7 @@ class NPC(Creature):
                     except TypeError:
                         choice(self)
                 except NameError:
-                    dbg.debug("Object "+str(self.id)+" heartbeat tried to run non-existant action choice "+str(choice)+"!", 0)
+                    dbg.debug("Object "+str(self.id)+" heartbeat tried to run non-existant action choice "+str(choice)+"!")
             
     def move_around(self):
         """The NPC leaves the room, taking a random exit"""
@@ -312,24 +331,24 @@ class NPC(Creature):
             exit_list = list(self.location.exits)
             exit = random.choice(exit_list)
         except (AttributeError, IndexError):
-            dbg.debug('NPC %s sees no exits, returning from move_around()' % self.id)
+            dbg.debug('NPC %s sees no exits, returning from move_around()' % self.id, 2)
             return
 
-        dbg.debug("Trying to move to the %s exit!" % (exit))
+        dbg.debug("Trying to move to the %s exit!" % (exit), 3)
         current_room = self.location
         new_room_string = self.location.exits[exit]
         new_room = gametools.load_room(new_room_string)
         if new_room.monster_safe:
-            dbg.debug('Can\'t go to %s; monster safe room!' % new_room_string)
+            dbg.debug('Can\'t go to %s; monster safe room!' % new_room_string, 3)
             return
 
         if new_room_string in self.forbidden_rooms:
-            dbg.debug('Can\'t go to %s: forbidden to %s!' % (new_room_string, self))
+            dbg.debug('Can\'t go to %s: forbidden to %s!' % (new_room_string, self), 3)
  
         self.emit("&nD%s goes %s." % (self.id, exit))
         self.move_to(new_room)
         self.emit("&nI%s arrives." % self.id)
-        dbg.debug("Creature %s moved to new room %s" % (self.names[0], new_room_string), 1)
+        dbg.debug("Creature %s moved to new room %s" % (self.names[0], new_room_string), 2)
         return
 
     def talk(self):

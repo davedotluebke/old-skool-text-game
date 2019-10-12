@@ -1,8 +1,11 @@
 import thing
 import gametools
-import action
+from action import Action
 
 class Plaque(thing.Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, mirror, number):
         super().__init__('plaque', __file__)
         self.set_description('stone plaque', 'Thou must intone the word that best describes thee.', unlisted=True)
@@ -40,14 +43,27 @@ class Plaque(thing.Thing):
                       ] 
         self.mirror = mirror
         self.number = number
-        self.actions.append(action.Action(self.intone, ['intone', 'acquire'], True, False))
-        self.actions.append(action.Action(self.look_at, ['read'], True, False))
 
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
+
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
+
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def look_at(self, p, cons, oDO, oIDO):
         words_on_plaque = ''
         for i in self.words:
             words_on_plaque += i + '\n'
-        cons.user.perceive('This plaque has a list of words on it. They read:\n<div style="column-count:3;column-rule:none">' + words_on_plaque + '</div>Below the list of words are some instructions. They read:\n' + self.long_desc)
+        cons.user.perceive('This plaque has a list of words on it. They read:\n<div style="column-count:3">' + words_on_plaque + '</div>Below the list of words are some instructions. They read:\n' + self._long_desc)
         return True
 
     def intone(self, p, cons, oDO, oIDO):
@@ -66,3 +82,8 @@ class Plaque(thing.Thing):
             self.mirror.adj2 = sDO
         cons.write('You see the reflection in the mirror change slightly.')
         return True
+
+    actions = dict(thing.Thing.actions)  # make a copy, don't change Thing's dict!
+    actions['intone'] =  Action(intone, True, False)
+    actions['acquire'] = Action(intone, True, False)
+    actions['read'] =    Action(look_at, True, False)

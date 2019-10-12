@@ -27,6 +27,7 @@ class ProfSun(creature.NPC):
         self.emeralds = [gametools.clone('domains.school.school.emerald')]
         self.rubies = [gametools.clone('domains.school.school.ruby')]
         self.checking_done = False
+        self.resetting = False
         
     def heartbeat(self):
         # If waiting on something, then return
@@ -49,7 +50,7 @@ class ProfSun(creature.NPC):
             if i == self:
                 del self.unchecked_homework[0]
             elif i.wizardry_element == None:
-                self.emit('Prof. Sun says: %s, you have come to the wrong class. Your class starts later. Goodbye.' % i)
+                self.emit('Prof. Sun says: %s, you have come to the wrong class. Your scroll should inform you of when your class starts. See you then.' % i)
                 self.emit('&nD%s vanishes!' % i.id)
                 dest = gametools.load_room('domains.school.school.library')
                 i.move_to(dest)
@@ -77,7 +78,7 @@ class ProfSun(creature.NPC):
         self.script_index = 0
         self.giving_class = True
 
-    def give_class_ev(self, x):
+    def give_class_ev(self):
         self.give_class()
 
     def give_class(self):
@@ -85,11 +86,12 @@ class ProfSun(creature.NPC):
         index = self.current_script_idx
         if index >= len(lines):
             self.do_action()
-            self.current_script = self.scripts[self.script_index]
+            if not self.resetting:
+                self.current_script = self.scripts[self.script_index]
             return
         self.emit('Prof. Sun says: '+lines[index])
         self.waiting = True
-        creature.Thing.game.events.schedule(15, self.give_class_ev, None)
+        creature.Thing.game.schedule_event(15, self.give_class_ev)
         self.current_script_idx += 1
 
     def present_gems(self):
@@ -119,9 +121,21 @@ class ProfSun(creature.NPC):
         if self.script_index == 0:
             self.present_gems()
         elif self.script_index == 1:
-            creature.Thing.game.events.schedule(80, self.reset, None)
+            creature.Thing.game.schedule_event(80, self.reset, None)
+            self.resetting = True
         self.script_index += 1
         self.current_script_idx = 0
+
+    def reset(self):
+        self.graduates += [x for x in self.location.contents if isinstance(x, creature.Creature) and x not in self.graduates and x != self]
+        self.waiting = False
+        self.script_index = 0
+        self.current_script_idx = 0
+        self.checking_done = False
+        self.current_script = self.scripts[0]
+        self.giving_class = False
+        ProfSun.rubies_powered = []
+        self.resetting = False
 
 def clone():
     return ProfSun()

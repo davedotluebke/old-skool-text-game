@@ -2,20 +2,43 @@ from debug import dbg
 from action import Action
 from thing import Thing
 
+import gametools
+
 class Weapon(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path, damage, accuracy, unwieldiness, attack_verbs=['swing'], pref_id=None):
         Thing.__init__(self, default_name, path, pref_id)
         self.damage = damage
         self.accuracy = accuracy
         self.unwieldiness = unwieldiness
-        self.actions.append(Action(self.wield, ['wield', 'use'], True, False))
-        self.actions.append(Action(self.unwield, ['unwield'], True, False))
-        self.actions.append(Action(self.start_attack, attack_verbs, True, False))
+        self.versions[gametools.findGamePath(__file__)] = 1
+        self.actions = dict(Thing.actions)
+        self.actions['wield'] =   Action(Weapon.wield, True, False)
+        self.actions['use'] =     Action(Weapon.wield, True, False)
+        self.actions['unwield'] = Action(Weapon.unwield, True, False)
+        for i in attack_verbs:
+            self.actions[i] = Action(Weapon.start_attack, True, False)
         # overwrite default drop action:
-        for a in self.actions:
-            if 'drop' in a.verblist:
-                a.func = self.weapon_drop
-        
+        self.actions['drop'] = Action(Weapon.weapon_drop, True, False)
+
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
+
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
+
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
+
     def wield(self, p, cons, oDO, oIDO):
         if self == oDO:
             if self == cons.user.weapon_wielding:
@@ -69,3 +92,7 @@ class Weapon(Thing):
             return True
 
         return "Did you mean to %s the %s?" % (sV, self.get_short_desc())
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone())
+#

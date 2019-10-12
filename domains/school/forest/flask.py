@@ -1,5 +1,6 @@
 import container
 import liquid
+import gametools
 
 def clone():
     flask = container.Container('flask', __file__)
@@ -9,12 +10,7 @@ def clone():
     flask.set_max_weight_carried(200)
     flask.liquid = True
 
-    molasses = liquid.Liquid('molasses')
-    molasses.set_description('thick brown molasses', 'This brownish liquid is sweet and thick. Not surprisingly, it is used in recipes as a sweetener and a thickener.')
-    molasses.add_adjectives('thick', 'brown', 'brownish')
-    molasses.set_volume(0.040)
-    molasses.set_weight(40)
-
+    molasses = gametools.clone('domains.school.forest.molasses')
     flask.insert(molasses)
 
     return flask

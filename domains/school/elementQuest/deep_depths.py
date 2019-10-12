@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    deep_depths = lake_room.LakeRoom_underwater('deep depths', roomPath, 'domains.school.elementQuest.lake_center')
+    deep_depths = lake_room.LakeRoom_underwater('deep depths', roomPath, 'domains.school.elementQuest.lake_centre')
     deep_depths.set_description('deep depths', 'This is the deepest part of the lake. You can barely make out the bottom.')
     deep_depths.add_exit('north', 'domains.school.elementQuest.oysters')
     deep_depths.add_exit('east', 'domains.school.elementQuest.doorway')

@@ -6,8 +6,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    great_hall = room.Room('great hall', safe=True, pref_id=roomPath)
-    great_hall.indoor = True
+    great_hall = room.Room('great hall', safe=True, indoor=True, pref_id=roomPath)
     great_hall.set_description('Great Hall', 'You stand in the biggest room in the entire school, '
         'and it is enormous. It is made of ancient stones. A giant banquet table fills the room. '
         'To the north there stands a huge fireplace, the logs in it burning slowly. '

@@ -1,15 +1,21 @@
 import gametools
 import room
 import scenery
+import action
 from debug import dbg
 
 class Waterfall(scenery.Scenery):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self):
         super().__init__('waterfall', 'rushing waterfall', 'This is a wide, rushing waterfall. '
         'It flows from above a rocky cliff to a large pool below.')
         self.add_adjectives('rushing')
-        self.actions.append(scenery.Action(self.enter, ['enter'], True, False))
     
+    #
+    # ACTION METHODS (dictionary must be built per-object for Scenery)
+    # 
     def enter(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sDO == 'waterfall':
@@ -30,6 +36,9 @@ class Waterfall(scenery.Scenery):
         return "Did you mean to enter the waterfall?"
         
 
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def load():
     roomPath =  gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)
@@ -43,6 +52,9 @@ def load():
     r.add_exit('northwest', 'domains.school.forest.field')
 
     w = Waterfall()
+    w.actions = dict(scenery.Scenery.actions)
+    w.actions['enter'] = action.Action(Waterfall.enter, True, False)
+
     r.insert(w, True)
 
     return r

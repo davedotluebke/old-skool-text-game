@@ -1,12 +1,14 @@
 import os
 import importlib
 from debug import dbg
+from walking_os import findAllPythonFiles
 import room
 
 # the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
 gameroot = os.path.dirname(__file__) 
 
 PLAYER_DIR = os.path.join(gameroot, "saved_players")
+PLAYER_BACKUP_DIR = os.path.join(gameroot, "backup_saved_players")
 NEW_PLAYER_START_LOC = 'domains.character_creation.start_loc'
 DEFAULT_START_LOC = 'domains.school.school.great_hall'
 
@@ -14,6 +16,9 @@ class PlayerSaveError(Exception):
     pass
 
 class PlayerLoadError(Exception):
+    pass
+
+class IncorrectPasswordError(Exception):
     pass
 
 def validate_func(modpath, func):
@@ -38,14 +43,15 @@ def clone(obj_module, params=None):
             obj = mod.clone(params)
         else:
             obj = mod.clone()
+        obj.mod = mod
     except ImportError:
-        dbg.debug("Error importing module %s" % obj_module, 0)
+        dbg.debug("Error importing module %s" % obj_module)
         return None
     except AttributeError:
-        dbg.debug("Error cloning from module %s: no clone() method" % obj_module, 0)
+        dbg.debug("Error cloning from module %s: no clone() method" % obj_module)
         return None
     if obj == None:
-        dbg.debug("Error cloning from module %s: clone() return None" % obj_module, 0)
+        dbg.debug("Error cloning from module %s: clone() return None" % obj_module)
     return obj
 
 def deconstructObjectPath(path_str):
@@ -82,6 +88,16 @@ def findGamePath(filepath):
     (head, sep, tail) = gamePath.partition(".py")
     gamePath = head
     return gamePath
+
+def walklevel(some_dir, level=1):
+    some_dir = some_dir.rstrip(os.path.sep)
+    assert os.path.isdir(some_dir)
+    num_sep = some_dir.count(os.path.sep)
+    for root, dirs, files in os.walk(some_dir):
+        yield root, dirs, files
+        num_sep_this = root.count(os.path.sep)
+        if num_sep + level <= num_sep_this:
+            del dirs[:]
 
 def request_all_inputs(player, dest):
     Thing.ID_dict[player].cons.request_input(dest)

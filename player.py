@@ -24,11 +24,15 @@ def clone(params=None):
 
 
 class Player(Creature):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, ID, path, console):
         """Initialize the Player object and attach a console"""
         Creature.__init__(self, ID, path)
         self.cons = console
         self.login_state = None
+        self.password = None
         self.start_loc_id = None
         self.set_description("formless soul", "A formless player without a name")
         self.set_weight(175/2.2)
@@ -36,17 +40,6 @@ class Player(Creature):
         self.set_max_weight_carried(750000)
         self.set_max_volume_carried(2000)
         self.saved_cons_attributes = []
-        self.actions.append(Action(self.inventory, "inventory", False, True))
-        self.actions.append(Action(self.toggle_terse, "terse", False, True))
-        self.actions.append(Action(self.execute, "execute", True, True))
-        self.actions.append(Action(self.fetch, "fetch", True, True))
-        self.actions.append(Action(self.clone, "clone", True, True))
-        self.actions.append(Action(self.apparate, "apparate", True, True))
-        self.actions.append(Action(self.reload, "reload", True, True))
-        self.actions.append(Action(self.say, ["say", "shout", "mutter", "whisper"], True, True))
-        self.actions.append(Action(self.introduce, "introduce", True, True))
-        self.actions.append(Action(self.engage, ["engage", "attack"], True, False))
-        self.actions.append(Action(self.disengage, "disengage", False, True))
         self.aggressive = 1         #TODO: Specialized individual stats
         self.armor_class = 10
         self.combat_skill = 40
@@ -57,6 +50,7 @@ class Player(Creature):
         self.engaged = False
         self.wizardry_skill = 0
         self.wizardry_element = None
+        self.wprivilages = False
         self.attacking = False
         self.hitpoints = 20
         self.health = 20
@@ -66,6 +60,7 @@ class Player(Creature):
         self.adj2 = None
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
+        self.versions[gametools.findGamePath(__file__)] = 2
 
     def get_saveable(self):
         saveable = super().get_saveable()
@@ -80,52 +75,25 @@ class Player(Creature):
         try:
             self.cons.alias_map = self.saved_cons_attributes[0]
             self.cons.measurement_system = self.saved_cons_attributes[1]
-        except AttributeError:
+        except (AttributeError, IndexError) as e:
             pass
-        
+
     def save_cons_attributes(self):
         self.saved_cons_attributes = [self.cons.alias_map, self.cons.measurement_system]
-
-    def __getstate__(self):
-        """Custom pickling code for Player. 
+    
+    def update_version(self):
+        if hasattr(self, 'version_number'):
+            self.versions[gametools.findGamePath(__file__)] = 1
         
-        Avoids directly pickling the associated console (will eventually
-        delete this for save-and-quit functionality in multiplayer; for 
-        now just detach the console to support save-and-keep-playing). 
-        """
-        # Copy the object's state from self.__dict__ which contains
-        # all our instance attributes. Always use the dict.copy()
-        # method to avoid modifying the original state.
-        state = super().__getstate__()
-        del state['enemies'] #TODO: Make saving and loading of this attribute work
-        # Remove the unpicklable entries.
-        del state['cons']
-        return state
+        super().update_version()
 
-    def __setstate__(self, state):
-        """Custom unpickling code for Player
+        if self.versions[gametools.findGamePath(__file__)] == 1:
+            self.password = "{\"F\":[1779033703,-1150833019,1013904242,-1521486534,1359893119,-1694144372,528734635,1541459225],\"A\":[1634952294],\"l\":32}"
+            self.versions[gametools.findGamePath(__file__)] = 2
 
-        Note 1: The function unpickling the Player must then attach it to
-        a new console.
-        
-        Note 2: If the player is joining an ongoing game (as opposed to the
-        entire game including players getting saved/restored) then the 
-        function unpickling the player should restore the location field from
-        an ID string to a direct reference, do the same for the objects in the
-        contents field, and call move_to() to update the room."""
-        super(Player, self).__setstate__(state) # updates Thing.ID_dict
-        # Restore instance attributes
-        self.enemies = [] #XXX fix problem with enemies
-
-    def set_start_loc(self, startroom):
-        self.start_loc_id = startroom.id
-
-    def detach(self, nocons=False):
-        if not nocons:
-            self.cons.detach(self)
-        self.cons = None
-        Thing.game.deregister_heartbeat(self)
-
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
     def _handle_login(self, cmd):
         state = self.login_state
         if state == 'AWAITING_USERNAME':
@@ -138,7 +106,7 @@ class Player(Creature):
             try:
                 f = open(filename, 'r+b')
                 f.close()  # success, player exists, so close file for now & check password
-                self.cons.write("Welcome back, %s!<br>Please enter your password: " % self.names[0])
+                self.cons.write("Welcome back, %s!<br>Please enter your #password: " % self.names[0])
                 self.login_state = 'AWAITING_PASSWORD'
             except FileNotFoundError:
                 self.cons.write("No player named "+self.names[0]+" found. "
@@ -147,7 +115,7 @@ class Player(Creature):
             return
         elif state == 'AWAITING_CREATE_CONFIRM':
             if cmd == "yes": 
-                self.cons.write("Welcome, %s!<br>Please create a password:" % self.names[0])
+                self.cons.write("Welcome, %s!<br>Please create a #password:" % self.names[0])
                 self.login_state = 'AWAITING_NEW_PASSWORD'
                 return
             elif cmd == "no":
@@ -159,11 +127,12 @@ class Player(Creature):
                 return
         elif state == 'AWAITING_NEW_PASSWORD':
             passwd = cmd
-            # XXX ignoring for now. 
+            # XXX temporary fix for now
+            self.password = passwd
             # TODO secure password authentication goes here
             self.id = self._add_ID(self.names[0])            
             self.proper_name = self.names[0].capitalize()
-            dbg.debug("Creating player id %s with default name %s" % (self.id, self.names[0]), 0)
+            dbg.debug("Creating player id %s with default name %s" % (self.id, self.names[0]))
             start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
             start_room.insert(self)
             self.perceive("\nWelcome to Firlefile Sorcery School!\n\n"
@@ -174,37 +143,69 @@ class Player(Creature):
             return
         elif state == 'AWAITING_PASSWORD':
             passwd = cmd
-            # XXX ignoring for now. 
-            # TODO secure password authentication goes here
+            # XXX temporary fix, need more security
+            # TODO more secure password authentication goes here
             filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
             try:
-                newuser = self.game.load_player(filename, self.cons)
-                dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]), 0)
-                newuser.login_state = None
-                self.login_state = None
-                self.game.deregister_heartbeat(self)
-                del Thing.ID_dict[self.id]
+                try:
+                    newuser = self.game.load_player(filename, self.cons, password=passwd)
+                    dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]))
+                    newuser.login_state = None
+                    self.login_state = None
+                    self.game.deregister_heartbeat(self)
+                    del Thing.ID_dict[self.id]
+                except gametools.IncorrectPasswordError:
+                    self.cons.write("Your username or password is incorrect. Please try again.")
+                    self.login_state = "AWAITING_USERNAME"
             except gametools.PlayerLoadError:
                 self.cons.write("Error loading data for player %s from file %s. <br>"
                                 "Please try again.<br>Please enter your username: " % (self.names[0], filename))
                 self.login_state = "AWAITING_USERNAME"
-            return
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+    def set_start_loc(self, startroom):
+        self.start_loc_id = startroom.id
+
+    def get_saveable(self):
+        saveable = super().get_saveable()
+        try:
+            del saveable['enemies']
+        except KeyError: 
+            pass
+        del saveable['cons']
+        return saveable
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
+    def detach(self, nocons=False):
+        try:
+            del dbg.verbosity[self.id]
+        except KeyError:
+            pass
+        if not nocons:
+            self.cons.detach(self)
+        self.cons = None
+        self.destroy()
         
     def heartbeat(self):
         if self.cons == None:
             self.detach(nocons=True)
         
+        if self.health < self.hitpoints:
+            self.heal()
+        
         cmd = self.cons.take_input()
         if self.login_state != None:
-            if cmd != None:
+            if cmd != None and cmd != '__noparse__' and cmd != '__quit__':
                 self._handle_login(cmd)
             return
         if cmd:
-            if cmd != '__noparse__':
-                keep_going = Thing.game.parser.parse(self, self.cons, cmd)
-                if not keep_going:
-                    self.move_to(Thing.ID_dict['nulspace'])
-                    self.detach()
+            if cmd != '__noparse__' and cmd != '__quit__':
+                old_keep_going = Thing.game.parser.parse(self, self.cons, cmd)
+            elif cmd == '__quit__':
+                self.detach()
            
 
         if self.auto_attack:            # TODO: Player Preferences
@@ -214,11 +215,14 @@ class Player(Creature):
                 else:
                     self.attack_enemy(self.attacking)
                     return
-            for i in self.location.contents:
-                if i in self.enemies:
-                    self.cons.write('You attack your enemy %s.' % i.short_desc)
-                    self.attacking = i
-                    self.attack_enemy(i)
+            try:
+                for i in self.location.contents:
+                    if i in self.enemies:
+                        self.cons.write('You attack your enemy %s.' % i._short_desc)
+                        self.attacking = i
+                        self.attack_enemy(i)
+            except AttributeError:
+                dbg.debug('Error! Location is a string!')
         elif self.engaged:
             if self.attacking:
                 if self.attacking == 'quit':
@@ -238,7 +242,7 @@ class Player(Creature):
         else:
             self.cons.write("Uh-oh! You don't have a starting location. You are in a great void...")
 
-    def perceive(self, message):
+    def perceive(self, message, silent=False, force=False):
         '''Parse a string passed to `emit()` and customize it for this
         player. Searches the string for special tags (indicated with the '&'
         symbol) and replaces the substring following that tag (up to a 
@@ -255,12 +259,12 @@ class Player(Creature):
                      short description of O proceeded by the capitalized 
                      definite article 'The'
             &ni<id>: 'name-indefinite': replace with O.proper_name if O has 
-                     been introduced, else O.short_desc preceeded by the 
+                     been introduced, else O._short_desc preceeded by the 
                      indefinite article ('a' or 'an')
             &nI<id>: 'name-indefinite-capitalized': replace with O.proper_name
-                     if O has been introduced, else 'A' or 'An' + O.short_desc
+                     if O has been introduced, else 'A' or 'An' + O._short_desc
             &nn<id>: 'name-no-article': replace with O.proper_name if O has 
-                     been introduced, else O.short_desc with no article.
+                     been introduced, else O._short_desc with no article.
 
             &s<id>:  'species': replace with species name (`O.species`)
             &S<id>:  'species-capitalized': replace with capitalized species
@@ -280,8 +284,14 @@ class Player(Creature):
         So for convenience `perceive()` will silently return if this player is
         one of the creatures named using the &n semantics above, effectively 
         ignoring any creatures named in the `emit()` message.
+
+        If the <silent> flag is set, do not actually write the constructed message
+        to the player's console, but instead return it as a string.
+
+        If the [force] flag is set, make the player print the message even if the 
+        room is dark.
         '''
-        if not self.location.is_dark():
+        if not self.location.is_dark() or force:
             # replace any & tags in the message 
             while True:
                 # first, replace any occurrence of '&u' with the user's ID
@@ -338,28 +348,38 @@ class Player(Creature):
                 message = m1 + m2
 
             super().perceive(message)
-            self.cons.write(message) 
+            if silent:
+                return message
+            else:
+                self.cons.write(message) 
                    
     def hold_object(self, obj):
         self.visible_inventory.append(obj)
 
+    def attack_enemy(self, enemy):
+        if self.attacking in self.location.contents:
+            self.attack(enemy)
+        else:
+            self.attacking = None
+
     #
-    # ACTION FUNCTIONS (verbs):
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
     # 
     def inventory(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "You can't look at another player's inventory!"
-        cons.write("You are carrying:")
+        message = "You are carrying:\n"
         if not self.contents:
-            cons.write('\tnothing')
+            message += '\tnothing'
         for i in self.contents:
             if i == self.weapon_wielding or i == self.armor_worn: 
                 continue
-            cons.write("\ta " + i.short_desc)
+            message += "\t&ni%s\n" % i.id
         if self.weapon_wielding != self.default_weapon: 
-            cons.write('You are wielding a %s.' % self.weapon_wielding.short_desc)
+            message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
         if self.armor_worn != self.default_armor:
-            cons.write('You are wearing a %s.' % self.armor_worn.short_desc)
+            message += 'You are wearing &nd%s.\n' % self.armor_worn.id
+        self.perceive(message)
         return True
     
     def toggle_terse(self, p, cons, oDO, oIDO):
@@ -386,6 +406,8 @@ class Player(Creature):
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incantation correctly."
         cmd = ' '.join(p.words[1:])
         cons.write("Executing command: '%s'" % cmd)
         try: 
@@ -399,6 +421,8 @@ class Player(Creature):
         '''Find an in-game object by ID and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'fetch <id>', where id is an entry in Thing.ID_dict[]")
             return True
@@ -422,6 +446,8 @@ class Player(Creature):
         '''Clone a new copy of an object specified by ID or by module path, and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incatation correctly."
         if len(p.words) < 2: 
             cons.write("Usage:\n\t'clone <id>', where id is an entry in Thing.ID_dict[]"
                        "\n\t'clone <path>', where path is of the form 'domains.school.test_object'")
@@ -447,36 +473,64 @@ class Player(Creature):
         return True                    
     
     def reload(self, p, cons, oDO, oIDO):
-        '''Reloads the specified room, or the room containing the player if none is given.
-        First moves all objects out of the room into nulspace, then re-imports the room 
-        module, calls `load()` in the new module, then finally moves any creatures including
+        '''Reloads the specified object, or the room containing the player if none is given.
+        First extracts all of the objects from the room, then re-imports the object 
+        module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
         players back to the new room.'''
-        room = None
+        obj = None
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incatation correctly."
+        if isinstance(obj, Creature):
+            return "You cannot reload players or NPCs!"
         if len(p.words) < 2: 
-            room = self.location
+            obj = self.location
         elif len(p.words) == 2:
-            room = gametools.load_room(p.words[1])
-            if room == None: 
-                return "Error, room '%s' doesn't seem to exist!" % p.words[1]
+            obj = gametools.load_room(p.words[1])
+            if obj == None:
+                obj = gametools.clone(p.words[1])
+                if obj == None:
+                    return "Error, room or object '%s' doesn't seem to exist!" % p.words[1]
         else: 
-            return "Usage: 'reload' [room path]\n\t<room path> is optional, if none is given will reload the current room."
+            return "Usage: 'reload' [object path]\n\t[object path\ is optional, if none is given will reload the current room."
 
-        alive = [x for x in room.contents if isinstance(x, Creature)] # all Creatures incl NPCs & players
-        if room.detach(room.path) == False:
-            return "Error while detaching room %s!" % room.path
-        mod = importlib.reload(room.mod)
-        newroom = mod.load()  # TODO: store and re-use parameters of original load() call?
-        newroom.mod = mod
-        for c in alive: 
-            c.move_to(newroom, force_move = True)
+        if obj.contents != None:
+            alive = [x for x in obj.contents if isinstance(x, Creature)] # all Creatures incl NPCs & players (usefull if room)
+            if obj.detach(obj.path) == False:
+                return "Error while detaching object %s!" % obj.path
+        else:
+            alive = []
+        mod = importlib.reload(obj.mod)
+        try:
+            if isinstance(obj, Room):
+                newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
+        except Exception:
+            dbg.debug('Error reloading object %s!' % obj)
+            cons.user.perceive('An error occured while reloading %s.' % obj)
+            for c in alive:
+                c.move_t(obj)
+            return True
+        if isinstance(obj, Room):
+            for c in alive: 
+                c.move_to(newobj, force_move = True)
+        else:
+            thing_id_list = list(Thing.ID_dict)
+            for cidx in thing_id_list:
+                c = Thing.ID_dict[cidx]
+                if c.path == obj.path and obj is not c:
+                    new_c = gametools.clone(obj.path)
+                    if c.location:
+                        new_c.move_to(c.location, merge_pluralities=False)
+                    c.destroy()
         cons.write('You make a magical gesture and scene around you suddenly changes.')
         self.emit('&nD%s makes a magical gesture, and you sense something has changed.' % self.id)
-        del room  # XXX unclear if this will do anything
+        obj.destroy()
         return True
 
     def apparate(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
+        if not self.wprivilages:
+            return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'apparate <id>', where id is the entry of a Room in Thing.ID_dict[] or a path to it's module")
             return True
@@ -502,7 +556,7 @@ class Player(Creature):
             return "I don't quite get what you are trying to say."
         if len(p.words) < 2:
             return "What do you want to say?"
-        self.emit("&nD%s %ss: %s" % (self.names[0], p.words[0], " ".join(p.words[1:])), ignore = [self])
+        self.emit("&nD%s %ss: %s" % (self.id, p.words[0], " ".join(p.words[1:])), ignore = [self])
         cons.write("You %s: %s" % (p.words[0], " ".join(p.words[1:])))
         return True
     
@@ -525,6 +579,8 @@ class Player(Creature):
             return "I don't quite get what you mean."
         if not oDO:
             return "Who do you intend to engage in combat?"
+        if not isinstance(oDO, Creature):
+            return "You can't attack non-creatures!"
         self.attacking = oDO
         self.weapon_and_armor_grab()
         self.engaged = True
@@ -538,8 +594,19 @@ class Player(Creature):
         self.engaged = False
         return True
 
-    def attack_enemy(self, enemy):
-        if self.attacking in self.location.contents:
-            self.attack(enemy)
-        else:
-            self.attacking = None
+    actions = dict(Creature.actions)  # make a copy
+    actions['inventory'] =  Action(inventory, False, True)
+    actions['terse'] =      Action(toggle_terse, False, True)
+    actions['execute'] =    Action(execute, True, True)
+    actions['fetch'] =      Action(fetch, True, True)
+    actions['clone'] =      Action(clone, True, True)
+    actions['apparate'] =   Action(apparate, True, True)
+    actions['reload'] =     Action(reload, True, True)
+    actions['say'] =        Action(say, True, True)
+    actions['shout'] =      Action(say, True, True)
+    actions['mutter'] =     Action(say, True, True)
+    actions['whisper'] =    Action(say, True, True)
+    actions['introduce'] =  Action(introduce, True, True)
+    actions['engage'] =  Action(engage, True, False)
+    actions['attack'] =  Action(engage, True, False)
+    actions['disengage'] =  Action(disengage, False, True)
