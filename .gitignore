@@ -4,3 +4,5 @@ test_log.txt
 *.OAD
 *.OADplayer
 !testplayer.OADplayer
+*.sec
+*.pem
