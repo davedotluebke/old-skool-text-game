@@ -31,7 +31,7 @@ class Game():
     def __init__(self, server=None, mode=False):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.server_ip = server  # IP address of server, if specified
-        self.is_ssl = 'ssl' in mode or 'https' in mode
+        self.is_ssl = ('ssl' in mode) or ('https' in mode)
         self.encryption_setting = not ('nocrypt' in mode or 'no' in mode or 'noencrypt' in mode)
         connections_websock.encryption_enabled = self.encryption_setting
         self.keep_going = True  # game ends when set to False
