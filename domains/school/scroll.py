@@ -21,16 +21,31 @@ class Scroll(Thing):
             'domains.school.school.air_lounge':        ['Thy class begins shortly.', False]
         }
         Thing.game.register_heartbeat(self)
+        self.user = None
+
+    def _change_objs_to_IDs(self):
+        super()._change_objs_to_IDs()
+        try:
+            if self.user:
+                self.user = self.user.id
+        except Exception:
+            dbg.debug('something went wrong in the scroll (again!)')
+    
+    def _restore_objs_from_IDs(self):
+        super()._restore_objs_from_IDs(self)
+        try:
+            if self.user:
+                self.user = Thing.ID_dict[self.user]
+        except Exception:
+            dbg.debug('something went wrong in the scroll (again!)')
 
     def heartbeat(self):
         try:
-            r = self.location
-            while hasattr(r, 'location') and r.location:
-                r = r.location
-                if isinstance(r, Room):
-                    break
+            r = self.user.location
+            if not isinstance(r, Room):
+                return
         except AttributeError:
-            dbg.debug('Error! Scroll has no attribute location')
+            dbg.debug('Error in scroll! No user with location')
             return
         if r.id in list(self.messages):
             if self.messages[r.id][1] == True:

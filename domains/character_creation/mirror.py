@@ -46,6 +46,7 @@ class Mirror(thing.Thing):
         dest = gametools.load_room(self.dest)
         if self.dest == gametools.DEFAULT_START_LOC:
             scroll = gametools.clone('domains.school.scroll')
+            scroll.user = cons.user
             scroll.move_to(cons.user)
             thing.Thing.game.register_heartbeat(scroll)
             cons.user.set_start_loc(dest)
