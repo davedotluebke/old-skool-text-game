@@ -249,6 +249,8 @@ class Thing(object):
                or attr == 'versions':
                 saveable[attr] = state[attr]
         default_obj.destroy()
+        if 'adjectives' in saveable and isinstance(saveable['adjectives'], set):
+            saveable['adjectives'] = list(saveable['adjectives'])
         return saveable
 
     def replicate(self):

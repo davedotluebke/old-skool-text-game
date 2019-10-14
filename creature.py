@@ -16,7 +16,6 @@ class Creature(Container):
         self.hitpoints = 10           # default hitpoints
         self.health = self.hitpoints  # default full health (0 health --> dead)
         self.enemies = []
-        self.viewed = False
         self.armor_class = 0
         self.combat_skill = 0
         self.strength = 0
@@ -39,7 +38,6 @@ class Creature(Container):
         saveable = super().get_saveable()
         try:
             del saveable['attacking']
-            del saveable['viewed']
         except KeyError:
             pass
         return saveable
@@ -93,7 +91,6 @@ class Creature(Container):
     def look_at(self, p, cons, oDO, oIDO):
         '''Print out the long description of the creature, as well as any 
         Weapons it is wielding and any armor it is wearing.'''
-        self.viewed = cons.user
         if self == oDO or self == oIDO:
             cons.write(self._long_desc)
             if self.weapon_wielding and (self.weapon_wielding != self.default_weapon):
