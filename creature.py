@@ -304,11 +304,11 @@ class NPC(Creature):
             except AttributeError:
                 dbg.debug('AttributeError, not in any room.')
                 return
-            if self.attacking:
+            if self.attacking and (self.move_around in self.choices):
                 if (self.attacking not in self.location.contents):
                     for l in self.location.exits:
                         if gametools.load_room(self.location.exits[l]) == self.attacking.location:
-                            self.move_to(gametools.load_room(self.location.exits[l])
+                            self.move_to(gametools.load_room(self.location.exits[l]))
                             moved = True
                             break
 
