@@ -38,6 +38,7 @@ class Creature(Container):
     def get_saveable(self):
         saveable = super().get_saveable()
         try:
+            del saveable['attacking']
             del saveable['viewed']
         except KeyError:
             pass

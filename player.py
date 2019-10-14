@@ -179,7 +179,7 @@ class Player(Creature):
         except KeyError: 
             pass
         del saveable['cons']
-        if isinstance(saveable['adjectives'], set):
+        if 'adjectives' in saveable and isinstance(saveable['adjectives'], set):
             saveable['adjectives'] = list(saveable['adjectives'])
         return saveable
 
