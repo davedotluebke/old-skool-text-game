@@ -251,6 +251,12 @@ class Thing(object):
         default_obj.destroy()
         if 'adjectives' in saveable and isinstance(saveable['adjectives'], set):
             saveable['adjectives'] = list(saveable['adjectives'])
+        # XXX temporary code to prevent all save calls from failing
+        for i in saveable:
+            if isinstance(saveable[i], set):
+                saveable[i] = list(saveable[i])
+                dbg.debug('%s.%s was set' % (self.id, i))
+        
         return saveable
 
     def replicate(self):
