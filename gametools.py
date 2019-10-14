@@ -2,7 +2,6 @@ import os
 import importlib
 from debug import dbg
 from walking_os import findAllPythonFiles
-import room
 
 # the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
 gameroot = os.path.dirname(__file__) 
@@ -74,13 +73,13 @@ def load_room(modpath):
         room.mod = mod # store the module to allow for reloading later
         room.params = params
     except ImportError:
-        dbg.debug("Error importing room module %s" % modpath, 0)
+        dbg.debug("Error importing room module %s" % modpath)
         return None
     except AttributeError:
-        dbg.debug("Error loading from room module %s: AttributeError occurred" % modpath, 0)
+        dbg.debug("Error loading from room module %s: no load() method" % modpath)
         return None
     if room == None:
-        dbg.debug("Error loading from room module %s:load() returned None" % modpath, 0)
+        dbg.debug("Error loading from room module %s:load() returned None" % modpath)
     return room
     
 def findGamePath(filepath):

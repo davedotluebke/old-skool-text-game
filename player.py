@@ -94,6 +94,11 @@ class Player(Creature):
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
+    def _restore_objs_from_IDs(self):
+        super()._restore_objs_from_IDs()
+        if isinstance(self.adjectives, list):
+            self.adjectives = set(self.adjectives)
+
     def _handle_login(self, cmd):
         state = self.login_state
         if state == 'AWAITING_USERNAME':
@@ -174,6 +179,8 @@ class Player(Creature):
         except KeyError: 
             pass
         del saveable['cons']
+        if isinstance(saveable['adjectives'], set):
+            saveable['adjectives'] = list(saveable['adjectives'])
         return saveable
 
     #

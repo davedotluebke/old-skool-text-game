@@ -31,7 +31,7 @@ class Game():
     def __init__(self, server=None, mode=False):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.server_ip = server  # IP address of server, if specified
-        self.is_ssl = 'ssl' in mode or 'https' in mode
+        self.is_ssl = ('ssl' in mode) or ('https' in mode)
         self.encryption_setting = not ('nocrypt' in mode or 'no' in mode or 'noencrypt' in mode)
         connections_websock.encryption_enabled = self.encryption_setting
         self.keep_going = True  # game ends when set to False
@@ -195,6 +195,12 @@ class Game():
             f.close()
         except IOError:
             player.cons.write("Error writing to file %s" % filename)
+            Thing.ID_dict = backup_ID_dict # ESSENTIAL THAT WE DO THIS!
+        except TypeError:
+            player.cons.write("Error writing to file %s" % filename)
+            dbg.debug('A TypeError occured while trying to save player %s. Printing below:' % player)
+            dbg.debug(traceback.format_exc())
+            Thing.ID_dict = backup_ID_dict
         # restore location & contents etc to obj references:
         for obj in l:
             try:
@@ -314,9 +320,12 @@ class Game():
                     if o in broken_objs:
                         del obj.contents[obj.contents.index(o)]
                     # Catch a few specific errors
-                    if o.location != obj:
+                    try:
+                        if o.location != obj:
+                            broken_objs.append(o)
+                            del obj.contents[obj.contents.index(o)]
+                    except ValueError:
                         broken_objs.append(o)
-                        del obj.contents[obj.contents.index(o)]
         
         for o in broken_objs:
             try:

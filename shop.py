@@ -18,7 +18,7 @@ class Shopkeeper(NPC):
         self.default_items = []
         self.welcome_message = 'Welcome to my shop!'
         self.welcomed_customers = []
-        Thing.game.events.schedule(Thing.game.time+120, self.restock, None)
+        Thing.game.schedule_event(120, self.restock, None)
     
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
@@ -62,6 +62,8 @@ class Shopkeeper(NPC):
         # TODO: Respond to being attacked 
         
         # Greet any new players who enter the room
+        if not self.location:
+            return
         for i in self.location.contents:
             if i not in self.welcomed_customers:
                 self.say(self.welcome_message)

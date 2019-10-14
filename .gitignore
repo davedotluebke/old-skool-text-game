@@ -6,3 +6,4 @@ test_log.txt
 !testplayer.OADplayer
 *.sec
 *.pem
+.vscode
