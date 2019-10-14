@@ -32,7 +32,7 @@ class Scroll(Thing):
             dbg.debug('something went wrong in the scroll (again!)')
     
     def _restore_objs_from_IDs(self):
-        super()._restore_objs_from_IDs(self)
+        super()._restore_objs_from_IDs()
         try:
             if self.user:
                 self.user = Thing.ID_dict[self.user]
