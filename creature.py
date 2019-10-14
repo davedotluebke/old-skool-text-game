@@ -202,8 +202,7 @@ class Creature(Container):
         self.emit("&nD%s dies!" % self.id, [self])
         corpse = gametools.clone('corpse', self)
         corpse.names += self.names
-        corpse.adjectives += self.adjectives
-        corpse.adjectives += self.names
+        corpse.adjectives = set(list(corpse.adjectives) + list(self.adjectives) + self.names)
         self.location.insert(corpse)
         while self.contents:
             i = self.contents[0]
@@ -309,7 +308,7 @@ class NPC(Creature):
                 if (self.attacking not in self.location.contents):
                     for l in self.location.exits:
                         if gametools.load_room(self.location.exits[l]) == self.attacking.location:
-                            self.move_to(l)
+                            self.move_to(gametools.load_room(self.location.exits[l])
                             moved = True
                             break
 
