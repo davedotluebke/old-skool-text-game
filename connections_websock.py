@@ -28,9 +28,10 @@ logger.setLevel(logging.ERROR)
 logger.addHandler(logging.StreamHandler())   
 
 conn_to_client = {}
-encryption_enabled = True
+encryption_enabled = False
 if encryption_installed:
     crypto_obj = sjcl.SJCL()
+    encryption_enabled = True
 
 async def ws_handler(websocket, path):
     try: 
