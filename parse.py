@@ -227,14 +227,18 @@ class Parser:
         trying to enact the verb, then afterwards compare the enacted object
         to the remaining copies to see if the action has changed the object. 
         If not, merge the unchanged object back into the plurality. 
-        """        
-        act = obj.actions[sV]
+        """
+        try:
+            act = obj.actions[sV]
+        except KeyError:
+            dbg.debug('%s had no action %s!' % (obj, sV))
+            return False
         try:  ### ENACT THE VERB ###
             result = act.func(obj, self, cons, oDO, oIDO) 
         except Exception:  # error, roll back any plurality changes and return True
             console.write('An error has occured. Please try a different action until the problem is resolved.')
-            dbg.debug(traceback.format_exc(), 0)
-            dbg.debug("Error caught!", 0)
+            dbg.debug(traceback.format_exc())
+            dbg.debug("Error caught!")
             result = True   # upon error, don't go do a different action - user probably intended this one
         return result
 
@@ -245,6 +249,7 @@ class Parser:
         by the objects' path attribute, and only test objects with matching
         paths for merging.
         NOTE: sorts obj_list in place, so changes order of objects in it."""
+        obj_list = [x for x in obj_list if x.path] # objects without paths (e.g. scenery) can't be merged into pluralities
         obj_list.sort(key = lambda obj: obj.path)
         while True:
             try:  # pop the last object in list, compare to next-last objects
