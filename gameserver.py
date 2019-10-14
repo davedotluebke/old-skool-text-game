@@ -33,7 +33,8 @@ class Game():
         self.server_ip = server  # IP address of server, if specified
         self.is_ssl = ('ssl' in mode) or ('https' in mode)
         self.encryption_setting = not ('nocrypt' in mode or 'no' in mode or 'noencrypt' in mode)
-        connections_websock.encryption_enabled = self.encryption_setting
+        if connections_websock.encryption_installed:
+            connections_websock.encryption_enabled = self.encryption_setting
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         self.start_time = 0
