@@ -140,7 +140,7 @@ class Player(Creature):
             dbg.debug("Creating player id %s with default name %s" % (self.id, self.names[0]))
             start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
             start_room.insert(self)
-            self.perceive("\nWelcome to Firlefile Sorcery School!\n\n"
+            self.perceive("\nWelcome to Firefile Sorcery School!\n\n"
             "Type 'look' to examine your surroundings or an object, "
             "'inventory' to see what you are carrying, " 
             "'quit' to end the game, and 'help' for more information.")
