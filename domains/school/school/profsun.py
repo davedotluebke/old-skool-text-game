@@ -55,6 +55,7 @@ class ProfSun(creature.NPC):
                 dest = gametools.load_room('domains.school.school.library')
                 i.move_to(dest)
                 dest.report_arrival(i)
+                del self.unchecked_homework[0]
             else:
                 self.emit('Prof. Sun says: %s, you are good to go.' % i.proper_name)
                 del self.unchecked_homework[0]
