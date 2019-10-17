@@ -12,6 +12,7 @@ def load():
     r.add_adjectives('gloomy')
     r.add_exit('south', 'domains.school.forest.dark_forest')
     r.add_exit('west', 'domains.school.forest.forest_cave_entry')
+    r.add_exit('southeast', 'domains.school.forest.pine_forest')
 
     witherd_boulder = scenery.Scenery('boulder', 'withered boulder', 'This withered boulder is covered in an ancient lichen.')
     witherd_boulder.add_response(['sit'], 'You consider sitting on the boulder, but the forest surrounding you makes you feel like you should stay on your toes.')
