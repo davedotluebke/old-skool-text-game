@@ -1,8 +1,11 @@
+from num2words import num2words
+
 from debug import dbg
 from action import Action
 import random
 import copy
 import gametools
+
 
 class Thing(object):
     ID_dict = {}
@@ -448,12 +451,24 @@ class Thing(object):
         else:
             return "Not sure what you are trying to look at!"
 
+    def count(self, p, cons, oDO, oIDO):
+        '''Return the plurality of this thing, i.e. how many there are.'''
+        if self == oDO:
+            if self.plurality == 1:
+                cons.user.perceive("There's only the one %s." % self.names[0])
+            else:
+                cons.user.perceive("You count %s %s." % (num2words(self.plurality), self.plural_names[0]))
+            return True
+        else:
+            return "Not sure what you are trying to count!"
+
     actions = {}
     actions["look"] = Action(look_at, True, False)
     actions["examine"] = Action(look_at, True, False)
     actions["take"] = Action(take, True, False)
     actions["get"] = Action(take, True, False)
     actions["drop"] = Action(drop, True, False)
+    actions["count"] = Action(count, True, False)
 
 
 dbg.ID_dict = Thing.ID_dict # Allow the DebugLog to access Thing.ID_dict
