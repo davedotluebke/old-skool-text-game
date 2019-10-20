@@ -72,6 +72,8 @@ async def ws_handler(websocket, path):
         websocket.close()
 
 async def ws_send(cons):
+    if cons.raw_output == '':
+        return
     output = json.dumps({"type": "response", "data": cons.raw_output})
     if encryption_enabled:
         output = bytes(output, 'utf-8')

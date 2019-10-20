@@ -49,7 +49,7 @@ class Game():
 
         self.shutdown_console = None
         self.player_read_privilages = {'scott':['.*']}     # Note: administrators are responsible for making sure that 
-        self.player_edit_privilages = {'scott':['domains.*','home/scott.*']} # wizards can view and edit their own files
+        self.player_edit_privilages = {'scott':['domains.*','home/scott.*','saved_players.*']} # wizards can view and edit their own files
 
         self.total_times = {}
         self.numrun_times = {}
