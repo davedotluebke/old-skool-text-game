@@ -1,3 +1,5 @@
+import importlib
+
 from debug import dbg
 from thing import Thing
 from action import Action
@@ -37,9 +39,12 @@ class Container(Thing):
         and should be the most common. """
         self.insert_prepositions = list(preps)
 
-    def set_spawn(self, path, interval):
+    def set_spawn(self, obj):
+        interval = obj.get_spawn_interval()
+        path = obj.path
+        message = obj.get_spawn_message()
         g = Thing.game
-        g.schedule_event(interval, self.spawn_obj, path, interval)
+        g.schedule_event(interval, self.spawn_obj, path, interval, message)
 
     def set_max_weight_carried(self, max_grams_carried):
         self.max_weight_carried = max_grams_carried
@@ -124,15 +129,17 @@ class Container(Thing):
             if "closed" not in self._short_desc:
                 self._short_desc = "closed " + self._short_desc
 
-    def spawn_obj(self, path, interval):
+    def spawn_obj(self, path, interval, message):
         g = Thing.game
-        g.schedule_event(interval, self.spawn_obj, path, interval)
+        g.schedule_event(interval, self.spawn_obj, path, interval, message)
         for i in self.contents:
             if i.path == path:
                 return
-        import path as obj_file
+        obj_file = importlib.import_module(path)
         obj = obj_file.clone()
         self.insert(obj)
+        self.emit(message)
+
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
