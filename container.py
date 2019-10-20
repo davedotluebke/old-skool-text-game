@@ -41,6 +41,7 @@ class Container(Thing):
 
     def set_spawn(self, obj):
         interval = obj.get_spawn_interval()
+        if interval is None: return
         path = obj.path
         message = obj.get_spawn_message()
         g = Thing.game
