@@ -512,7 +512,7 @@ class Player(Creature):
             dbg.debug('Error reloading object %s!' % obj)
             cons.user.perceive('An error occured while reloading %s.' % obj)
             for c in alive:
-                c.move_t(obj)
+                c.move_to(obj)
             return True
         if isinstance(obj, Room):
             for c in alive: 

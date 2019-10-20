@@ -17,6 +17,8 @@ def get_change(amt, currencies):
     copper)."""
     coin_objects = []
     for currency in currencies:
+        if not currency:
+            continue
         number_of_coins = amt // currency.get_total_value()
         amt -= number_of_coins * currency.get_total_value()
         if number_of_coins > 0:

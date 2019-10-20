@@ -18,6 +18,7 @@ class Shopkeeper(NPC):
         self.default_items = []
         self.welcome_message = 'Welcome to my shop!'
         self.welcomed_customers = []
+        self.change_currencies = [gametools.clone('currencies.gold'), gametools.clone('currencies.silver'), gametools.clone('currencies.copper')]
         Thing.game.schedule_event(120, self.restock, None)
     
     #
@@ -65,7 +66,7 @@ class Shopkeeper(NPC):
         if not self.location:
             return
         for i in self.location.contents:
-            if i not in self.welcomed_customers:
+            if hasattr(i, 'cons') and i not in self.welcomed_customers:
                 self.say(self.welcome_message)
                 self.welcomed_customers.append(i)
         for j in self.welcomed_customers:
@@ -140,28 +141,42 @@ class Shopkeeper(NPC):
             cons.user.perceive("You don't have enough money to buy the %s!" % item)
             return True
 
-        player_money = sorted(player_money, key=Money.get_unit_value, reverse=True)
+        player_money = sorted(player_money, key=Money.get_unit_value)
 
         # Select the exact money the player is going to spend
         using_to_pay = []
         payment_total = 0
         for coin in player_money:
-            for i in range(0, coin.plurality):
-                payment_total += coin.get_unit_value()
-                if payment_total > item.get_total_value():
-                    new_coin = coin.replicate()
-                    new_coin.plurality = coin.plurality-i
-                    coin.plurality = i
-                    break
-            using_to_pay.append(coin)
-            if payment_total > item.get_total_value():
+            if payment_total >= item.get_total_value():
                 break
+            if coin.get_total_value() + payment_total >= item.get_total_value() and coin.plurality > 1:
+                for i in range(1, coin.plurality+1):
+                    payment_total += coin.get_unit_value()
+                    if payment_total >= item.get_total_value():
+                        new_coin = coin.replicate()
+                        new_coin.plurality = i
+                        coin.plurality -= i
+                        using_to_pay.append(new_coin)
+                        break
+            else:  # Need all of this type of coin
+                using_to_pay.append(coin)
 
+        saying_to_customer = "I am taking"
         for coin in using_to_pay:
+            saying_to_customer += " %s %s" % (coin.plurality, coin.names[0])
             coin.move_to(self, force_move=True)
-        coins = get_change(player_money_value, [gametools.clone('gold'), gametools.clone('silver'), gametools.clone('copper')])
+        self.say(saying_to_customer)
+
+        coins = get_change(payment_total - item.get_total_value(), self.change_currencies)
+        saying_to_customer = "I am giving you"
         for coin in coins:
+            saying_to_customer += " %s %s" % (coin.plurality, coin.names[0])
             coin.move_to(cons.user)
+        self.say(saying_to_customer)
+        
+        item.move_to(cons.user)
+        cons.user.perceive("You purchase the %s." % item)
+        return True
 
     actions = dict(NPC.actions)
     actions['look'] =    Action(look_at, True, True)
