@@ -122,6 +122,7 @@ class Parser:
     def find_matching_objects(self, sObj, objs, cons):
         """Find object(s) in the list <objs> matching the given string <sObj>.
         Tests the name(s) and any adjectives for each object in <objs> against the words in sObj.
+        The special adjective "my" indicates that only objects in the player's inventory match. 
         sObj may be a compound object, with multiple "object specifiers", for example 
         "rusty sword, ten gold coins, and third pink potion". In this case the function will
         return a list of matching objects, splitting plural objects as needed. 
@@ -150,12 +151,17 @@ class Parser:
             # XXX can probably implement ordinals the same way, would be cleaner than below
             sNoun = sWords[-1]  # noun is final word in specifier string (after adjectives)
             sAdjectives_list = sWords[:-1]  # all words preceeding noun
+            possessive = "my" in sAdjectives_list  # True if "my" was specified
+            if possessive:
+                sAdjectives_list = [s for s in sAdjectives_list if s != "my"]
             # In case multiple objects match the noun and adjectives given, 
             # player may specify an ordinal adjective ('first', 'second', ..). 
             ord_number = 0  # which ordinal (first=1,second=2,..), 0 if none specified
             ord_str = ""    # actual string used to specify ordinal ('first', '3rd', etc)
             for obj in objs:
                 match = True
+                if possessive and obj.location != cons.user:
+                    continue
                 noun_match = sNoun in obj.names
                 plural_noun_match = sNoun in obj.plural_names
                 if noun_match or plural_noun_match:  # nouns match, check adjectives
@@ -203,7 +209,8 @@ class Parser:
             dbg.debug("local_matches in '%s' are: %s" % (s, ' '.join(obj.id for obj in local_matches)), 3)        
             if len(local_matches) > 1:
                 candidates = ", or the ".join(o._short_desc for o in local_matches)
-                cons.write("By '%s', do you mean the %s? Please provide more adjectives, or specify 'first', 'second', 'third', etc." % (s, candidates))
+                cons.write("By '%s', do you mean the %s? Please provide more adjectives, use 'my' to specify "
+                           "something you are carrying, or indicate 'first', 'second', 'third', etc. " % (s, candidates))
                 return False
             elif len(local_matches) == 0:
                 # user typed an object specifier that doesn't match any objects. Could be 
