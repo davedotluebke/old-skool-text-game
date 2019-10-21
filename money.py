@@ -22,6 +22,7 @@ def get_change(amt, currencies):
         number_of_coins = amt // currency.get_total_value()
         amt -= number_of_coins * currency.get_total_value()
         if number_of_coins > 0:
-            currency.plurality = number_of_coins
-            coin_objects.append(currency)
+            new_coin = currency.replicate()
+            new_coin.plurality = number_of_coins
+            coin_objects.append(new_coin)
     return coin_objects

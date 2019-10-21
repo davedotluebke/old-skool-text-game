@@ -20,10 +20,21 @@ class Shopkeeper(NPC):
         self.welcomed_customers = []
         self.change_currencies = [gametools.clone('currencies.gold'), gametools.clone('currencies.silver'), gametools.clone('currencies.copper')]
         Thing.game.schedule_event(120, self.restock, None)
+        self.obj_classes_accepted = []
+        self.obj_class_error_msg = "Sorry, I don't deal in those."
     
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
+
+    def _decide_if_will_buy(self, item):
+        """Decide if the shopkeeper will buy the item. Can be overloaded for more complex functionality."""
+        if self.obj_classes_accepted: # If this is empty or None, accept everything
+            for i in self.obj_classes_accepted:
+                if isinstance(item, i):
+                    return True
+            return False
+        return True
 
     #
     # SET/GET METHODS (methods to set or query attributes)
@@ -159,6 +170,7 @@ class Shopkeeper(NPC):
                         using_to_pay.append(new_coin)
                         break
             else:  # Need all of this type of coin
+                payment_total += coin.get_total_value()
                 using_to_pay.append(coin)
 
         saying_to_customer = "I am taking"
@@ -172,15 +184,50 @@ class Shopkeeper(NPC):
         for coin in coins:
             saying_to_customer += " %s %s" % (coin.plurality, coin.names[0])
             coin.move_to(cons.user)
-        self.say(saying_to_customer)
+        if saying_to_customer != "I am giving you":
+            self.say(saying_to_customer)
         
         item.move_to(cons.user)
         cons.user.perceive("You purchase the %s." % item)
         return True
+    
+    def sell(self, p, cons, oDO, oIDO):
+        """Sell an item to the shop."""
+        # First, find the item the user wants to sell
+        item = oDO
+        if not item:
+            return "Not sure what you are trying to sell!"
+        """ (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
+
+        matches = p.find_matching_objects(sDO, cons.user.contents, cons)
+        if matches == False:
+            return True # find_matching_object found multiple ambiguous objects and printed error message
+        elif not matches:
+            return 'You aren\'t carrying a %s!' % sDO
+        elif len(matches) > 1:
+            return 'Please sell one type of item at a time.'
+        item = matches[0] # Found the item they are trying to sell """
+
+        # Next, check if the shop accepts this kind of item
+        if not self._decide_if_will_buy(item):
+            self.say(self.obj_class_error_msg)
+            return True
+        # Next, give the player their money
+        coins = get_change(item.get_total_value(), self.change_currencies)
+        going_to_say = "Thank you for the %s! I am giving you" % item
+        for i in coins:
+            going_to_say += " %s %s" % (i.plurality, i.names[0])
+            i.move_to(cons.user)
+        self.say(going_to_say)
+        # Lastly, take the item
+        item.move_to(self, True)
+        self.inventory.append(item)
+        return True
 
     actions = dict(NPC.actions)
-    actions['look'] =    Action(look_at, True, True)
-    actions['examine'] = Action(look_at, True, False)
-    actions['inspect'] = Action(look_at, True, False)
-    actions['buy'] =     Action(buy, True, False)
+    actions['look'] =     Action(look_at, True, True)
+    actions['examine'] =  Action(look_at, True, False)
+    actions['inspect'] =  Action(look_at, True, False)
+    actions['buy'] =      Action(buy, True, False)
+    actions['sell'] =     Action(sell, True, False)
     actions['purchase'] = Action(buy, True, False)
