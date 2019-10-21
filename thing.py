@@ -34,9 +34,8 @@ class Thing(object):
         self._long_desc = 'need_long_desc'
         self.adjectives = set()
         self.contents = None        # None - only Containers can contain things
-        self.spawn_location = None
-        self.spawn_interval = None
-        self.spawn_message = None
+        self._spawn_interval = None
+        self._spawn_message = None
 
     def __del__(self):
         dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id))
@@ -122,6 +121,27 @@ class Thing(object):
     def get_volume(self):
         '''Return the volume of a single object times the number of objects present'''
         return self._volume * self.plurality
+
+    def set_spawn_interval(self, seconds):
+        if seconds is None:
+            self._spawn_interval = None
+            return
+        if (seconds < 0):
+            dbg.debug("Error: spawn interval cannot be negative")
+            raise
+        else:
+            self._spawn_interval = seconds
+
+    def get_spawn_interval(self):
+        '''Return the spawning interval of an object'''
+        return self._spawn_interval
+
+    def set_spawn_message(self, message):
+        self._spawn_message = message
+
+    def get_spawn_message(self):
+        '''Returns the spawn message of an object'''
+        return self._spawn_message
 
     def set_location(self, containing_object):
         self.location = containing_object

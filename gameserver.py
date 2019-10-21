@@ -398,7 +398,7 @@ class Game():
             try:
                 func(*params)
             except:
-                dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, list(*params)))
+                dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
                 dbg.debug(traceback.format_exc())
                 dbg.debug('Error caught!')
         else:
