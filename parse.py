@@ -10,6 +10,8 @@ from container import Container
 from player import Player
 
 class Parser:
+    inventory_verbs = set(('put', 'give', 'drop', 'sell'))  # verbs that only apply to carried items
+    environment_verbs = set(('take', 'get', 'buy'))  # verbs that only apply to items not carried
     ordinals = {"first":1, "second":2, "third":3, "fourth":4, "fifth":5, "sixth":6, "seventh":7, "eighth":8, "ninth":9, "tenth":10,
                 "1st":1, "2nd":2, "3rd":3, "4th":4, "5th":5, "6th":6, "7th":7, "8th":8, "9th":9, "10th":10}
     cardinals = w2n.american_number_system  # list of number words, e.g. "one", "eleven", "thousand"
@@ -97,14 +99,19 @@ class Parser:
             dbg.debug("Ending a sentence in a preposition is something up with which I will not put.", 2)
         return (sV, sDO, sPrep, sIDO)
 
-    def _collect_possible_objects(self, user:Player):
+    def _collect_possible_objects(self, user:Player, inventory = True, environment = True):
         """Search for objects that might support the verb the player typed,
         or might be direct/indirect objects of the verb. These include
         the room, the recursive contents of the room, and the player.  Don't
-        include room contents if room is dark (but always include user)."""
+        include the player's inventory if `inventory` is False; don't include
+        the room or its contents if `environment` is False or if room is dark; 
+        always include user so commands like 'quit' are available."""
         room = user.location
         possible_objects = [room, user] 
-        for obj in user.contents + (None if room.is_dark() else room.contents):  
+        objs = []
+        objs += user.contents if inventory else []
+        objs += room.contents if environment and not room.is_dark() else []
+        for obj in objs: 
             if obj is user:
                 continue
             possible_objects += [obj]
@@ -118,7 +125,11 @@ class Parser:
         sObj may be a compound object, with multiple "object specifiers", for example 
         "rusty sword, ten gold coins, and third pink potion". In this case the function will
         return a list of matching objects, splitting plural objects as needed. 
-        XXX SPLITTING PLURALITIES IMPLEMENTED BUT NOT MERGING IF NEEDED AFTERWARDS.
+        
+        Note that split pluralities should be merged afterwards if needed by the caller; this
+        is implemented in `parse()` (and therefore in most actions players can take) by calling
+        `_merge_identical_objects()`, but other code calling this function may need to check
+        for and perform its own merging. 
                 
         Returns a list with:
           - the matching object, if 1 object (which may be a plurality) matches sObj.
@@ -221,12 +232,6 @@ class Parser:
         the parser and console. The action function returns True to indicate 
         this is a valid usage of the verb function and the appropriate action
         has been performed; otherwise it returns an error message string.
-
-        TODO: update & move below text to find_matching_objects() or parse()
-        If obj, oDO, or oIDO are plural, peel off a singular copy before 
-        trying to enact the verb, then afterwards compare the enacted object
-        to the remaining copies to see if the action has changed the object. 
-        If not, merge the unchanged object back into the plurality. 
         """
         try:
             act = obj.actions[sV]
@@ -236,7 +241,7 @@ class Parser:
         try:  ### ENACT THE VERB ###
             result = act.func(obj, self, cons, oDO, oIDO) 
         except Exception:  # error, roll back any plurality changes and return True
-            console.write('An error has occured. Please try a different action until the problem is resolved.')
+            cons.write('An error has occured. Please try a different action until the problem is resolved.')
             dbg.debug(traceback.format_exc())
             dbg.debug("Error caught!")
             result = True   # upon error, don't go do a different action - user probably intended this one
@@ -295,7 +300,9 @@ class Parser:
         (sV, sDO, sPrep, sIDO) = self.diagram_sentence(self.words)
 
         # FIRST, search for nearby objects that support the verb user typed
-        possible_objects = self._collect_possible_objects(user)
+        possible_objects = self._collect_possible_objects(user, 
+                                                          not sV in self.environment_verbs, 
+                                                          not sV in self.inventory_verbs)
 
         # THEN, check for objects matching the direct & indirect object strings
         if sDO:   # set oDO to object(s) matching direct object strings
