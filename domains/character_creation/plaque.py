@@ -8,7 +8,7 @@ class Plaque(thing.Thing):
     #
     def __init__(self, mirror, number):
         super().__init__('plaque', __file__)
-        self.set_description('stone plaque', 'Thou must intone the word that best describes thee.', unlisted=True)
+        self.set_description('stone plaque', 'Thou must intone a word that well describes thee.', unlisted=True)
         self.words = ['dark-eyed',
                       'green-eyed', 
                       'red-eyed',
@@ -69,7 +69,7 @@ class Plaque(thing.Thing):
     def intone(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if not sDO:
-            return "You must intone something!"
+            return "You must intone a word! Try reading the plaque."
         if sDO not in self.words:
             cons.user.perceive('You try to intone %s, but somehow just can\'t grasp it.' % sDO)
             return True
