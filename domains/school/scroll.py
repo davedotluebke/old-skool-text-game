@@ -1,17 +1,19 @@
 from thing import Thing
 from action import Action
 from room import Room
+from container import Container
 from debug import dbg
 
 class Scroll(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path, pref_id=None):
         super().__init__(default_name, path, pref_id)
         self.set_description('scroll', 'This scroll appears to say something on it.')
-        self.actions.append(Action(self.read, ['read'], True, False))
         self.current_message = ''
         self.messages = {
             'domains.school.school.great_hall':        ['Make a potion to hide thee. Use this potion to sneak past an unbeatable enemy.\nDue next class.', False],
-            'domains.school.dungeon.dungeon_hall':     ['Thou must continue on thy journey\nAnd in thy journey\nThou must choose a path\nAnd thou must be careful, because thy choice defines thy destiny. ', False],
             'domains.school.elementQuest.path_choice': ['Thou must continue on thy journey\nAnd in thy journey\nThou must choose a path\nAnd thou must be careful, because thy choice defines thy destiny. ', False],
             'domains.school.school.fire_lounge':       ['Thy class begins shortly.', False],
             'domains.school.school.water_lounge':      ['Thy class begins shortly.', False],
@@ -19,14 +21,31 @@ class Scroll(Thing):
             'domains.school.school.air_lounge':        ['Thy class begins shortly.', False]
         }
         Thing.game.register_heartbeat(self)
+        self.user = None
+
+    def _change_objs_to_IDs(self):
+        super()._change_objs_to_IDs()
+        try:
+            if self.user:
+                self.user = self.user.id
+        except Exception:
+            dbg.debug('something went wrong in the scroll (again!)')
+    
+    def _restore_objs_from_IDs(self):
+        super()._restore_objs_from_IDs()
+        try:
+            if self.user:
+                self.user = Thing.ID_dict[self.user]
+        except Exception:
+            dbg.debug('something went wrong in the scroll (again!)')
 
     def heartbeat(self):
-        r = self
         try:
-            while r.location:
-                r = r.location
+            r = self.user.location
+            if not isinstance(r, Room):
+                return
         except AttributeError:
-            dbg.debug('AtrributeError occured in scroll!', 0)
+            dbg.debug('Error in scroll! No user with location')
             return
         if r.id in list(self.messages):
             if self.messages[r.id][1] == True:
@@ -36,6 +55,9 @@ class Scroll(Thing):
                 self.current_message = self.messages[r.id][0]
                 self.messages[r.id][1] = True
 
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def read(self, p, cons, oDO, oIDO):
         if oDO != self:
             return "Are you intending to read the scroll?"
@@ -45,6 +67,12 @@ class Scroll(Thing):
         else:
             return "A problem occurred!"
 
+    actions = dict(Thing.actions)
+    actions['read'] = Action(read, True, False)
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def clone(): 
     obj = Scroll('scroll', __file__)
     return obj

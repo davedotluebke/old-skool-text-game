@@ -3,6 +3,9 @@ from thing import Thing
 from action import Action
 
 class Bookcase(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, ID, path, hidden_room):
         Thing.__init__(self, ID, path)
         self.set_description('bookcase full of books', \
@@ -11,9 +14,22 @@ class Bookcase(Thing):
         self.add_names("book")
         self.add_adjectives("old", "new")
         self.fix_in_place("The bookcase appears to be fixed to the wall.")
-        self.actions.append(Action(self.handle_book, ["take", "get", "pull"], True, False))
         self.hidden_room = hidden_room
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
 
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
+
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def handle_book(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sDO in ['tattered book', 'old book']:
@@ -26,3 +42,7 @@ class Bookcase(Thing):
         else:
             return "Did you mean to get a particular book?"
 
+    actions = dict(Thing.actions)  # make a copy, don't change Thing's dict!
+    actions['take'] = Action(handle_book, True, False)
+    actions['get']  = Action(handle_book, True, False)
+    actions['pull'] = Action(handle_book, True, False)

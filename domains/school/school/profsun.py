@@ -55,6 +55,7 @@ class ProfSun(creature.NPC):
                 dest = gametools.load_room('domains.school.school.library')
                 i.move_to(dest)
                 dest.report_arrival(i)
+                del self.unchecked_homework[0]
             else:
                 self.emit('Prof. Sun says: %s, you are good to go.' % i.proper_name)
                 del self.unchecked_homework[0]
@@ -78,7 +79,7 @@ class ProfSun(creature.NPC):
         self.script_index = 0
         self.giving_class = True
 
-    def give_class_ev(self, x):
+    def give_class_ev(self):
         self.give_class()
 
     def give_class(self):
@@ -91,7 +92,7 @@ class ProfSun(creature.NPC):
             return
         self.emit('Prof. Sun says: '+lines[index])
         self.waiting = True
-        creature.Thing.game.events.schedule(15, self.give_class_ev, None)
+        creature.Thing.game.schedule_event(15, self.give_class_ev)
         self.current_script_idx += 1
 
     def present_gems(self):
@@ -121,12 +122,12 @@ class ProfSun(creature.NPC):
         if self.script_index == 0:
             self.present_gems()
         elif self.script_index == 1:
-            creature.Thing.game.events.schedule(80, self.reset, None)
+            creature.Thing.game.schedule_event(80, self.reset, None)
             self.resetting = True
         self.script_index += 1
         self.current_script_idx = 0
 
-    def reset(self, x):
+    def reset(self):
         self.graduates += [x for x in self.location.contents if isinstance(x, creature.Creature) and x not in self.graduates and x != self]
         self.waiting = False
         self.script_index = 0

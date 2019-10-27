@@ -1,19 +1,33 @@
 from debug import dbg
 from action import Action
 from thing import Thing
+import gametools
 
 class Armor(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path, bonus, unwieldiness, pref_id=None):
         Thing.__init__(self, default_name, path, pref_id)
         self.bonus = bonus
         self.unwieldiness = unwieldiness
-        self.actions.append(Action(self.wear, ['wear','use'], True, False))
-        self.actions.append(Action(self.unwear, ['unwear', 'remove'], True, False))
-        # overwrite default drop action:
-        for a in self.actions:
-            if 'drop' in a.verblist:
-                a.func = self.armor_drop
+        self.versions[gametools.findGamePath(__file__)] = 1
 
+    #
+    # INTERNAL USE METHODS (i.e. _method(), not imported)
+    #
+
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #
+
+    #
+    # OTHER EXTERNAL METHODS (misc externally visible methods)
+    #
+
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def wear(self, p, cons, oDO, oIDO):
         if self == oDO:
             if self == cons.user.armor_worn:
@@ -43,3 +57,14 @@ class Armor(Thing):
             if self == cons.user.armor_worn:
                 cons.user.armor_worn = cons.user.default_armor
         return Thing.drop(self, p, cons, oDO, oIDO)
+
+    actions = dict(Thing.actions)  # make a copy, don't change Thing's dict!
+    actions['wear'] =   Action(wear, True, False)
+    actions['use'] =    Action(wear, True, False)
+    actions['unwear'] = Action(unwear, True, False)
+    actions['remove'] = Action(unwear, True, False)
+    actions['drop'] =   Action(armor_drop, True, False)  # replace Thing "drop"
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#

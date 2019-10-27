@@ -1,11 +1,13 @@
 import gametools
 import scenery
 import room
+import action
 
 class sinkholeLake(scenery.Scenery):
     def __init__(self):
         super().__init__('lake', 'beautiful lake', 'This beautiful lake looks quite cool compared to the hot sun you are feeling now.')
-        self.actions.append(room.Action(self.enter, ['enter', 'dive'], True, True))
+        self.actions['enter'] = action.Action(sinkholeLake.enter, True, False)
+        self.actions['dive'] = action.Action(sinkholeLake.enter, True, True)
     
     def enter(self, p, cons, oDO, oIDO):
         cons.write('''You enter the lake, feeling much cooler than you were before.

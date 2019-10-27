@@ -1,14 +1,16 @@
 import scenery
 import gametools
 import creature
+import action
 
 class Door(scenery.Scenery):
-    def __init__(self, default_name, short_desc, long_desc, dest, direction):
+    def __init__(self, default_name, short_desc, long_desc, dest, direction, allowed_players=None):
         super().__init__(default_name, short_desc, long_desc)
         self.dest = dest
         self.direction = direction
         self.add_adjectives(direction)
-        self.actions.append(scenery.Action(self.enter_door, ['open', 'enter'], True, False))
+        self.actions['open'] = action.Action(Door.enter_door, True, False)
+        self.actions['enter'] = action.Action(Door.enter_door, True, False)
         self.unlisted = True
     
     def enter_door(self, p, cons, oDO, oIDO):
@@ -31,13 +33,12 @@ class Window(scenery.Scenery):
         self.windowWatcher = gametools.clone('home.scott.house.windowWatcher') #XXX this should be dynamic with any file placement
         self.windowWatcher.move_to(self.view_of)
         self.windowWatcher.window_obj = self
-        for i in self.actions:
-            if 'look' in i.verblist:
-                i.func = self.look_at
+        del self.actions['look']
+        self.actions['look'] = action.Action(Window.look_at, True, False)
     
     def look_at(self, p, cons, oDO, oIDO):
         if self == oDO or self == oIDO:
-            cons.user.perceive(self.long_desc)
+            cons.user.perceive(self._long_desc)
             cons.user.perceive('Through the window you see:')
             try:
                 self.view_of.look_at(p, cons, oDO, oIDO)

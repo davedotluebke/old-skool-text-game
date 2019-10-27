@@ -4,26 +4,29 @@ from action import Action
 from thing import Thing
 
 class FaucetThing(Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, ID, path, short_desc, long_desc, TYPE):
         super().__init__(ID, path)
         self.type = TYPE
         self.set_description(short_desc, long_desc)
         self.fix_in_place("You can't take the %s!" % self.type)
         self.add_names('faucet')
-        self.actions.append(Action(self.fill_container, ["fill"], True, False))
-        self.actions.append(Action(self.pour_out_in_self, ['pour'], True, False))
-        self.actions.append(Action(self.toggle, ['turn'], True, True))
         self.running = 0
     
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    # 
     def _adjust_descriptions(self):
         if self.running == 1:
-            self.short_desc += ', with the water running'
-            self.long_desc += ' The water in the %s is running.' % self.type
+            self._short_desc += ', with the water running'
+            self._long_desc += ' The water in the %s is running.' % self.type
         if self.running == 0:
-            (head, sep, tail) = self.short_desc.partition(", with the water running")
-            self.short_desc = head
-            (head, sep, tail) = self.long_desc.partition(" The water in the %s is running." % self.type)
-            self.long_desc = head
+            (head, sep, tail) = self._short_desc.partition(", with the water running")
+            self._short_desc = head
+            (head, sep, tail) = self._long_desc.partition(" The water in the %s is running." % self.type)
+            self._long_desc = head
         
     def toggle(self, p, cons, oDO, oIDO):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
@@ -73,5 +76,10 @@ class FaucetThing(Thing):
             return "Imposible to pour out a %s in a %s." % (self.type, self.type)
         cons.write('You pour the %s into the %s, and it goes down the drain.' % (obj, self.type))
         self.emit('&nD%s pours the %s into the %s, and it goes down the drain.' % (cons.user.id, obj, self.type))
-        obj.move_to(Thing.ID_dict['nulspace'])
+        obj.destroy()
         return True
+
+    actions = dict(Thing.actions)  # make a copy
+    actions['fill'] = Action(fill_container, True, False)
+    actions['pour'] = Action(pour_out_in_self, True, False)
+    actions['turn'] = Action(toggle, True, True)

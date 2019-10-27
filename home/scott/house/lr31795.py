@@ -12,6 +12,7 @@ def load():
     living_room.add_exit('west', 'home.scott.house.btr31795')
     living_room.add_exit('up', 'home.scott.house.br31795')
     living_room.add_exit('south', 'home.scott.house.mr31795')
+    living_room.add_exit('north', 'home.scott.house.er31795')
     living_room.add_names('room', 'space')
     living_room.add_adjectives('living', 'well-kept', 'comfortable')
 

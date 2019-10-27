@@ -2,15 +2,18 @@ import gametools
 import room
 import scenery
 import thing
+import action
 
 class StaffDoorway(scenery.Scenery):
     def __init__(self, default_name, short_desc, long_desc, dest, allowed_players_list='everyone', qkey_number=None):
         super().__init__(default_name, short_desc, long_desc)
         self.dest = gametools.load_room(dest)
         self.allowed_players_list = allowed_players_list
-        self.actions.append(scenery.Action(self.enter_door, ['open', 'enter'], True, False))
+        self.actions['open'] = action.Action(StaffDoorway.enter_door, True, False)
+        self.actions['enter'] = action.Action(StaffDoorway.enter_door, True, False)
+        self.actions['insert'] = action.Action(StaffDoorway.open, True, False)
+        self.actions['put'] = action.Action(StaffDoorway.open, True, False)
         self.add_response(['kick', 'hit', 'punch', 'chop'], 'The door is firmly closed, and you only manage to gain a bruise.')
-        self.actions.append(scenery.Action(self.open, ['insert', 'put'], True, False))
         self.unlisted = True
         self.keyq = qkey_number
         self.locked = True
@@ -35,7 +38,7 @@ class StaffDoorway(scenery.Scenery):
         if hasattr(oDO, 'qkey_number') and oDO.qkey_number == self.keyq:
             cons.user.perceive('You unlock the door.')
             self.locked = False
-            oDO.move_to(thing.Thing.ID_dict['nulspace'])
+            oDO.destroy()
             return True
         else:
             cons.user.perceive("You try to put the %s in the keyhole, but it doesn't fit." % oDO.names[0])
@@ -50,8 +53,8 @@ def load():
     hallway.indoor = True
     hallway.set_description('staff office hallway', 'This hallway leads to all of the staff offices. '
     'It is very blank on the walls, however the walls themselves are intricate and have little carved patterns in them. '
-    'Six doors lead off of this hallway, each decorated with a metal carving of a different animal:'
-    'a serpent, a parrot, a dragon, a goblin, a dolphin, and a dragonfly.')
+    'Seven doors lead off of this hallway, each decorated with a metal carving of a different animal:'
+    'a serpent, a parrot, a dragon, a goblin, a dolphin, a dragonfly, and an otter.')
     hallway.add_adjectives('staff', 'office')
     hallway.add_exit('south', 'domains.school.school.gallery')
 
@@ -76,7 +79,7 @@ def load():
     hallway.insert(goblins_door, True)
 
     dragonflys_door = StaffDoorway('door', 'door with a carving of a dragonfly on it',
-    'This is a strong birch door with a copper carving of a dragonfly on it.', 'home.scott.house.lr31795', ['scott', 'fastar', 'tate', 'john', 'cedric'])
+    'This is a strong birch door with a copper carving of a dragonfly on it.', 'home.scott.house.lr31795', ['scott', 'fastar', 'tate', 'john', 'cedric', 'rivques', 'isla'])
     dragonflys_door.add_adjectives('dragonfly', 'dragonflys', 'dragonfly\'s', 'copper', 'birch')
     hallway.insert(dragonflys_door, True)
 
@@ -86,7 +89,7 @@ def load():
     hallway.insert(dolphins_door, True)
 
     otters_door = StaffDoorway('door','door with a carving of two otters on it',
-    'THis is a strong palm wood door with a platnum carving of two sea otters playing on it.', 'home.tate.entry', ['tate', 'scott', 'fastar', 'cedric'])
+    'THis is a strong palm wood door with a platnum carving of two sea otters playing on it.', 'home.tate.entryway', ['tate', 'scott', 'fastar', 'cedric'])
     otters_door.add_adjectives('otter', 'otters', 'otter\'s', 'platnum', 'palm')
     hallway.insert(otters_door, True)
 

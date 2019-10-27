@@ -4,26 +4,32 @@ import thing
 import action
 
 class QuestDoor(thing.Thing):
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
     def __init__(self, default_name, path):
         super().__init__(default_name, path)
         self.fix_in_place('The door is strongly secured in place. You can\'t take it.')
         self.opened = False
         self.view_through_door = None
         self.destination = None
-        self.actions.append(action.Action(self.open, ['open'], True, False))
-        self.actions.append(action.Action(self.close, ['close', 'shut', 'slam'], True, False))
-        self.actions.append(action.Action(self.enter, ['enter'], True, False))
         self.add_adjectives(default_name)
         self.add_names('door', 'quest')
     
+    #
+    # SET/GET METHODS (methods to set or query attributes)
+    #    
     def set_view(self, view_through_door):
         self.view_through_door = view_through_door
     
     def set_dest(self, dest):
         self.destination = dest
 
-    # This door won't open for one who has already walked a different path (completed another door quest)
+    #
+    # ACTION METHODS & DICTIONARY (dictionary must come last)
+    #
     def open(self, p, cons, oDO, oIDO):
+        # This door won't open for one who has already walked a different path (completed another door quest)
         if self.opened:
             cons.write('The door is already open!')
             return True
@@ -33,7 +39,7 @@ class QuestDoor(thing.Thing):
         self.opened = True
         cons.write('You open the door, and see %s.' % self.view_through_door)
         self.emit("&nD%s opens the door to the path of %s." % (cons.user.id, self.names[0]))
-        self.long_desc += self.view_through_door
+        self._long_desc += self.view_through_door
         for i in self.location.contents:
             if isinstance(i, QuestDoor) and i.opened and i != self:
                 i.opened = False
@@ -47,8 +53,8 @@ class QuestDoor(thing.Thing):
         self.opened = False
         cons.write('You close the door.')
         self.emit("&nD%s closes the door to the path of %s." % (cons.user.id, self.names[0]))
-        (head, sep, tail) = self.long_desc.partition(self.view_through_door)
-        self.long_desc = head
+        (head, sep, tail) = self._long_desc.partition(self.view_through_door)
+        self._long_desc = head
         return True
 
     def enter(self, p, cons, oDO, oIDO):
@@ -61,6 +67,16 @@ class QuestDoor(thing.Thing):
             self.emit('&nD%s walks through the doorway to the path of %s.' % (cons.user.id, self.names[0]))
         return True
 
+    actions = dict(thing.Thing.actions)  # make a copy
+    actions['open'] =   action.Action(open, True, False)
+    actions['close'] =  action.Action(close, True, False)
+    actions['shut'] =   action.Action(close, True, False)
+    actions['slam'] =   action.Action(close, True, False)
+    actions['enter'] =  action.Action(enter, True, False)
+
+#
+# MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
+#
 def load():
     roomPath = gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)
@@ -70,8 +86,8 @@ def load():
     path_choice.indoor = True
     path_choice.set_description('circular room with four doors', 'You are in a circular room with four doors and a ladder down. Each of the doors has a sign above it. ' \
     'The one farthest left says "Path of Fire", the one to the right of that says "Path of Water", the second farthest right says "Path of Earth", and the one to the right of that says "Path of Air". ' \
-    'There is a ladder in the center of the room leading down.')
-    path_choice.add_exit('down', 'domains.school.dungeon.entrance')
+    'There is a ladder in the centre of the room leading down.')
+    path_choice.add_exit('down', 'domains.school.cave.lair')
 
     fire = QuestDoor('fire', None)
     fire.set_description('door of fire', 'This door is warm and has a large label above it reading "Fire". ')

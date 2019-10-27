@@ -13,7 +13,7 @@ class LiquidFire(liquid.Liquid):
             oIDO.soak_torch()
             cons.user.perceive('You soak the %s with the red liquid.' % oIDO)
             oIDO.emit('&nD%s pours a red liquid over the %s, soaking it thoroughly.' % (cons.user.id, oIDO), [cons.user])
-            self.move_to(Thing.ID_dict['nulspace'])
+            self.destroy()
             return True
         if oIDO.contents == None:
             cons.user.perceive('You pour the red liquid over the %s, but it quickly drips off and soaks into the ground.' % oIDO)
@@ -43,7 +43,7 @@ class LiquidFire(liquid.Liquid):
     
     def burn_up(self):
         self.emit('The luminous red liquid in the %s bursts into flames and quickly burns away.' % self.location)
-        self.move_to(Thing.ID_dict['nulspace'])
+        self.destroy()
 
 def clone():
     f = LiquidFire('liquid', __file__, 'luminous red liquid', 'This luminous red liquid shimmers, almost as if it were in flames.')
