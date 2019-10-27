@@ -61,6 +61,18 @@ class Player(Creature):
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
         self.versions[gametools.findGamePath(__file__)] = 2
+        self.prev_location_id = None
+        self.tutorial_messages = {
+            'domains.character_creation.species': 'Try typing "look north mirror" and then "enter north mirror".',
+            'domains.character_creation.adjective1': 'Try intoning something from the plaque.',
+            'domains.school.school.great_hall': 'Try going to the east.'
+        }
+        self.tutorial_act_messages = {
+            'look': 'Now try entering one of the mirrors.'
+        }
+        self.tutorial_act_messages_complete = {
+            'look': False
+        }
 
     def get_saveable(self):
         saveable = super().get_saveable()
@@ -166,6 +178,22 @@ class Player(Creature):
                 self.cons.write("Error loading data for player %s from file %s. <br>"
                                 "Please try again.<br>Please enter your username: " % (self.names[0], filename))
                 self.login_state = "AWAITING_USERNAME"
+    
+    def _schedule_interactive_tutorial(self, act):
+        if self.prev_location_id != self.location.id:
+            if self.location.id in self.tutorial_messages:    # list of rooms with interactive tutorial messages
+                Thing.game.schedule_event(30, self.provide_interactive_tutorial, self.location.id)
+        if act in self.tutorial_act_messages and not self.tutorial_act_messages_complete[act]:
+            Thing.game.schedule_event(15, self.provide_interactive_tutorial, act)
+        self.prev_location_id = self.location.id
+    
+    def provide_interactive_tutorial(self, rid_act):
+        if rid_act in self.tutorial_messages:
+            self.cons.write(self.tutorial_messages[rid_act])
+        
+        if rid_act in self.tutorial_act_messages:
+            self.cons.write(self.tutorial_act_messages[rid_act])
+            self.tutorial_act_messages_complete[rid_act] = True
     #
     # SET/GET METHODS (methods to set or query attributes)
     #
@@ -206,12 +234,15 @@ class Player(Creature):
             if cmd != None and cmd != '__noparse__' and cmd != '__quit__':
                 self._handle_login(cmd)
             return
+        sV = None
         if cmd:
             if cmd != '__noparse__' and cmd != '__quit__':
-                old_keep_going = Thing.game.parser.parse(self, self.cons, cmd)
+                sV = Thing.game.parser.parse(self, self.cons, cmd)
             elif cmd == '__quit__':
                 self.detach()
-           
+        
+        if sV:
+            self._schedule_interactive_tutorial(sV)
 
         if self.auto_attack:            # TODO: Player Preferences
             if self.attacking:

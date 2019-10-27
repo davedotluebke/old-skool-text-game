@@ -374,5 +374,5 @@ class Parser:
         # Find and merge any identical duplicate objects created while handling pluralities
         possible_objects = self._collect_possible_objects(user)
         self._merge_identical_objects(possible_objects)
-        return True
+        return sV
 
