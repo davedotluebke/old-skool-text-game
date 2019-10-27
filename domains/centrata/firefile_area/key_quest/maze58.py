@@ -12,7 +12,7 @@ def load():
     r.add_exit('northeast', 'domains.centrata.firefile_area.key_quest.maze47')
     r.add_exit('south', 'domains.centrata.firefile_area.key_quest.maze27')
 
-    cave_popcorn = scenery.Scenery('popcorn', 'bunch of cave popcorn', 'This cave popcorn looks like a popcorn, a perfect snack!')
+    cave_popcorn = scenery.Scenery('popcorn', 'bunch of cave popcorn', 'This cave popcorn looks like popcorn, a perfect snack!')
     cave_popcorn.unlisted = True
     cave_popcorn.add_adjectives('cave', 'fresh')
     cave_popcorn.add_response(['eat', 'snack', 'munch'], 'You try a bite and instantly regret it. It taste like nasty minrals')
