@@ -5,26 +5,8 @@
     <body>
         <script>
             document.write(`
-            <p id="info">Firefile Scorcery School is an online text adventure game written in Python.</p><br>
             <button title="Begin Playing Firefile Scorcery School" id="gameOpen" type="button" onclick="openGame()">Begin Playing</button><br>
-            <button title="Open the Wizard Portal (wizards only)" id="wizardPortal" type="button" onclick="openPortal()">Wizard Portal</button>
             `);
-
-            function closePortal () {
-                document.getElementById('wizardPortal').disabled = "";
-                document.getElementById('wizardPortal').title = "Open the Wizard Portal (wizards only)";
-                document.getElementById('wizardPortal').focus();
-                return null;
-            }
-
-            function openPortal () {
-                var focuser = window.open('https://www.github.com/davedotluebke/old-skool-text-game/', 'newwindow', 'width=1029px, height=739px', false);
-                focuser.onbeforeunload = closePortal;
-                focuser.resizeTo(1030, 739);
-                document.getElementById('wizardPortal').disabled = 'disabled';
-                document.getElementById('wizardPortal').title = "The Wizard Portal is already open!";
-                return focuser;
-            }
 
             function closeGame () {
                 document.getElementById('gameOpen').title="Begin Playing Firefile Scorcery School";
@@ -42,6 +24,42 @@
                 return focuser;
             }
         </script>
-        <noscript><p>Javascript has been disabled in your browser. Please enable Javascript to load the page.</p></noscript>
+        <big>
+        <p id="info">
+        Firefile Scorcery School is an online text adventure game written in Python.</p>
+
+        <p>Your goal is to explore the world around you, solve puzzles, fight monsters, 
+        complete quests, and eventually become a Sorcerer capable of changing and 
+        adding to the very fabric of the world itself.</p>
+
+        <p>You play the game by typing commands into the console. Useful commands include
+        'look' to examine your surroundings or an object, 'take' to pick something up, 
+        'inventory' to see what you are carrying, and 'go' to move a particular 
+        direction.  You can use prepositions to create more complex commands and 
+        adjectives to specify particular objects; articles are optional. Here are some
+        examples of valid commands:</p>
+        
+        <el>
+            <li>'look'</li>
+            <li>'go north'</li>
+            <li>'examine mirror'</li> 
+            <li>'take sword'</li>
+            <li>'take the rusty sword'</li>
+            <li>'wield sword'</li>
+            <li>'wear chainmail'</li>
+            <li>'attack orc'</li>
+            <li>'drink potion from tall flask'</li>
+            <li>'put the gold coin in the leather bag'</li>
+            <li>'drop three copper coins, two torches and the knapsack'</li>
+            <li>'move vines'</li>
+        </el>
+
+        <p>You can create shortcuts to reduce typing; type 'alias' for more details. 
+        Type 'quit' to save your progress and leave the game.</p>
+
+        <noscript>
+            <p>Javascript has been disabled in your browser. Please enable Javascript
+            to play the game.</p>
+        </noscript>
     </body>
 </html>
