@@ -160,16 +160,10 @@ class Console:
             self.write('Current units are: %s\nType units [system] to change them.' % self.measurement_system)
 
     def _replace_aliases(self):
-        cmd = ""
-        for t in self.words:
-            if t in self.alias_map:
-                cmd += self.alias_map[t] + " "
-                dbg.debug("Replacing alias '%s' with expansion '%s'" % (t, self.alias_map[t]), 4)
-            else:
-                cmd += t + " "
-        cmd = cmd[:-1]   # strip trailing space added above
-        dbg.debug("User input with aliases resolved:\n    %s" % (cmd), 4)
-        return cmd
+        replace_words = self.words 
+        if replace_words[0] in self.alias_map:
+            replace_words[0] = self.alias_map[replace_words[0]]
+        return " ".join(replace_words)
     
     def _set_verbosity(self, level=-1):
         if level != -1:

@@ -1,8 +1,11 @@
+from num2words import num2words
+
 from debug import dbg
 from action import Action
 import random
 import copy
 import gametools
+
 
 class Thing(object):
     ID_dict = {}
@@ -31,9 +34,8 @@ class Thing(object):
         self._long_desc = 'need_long_desc'
         self.adjectives = set()
         self.contents = None        # None - only Containers can contain things
-        self.spawn_location = None
-        self.spawn_interval = None
-        self.spawn_message = None
+        self._spawn_interval = None
+        self._spawn_message = None
 
     def __del__(self):
         dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id))
@@ -119,6 +121,27 @@ class Thing(object):
     def get_volume(self):
         '''Return the volume of a single object times the number of objects present'''
         return self._volume * self.plurality
+
+    def set_spawn_interval(self, seconds):
+        if seconds is None:
+            self._spawn_interval = None
+            return
+        if (seconds < 0):
+            dbg.debug("Error: spawn interval cannot be negative")
+            raise
+        else:
+            self._spawn_interval = seconds
+
+    def get_spawn_interval(self):
+        '''Return the spawning interval of an object'''
+        return self._spawn_interval
+
+    def set_spawn_message(self, message):
+        self._spawn_message = message
+
+    def get_spawn_message(self):
+        '''Returns the spawn message of an object'''
+        return self._spawn_message
 
     def set_location(self, containing_object):
         self.location = containing_object
@@ -249,6 +272,14 @@ class Thing(object):
                or attr == 'versions':
                 saveable[attr] = state[attr]
         default_obj.destroy()
+        if 'adjectives' in saveable and isinstance(saveable['adjectives'], set):
+            saveable['adjectives'] = list(saveable['adjectives'])
+        # XXX temporary code to prevent all save calls from failing
+        for i in saveable:
+            if isinstance(saveable[i], set):
+                saveable[i] = list(saveable[i])
+                dbg.debug('%s.%s was set' % (self.id, i))
+        
         return saveable
 
     def replicate(self):
@@ -440,12 +471,24 @@ class Thing(object):
         else:
             return "Not sure what you are trying to look at!"
 
+    def count(self, p, cons, oDO, oIDO):
+        '''Return the plurality of this thing, i.e. how many there are.'''
+        if self == oDO:
+            if self.plurality == 1:
+                cons.user.perceive("There's only the one %s." % self.names[0])
+            else:
+                cons.user.perceive("You count %s %s." % (num2words(self.plurality), self.plural_names[0]))
+            return True
+        else:
+            return "Not sure what you are trying to count!"
+
     actions = {}
     actions["look"] = Action(look_at, True, False)
     actions["examine"] = Action(look_at, True, False)
     actions["take"] = Action(take, True, False)
     actions["get"] = Action(take, True, False)
     actions["drop"] = Action(drop, True, False)
+    actions["count"] = Action(count, True, False)
 
 
 dbg.ID_dict = Thing.ID_dict # Allow the DebugLog to access Thing.ID_dict

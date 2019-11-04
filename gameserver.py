@@ -33,7 +33,8 @@ class Game():
         self.server_ip = server  # IP address of server, if specified
         self.is_ssl = ('ssl' in mode) or ('https' in mode)
         self.encryption_setting = not ('nocrypt' in mode or 'no' in mode or 'noencrypt' in mode)
-        connections_websock.encryption_enabled = self.encryption_setting
+        if connections_websock.encryption_installed:
+            connections_websock.encryption_enabled = self.encryption_setting
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         self.start_time = 0
@@ -48,7 +49,7 @@ class Game():
 
         self.shutdown_console = None
         self.player_read_privilages = {'scott':['.*']}     # Note: administrators are responsible for making sure that 
-        self.player_edit_privilages = {'scott':['domains.*','home/scott.*']} # wizards can view and edit their own files
+        self.player_edit_privilages = {'scott':['domains.*','home/scott.*','saved_players.*']} # wizards can view and edit their own files
 
         self.total_times = {}
         self.numrun_times = {}
@@ -397,7 +398,7 @@ class Game():
             try:
                 func(*params)
             except:
-                dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, list(*params)))
+                dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
                 dbg.debug(traceback.format_exc())
                 dbg.debug('Error caught!')
         else:

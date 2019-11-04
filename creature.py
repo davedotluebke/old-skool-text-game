@@ -16,7 +16,6 @@ class Creature(Container):
         self.hitpoints = 10           # default hitpoints
         self.health = self.hitpoints  # default full health (0 health --> dead)
         self.enemies = []
-        self.viewed = False
         self.armor_class = 0
         self.combat_skill = 0
         self.strength = 0
@@ -38,7 +37,7 @@ class Creature(Container):
     def get_saveable(self):
         saveable = super().get_saveable()
         try:
-            del saveable['viewed']
+            del saveable['attacking']
         except KeyError:
             pass
         return saveable
@@ -92,7 +91,6 @@ class Creature(Container):
     def look_at(self, p, cons, oDO, oIDO):
         '''Print out the long description of the creature, as well as any 
         Weapons it is wielding and any armor it is wearing.'''
-        self.viewed = cons.user
         if self == oDO or self == oIDO:
             cons.write(self._long_desc)
             if self.weapon_wielding and (self.weapon_wielding != self.default_weapon):
@@ -179,15 +177,14 @@ class Creature(Container):
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
             percent_damage = damage_done/enemy.hitpoints
             message = self.get_damage_message(percent_damage)
-            self.emit('&nD%s attacks &nd%s with its %s, %s!' % (self.id, enemy, self.weapon_wielding, message), ignore=[self, enemy])
+            self.emit('&nD%s attacks &nd%s with &v%s %s, %s!' % (self.id, enemy, self.id, self.weapon_wielding, message), ignore=[self, enemy])
             self.perceive('You attack &nd%s with your %s, %s!' % (enemy, self.weapon_wielding, message))
-            enemy.perceive('&nD%s attacks you with its %s, %s!' % (self.id, self.weapon_wielding, message))
+            enemy.perceive('&nD%s attacks you with &v%s %s, %s!' % (self.id, self.id, self.weapon_wielding, message))
             enemy.take_damage(self, damage_done)
-            #TODO: Proper names and introductions: The monster attacks you with its sword, Cedric attacks you with his sword, Madiline attacks you with her sword.
         else:
-            self.emit('&nD%s attacks &nd%s with its %s, but misses.' % (self.id, enemy, self.weapon_wielding), ignore=[self, enemy])
+            self.emit('&nD%s attacks &nd%s with &v%s %s, but misses.' % (self.id, enemy, self.id, self.weapon_wielding), ignore=[self, enemy])
             self.perceive('You attack &nd%s with your %s, but miss.' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nD%s attacks you with its %s, but misses.' % (self.id, self.weapon_wielding))
+            enemy.perceive('&nD%s attacks you with &v%s %s, but misses.' % (self.id, self.id, self.weapon_wielding))
         if self not in enemy.enemies:
             enemy.enemies.append(self)
 

@@ -40,7 +40,7 @@ class Liquid(Scenery):
                 # TODO: actually delete the object
                 return True
         if oDO == self and sPrep in ("in", 'into') and isinstance(oIDO, Container) and oIDO.liquid:
-            if loc.extract(self):
+            if loc.extract(self) == True:
                 cons.write("You can't get the %s out of the %s!" % (self, loc))
                 return True
             if oIDO.insert(self):

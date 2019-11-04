@@ -38,7 +38,7 @@ class Room(Container):
         try:
             room = Thing.ID_dict[room_path]
             for o in room.contents:
-                room.extract(o, count='all')
+                room.extract(o)
             del Thing.ID_dict[room_path]
             return True
         except KeyError:

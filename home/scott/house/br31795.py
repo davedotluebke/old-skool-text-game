@@ -14,7 +14,7 @@ def load():
     bedroom.add_exit('down', 'home.scott.house.lr31795')
     bedroom.add_adjectives('circular', 'windowed')
 
-    north_window = exit_door.Window('window', 'northern window', 'This large window on the north side of the room has an almost invisible frame.', 'domains.school.forest.waterfall')
+    north_window = exit_door.Window('window', 'northern window', 'This large window on the north side of the room has an almost invisible frame.', 'domains.evergreen.mountaintop.cliff')
     north_window.add_adjectives('large', 'north')
     bedroom.insert(north_window, True)
 
