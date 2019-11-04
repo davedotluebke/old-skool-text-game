@@ -159,15 +159,16 @@ def load(param_list):
 
     hostility_levels = {'hostile':15, 'empty': 70, 'batty': 15}
 
-    second_level_attrs = {'light': {'small opening': 10, 'smooth walls': 80,
-                          'rough walls': 10}, 'dark':{'smooth walls': 50, 
-                          'rough walls': 50}, 'cool':{'breeze': 50, 'NA': 50}, 'warm': {'warmth': 70, 
-                          'scalding floor': 29, 'pool of lava': 1}, 'neutral': 
-                          {'NA': 100}, 'neutral':{'NA':100}, 'damp': {'trickle of water': 10, 
-                          'mossy': 40, 'damp air': 50}, 'dry': {'NA': 90, 'extremely dry': 10}, 
+    second_level_attrs = {'light': {'small opening': 10, 'smooth walls': 80, 'rough walls': 10}, 
+                          'dark': {'smooth walls': 50, 'rough walls': 50}, 
+                          'cool': {'breeze': 50, 'NA': 50}, 
+                          'warm': {'warmth': 70, 'scalding floor': 29, 'pool of lava': 1}, 
+                          'neutral': {'NA': 100}, 
+                          'neutral':{'NA':100}, 
+                          'damp': {'trickle of water': 10, 'mossy': 40, 'damp air': 50}, 
+                          'dry': {'NA': 90, 'extremely dry': 10}, 
                           'running': {'waterfall': 30, 'underground stream': 70},
-                          'lake': {'small underground lake': 50, 'large underground lake': 30, 
-                          'small underground lake with waterfall': 5, 'large underground lake with waterfall': 15}}
+                          'lake': {'small underground lake': 50, 'large underground lake': 30, 'small underground lake with waterfall': 5, 'large underground lake with waterfall': 15}}
 
     light_range_values = []
     for j in list(light_levels):
