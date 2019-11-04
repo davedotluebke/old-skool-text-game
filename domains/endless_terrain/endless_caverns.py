@@ -154,20 +154,21 @@ def load(param_list):
     
     # Format: characteristic: % 
     light_levels = {'light': 62, 'dark': 38}
-    temparture_levels = {'cool': 32, 'warm': 28, 'neutral': 40}
+    temperature_levels = {'cool': 32, 'warm': 28, 'neutral': 40}
     water_levels = {'damp': 25, 'dry': 50, 'running': 15, 'lake': 10}
 
     hostility_levels = {'hostile':15, 'empty': 70, 'batty': 15}
 
-    second_level_attrs = {'light': {'small opening': 10, 'smooth walls': 80,
-                          'rough walls': 10}, 'dark':{'smooth walls': 50, 
-                          'rough walls': 50}, 'cool':{'breeze': 50, 'NA': 50}, 'warm': {'warmpth': 70, 
-                          'scalding floor': 29, 'pool of lava': 1}, 'neurtal': 
-                          {'NA': 100}, 'neutral':{'NA':100}, 'damp': {'trickle of water': 10, 
-                          'mossy': 40, 'damp air': 50}, 'dry': {'NA': 90, 'extremely dry': 10}, 
+    second_level_attrs = {'light': {'small opening': 10, 'smooth walls': 80, 'rough walls': 10}, 
+                          'dark': {'smooth walls': 50, 'rough walls': 50}, 
+                          'cool': {'breeze': 50, 'NA': 50}, 
+                          'warm': {'warmth': 70, 'scalding floor': 29, 'pool of lava': 1}, 
+                          'neutral': {'NA': 100}, 
+                          'neutral':{'NA':100}, 
+                          'damp': {'trickle of water': 10, 'mossy': 40, 'damp air': 50}, 
+                          'dry': {'NA': 90, 'extremely dry': 10}, 
                           'running': {'waterfall': 30, 'underground stream': 70},
-                          'lake': {'small underground lake': 50, 'large underground lake': 30, 
-                          'small underground lake with waterfall': 5, 'large underground lake with waterfall': 15}}
+                          'lake': {'small underground lake': 50, 'large underground lake': 30, 'small underground lake with waterfall': 5, 'large underground lake with waterfall': 15}}
 
     light_range_values = []
     for j in list(light_levels):
@@ -176,12 +177,12 @@ def load(param_list):
     
     light_level = light_range_values[random.randint(0, 99)]
     
-    temparture_range_values = []
-    for l in list(temparture_levels):
-        for m in range(0, temparture_levels[l]):
-            temparture_range_values.append(l)
+    temperature_range_values = []
+    for l in list(temperature_levels):
+        for m in range(0, temperature_levels[l]):
+            temperature_range_values.append(l)
     
-    temparture_level = temparture_range_values[random.randint(0, 99)]
+    temperature_level = temperature_range_values[random.randint(0, 99)]
 
     water_range_values = []
     for n in list(water_levels):
@@ -198,7 +199,7 @@ def load(param_list):
     hostility_level = hostility_range_values[random.randint(0, 99)]
 
     room_features = []
-    for r in [light_level, temparture_level, water_level]:
+    for r in [light_level, temperature_level, water_level]:
         r_range_values = []
         for s in list(second_level_attrs[r]):
             for t in range(0, second_level_attrs[r][s]):
