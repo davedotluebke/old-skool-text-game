@@ -30,7 +30,27 @@ def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold):
 
 masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08, 'up':0x10, 'down':0x20}
 
-def depth_first_search(t, start_x=-30,start_y=-30,start_z=-2,end_x=30,end_y=30,end_z=2,start_label=1):
+def visit_point(t, visited, num_of_exits, directions, x, y, z, start_x, start_y, start_z, end_x, end_y, end_z, label):  
+    """Recursively visit a point P=(x,y,z) and all connections of P.
+    Assign label to P if it has not already been labeled.
+    Return the number of points had their label changed"""
+    if not ((start_x < x < end_x) and (start_y < y < end_y) and (start_z < z < end_z)):
+        return 0
+    if visited[x, y, z] != 0:
+        return 0
+    visited[x, y, z] = label
+    changed = 1
+    exits_accounted_for = 0
+    for e in masks:
+        if t[x, y, z] & masks[e]:
+            #print("Table value: ",t[x,y,z],"  Mask: ",masks[e])
+            exits_accounted_for += 1
+            changed += visit_point(t, visited, num_of_exits, directions, x+directions[e][0], y+directions[e][1], z+directions[e][2], start_x, start_y, start_z, end_x, end_y, end_z, label)
+    if exits_accounted_for != num_of_exits[x,y,z]:
+        print("Problem at point x=%s, y=%s, z=%s!" % (x,y,z))
+    return changed
+
+def depth_first_search(t, num_of_exits, start_x=-30,start_y=-30,start_z=-2,end_x=30,end_y=30,end_z=2,start_label=1):
     directions = {'north': (0,  1,  0 ), 
                   'south': (0, -1,  0 ),
                   'east':  (1,  0,  0 ),
@@ -39,31 +59,18 @@ def depth_first_search(t, start_x=-30,start_y=-30,start_z=-2,end_x=30,end_y=30,e
                   'down':  (0,  0, -1 )}
     visited = np.zeros(t.shape, dtype=np.int32)
     
-    def visit_point(x, y, z, label):  
-        """Recursively visit a point P=(x,y,z) and all connections of P.
-        Assign label to P if it has not already been labeled.
-        Return the number of points had their label changed"""
-        if not ((start_x < x < end_x) and (start_y < y < end_y) and (start_z < z < end_z)):
-            return 0
-        if visited[x, y, z] != 0:
-            return 0
-        visited[x, y, z] = label
-        changed = 1
-        for e in masks:
-            if t[x, y, z] & masks[e]:
-                changed += visit_point(x+directions[e][0], y+directions[e][1], z+directions[e][2], label)
-        return changed
     
     for a in range(start_x, end_x):
         for b in range(start_y, end_y):
             for c in range(start_z, end_z):
-                if visit_point(a, b, c, start_label): 
+                if visit_point(t, visited, num_of_exits, directions, a, b, c, start_x, start_y, start_z, end_x, end_y, end_z, start_label): 
                     start_label += 1  # increment the label if we labeled one or more points
     
     return visited
 
 def test_grid(cons=None, exit_probability = 0.25):
     table = np.zeros((60,60,4), dtype=np.int32)
+    num_of_exits = np.zeros((60,60,4), dtype=np.int32)
     for i in range(-30, 30):
         for j in range(-30, 30):
             for k in range(-2, 2):
@@ -77,7 +84,7 @@ def test_grid(cons=None, exit_probability = 0.25):
                 for direction, d_xyz in [ ('north', (0,  1,  0 )), 
                                         ('south', (0, -1,  0 )), 
                                         ('east',  (1,  0,  0 )),
-                                        ('west',  (-1, 0,  0 )), 
+                                        ('west',  (-1, 0,  0 )),
                                         ('up',    (0,  0,  1 )), 
                                         ('down',  (0,  0, -1 )) ]:
                     # see if a connection exists between this room and the room to the east (x+1), 
@@ -95,8 +102,9 @@ def test_grid(cons=None, exit_probability = 0.25):
                         directions_mask |= masks[direction]
             
                 table[x,y,z] = directions_mask
+                num_of_exits[x,y,z] = len(possible_directions)
     
-    centers = depth_first_search(table, -30, -30, -2, 30, 30, 2, 1)
+    centers = depth_first_search(table, num_of_exits, -30, -30, -2, 30, 30, 2, 1)
     
     # create an ascii art depiction of the cavern map, with each room represented by a 3x3 grid of characters
     # note north is direction of increasing y, i.e. first row in table is the southmost row on map. 
@@ -108,7 +116,7 @@ def test_grid(cons=None, exit_probability = 0.25):
         line3 = ""
         for j in range(0, table.shape[1]):
             # make 3 characters in each line for each element
-            mask = table[j,i,2]
+            mask = table[j,i,0]
             line1 += " | " if mask & masks['north'] else "   "
             line2 += "-" if mask & masks['west'] else " "
             if mask & (masks['north'] | masks['south'] | masks['east'] | masks['west']) :  
