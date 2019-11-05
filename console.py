@@ -606,9 +606,9 @@ class Console:
         return final_html
     
     def choose_measurements(self, text):
-        text = text.replace('[', '|[')
-        text = text.replace(']', ']|')
-        split_text = text.split('|')
+        text = text.replace('[', '||[')
+        text = text.replace(']', ']||')
+        split_text = text.split('||')
 
         in_measurement = False
         correct_measurement = False

@@ -25,13 +25,13 @@ def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold):
     all_bits = x_bits | y_bits | z_bits | delta_x_bits | delta_y_bits | delta_z_bits
     random.seed(all_bits)
     num = random.random()
-    dbg.debug("Coordinates: %s, %s, %s. Direction: %s, %s, %s. Seed: %s. Num: %s" % (x, y, z, delta_x, delta_y, delta_z, all_bits, num))
+    #dbg.debug("Coordinates: %s, %s, %s. Direction: %s, %s, %s. Seed: %s. Num: %s" % (x, y, z, delta_x, delta_y, delta_z, all_bits, num))
     return num < threshold
 
 masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08, 'up':0x10, 'down':0x20}
 
-def depth_first_search(t, start_x=-30,start_y=-30,end_x=30,end_y=30,start_label=1):
-    dfs_masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08}
+def depth_first_search(t, start_x=-30,start_y=-30,start_z=-30,end_x=30,end_y=30,end_z=30,start_label=1):
+    dfs_masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08, 'up':0x10, 'down':0x20}
     directions = {'north': (0,  1,  0 ), 
                   'south': (0, -1,  0 ),
                   'east':  (1,  0,  0 ),
@@ -40,56 +40,60 @@ def depth_first_search(t, start_x=-30,start_y=-30,end_x=30,end_y=30,start_label=
                   'down':  (0,  0, -1 )}
     visited = np.zeros(t.shape, dtype=np.int32)
     
-    def visit_point(x, y, label):
-        if visited[x, y] != 0:
+    def visit_point(x, y, z, label):
+        if not ((start_x < x < end_x) and (start_y < y < end_y) and (start_z < z < end_z)):
             return
-        visited[x, y] = label
+        if visited[x, y, z] != 0:
+            return
+        visited[x, y, z] = label
         for e in masks:
-            if t[x, y] & masks[e]:
-                visit_point(x+directions[e][0], y+directions[e][1], label)
+            if t[x, y, z] & masks[e]:
+                visit_point(x+directions[e][0], y+directions[e][1], z+directions[e][2], label)
         return label
     
     for a in range(start_x, end_x):
         for b in range(start_y, end_y):
-            visit_point(start_x, start_y, start_label)
-            start_label += 1
+            for c in range(start_z, end_z):
+                visit_point(a, b, c, start_label)
+                start_label += 1
     
     return visited
 
-def test_grid(exit_probability = 0.25):
-    table = np.zeros((60,60), dtype=np.int32)
+def test_grid(cons=None, exit_probability = 0.25):
+    table = np.zeros((60,60,4), dtype=np.int32)
     for i in range(-30, 30):
         for j in range(-30, 30):
-            possible_directions = []
-            directions_mask = 0x00
+            for k in range(-2, 2):
+                possible_directions = []
+                directions_mask = 0x00
 
-            x = j+30
-            y = i+30
-            z = 0
+                x = j+30
+                y = i+30
+                z = k+2
 
-            for direction, d_xyz in [ ('north', (0,  1,  0 )), 
-                                      ('south', (0, -1,  0 )), 
-                                      ('east',  (1,  0,  0 )),
-                                      ('west',  (-1, 0,  0 )), 
-                                      ('up',    (0,  0,  1 )), 
-                                      ('down',  (0,  0, -1 )) ]:
-                # see if a connection exists between this room and the room to the east (x+1), 
-                # west (x-1), north (y+1), etc.  
-                check_x = x if d_xyz[0] >= 0 else x-1
-                check_y = y if d_xyz[1] >= 0 else y-1
-                check_z = z if d_xyz[2] >= 0 else z-1
+                for direction, d_xyz in [ ('north', (0,  1,  0 )), 
+                                        ('south', (0, -1,  0 )), 
+                                        ('east',  (1,  0,  0 )),
+                                        ('west',  (-1, 0,  0 )), 
+                                        ('up',    (0,  0,  1 )), 
+                                        ('down',  (0,  0, -1 )) ]:
+                    # see if a connection exists between this room and the room to the east (x+1), 
+                    # west (x-1), north (y+1), etc.  
+                    check_x = x if d_xyz[0] >= 0 else x-1
+                    check_y = y if d_xyz[1] >= 0 else y-1
+                    check_z = z if d_xyz[2] >= 0 else z-1
 
-                check_dx = 1 if d_xyz[0] != 0 else 0
-                check_dy = 1 if d_xyz[1] != 0 else 0
-                check_dz = 1 if d_xyz[2] != 0 else 0
+                    check_dx = 1 if d_xyz[0] != 0 else 0
+                    check_dy = 1 if d_xyz[1] != 0 else 0
+                    check_dz = 1 if d_xyz[2] != 0 else 0
 
-                if connection_exists(check_x, check_y, check_z, check_dx, check_dy, check_dz, exit_probability):
-                    possible_directions.append(direction)
-                    directions_mask |= masks[direction]
+                    if connection_exists(check_x, check_y, check_z, check_dx, check_dy, check_dz, exit_probability):
+                        possible_directions.append(direction)
+                        directions_mask |= masks[direction]
             
-            table[x,y] = directions_mask
+                table[x,y,z] = directions_mask
     
-    centers = depth_first_search(table, -30, -30, 30, 30, 1)
+    centers = depth_first_search(table, -30, -30, -2, 30, 30, 2, 1)
     
     # create an ascii art depiction of the cavern map, with each room represented by a 3x3 grid of characters
     # note north is direction of increasing y, i.e. first row in table is the southmost row on map. 
@@ -101,12 +105,12 @@ def test_grid(exit_probability = 0.25):
         line3 = ""
         for j in range(0, table.shape[1]):
             # make 3 characters in each line for each element
-            mask = table[j,i]
+            mask = table[j,i,2]
             line1 += " | " if mask & masks['north'] else "   "
             line2 += "-" if mask & masks['west'] else " "
             if mask & (masks['north'] | masks['south'] | masks['east'] | masks['west']) :  
                 # ignore up and down for now, draw + if room has a NSEW exit or ' ' if not
-                line2 += chr(47+centers[j,i])
+                line2 += chr(47+centers[j,i,0])
             else:
                 line2 += " "
             line2 += "-" if mask & masks['east'] else " "
@@ -115,6 +119,8 @@ def test_grid(exit_probability = 0.25):
         # therefore these three lines go on top of the map so far (i.e. before the current map string)
         map_str = line1 + "\n" + line2 + '\n' + line3 + '\n' + map_str
     print(map_str)
+    if cons:
+        cons.write(map_str.replace(' ','&nbsp'))
 
 
         
