@@ -30,8 +30,7 @@ def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold):
 
 masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08, 'up':0x10, 'down':0x20}
 
-def depth_first_search(t, start_x=-30,start_y=-30,start_z=-30,end_x=30,end_y=30,end_z=30,start_label=1):
-    dfs_masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08, 'up':0x10, 'down':0x20}
+def depth_first_search(t, start_x=-30,start_y=-30,start_z=-2,end_x=30,end_y=30,end_z=2,start_label=1):
     directions = {'north': (0,  1,  0 ), 
                   'south': (0, -1,  0 ),
                   'east':  (1,  0,  0 ),
@@ -40,22 +39,26 @@ def depth_first_search(t, start_x=-30,start_y=-30,start_z=-30,end_x=30,end_y=30,
                   'down':  (0,  0, -1 )}
     visited = np.zeros(t.shape, dtype=np.int32)
     
-    def visit_point(x, y, z, label):
+    def visit_point(x, y, z, label):  
+        """Recursively visit a point P=(x,y,z) and all connections of P.
+        Assign label to P if it has not already been labeled.
+        Return the number of points had their label changed"""
         if not ((start_x < x < end_x) and (start_y < y < end_y) and (start_z < z < end_z)):
-            return
+            return 0
         if visited[x, y, z] != 0:
-            return
+            return 0
         visited[x, y, z] = label
+        changed = 1
         for e in masks:
             if t[x, y, z] & masks[e]:
-                visit_point(x+directions[e][0], y+directions[e][1], z+directions[e][2], label)
-        return label
+                changed += visit_point(x+directions[e][0], y+directions[e][1], z+directions[e][2], label)
+        return changed
     
     for a in range(start_x, end_x):
         for b in range(start_y, end_y):
             for c in range(start_z, end_z):
-                visit_point(a, b, c, start_label)
-                start_label += 1
+                if visit_point(a, b, c, start_label): 
+                    start_label += 1  # increment the label if we labeled one or more points
     
     return visited
 
@@ -110,7 +113,7 @@ def test_grid(cons=None, exit_probability = 0.25):
             line2 += "-" if mask & masks['west'] else " "
             if mask & (masks['north'] | masks['south'] | masks['east'] | masks['west']) :  
                 # ignore up and down for now, draw + if room has a NSEW exit or ' ' if not
-                line2 += chr(47+centers[j,i,0])
+                line2 += chr(47+(centers[j,i,0] % 74))
             else:
                 line2 += " "
             line2 += "-" if mask & masks['east'] else " "
