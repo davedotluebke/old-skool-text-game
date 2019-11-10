@@ -7,7 +7,9 @@ import room
 import random
 from debug import dbg
 
-def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold):
+cooridoor_exits = {}
+
+def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold, direction_string):
     """Return a true or false indicating whether a grid cell at 
     (x, y, z) has a connection in direction (delta_x, delta_y, delta_z), 
     where delta_x, delta_y, and delta_z are 0 or 1. For consistency, always 
@@ -16,6 +18,14 @@ def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold):
     connection to the north, check (3,4,-2,(0,1,0)). For a connection to the
     south, check (3,3,-2, (0,1,0)). Uses a random number seeded on combination 
     of bits from the inputs and compares it to the provided threshold."""
+
+    if direction_string in ['south','west','down']:
+        if ('%s %s %s' % (x+delta_x,y+delta_y,z) in cooridoor_exits) and (direction_string in cooridoor_exits['%s %s %s' % (x+delta_x,y+delta_y,z)]):
+            return True
+    else:
+        if ('%s %s %s' % (x,y,z) in cooridoor_exits) and (direction_string in cooridoor_exits['%s %s %s' % (x,y,z)]):
+            return True
+
     x_bits = (x & 0xff) << 19
     y_bits = (y & 0xff) << 11
     z_bits = (z & 0xff) << 3
@@ -29,6 +39,110 @@ def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold):
     return num < threshold
 
 masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08, 'up':0x10, 'down':0x20}
+opposite_directions = {'north':'south','south':'north','east':'west','west':'east','up':'down','down':'up'}
+
+def generate_random_cooridoor(x, y, z):
+    base_x = x // 100
+    base_y = y // 100
+    base_z = z
+
+    x_bits = (base_x & 0xff) << 16
+    y_bits = (base_y & 0xff) << 8
+    z_bits = (base_z & 0xff)
+    all_bits = x_bits | y_bits | z_bits
+
+    random.seed(all_bits)
+
+    current_x = base_x
+    current_y = base_y
+    current_z = base_z
+
+    if '%s %s %s' % (current_x,current_y,base_z) not in cooridoor_exits:
+        cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)] = []
+
+    cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)].append('south')
+    cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)].append('west')
+
+    num_rooms_visited = 1 # To make sure no infinite loops occur
+    xy_decisions = {
+        'north':(0,1),
+        'south':(0,-1),
+        'east':(1,0),
+        'west':(-1,0)
+    }
+
+    while num_rooms_visited < 100000:
+        dir_choices = []
+
+        if current_x % 100 > 0 and 'west' not in cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)]:
+            dir_choices.append('west')    
+        if current_x % 100 < 99 and 'east' not in cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)]:
+            dir_choices.append('east')
+        if current_y % 100 > 0 and 'south' not in cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)]:
+            dir_choices.append('south')
+        if current_y % 100 < 99 and 'north' not in cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)]:
+            dir_choices.append('north')
+        if not dir_choices:
+            break
+
+        r = random.random()
+        direction_of_travel = None
+        if r < 0.45:
+            if 'north' in dir_choices:
+                direction_of_travel = 'north'
+            elif 'east' in dir_choices:
+                direction_of_travel = 'east'
+            elif 'west' in dir_choices:
+                direction_of_travel = 'west'
+            else:
+                direction_of_travel = 'south'
+        elif r < 0.9:
+            if 'east' in dir_choices:
+                direction_of_travel = 'east'
+            elif 'north' in dir_choices:
+                direction_of_travel = 'north'
+            elif 'south' in dir_choices:
+                direction_of_travel = 'south'
+            else:
+                direction_of_travel = 'west'
+        elif r < 0.95:
+            if 'south' in dir_choices:
+                direction_of_travel = 'south'
+            elif 'north' in dir_choices:
+                direction_of_travel = 'north'
+            elif 'east' in dir_choices:
+                direction_of_travel = 'east'
+            else:
+                direction_of_travel = 'west'
+        else:
+            if 'west' in dir_choices:
+                direction_of_travel = 'west'
+            elif 'north' in dir_choices:
+                direction_of_travel = 'north'
+            elif 'east' in dir_choices:
+                direction_of_travel = 'east'
+            else:
+                direction_of_travel = 'south'
+        
+        if '%s %s %s' % (current_x,current_y,base_z) not in cooridoor_exits:
+            cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)] = []
+        
+        cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)].append(direction_of_travel)
+
+        current_x += xy_decisions[direction_of_travel][0]
+        current_y += xy_decisions[direction_of_travel][1]
+
+        if '%s %s %s' % (current_x,current_y,base_z) not in cooridoor_exits:
+            cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)] = []
+
+        cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)].append(opposite_directions[direction_of_travel])
+
+        num_rooms_visited += 1
+        if current_x % 100 == 99 and current_y % 100 == 99:
+            break
+    
+    cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)].append('east')
+    cooridoor_exits['%s %s %s' % (current_x,current_y,base_z)].append('north')
 
 def visit_point(t, visited, num_of_exits, directions, x, y, z, start_x, start_y, start_z, end_x, end_y, end_z, label):  
     """Recursively visit a point P=(x,y,z) and all connections of P.
@@ -69,16 +183,16 @@ def depth_first_search(t, num_of_exits, start_x=-30,start_y=-30,start_z=-2,end_x
     return visited
 
 def test_grid(cons=None, exit_probability = 0.25):
-    table = np.zeros((60,60,4), dtype=np.int32)
-    num_of_exits = np.zeros((60,60,4), dtype=np.int32)
-    for i in range(-30, 30):
-        for j in range(-30, 30):
+    table = np.zeros((100,100,4), dtype=np.int32)
+    num_of_exits = np.zeros((100,100,4), dtype=np.int32)
+    for i in range(0, 100):
+        for j in range(0, 100):
             for k in range(-2, 2):
                 possible_directions = []
                 directions_mask = 0x00
 
-                x = j+30
-                y = i+30
+                x = j
+                y = i
                 z = k+2
 
                 for direction, d_xyz in [ ('north', (0,  1,  0 )), 
@@ -97,14 +211,14 @@ def test_grid(cons=None, exit_probability = 0.25):
                     check_dy = 1 if d_xyz[1] != 0 else 0
                     check_dz = 1 if d_xyz[2] != 0 else 0
 
-                    if connection_exists(check_x, check_y, check_z, check_dx, check_dy, check_dz, exit_probability):
+                    if connection_exists(check_x, check_y, check_z, check_dx, check_dy, check_dz, exit_probability, direction):
                         possible_directions.append(direction)
                         directions_mask |= masks[direction]
             
                 table[x,y,z] = directions_mask
                 num_of_exits[x,y,z] = len(possible_directions)
     
-    centers = depth_first_search(table, num_of_exits, -30, -30, -2, 30, 30, 2, 1)
+    centers = depth_first_search(table, num_of_exits, 0, 0, -2, 100, 100, 2, 1)
     
     # create an ascii art depiction of the cavern map, with each room represented by a 3x3 grid of characters
     # note north is direction of increasing y, i.e. first row in table is the southmost row on map. 
@@ -150,6 +264,9 @@ def load(param_list):
     y = coords[1]
     z = coords[2]
 
+    if '%s %s %s' % (x % 100, y % 100, z % 100) not in cooridoor_exits:
+        generate_random_cooridoor(x,y,z)
+
     for direction, d_xyz in [('north', (0,  1,  0 )), 
                              ('south', (0, -1,  0 )), 
                              ('east',  (1,  0,  0 )),
@@ -166,7 +283,7 @@ def load(param_list):
         check_dy = 1 if d_xyz[1] != 0 else 0
         check_dz = 1 if d_xyz[2] != 0 else 0
 
-        if connection_exists(check_x, check_y, check_z, check_dx, check_dy, check_dz, exit_probability):
+        if connection_exists(check_x, check_y, check_z, check_dx, check_dy, check_dz, exit_probability, direction):
             this_room.add_exit(direction, 'domains.endless_terrain.endless_caverns?%s&%s&%s' % (x+d_xyz[0], y+d_xyz[1], z+d_xyz[2]))
     
     # Format: characteristic: % 
@@ -215,6 +332,12 @@ def load(param_list):
     
     hostility_level = hostility_range_values[random.randint(0, 99)]
 
+    if hostility_level == 'hostile':
+        monster = gametools.clone('domains.endless_terrain.random_monster', params=(x,y,z))
+        monster.move_to(this_room)
+    elif hostility_level == 'batty':
+        pass # TODO: Add bats to game
+
     room_features = []
     for r in [light_level, temperature_level, water_level]:
         r_range_values = []
@@ -224,6 +347,17 @@ def load(param_list):
         feature = r_range_values[random.randint(0, 99)]
         room_features.append(feature)
     
-    this_room.set_description('cavern','A test cavern. Coordinates: (%s, %s, %s). Features: %s, %s, %s' % (coords[0], coords[1], coords[2], room_features[0], room_features[1], room_features[2]))
+    room_features = [x for x in room_features if x != 'NA']
+    if len(room_features) == 3:
+        three_part_long_descs = ['You enter a cavern with %s and %s. You also notice a %s' % (room_features[0], room_features[1], room_features[2]), 
+            'You find yourself in a cavern with a %s, %s, and %s.' % (room_features[2], room_features[1], room_features[0])]
+        this_room.set_description('cavern',random.choice(three_part_long_descs))
+    
+    if len(room_features) == 2:
+        two_part_long_descs = ['You enter a cavern with %s. You also notice a %s.' % (room_features[0], room_features[1]),'This cavern contains both %s and %s.' % (room_features[0], room_features[1])]
+        this_room.set_description('cavern', random.choice(two_part_long_descs))
+    
+    if len(room_features) == 1:
+        this_room.set_description('cavern', 'You enter a cavern with %s' % room_features[0])
 
     return this_room
