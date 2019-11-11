@@ -256,13 +256,18 @@ def load(param_list):
     
     coords = [int(param_list[1]), int(param_list[2]), int(param_list[3])]
 
+    x = coords[0]
+    y = coords[1]
+    z = coords[2]
+
+    specially_defined_room = gametools.load_room('domains.endless_terrain.cavern%s_%s_%s' % (x,y,z))
+    if specially_defined_room:
+        return specially_defined_room
+
     this_room = room.Room('cave', path)
 
     exit_probability = 0.25
 
-    x = coords[0]
-    y = coords[1]
-    z = coords[2]
 
     if '%s %s %s' % (x % 100, y % 100, z % 100) not in cooridoor_exits:
         generate_random_cooridoor(x,y,z)
