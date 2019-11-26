@@ -260,7 +260,7 @@ def load(param_list):
     y = coords[1]
     z = coords[2]
 
-    specially_defined_room = gametools.load_room('domains.endless_terrain.cavern%s_%s_%s' % (x,y,z))
+    specially_defined_room = gametools.load_room('domains.endless_terrain.cavern%s_%s_%s' % (x,y,z), report_import_error=False)
     if specially_defined_room:
         return specially_defined_room
 

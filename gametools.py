@@ -59,7 +59,7 @@ def deconstructObjectPath(path_str):
         return path, [path_str]+parameters.split('&')
     return path, None
 
-def load_room(modpath):
+def load_room(modpath, report_import_error=True):
     """Attempt to load a room from its modpath (e.g. 'domains.school.testroom'). 
     If an ImportEerror occurs, will attempt to create a room if given paramaters.
     Returns a reference to the room, or None if the given modpath could not be loaded."""
@@ -73,7 +73,8 @@ def load_room(modpath):
         room.mod = mod # store the module to allow for reloading later
         room.params = params
     except ImportError:
-        dbg.debug("Error importing room module %s" % modpath)
+        if report_import_error:
+            dbg.debug("Error importing room module %s" % modpath)
         return None
     except AttributeError:
         dbg.debug("Error loading from room module %s: no load() method" % modpath)

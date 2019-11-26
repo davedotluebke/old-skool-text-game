@@ -538,7 +538,10 @@ class Player(Creature):
         mod = importlib.reload(obj.mod)
         try:
             if isinstance(obj, Room):
-                newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
+                if obj.params:
+                    newobj = mod.load(obj.params)
+                else:
+                    newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
         except Exception:
             dbg.debug('Error reloading object %s!' % obj)
             cons.user.perceive('An error occured while reloading %s.' % obj)
