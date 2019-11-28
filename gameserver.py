@@ -38,7 +38,12 @@ class Game():
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         self.start_time = 0
-        self.duration = duration
+        try:
+            self.duration = int(duration)
+        except ValueError:
+            self.duration = 86400
+        except TypeError:
+            self.duration = 86400
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
         self.time = 0  # number of heartbeats since game began
