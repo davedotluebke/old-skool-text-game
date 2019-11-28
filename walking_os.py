@@ -1,6 +1,10 @@
 import os
 import debug
 
+# 
+#  Note this is too expensive to run as an interactive command!
+#
+
 def findAllPythonFiles():
     files_list = []
     for root, dirs, files in os.walk("domains"):
