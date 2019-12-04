@@ -699,4 +699,4 @@ class Console:
         self.final_command = self._replace_aliases()
         return self.final_command
 
-# End of file
+# This is the end of file
