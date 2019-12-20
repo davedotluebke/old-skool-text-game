@@ -116,7 +116,7 @@
         <script src="https://bitwiseshiftleft.github.io/sjcl/sjcl.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
         <script>
-            var converter = new showdown.Converter()
+            var converter = new showdown.Converter({simpleLineBreaks: true});
             var cmd_history = [''];
             var current_cmd = 0;
             var state = 'MAKE_CONNECTION';
