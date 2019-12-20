@@ -114,7 +114,9 @@
         </form>
         <span id='box_caret_el' class="onCaret"></span>
         <script src="https://bitwiseshiftleft.github.io/sjcl/sjcl.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
         <script>
+            var converter = new showdown.Converter()
             var cmd_history = [''];
             var current_cmd = 0;
             var state = 'MAKE_CONNECTION';
@@ -313,7 +315,7 @@
                         receiveFile(msg['data']);
                         return;
                     }
-                    message.innerHTML = msg['data'];
+                    message.innerHTML = converter.makeHtml(msg['data']);
                 }
                 if (state == 'MAKE_CONNECTION') {
                     message.innerHTML = event;
