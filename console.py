@@ -5,6 +5,7 @@ import secrets
 import os
 import re
 import platform
+import traceback
 
 from debug import dbg
 from parse import Parser
@@ -337,7 +338,16 @@ class Console:
                     else:
                         self.write('You do not have permission to view this directory.')
                     return True
-            
+
+            if self.user.wprivilages and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']:
+                try:
+                    process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=self.current_directory)
+                    self.write(str(process.stdout, "utf-8"))
+                    self.write(str(process.stderr, "utf-8"))
+                    return True
+                except Exception:
+                    print(traceback.format_exc())
+            '''
             if cmd == 'ls':
                 if self.user.wprivilages:
                     ls_info = '<div style="column-count:4">'
@@ -458,7 +468,7 @@ class Console:
                             self.write('Error, no directory named %s exits.' % filename)
                         except OSError:
                             self.write('Error, only empty directories may be removed.')
-                    return True
+                    return True'''
             
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
