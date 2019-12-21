@@ -553,67 +553,7 @@ class Console:
         self.write('Downloading file %s...' % filename)
 
     def sanitizeHTML(self, html):
-        html = html.replace('<', '(#*tag)(||istag)').replace('>', '(#*tag)')
-        possible_tags = html.split('(#*tag)')
-        tags = []
-        nontags = []
-        first = None
-        for i in possible_tags:
-            if i.startswith('(||istag)'):
-                (head, sep, tail) = i.partition('(||istag)')
-                tags.append(tail)
-                if first == None:
-                    first = 'tag'
-            else:
-                nontags.append(i)
-                if first == None:
-                    first = 'nontag'
-        #dbg.debug('Output tags are:'+tags, 1)
-        tag_lists = []
-        for j in tags:
-            tag_and_attributes = j.split(' ')
-            if len(tag_and_attributes) > 1:
-                item = [tag_and_attributes[0], tag_and_attributes[1:]]
-            else:
-                item = [tag_and_attributes[0], []]
-            tag_lists.append(item)
-        for l in range(0, len(tag_lists)):
-            if (tag_lists[l][0] not in list(self.legal_tags)) and (tag_lists[l][0].partition('/')[2] not in list(self.legal_tags)):
-                (head, sep, tail) = tag_lists[l][0].partition('/')
-                if tail in self.empty_elements:
-                    tag_lists[l] = ['br', []]
-                elif tail not in list(self.legal_tags):
-                    if sep == '':
-                        tag_lists[l] = ['span', []]
-                    else:
-                        tag_lists[l] = ['/span', []]
-            for m in range(0, len(tag_lists[l][1])):
-                #if tag_lists[l][0].rfind('/') > -1:
-                (head, sep, tail) = tag_lists[l][1][m].partition('=')
-                if head not in self.legal_tags[tag_lists[l][0]]:
-                    tag_lists[l][1][m] = ''
-        
-        full_tags = []
-        for n in tag_lists:
-             tag = '<'
-             tag += n[0]
-             for o in n[1]:
-                tag += ' ' + o
-             tag += '>'
-             full_tags.append(tag)
-        final_html = ''
-        for p in range(0, len(full_tags)+len(nontags)):
-            if p/2 == int(p/2):
-                if first == 'tag':
-                    final_html += full_tags[int(p/2)]
-                elif first == 'nontag':
-                    final_html += nontags[int(p/2)]
-            else:
-                if first == 'tag':
-                    final_html += nontags[int(p/2)]
-                elif first == 'nontag':
-                    final_html += full_tags[int(p/2)]
-        return final_html
+        return html.replace('<', '«').replace('>', '»')
     
     def choose_measurements(self, text):
         text = text.replace('[', '|[')
@@ -651,10 +591,10 @@ class Console:
         return new_text
 
     def write(self, text, indent=0):
-        self.raw_output += str(text) + '<br>'
-        self.raw_output = self.raw_output.replace('\n','<br>').replace('\t', '&nbsp&nbsp&nbsp&nbsp')
+        self.raw_output += str(text) + '\n'
         self.raw_output = self.choose_measurements(self.raw_output)
         self.raw_output = self.sanitizeHTML(self.raw_output)
+        #self.raw_output = self.raw_output.replace('\t', '&nbsp&nbsp&nbsp&nbsp')
         asyncio.ensure_future(connections_websock.ws_send(self))
 
     def request_input(self, dest):

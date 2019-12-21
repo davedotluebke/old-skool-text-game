@@ -515,7 +515,7 @@ class Player(Creature):
         players back to the new room.'''
         obj = None
         if not self.wprivilages:
-            return "You cannot yet perform this magical incatation correctly."
+            return "You cannot yet perform this magical incantation correctly."
         if isinstance(obj, Creature):
             return "You cannot reload players or NPCs!"
         if len(p.words) < 2: 
