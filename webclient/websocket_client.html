@@ -320,15 +320,15 @@
                 if (state == 'MAKE_CONNECTION') {
                     message.innerHTML = event;
                 }
-                if (message.innerHTML.indexOf('#quit') > -1) {
+                if (message.innerHTML.indexOf('--#quit') > -1) {
                     state = 'MAKE_CONNECTION';
                     ws.close();
                 }
-                if (message.innerHTML.indexOf('#password') > -1) {
+                if (message.innerHTML.indexOf('--#password') > -1) {
                     state = 'SEND_PASSWORD';
                     document.getElementById('inputLine').type = 'password';
                 }
-                if (message.innerHTML.indexOf('#upload') > -1) {
+                if (message.innerHTML.indexOf('--#upload') > -1) {
                     uploadFiles();
                 }
                 messages.appendChild(message);

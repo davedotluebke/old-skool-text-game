@@ -285,7 +285,7 @@ class Console:
             
             if cmd == 'change':
                 if self.words[1] == 'password':
-                    self.write("Please enter your new #password:")
+                    self.write("Please enter your new --#password:")
                     self.input_redirect = self
                     self.changing_passwords = True
                     return True
@@ -307,7 +307,7 @@ class Console:
                             self.uploading_filename = self.filename_input
                         if '.' not in self.uploading_filename:
                             self.uploading_filename += '.py'
-                        self.write('Please select a file to #upload:')
+                        self.write('Please select a file to --#upload:')
                     else:
                         self.write('You do not have permission to write to this directory.')
                     return True
@@ -501,7 +501,7 @@ class Console:
                 self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user, self.user))
                 self.game.save_player(os.path.join(gametools.PLAYER_DIR, self.user.names[0]), self.user)
                 self.game.create_backups(os.path.join(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, os.path.join(gametools.PLAYER_DIR, self.user.names[0]))
-                self.write("#quit")
+                self.write("--#quit")
                 if len(self.words) > 1 and self.words[1] == 'game' and self.user.wprivilages:
                     self.game.shutdown_console = self
                     self.game.keep_going = False

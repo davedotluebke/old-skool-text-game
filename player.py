@@ -115,7 +115,7 @@ class Player(Creature):
         state = self.login_state
         if state == 'AWAITING_USERNAME':
             if  len(cmd.split()) != 1:
-                self.cons.write("Usernames must be a single word with no spaces.<br>"
+                self.cons.write("Usernames must be a single word with no spaces.\n"
                                 "Please enter your username:")
                 return
             self.names[0] = cmd.split()[0]  # strips any trailing whitespace
@@ -123,16 +123,16 @@ class Player(Creature):
             try:
                 f = open(filename, 'r+b')
                 f.close()  # success, player exists, so close file for now & check password
-                self.cons.write("Welcome back, %s!<br>Please enter your #password: " % self.names[0])
+                self.cons.write("Welcome back, %s!\nPlease enter your --#password: " % self.names[0])
                 self.login_state = 'AWAITING_PASSWORD'
             except FileNotFoundError:
                 self.cons.write("No player named "+self.names[0]+" found. "
-                            "Would you like to create a new player? (yes/no)<br>")
+                            "Would you like to create a new player? (yes/no)\n")
                 self.login_state = 'AWAITING_CREATE_CONFIRM'
             return
         elif state == 'AWAITING_CREATE_CONFIRM':
             if cmd == "yes": 
-                self.cons.write("Welcome, %s!<br>Please create a #password:" % self.names[0])
+                self.cons.write("Welcome, %s!\nPlease create a --#password:" % self.names[0])
                 self.login_state = 'AWAITING_NEW_PASSWORD'
                 return
             elif cmd == "no":
@@ -175,8 +175,8 @@ class Player(Creature):
                     self.cons.write("Your username or password is incorrect. Please try again.")
                     self.login_state = "AWAITING_USERNAME"
             except gametools.PlayerLoadError:
-                self.cons.write("Error loading data for player %s from file %s. <br>"
-                                "Please try again.<br>Please enter your username: " % (self.names[0], filename))
+                self.cons.write("Error loading data for player %s from file %s. \n"
+                                "Please try again.\nPlease enter your username: " % (self.names[0], filename))
                 self.login_state = "AWAITING_USERNAME"
     
     def _schedule_interactive_tutorial(self, act):
