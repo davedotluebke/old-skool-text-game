@@ -197,6 +197,14 @@ class Player(Creature):
                 self.cons.write("Okay, please enter your username: ")
                 self.login_state = "AWAITING_USERNAME"
                 return
+            elif cmd == 'restart':
+                self.cons.write("Erasing existing character and restarting from last save. Please enter your --#password again.")
+                for oid in Thing.ID_dict:
+                    if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0]:
+                        break
+                self.game.deregister_heartbeat(Thing.ID_dict[oid])
+                del Thing.ID_dict[oid]
+                self.login_state = "AWAITING_PASSWORD"
             else:
                 self.cons.write("Please answer yes or no: ")
                 return
