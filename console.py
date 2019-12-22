@@ -341,134 +341,14 @@ class Console:
 
             if self.user.wprivilages and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']:
                 try:
+                    if cmd == 'ls': 
+                        self.words = ['ls', '-hide', '__pycache__'] + self.words[1:]
                     process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=self.current_directory)
                     self.write(str(process.stdout, "utf-8"))
                     self.write(str(process.stderr, "utf-8"))
                     return True
                 except Exception:
                     print(traceback.format_exc())
-            '''
-            if cmd == 'ls':
-                if self.user.wprivilages:
-                    ls_info = '<div style="column-count:4">'
-                    try:
-                        param = self.words[1]
-                    except IndexError:
-                        param = None
-                    dirs, files = [[x[1],x[2]] for x in os.walk(self.current_directory)][0]
-                    for d in dirs:
-                        if (not d.startswith('.') and d != '__pycache__') or param == '-a':
-                            ls_info += d+' '
-                    for f in files:
-                        if not f.startswith('.') or param == '-a':
-                            ls_info += f+' '
-                    ls_info += '</div>'
-                    self.write(ls_info)
-                    return True
-            
-            if cmd == 'cat':
-                if self.user.wprivilages:
-                    if len(self.words) > 1:
-                        filename = self.words[1] #TODO: make sure this is a valid filename
-                        try:
-                            f = open(self.current_directory+'/'+filename, 'r')
-                            self.write(f.read())
-                            f.close()
-                        except FileNotFoundError:
-                            self.write('Error! No file named %s.' % filename)
-                        return True
-            
-            if cmd == 'mv':
-                if self.user.wprivilages:
-                    if len(self.words) > 2:
-                        filenames = self.words[1:-1]
-                        dest = self.words[-1]
-
-                        dest_path = self._findPath([dest])
-                        allow_edits = False
-                        allow_dest_edits = False
-                        try:
-                            for i in self.game.player_edit_privilages[self.user.names[0]]:
-                                if re.fullmatch(i, self.current_directory):
-                                    allow_edits = True
-                                if re.fullmatch(i, dest_path):
-                                    allow_dest_edits = True
-                        except KeyError:
-                            pass
-
-                        if allow_dest_edits and allow_edits:
-                            if '.' not in dest_path.split('/')[-1]:
-                                for i in filenames:
-                                    if os.path.exists(self.current_directory+'/'+i):
-                                        os.replace(self.current_directory+'/'+i, dest_path+'/'+i)
-                                        add_return = subprocess.run(["git","add","-A"])
-                                        commit_return = subprocess.run(["git","commit","-m","%s moved file %s" % (self.user.names[0], i)])
-                                    else:
-                                        self.write('Error, no file named %s.' % i)
-                            else:
-                                if len(self.words) == 3:
-                                    if os.path.exists(self.current_directory+'/'+filenames[0]):
-                                        os.replace(self.current_directory+'/'+filenames[0], dest_path)
-                                        add_return = subprocess.run(["git","add","-A"])
-                                        commit_return = subprocess.run(["git","commit","-m","%s renamed file %s" % (self.user.names[0], filenames[0])])
-                                    else:
-                                        self.write('Error, no file named %s.' % filenames[0])
-                                else:
-                                    self.write('Error, input invalid.')
-                        else:
-                            self.write('You do not have permission to perform this action.')
-                    else:
-                        self.write('Usage: mv [src] [dest]')
-                    return True
-            
-            if cmd == 'rm':
-                if self.user.wprivilages:
-                    allow_edits = False
-                    try:
-                        for i in self.game.player_edit_privilages[self.user.names[0]]:
-                            if re.fullmatch(i, self.current_directory):
-                                allow_edits = True
-                                break 
-                    except KeyError:
-                        pass
-                    if allow_edits:
-                        if len(self.words) > 1:
-                            filename = self.words[1]
-                            if os.path.exists(self.current_directory+'/'+filename):
-                                self.removing_directory = self.current_directory+'/'+filename
-                                self.input_redirect = self
-                                self.write('Are you sure you would like to complete this operation? Y/n:')
-                            else:
-                                self.write('Error, no file named %s exists.' % filename)
-                        else:
-                            self.write('What did you mean to remove?')
-                    else:
-                        self.write('You do not have permission to remove files from this directory.')
-                    return True
-            
-            if cmd == 'mkdir':
-                if self.user.wprivilages:
-                    if len(self.words) > 1:
-                        filename = self.words[1]
-                        if not os.path.exists(self.current_directory+'/'+filename):
-                            os.mkdir(self.current_directory+'/'+filename)
-                        else:
-                            self.write('Error, A directory named %s already exits!' % filename)
-                    else:
-                        self.write('mkdir requires a directory name')
-                    return True
-            
-            if cmd == 'rmdir':
-                if self.user.wprivilages:
-                    if len(self.words) > 1:
-                        filename = self.words[1]
-                        try:
-                            os.rmdir(self.current_directory+'/'+filename)
-                        except FileNotFoundError:
-                            self.write('Error, no directory named %s exits.' % filename)
-                        except OSError:
-                            self.write('Error, only empty directories may be removed.')
-                    return True'''
             
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
