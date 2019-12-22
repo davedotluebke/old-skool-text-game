@@ -22,7 +22,18 @@ def clone(params=None):
     player = Player(ID, __file__, console)
     return player
 
-
+# convention: tuple of (intransitive_self, intransitive_others, transitive_self, transitive_others, transitive_target)
+emotes = {'bow':    ('You take a sweeping bow.', 
+                    '&nD%s takes a sweeping bow.', 
+                    'You bow to &nd%s.', 
+                    '&nD%s bows to &nd%s.', 
+                    '&nD%s bows to you.'),
+          'giggle': ('You giggle.', 
+                    '&nD%s giggles.', 
+                    'You giggle at &nd%s.', 
+                    '&nD%s giggles at &nd%s.',
+                    '&nD%s giggles at you.')
+         }
 class Player(Creature):
     #
     # SPECIAL METHODS (i.e __method__() format)
@@ -73,7 +84,7 @@ class Player(Creature):
         self.tutorial_act_messages_complete = {
             'look': False
         }
-
+        
     def get_saveable(self):
         saveable = super().get_saveable()
         try:
@@ -115,7 +126,7 @@ class Player(Creature):
         state = self.login_state
         if state == 'AWAITING_USERNAME':
             if  len(cmd.split()) != 1:
-                self.cons.write("Usernames must be a single word with no spaces.<br>"
+                self.cons.write("Usernames must be a single word with no spaces.\n"
                                 "Please enter your username:")
                 return
             self.names[0] = cmd.split()[0]  # strips any trailing whitespace
@@ -123,16 +134,16 @@ class Player(Creature):
             try:
                 f = open(filename, 'r+b')
                 f.close()  # success, player exists, so close file for now & check password
-                self.cons.write("Welcome back, %s!<br>Please enter your #password: " % self.names[0])
+                self.cons.write("Welcome back, %s!\nPlease enter your #password: " % self.names[0])
                 self.login_state = 'AWAITING_PASSWORD'
             except FileNotFoundError:
                 self.cons.write("No player named "+self.names[0]+" found. "
-                            "Would you like to create a new player? (yes/no)<br>")
+                            "Would you like to create a new player? (yes/no)\n")
                 self.login_state = 'AWAITING_CREATE_CONFIRM'
             return
         elif state == 'AWAITING_CREATE_CONFIRM':
             if cmd == "yes": 
-                self.cons.write("Welcome, %s!<br>Please create a #password:" % self.names[0])
+                self.cons.write("Welcome, %s!\nPlease create a #password:" % self.names[0])
                 self.login_state = 'AWAITING_NEW_PASSWORD'
                 return
             elif cmd == "no":
@@ -175,8 +186,8 @@ class Player(Creature):
                     self.cons.write("Your username or password is incorrect. Please try again.")
                     self.login_state = "AWAITING_USERNAME"
             except gametools.PlayerLoadError:
-                self.cons.write("Error loading data for player %s from file %s. <br>"
-                                "Please try again.<br>Please enter your username: " % (self.names[0], filename))
+                self.cons.write("Error loading data for player %s from file %s. \n"
+                                "Please try again.\nPlease enter your username: " % (self.names[0], filename))
                 self.login_state = "AWAITING_USERNAME"
     
     def _schedule_interactive_tutorial(self, act):
@@ -438,7 +449,6 @@ class Player(Creature):
         # TODO: a mode that prints long description only when first entering a room
         return True
     
-    
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
@@ -596,6 +606,23 @@ class Player(Creature):
         cons.write("You %s: %s" % (p.words[0], " ".join(p.words[1:])))
         return True
     
+    def emote_action(self, p, cons, oDO, oIDO):
+        if cons.user != self: 
+            return "I don't quite get what you are trying to do."
+        cmd = p.words[0]
+        if cmd not in emotes:
+            return "I don't quite understand what you are trying to do."
+        if not oDO:
+            # intransitive version of the emote verb
+            self.perceive(emotes[cmd][0])
+            self.emit(emotes[cmd][1] % self.id, [self])
+        else:
+            self.perceive(emotes[cmd][2] % oDO.id)
+            self.emit(emotes[cmd][3] % (self.id, oDO.id), [self])
+            if isinstance(oDO, Player):
+                oDO.perceive(emotes[cmd][4] % self.id)     
+        return True        
+    
     def introduce(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I'm not sure who's introducing whom."
@@ -642,6 +669,8 @@ class Player(Creature):
     actions['shout'] =      Action(say, True, True)
     actions['mutter'] =     Action(say, True, True)
     actions['whisper'] =    Action(say, True, True)
+    for verb in emotes:
+        actions[verb] =     Action(emote_action, True, True)
     actions['introduce'] =  Action(introduce, True, True)
     actions['engage'] =  Action(engage, True, False)
     actions['attack'] =  Action(engage, True, False)
