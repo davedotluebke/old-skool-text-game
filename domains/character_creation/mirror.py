@@ -6,9 +6,10 @@ class Mirror(thing.Thing):
     #
     # SPECIAL METHODS (i.e __method__() format)
     #
-    def __init__(self, what_you_see, exit_room, species=None, gender=None, adj1=None, adj2=None):
+    def __init__(self, mirror_quality, what_you_see, exit_room, species=None, gender=None, adj1=None, adj2=None):
         super().__init__('mirror', __file__)
-        self.set_description('shimmering mirror', 'In this mirror you see %s.' % what_you_see)
+        self.set_description('%s mirror' % mirror_quality, 'In this %s mirror you see %s.' % (mirror_quality, what_you_see))
+        self.add_adjectives(mirror_quality)
         self.dest = exit_room
         self.species = species
         self.gender = gender
@@ -32,10 +33,8 @@ class Mirror(thing.Thing):
     #
     def look_at(self, p, cons, oDO, oIDO):
         if self == oDO or self == oIDO:
-            if self.adj1:
-                cons.user.perceive("In this mirror you see a "+self.adj1+" "+cons.user.gender+" "+cons.user.species)
-            elif self.adj2:
-                cons.user.perceive("In this mirror you see a "+cons.user.adj1+" "+self.adj2+" "+cons.user.gender+" "+cons.user.species)
+            if self.adj2:
+                cons.user.perceive("In this mirror you see a "+self.adj1+" "+self.adj2+" "+cons.user.gender+" "+cons.user.species)
             else:
                 cons.user.perceive(self._long_desc)
             return True

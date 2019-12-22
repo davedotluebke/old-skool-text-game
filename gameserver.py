@@ -482,7 +482,7 @@ class Game():
             if i.cons:
                 i.cons.write('The game is now shutting down.')
                 self.save_player(os.path.join(gametools.PLAYER_DIR, i.names[0]), i)
-                i.cons.write('#quit')
+                i.cons.write('--#quit')
         
         for j in consoles:
             if j and j.user: # Make sure to send all messages from consoles before fully quitting game

@@ -1,6 +1,7 @@
 import pickle
 import sys
 import importlib
+import connections_websock
 import os
 
 import gametools
@@ -134,7 +135,7 @@ class Player(Creature):
             try:
                 f = open(filename, 'r+b')
                 f.close()  # success, player exists, so close file for now & check password
-                self.cons.write("Welcome back, %s!\nPlease enter your #password: " % self.names[0])
+                self.cons.write("Welcome back, %s!\nPlease enter your --#password: " % self.names[0])
                 self.login_state = 'AWAITING_PASSWORD'
             except FileNotFoundError:
                 self.cons.write("No player named "+self.names[0]+" found. "
@@ -143,7 +144,7 @@ class Player(Creature):
             return
         elif state == 'AWAITING_CREATE_CONFIRM':
             if cmd == "yes": 
-                self.cons.write("Welcome, %s!\nPlease create a #password:" % self.names[0])
+                self.cons.write("Welcome, %s!\nPlease create a --#password:" % self.names[0])
                 self.login_state = 'AWAITING_NEW_PASSWORD'
                 return
             elif cmd == "no":
@@ -173,6 +174,11 @@ class Player(Creature):
             passwd = cmd
             # XXX temporary fix, need more security
             # TODO more secure password authentication goes here
+            for oid in Thing.ID_dict:
+                if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0] and passwd == Thing.ID_dict[oid].password:
+                    self.cons.write("A copy of %s is already in the game. Would you like to take over %s? (yes/no)" % (self.names[0], self.names[0]))
+                    self.login_state = 'AWAITING_RECONNECT_CONFIRM'
+                    return
             filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
             try:
                 try:
@@ -189,6 +195,30 @@ class Player(Creature):
                 self.cons.write("Error loading data for player %s from file %s. \n"
                                 "Please try again.\nPlease enter your username: " % (self.names[0], filename))
                 self.login_state = "AWAITING_USERNAME"
+        elif state == 'AWAITING_RECONNECT_CONFIRM':
+            if cmd == 'yes':
+                for oid in Thing.ID_dict:
+                    if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0]:
+                        break
+                for websocket in connections_websock.conn_to_client:
+                    if connections_websock.conn_to_client[websocket] == self.cons:
+                        connections_websock.conn_to_client[websocket] = Thing.ID_dict[oid].cons
+                        Thing.ID_dict[oid].cons.connection = websocket
+            elif cmd == 'no':
+                self.cons.write("Okay, please enter your username: ")
+                self.login_state = "AWAITING_USERNAME"
+                return
+            elif cmd == 'restart':
+                self.cons.write("Erasing existing character and restarting from last save. Please enter your --#password again.")
+                for oid in Thing.ID_dict:
+                    if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0]:
+                        break
+                self.game.deregister_heartbeat(Thing.ID_dict[oid])
+                del Thing.ID_dict[oid]
+                self.login_state = "AWAITING_PASSWORD"
+            else:
+                self.cons.write("Please answer yes or no: ")
+                return
     
     def _schedule_interactive_tutorial(self, act):
         if self.prev_location_id != self.location.id:

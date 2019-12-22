@@ -1,12 +1,13 @@
 import thing
 import gametools
+import random
 from action import Action
 
 class Plaque(thing.Thing):
     #
     # SPECIAL METHODS (i.e __method__() format)
     #
-    def __init__(self, mirror, number):
+    def __init__(self, mirror, number=1):
         super().__init__('plaque', __file__)
         self.set_description('stone plaque', 'Thou must intone a word that well describes thee.', unlisted=True)
         self.words = ['dark-eyed',
@@ -43,6 +44,8 @@ class Plaque(thing.Thing):
                       ] 
         self.mirror = mirror
         self.number = number
+        self.mirror.adj1 = random.choice(self.words)
+        self.mirror.adj2 = random.choice(self.words)
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
@@ -74,12 +77,17 @@ class Plaque(thing.Thing):
             cons.user.perceive('You try to intone %s, but somehow just can\'t grasp it.' % sDO)
             return True
         if self.number == 1:
+            if cons.user.adj2 == sDO:
+                cons.user.perceive('You try to intone %s, but it\'s already part of you.' % sDO)
+                return True
             self.mirror.adj1 = sDO
+            self.number = 2
         elif self.number == 2:
             if cons.user.adj1 == sDO:
                 cons.user.perceive('You try to intone %s, but it\'s already part of you.' % sDO)
                 return True
             self.mirror.adj2 = sDO
+            self.number = 1
         cons.write('You see the reflection in the mirror change slightly.')
         return True
 
@@ -87,3 +95,4 @@ class Plaque(thing.Thing):
     actions['intone'] =  Action(intone, True, False)
     actions['acquire'] = Action(intone, True, False)
     actions['read'] =    Action(look_at, True, False)
+    actions['look'] =    Action(look_at, True, False)
