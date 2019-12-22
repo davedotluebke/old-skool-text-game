@@ -14,7 +14,7 @@ def load():
     road_six.add_exit('east', 'domains.centrata.firefile_area.fields.questentry')
 
     sign = scenery.Scenery('sign', 'large wooden sign', 'This sign is made of solid wood and painted on with golden paint. It appears to say something on it.')
-    sign.add_response(['read'], "The sign reads:\n<b>Wanted:</b> Skilled swordusers to help defeat serpents. Inquire to the east. Rewarded handsomely.")
+    sign.add_response(['read'], "The sign reads:\n**Wanted:** Skilled swordusers to help defeat serpents. Inquire to the east. Rewarded handsomely.")
     sign.add_adjectives('wooden')
     sign.move_to(road_six, force_move=True)
     return road_six
