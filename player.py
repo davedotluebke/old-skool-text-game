@@ -1,6 +1,7 @@
 import pickle
 import sys
 import importlib
+import connections_websock
 import os
 
 import gametools
@@ -162,6 +163,11 @@ class Player(Creature):
             passwd = cmd
             # XXX temporary fix, need more security
             # TODO more secure password authentication goes here
+            for oid in Thing.ID_dict:
+                if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0] and passwd == Thing.ID_dict[oid].password:
+                    self.cons.write("A copy of %s is already in the game. Would you like to take over %s? (yes/no)" % (self.names[0], self.names[0]))
+                    self.login_state = 'AWAITING_RECONNECT_CONFIRM'
+                    return
             filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
             try:
                 try:
@@ -178,6 +184,22 @@ class Player(Creature):
                 self.cons.write("Error loading data for player %s from file %s. \n"
                                 "Please try again.\nPlease enter your username: " % (self.names[0], filename))
                 self.login_state = "AWAITING_USERNAME"
+        elif state == 'AWAITING_RECONNECT_CONFIRM':
+            if cmd == 'yes':
+                for oid in Thing.ID_dict:
+                    if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0]:
+                        break
+                for websocket in connections_websock.conn_to_client:
+                    if connections_websock.conn_to_client[websocket] == self.cons:
+                        connections_websock.conn_to_client[websocket] = Thing.ID_dict[oid].cons
+                        Thing.ID_dict[oid].cons.connection = websocket
+            elif cmd == 'no':
+                self.cons.write("Okay, please enter your username: ")
+                self.login_state = "AWAITING_USERNAME"
+                return
+            else:
+                self.cons.write("Please answer yes or no: ")
+                return
     
     def _schedule_interactive_tutorial(self, act):
         if self.prev_location_id != self.location.id:
