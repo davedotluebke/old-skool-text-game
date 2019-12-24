@@ -58,7 +58,7 @@ class DebugLog():
         for player_id in list(self.verbosity):
             if level <= self.verbosity[player_id]:
                 try:
-                    self.ID_dict[player_id].cons.write(s)
+                    self.ID_dict[player_id].cons.write('`'+s+'`')
                 except Exception:
                     print("AN ERROR OCCURED!")
                     print(s)
