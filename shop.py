@@ -12,7 +12,7 @@ class Shopkeeper(NPC):
     # SPECIAL METHODS (i.e __method__() format)
     #
     def __init__(self, default_name, path, inventory_file):
-        super().__init__(default_name, path)
+        super().__init__(default_name, path, movement=0)
         # TODO: Loading saved shop inventory goes here
         self.inventory = [] # XXX replace
         self.default_items = []
@@ -83,6 +83,8 @@ class Shopkeeper(NPC):
         for j in self.welcomed_customers:
             if j not in self.location.contents:
                 del self.welcomed_customers[self.welcomed_customers.index(j)]
+        # Recite scripts
+        super().heartbeat()
 
     def restock(self, unnecesary_parameter):
         for i in self.default_items:

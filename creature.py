@@ -280,6 +280,9 @@ class NPC(Creature):
     
     def add_script(self, s):
         self.scripts.append(s)
+    
+    def add_act_script(self, s):
+        self.act_scripts.append(s)
 
     def forbid_room(self, r):
         self.forbidden_rooms.append(r)
