@@ -12,7 +12,8 @@ def load():
     cliff.set_description('clifftop', 'You walk out onto a massive clifftop, overlooking an endless evergreen forest carpeted with snow. You see a small wood cottage with a small pine door.')
     cottage = scenery.Scenery('cottage', 'small wood cottage', 'You see a small wood cottage, with a pine wood door.')
     cottage.move_to(cliff, True)
-    pine_door = StaffDoorway('door')
+    pine_door = StaffDoorway('door', 'pine door', 'This small pine door has some intricate carvings in it.', 'home.tate.entryway', ['tate', 'scott', 'cedric'])
+    pine_door.move_to(cliff, True)
     cliff.add_exit('east', 'domains.evergreen.mountaintop.cliff')
 
     return cliff
