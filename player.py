@@ -23,7 +23,18 @@ def clone(params=None):
     player = Player(ID, __file__, console)
     return player
 
-
+# convention: tuple of (intransitive_self, intransitive_others, transitive_self, transitive_others, transitive_target)
+emotes = {'bow':    ('You take a sweeping bow.', 
+                    '&nD%s takes a sweeping bow.', 
+                    'You bow to &nd%s.', 
+                    '&nD%s bows to &nd%s.', 
+                    '&nD%s bows to you.'),
+          'giggle': ('You giggle.', 
+                    '&nD%s giggles.', 
+                    'You giggle at &nd%s.', 
+                    '&nD%s giggles at &nd%s.',
+                    '&nD%s giggles at you.')
+         }
 class Player(Creature):
     #
     # SPECIAL METHODS (i.e __method__() format)
@@ -74,7 +85,7 @@ class Player(Creature):
         self.tutorial_act_messages_complete = {
             'look': False
         }
-
+        
     def get_saveable(self):
         saveable = super().get_saveable()
         try:
@@ -468,7 +479,6 @@ class Player(Creature):
         # TODO: a mode that prints long description only when first entering a room
         return True
     
-    
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
@@ -626,6 +636,23 @@ class Player(Creature):
         cons.write("You %s: %s" % (p.words[0], " ".join(p.words[1:])))
         return True
     
+    def emote_action(self, p, cons, oDO, oIDO):
+        if cons.user != self: 
+            return "I don't quite get what you are trying to do."
+        cmd = p.words[0]
+        if cmd not in emotes:
+            return "I don't quite understand what you are trying to do."
+        if not oDO:
+            # intransitive version of the emote verb
+            self.perceive(emotes[cmd][0])
+            self.emit(emotes[cmd][1] % self.id, [self])
+        else:
+            self.perceive(emotes[cmd][2] % oDO.id)
+            self.emit(emotes[cmd][3] % (self.id, oDO.id), [self])
+            if isinstance(oDO, Player):
+                oDO.perceive(emotes[cmd][4] % self.id)     
+        return True        
+    
     def introduce(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I'm not sure who's introducing whom."
@@ -672,6 +699,8 @@ class Player(Creature):
     actions['shout'] =      Action(say, True, True)
     actions['mutter'] =     Action(say, True, True)
     actions['whisper'] =    Action(say, True, True)
+    for verb in emotes:
+        actions[verb] =     Action(emote_action, True, True)
     actions['introduce'] =  Action(introduce, True, True)
     actions['engage'] =  Action(engage, True, False)
     actions['attack'] =  Action(engage, True, False)
