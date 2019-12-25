@@ -13,7 +13,7 @@ def load():
         'To your west you see a house, and to your east you see a blacksmith\'s shop.')
     south_village.add_exit('south', 'domains.centrata.firefile_area.fields.road_eight')
     south_village.add_exit('north', 'domains.centrata.firefile_area.village.street1')
-    south_village.add_exit('east', 'domains.centrata.firefile_area.village.blacksmiths_shop')
+    south_village.add_exit('east', 'domains.centrata.firefile_area.village.blacksmith_shop')
 
     house = scenery.Scenery('house', 'wooden house', 'This wooden house sits to the west side of the street.')
     house.add_adjectives('wooden', 'west')
