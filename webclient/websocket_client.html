@@ -362,7 +362,12 @@
                 else {
                     var encrypted_data = data;
                 }
-                ws.send(encrypted_data);
+                try {
+                    ws.send(encrypted_data);
+                } catch {
+                    state = 'MAKE_CONNECTION';
+                    receiveMessage("Your connection was interrupted.")
+                }
             }
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
             function openWebSocket(ip_address, ip_index) {

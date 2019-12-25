@@ -7,8 +7,7 @@ class Bat(creature.NPC):
         super().__init__('bat', __file__, aggressive=2)
         self.set_description('vicious bat', 'This is a vicious-looking vampire bat. It has bright red eyes.')
         self.add_adjectives('vicious', 'vampire', 'red-eyed')
-        del self.choices[0]
-        del self.choices[1]
+        self.choices = [self.attack_enemy]
         self.set_combat_vars(30, 40, 3, 87)
         self.default_weapon = gametools.clone('domains.centrata.firefile_area.key_quest.bat_bite')
         self.weapon_wielding = self.default_weapon
