@@ -31,7 +31,7 @@ class Cauldron(Container):
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
     def insert(self, obj, force_insert=False, merge_pluralities=True):
-        if super().insert(obj, force_insert, merge_pluralities=merge_pluralities): 
+        if super().insert(obj, force_insert, merge_pluralities=merge_pluralities):
             return True
         for i in Cauldron.recipes:
             ingredients = {x.names[0] for x in self.contents}
