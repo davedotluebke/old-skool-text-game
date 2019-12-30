@@ -343,12 +343,18 @@
                 }
             }
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
-            function openWebSocket(ip_address, ip_index) {
+            function openWebSocket(ip_address, ip_index, port) {
+                if (port == undefined) {
+                    port = "443";
+                }
                 setTimeout(receiveMessage,1,"Trying to connect to " + ip_address + "...");
-                ws = new WebSocket("wss://" + ip_address + ":443/");
+                ws = new WebSocket("wss://" + ip_address + ":"+port+"/");
                 ws.binaryType = "arraybuffer";
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
+                    if (port == "9124") {
+                        receiveMessage("<b style='text-color:red'>Warning! This is an insecure connection! Do not send any passwords or credit cards or it may be stolen by attackers!</b>")
+                    }
                     state = 'PLAY_GAME';
                     var ip_address_already_exists = false;
                     if (ip_address != '127.0.0.1') {
@@ -364,11 +370,15 @@
                             setCookie('formip', former_ip_addresses, 60*24*7*4);
                         }
                     }
-                    ws.send(random_number); //XXX this is not a secure solution
                 };
                 ws.onerror = function (event) {
-                    setTimeout(receiveMessage,1,"No server was found at " + ip_address);
-                    tryFormerIpAddresses(ip_index+1);
+                    if (port === "443") {
+                        openWebSocket(ip_address, ip_index, "9124");
+                    }
+                    else {
+                        setTimeout(receiveMessage,1,"No server was found at " + ip_address);
+                        tryFormerIpAddresses(ip_index+1);
+                    }
                 };
                 // What to do when receiving a message
                 ws.onmessage = receiveMessage;
