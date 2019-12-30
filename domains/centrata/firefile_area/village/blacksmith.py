@@ -5,7 +5,8 @@ def clone():
     smith = shop.Shopkeeper('blacksmith', __file__, None)
     smith.set_description('grizzled blacksmith', 'This grizzled old blacksmith looks as if he has worked '
         'behind this forge for a hundred years.')
-    smith.set_welcome_message('Welcome to my smithy, my good &s&u.')
+    smith.set_welcome_message('Welcome to my smithy, my good &s&u!')
+    smith.add_adjectives('grizzled', 'old')
     smith.act_frequency = 7
     smith.set_default_items(gametools.clone('domains.centrata.firefile_area.village.hook'))
     smith.add_act_script("""The blacksmith pumps the bellows, and the coals glow white-hot.""")

@@ -129,10 +129,6 @@
             var left_offset = 0;
             var caret_on = true;
             var ws = undefined;
-            var encryption_on = true;
-            // Warning message to warn players not using encryption. The format is due to code reuse.
-            var warningMessage = {data: '{"type": "warning", "data": "<strong style=\'color: red\'>Warning! This is an insecure connection! Do not send private information as it could be stolen by attackers!</b>"}'}
-            var random_number = Math.random().toString();
 
             document.getElementById('inputLine').focus();
 
@@ -292,25 +288,8 @@
                 var messages = document.getElementsByTagName('div')[0],
                 message = document.createElement('div');
                 if (state == 'PLAY_GAME') {
-                    if (encryption_on) {
-                        try {
-                            var msg = sjcl.decrypt(random_number, event.data);
-                        }
-                        catch(err) {
-                            encryption_on = false;
-                            msg = event.data;
-                            receiveMessage(warningMessage);
-                        }
-                    }
-                    else {
-                        var msg = event.data;
-                    }
+                    var msg = event.data;
                     msg = JSON.parse(msg);
-                    if (msg['type'] === undefined) {
-                        encryption_on = true;
-                        msg = sjcl.decrypt(random_number, event.data);
-                        msg = JSON.parse(msg);
-                    }
                     if (msg['type'] == 'file') {
                         receiveFile(msg['data']);
                         return;
@@ -356,14 +335,8 @@
                     data_dict['filename'] = filename;
                 }
                 var data = JSON.stringify(data_dict);
-                if (encryption_on) {
-                    var encrypted_data = sjcl.encrypt(random_number, data);
-                }
-                else {
-                    var encrypted_data = data;
-                }
                 try {
-                    ws.send(encrypted_data);
+                    ws.send(data);
                 } catch {
                     state = 'MAKE_CONNECTION';
                     receiveMessage("Your connection was interrupted.")
@@ -372,7 +345,7 @@
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
             function openWebSocket(ip_address, ip_index) {
                 setTimeout(receiveMessage,1,"Trying to connect to " + ip_address + "...");
-                ws = new WebSocket("ws://" + ip_address + ":9124/");
+                ws = new WebSocket("wss://" + ip_address + ":443/");
                 ws.binaryType = "arraybuffer";
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
@@ -417,18 +390,8 @@
                         window.close();
                     }
                     else {
-                        if (user_input == 'encryption off') {
-                            encryption_on = false;
-                        }
-                        else {
-                            if (user_input == 'encryption on') {
-                                encryption_on = true;
-                            }
-                            else {
-                                openWebSocket(user_input);
-                                //setTimeout(receiveMessage,1,"I didn't understand your input.");
-                            }
-                        }
+                        openWebSocket(user_input);
+                        //setTimeout(receiveMessage,1,"I didn't understand your input.");
                     }
                 }
             }
