@@ -348,7 +348,8 @@
                     port = "443";
                 }
                 setTimeout(receiveMessage,1,"Trying to connect to " + ip_address + "...");
-                ws = new WebSocket("wss://" + ip_address + ":"+port+"/");
+                if (port == "443") {ws = new WebSocket("wss://" + ip_address + ":"+port+"/")} 
+                else {ws = new WebSocket("ws://" + ip_address + ":"+port+"/")}
                 ws.binaryType = "arraybuffer";
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
