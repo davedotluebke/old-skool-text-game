@@ -58,7 +58,7 @@ class DebugLog():
         for player_id in list(self.verbosity):
             if level <= self.verbosity[player_id]:
                 try:
-                    self.ID_dict[player_id].cons.write(s)
+                    self.ID_dict[player_id].cons.write('`'+s+'`')
                 except Exception:
                     print("AN ERROR OCCURED!")
                     print(s)
@@ -66,7 +66,7 @@ class DebugLog():
             found_match = any(filter_str in s for filter_str in self.filter_strings[player_id])
             if found_match:
                 try:
-                    self.ID_dict[player_id].cons.write(s)
+                    self.ID_dict[player_id].cons.write('`'+s+'`')
                 except Exception:
                     print("AN ERROR OCCURED!")
                     print(s)

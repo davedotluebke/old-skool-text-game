@@ -15,6 +15,7 @@ from console import Console
 argparser = argparse.ArgumentParser(description="Start the game server")
 argparser.add_argument("-s", "--server", help="IP address at which the server will listen for clients")
 argparser.add_argument("-m", "--mode", help="Whether or not to use https, ssl, or encryption")
+argparser.add_argument("-d", "--duration", help="How long to run before shutting down")
 args = argparser.parse_args()
 if args.server:
     try:  # validate the ip address passed as an argument, if any
@@ -31,12 +32,16 @@ if args.mode:
 else:
     mode = 'encrypt'
 
+if args.duration:
+    duration = args.duration
+else:
+    duration = 24*60*60 - 1  # One minute less than a single day
 ## 
 ## "game" is a special global variable, an object of class Game that holds
 ## the actual game state. 
 ## 
 
-game = Game(ip, mode)
+game = Game(ip, mode, duration)
 
 Thing.game = game
 

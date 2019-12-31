@@ -5,6 +5,7 @@ import secrets
 import os
 import re
 import platform
+import traceback
 
 from debug import dbg
 from parse import Parser
@@ -286,7 +287,7 @@ class Console:
             
             if cmd == 'change':
                 if self.words[1] == 'password':
-                    self.write("Please enter your new #password:")
+                    self.write("Please enter your new --#password:")
                     self.input_redirect = self
                     self.changing_passwords = True
                     return True
@@ -308,7 +309,7 @@ class Console:
                             self.uploading_filename = self.filename_input
                         if '.' not in self.uploading_filename:
                             self.uploading_filename += '.py'
-                        self.write('Please select a file to #upload:')
+                        self.write('Please select a file to --#upload:')
                     else:
                         self.write('You do not have permission to write to this directory.')
                     return True
@@ -339,128 +340,17 @@ class Console:
                     else:
                         self.write('You do not have permission to view this directory.')
                     return True
-            
-            if cmd == 'ls':
-                if self.user.wprivilages:
-                    ls_info = '<div style="column-count:4">'
-                    try:
-                        param = self.words[1]
-                    except IndexError:
-                        param = None
-                    dirs, files = [[x[1],x[2]] for x in os.walk(self.current_directory)][0]
-                    for d in dirs:
-                        if (not d.startswith('.') and d != '__pycache__') or param == '-a':
-                            ls_info += d+' '
-                    for f in files:
-                        if not f.startswith('.') or param == '-a':
-                            ls_info += f+' '
-                    ls_info += '</div>'
-                    self.write(ls_info)
-                    return True
-            
-            if cmd == 'cat':
-                if self.user.wprivilages:
-                    if len(self.words) > 1:
-                        filename = self.words[1] #TODO: make sure this is a valid filename
-                        try:
-                            f = open(self.current_directory+'/'+filename, 'r')
-                            self.write(f.read())
-                            f.close()
-                        except FileNotFoundError:
-                            self.write('Error! No file named %s.' % filename)
-                        return True
-            
-            if cmd == 'mv':
-                if self.user.wprivilages:
-                    if len(self.words) > 2:
-                        filenames = self.words[1:-1]
-                        dest = self.words[-1]
 
-                        dest_path = self._findPath([dest])
-                        allow_edits = False
-                        allow_dest_edits = False
-                        try:
-                            for i in self.game.player_edit_privilages[self.user.names[0]]:
-                                if re.fullmatch(i, self.current_directory):
-                                    allow_edits = True
-                                if re.fullmatch(i, dest_path):
-                                    allow_dest_edits = True
-                        except KeyError:
-                            pass
-
-                        if allow_dest_edits and allow_edits:
-                            if '.' not in dest_path.split('/')[-1]:
-                                for i in filenames:
-                                    if os.path.exists(self.current_directory+'/'+i):
-                                        os.replace(self.current_directory+'/'+i, dest_path+'/'+i)
-                                        add_return = subprocess.run(["git","add","-A"])
-                                        commit_return = subprocess.run(["git","commit","-m","%s moved file %s" % (self.user.names[0], i)])
-                                    else:
-                                        self.write('Error, no file named %s.' % i)
-                            else:
-                                if len(self.words) == 3:
-                                    if os.path.exists(self.current_directory+'/'+filenames[0]):
-                                        os.replace(self.current_directory+'/'+filenames[0], dest_path)
-                                        add_return = subprocess.run(["git","add","-A"])
-                                        commit_return = subprocess.run(["git","commit","-m","%s renamed file %s" % (self.user.names[0], filenames[0])])
-                                    else:
-                                        self.write('Error, no file named %s.' % filenames[0])
-                                else:
-                                    self.write('Error, input invalid.')
-                        else:
-                            self.write('You do not have permission to perform this action.')
-                    else:
-                        self.write('Usage: mv [src] [dest]')
+            if self.user.wprivilages and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']:
+                try:
+                    if cmd == 'ls': 
+                        self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
+                    process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=self.current_directory)
+                    self.write(str(process.stdout, "utf-8"))
+                    self.write(str(process.stderr, "utf-8"))
                     return True
-            
-            if cmd == 'rm':
-                if self.user.wprivilages:
-                    allow_edits = False
-                    try:
-                        for i in self.game.player_edit_privilages[self.user.names[0]]:
-                            if re.fullmatch(i, self.current_directory):
-                                allow_edits = True
-                                break 
-                    except KeyError:
-                        pass
-                    if allow_edits:
-                        if len(self.words) > 1:
-                            filename = self.words[1]
-                            if os.path.exists(self.current_directory+'/'+filename):
-                                self.removing_directory = self.current_directory+'/'+filename
-                                self.input_redirect = self
-                                self.write('Are you sure you would like to complete this operation? Y/n:')
-                            else:
-                                self.write('Error, no file named %s exists.' % filename)
-                        else:
-                            self.write('What did you mean to remove?')
-                    else:
-                        self.write('You do not have permission to remove files from this directory.')
-                    return True
-            
-            if cmd == 'mkdir':
-                if self.user.wprivilages:
-                    if len(self.words) > 1:
-                        filename = self.words[1]
-                        if not os.path.exists(self.current_directory+'/'+filename):
-                            os.mkdir(self.current_directory+'/'+filename)
-                        else:
-                            self.write('Error, A directory named %s already exits!' % filename)
-                    else:
-                        self.write('mkdir requires a directory name')
-                    return True
-            
-            if cmd == 'rmdir':
-                if self.user.wprivilages:
-                    if len(self.words) > 1:
-                        filename = self.words[1]
-                        try:
-                            os.rmdir(self.current_directory+'/'+filename)
-                        except FileNotFoundError:
-                            self.write('Error, no directory named %s exits.' % filename)
-                        except OSError:
-                            self.write('Error, only empty directories may be removed.')
-                    return True
+                except Exception:
+                    print(traceback.format_exc())
             
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
@@ -493,7 +383,7 @@ class Console:
                 self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user, self.user))
                 self.game.save_player(os.path.join(gametools.PLAYER_DIR, self.user.names[0]), self.user)
                 self.game.create_backups(os.path.join(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, os.path.join(gametools.PLAYER_DIR, self.user.names[0]))
-                self.write("#quit")
+                self.write("--#quit")
                 if len(self.words) > 1 and self.words[1] == 'game' and self.user.wprivilages:
                     self.game.shutdown_console = self
                     self.game.keep_going = False
@@ -545,67 +435,7 @@ class Console:
         self.write('Downloading file %s...' % filename)
 
     def sanitizeHTML(self, html):
-        html = html.replace('<', '(#*tag)(||istag)').replace('>', '(#*tag)')
-        possible_tags = html.split('(#*tag)')
-        tags = []
-        nontags = []
-        first = None
-        for i in possible_tags:
-            if i.startswith('(||istag)'):
-                (head, sep, tail) = i.partition('(||istag)')
-                tags.append(tail)
-                if first == None:
-                    first = 'tag'
-            else:
-                nontags.append(i)
-                if first == None:
-                    first = 'nontag'
-        #dbg.debug('Output tags are:'+tags, 1)
-        tag_lists = []
-        for j in tags:
-            tag_and_attributes = j.split(' ')
-            if len(tag_and_attributes) > 1:
-                item = [tag_and_attributes[0], tag_and_attributes[1:]]
-            else:
-                item = [tag_and_attributes[0], []]
-            tag_lists.append(item)
-        for l in range(0, len(tag_lists)):
-            if (tag_lists[l][0] not in list(self.legal_tags)) and (tag_lists[l][0].partition('/')[2] not in list(self.legal_tags)):
-                (head, sep, tail) = tag_lists[l][0].partition('/')
-                if tail in self.empty_elements:
-                    tag_lists[l] = ['br', []]
-                elif tail not in list(self.legal_tags):
-                    if sep == '':
-                        tag_lists[l] = ['span', []]
-                    else:
-                        tag_lists[l] = ['/span', []]
-            for m in range(0, len(tag_lists[l][1])):
-                #if tag_lists[l][0].rfind('/') > -1:
-                (head, sep, tail) = tag_lists[l][1][m].partition('=')
-                if head not in self.legal_tags[tag_lists[l][0]]:
-                    tag_lists[l][1][m] = ''
-        
-        full_tags = []
-        for n in tag_lists:
-             tag = '<'
-             tag += n[0]
-             for o in n[1]:
-                tag += ' ' + o
-             tag += '>'
-             full_tags.append(tag)
-        final_html = ''
-        for p in range(0, len(full_tags)+len(nontags)):
-            if p/2 == int(p/2):
-                if first == 'tag':
-                    final_html += full_tags[int(p/2)]
-                elif first == 'nontag':
-                    final_html += nontags[int(p/2)]
-            else:
-                if first == 'tag':
-                    final_html += nontags[int(p/2)]
-                elif first == 'nontag':
-                    final_html += full_tags[int(p/2)]
-        return final_html
+        return html.replace('<', '«').replace('>', '»')
     
     def choose_measurements(self, text):
         text = text.replace('[', '||[')
@@ -643,10 +473,10 @@ class Console:
         return new_text
 
     def write(self, text, indent=0):
-        self.raw_output += str(text) + '<br>'
-        self.raw_output = self.raw_output.replace('\n','<br>').replace('\t', '&nbsp&nbsp&nbsp&nbsp')
+        self.raw_output += str(text) + '\n'
         self.raw_output = self.choose_measurements(self.raw_output)
         self.raw_output = self.sanitizeHTML(self.raw_output)
+        #self.raw_output = self.raw_output.replace('\t', '&nbsp&nbsp&nbsp&nbsp')
         asyncio.ensure_future(connections_websock.ws_send(self))
 
     def request_input(self, dest):
@@ -700,3 +530,5 @@ class Console:
         # replace any aliases with their completed version
         self.final_command = self._replace_aliases()
         return self.final_command
+
+# This is the end of file

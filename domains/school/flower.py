@@ -4,6 +4,7 @@ from action import Action
 from thing import Thing
 import gametools
 
+# A flower can be picked, or shaken for seeds
 class Flower(Thing):
     #
     # SPECIAL METHODS (i.e __method__() format)

@@ -114,7 +114,9 @@
         </form>
         <span id='box_caret_el' class="onCaret"></span>
         <script src="https://bitwiseshiftleft.github.io/sjcl/sjcl.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
         <script>
+            var converter = new showdown.Converter({simpleLineBreaks: true});
             var cmd_history = [''];
             var current_cmd = 0;
             var state = 'MAKE_CONNECTION';
@@ -127,10 +129,6 @@
             var left_offset = 0;
             var caret_on = true;
             var ws = undefined;
-            var encryption_on = true;
-            // Warning message to warn players not using encryption. The format is due to code reuse.
-            var warningMessage = {data: '{"type": "warning", "data": "<strong style=\'color: red\'>Warning! This is an insecure connection! Do not send private information as it could be stolen by attackers!</b>"}'}
-            var random_number = Math.random().toString();
 
             document.getElementById('inputLine').focus();
 
@@ -290,43 +288,26 @@
                 var messages = document.getElementsByTagName('div')[0],
                 message = document.createElement('div');
                 if (state == 'PLAY_GAME') {
-                    if (encryption_on) {
-                        try {
-                            var msg = sjcl.decrypt(random_number, event.data);
-                        }
-                        catch(err) {
-                            encryption_on = false;
-                            msg = event.data;
-                            receiveMessage(warningMessage);
-                        }
-                    }
-                    else {
-                        var msg = event.data;
-                    }
+                    var msg = event.data;
                     msg = JSON.parse(msg);
-                    if (msg['type'] === undefined) {
-                        encryption_on = true;
-                        msg = sjcl.decrypt(random_number, event.data);
-                        msg = JSON.parse(msg);
-                    }
                     if (msg['type'] == 'file') {
                         receiveFile(msg['data']);
                         return;
                     }
-                    message.innerHTML = msg['data'];
+                    message.innerHTML = converter.makeHtml(msg['data']);
                 }
                 if (state == 'MAKE_CONNECTION') {
                     message.innerHTML = event;
                 }
-                if (message.innerHTML.indexOf('#quit') > -1) {
+                if (message.innerHTML.indexOf('--#quit') > -1) {
                     state = 'MAKE_CONNECTION';
                     ws.close();
                 }
-                if (message.innerHTML.indexOf('#password') > -1) {
+                if (message.innerHTML.indexOf('--#password') > -1) {
                     state = 'SEND_PASSWORD';
                     document.getElementById('inputLine').type = 'password';
                 }
-                if (message.innerHTML.indexOf('#upload') > -1) {
+                if (message.innerHTML.indexOf('--#upload') > -1) {
                     uploadFiles();
                 }
                 messages.appendChild(message);
@@ -354,21 +335,26 @@
                     data_dict['filename'] = filename;
                 }
                 var data = JSON.stringify(data_dict);
-                if (encryption_on) {
-                    var encrypted_data = sjcl.encrypt(random_number, data);
+                try {
+                    ws.send(data);
+                } catch {
+                    state = 'MAKE_CONNECTION';
+                    receiveMessage("Your connection was interrupted.")
                 }
-                else {
-                    var encrypted_data = data;
-                }
-                ws.send(encrypted_data);
             }
             // Attempt to open a websocket at the given IP Address. Pass in -1 if ip_address = localhost
-            function openWebSocket(ip_address, ip_index) {
+            function openWebSocket(ip_address, ip_index, port) {
+                if (port == undefined) {
+                    port = "443";
+                }
                 setTimeout(receiveMessage,1,"Trying to connect to " + ip_address + "...");
-                ws = new WebSocket("ws://" + ip_address + ":9124/");
+                ws = new WebSocket("wss://" + ip_address + ":"+port+"/");
                 ws.binaryType = "arraybuffer";
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
+                    if (port == "9124") {
+                        receiveMessage("<b style='text-color:red'>Warning! This is an insecure connection! Do not send any passwords or credit cards or it may be stolen by attackers!</b>")
+                    }
                     state = 'PLAY_GAME';
                     var ip_address_already_exists = false;
                     if (ip_address != '127.0.0.1') {
@@ -384,11 +370,15 @@
                             setCookie('formip', former_ip_addresses, 60*24*7*4);
                         }
                     }
-                    ws.send(random_number); //XXX this is not a secure solution
                 };
                 ws.onerror = function (event) {
-                    setTimeout(receiveMessage,1,"No server was found at " + ip_address);
-                    tryFormerIpAddresses(ip_index+1);
+                    if (port === "443") {
+                        openWebSocket(ip_address, ip_index, "9124");
+                    }
+                    else {
+                        setTimeout(receiveMessage,1,"No server was found at " + ip_address);
+                        tryFormerIpAddresses(ip_index+1);
+                    }
                 };
                 // What to do when receiving a message
                 ws.onmessage = receiveMessage;
@@ -410,18 +400,8 @@
                         window.close();
                     }
                     else {
-                        if (user_input == 'encryption off') {
-                            encryption_on = false;
-                        }
-                        else {
-                            if (user_input == 'encryption on') {
-                                encryption_on = true;
-                            }
-                            else {
-                                openWebSocket(user_input);
-                                //setTimeout(receiveMessage,1,"I didn't understand your input.");
-                            }
-                        }
+                        openWebSocket(user_input);
+                        //setTimeout(receiveMessage,1,"I didn't understand your input.");
                     }
                 }
             }
