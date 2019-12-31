@@ -444,8 +444,8 @@ class Game():
             self.events.stop()       
 
     def start_loop(self):
-        # To have a consistant 24 hour shutdown time
-        # The start time is always the last midnight the occured.
+        # Keep track of game start time to support periodic reboots 
+        # and to serve as a random seed for various things
         self.start_time = time.time()
         print("Starting game...")
 
