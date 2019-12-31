@@ -12,7 +12,7 @@ def load():
     'To the west a cliff quickly drops off into a gushing stream. To the north a waterfall cascades over '
     'a cliff on the other side of the stream. A dark passage leads off to the southeast and another leads '
     'to the north.')
-    r.add_exit('north', 'domains.centrata.firefile_area.cave.small_tunnel')
+    r.add_exit('north', 'domains.centrata.cave.small_tunnel')
     r.add_exit('southeast', 'domains.school.forest.oil_pool')
 
     sign = scenery.Scenery('sign', 'wooden sign', 'This wooden sign has been attached - seemingly by magic - to the rock face. It appears to say something.')

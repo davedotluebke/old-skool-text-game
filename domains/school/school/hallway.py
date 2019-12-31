@@ -69,7 +69,7 @@ def load():
     hallway.insert(parrots_door, True)
 
     dragons_door = StaffDoorway('door', 'door with a carving of a dragon on it',
-    'This is a strong maple door with a gold carving of a dragon on it.', 'domains.centrata.firefile_area.key_quest.spring_room', qkey_number=3)
+    'This is a strong maple door with a gold carving of a dragon on it.', 'domains.centrata.key_quest.spring_room', qkey_number=3)
     dragons_door.add_adjectives('dragon', 'dragons', 'dragon\'s', 'maple', 'gold')
     hallway.insert(dragons_door, True)
 
