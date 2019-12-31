@@ -9,7 +9,7 @@ class Plaque(thing.Thing):
     #
     def __init__(self, mirror, number=1):
         super().__init__('plaque', __file__)
-        self.set_description('stone plaque', 'Thou must intone a word that well describes thee.', unlisted=True)
+        self.set_description('stone plaque', 'Thou must <b>intone</b> a word that well describes thee.', unlisted=True)
         self.words = ['dark-eyed',
                       'green-eyed', 
                       'red-eyed',

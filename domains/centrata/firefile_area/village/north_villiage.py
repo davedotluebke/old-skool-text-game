@@ -10,7 +10,7 @@ def load():
     north_village = room.Room('street', roomPath)
     north_village.set_description('village street', 'You find yourself on the north end of the village. There are houses on both sides of the street.')
     north_village.add_exit('south', 'domains.centrata.firefile_area.village.street2')
-    north_village.add_exit('north', 'domains.centrata.firefile_area.fields.road_nine')
+    north_village.add_exit('north', 'domains.centrata.kings_road?domains.centrata.firefile_area.village.north_village&domains.centrata.firefile_area.village.south_village&20&0')
     north_village.add_exit('east', 'domains.centrata.firefile_area.village.house1')
 
     house = scenery.Scenery('house', 'wooden house', 'This wooden house sits to the west side of the street.')

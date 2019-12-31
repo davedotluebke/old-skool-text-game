@@ -161,6 +161,8 @@ class Console:
             self.write('Current units are: %s\nType units [system] to change them.' % self.measurement_system)
 
     def _replace_aliases(self):
+        if not self.words:  # Return if there are no words to replace with aliases
+            return
         replace_words = self.words 
         if replace_words[0] in self.alias_map:
             replace_words[0] = self.alias_map[replace_words[0]]
@@ -342,7 +344,7 @@ class Console:
             if self.user.wprivilages and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']:
                 try:
                     if cmd == 'ls': 
-                        self.words = ['ls', '-hide', '__pycache__'] + self.words[1:]
+                        self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
                     process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=self.current_directory)
                     self.write(str(process.stdout, "utf-8"))
                     self.write(str(process.stderr, "utf-8"))
@@ -436,9 +438,9 @@ class Console:
         return html.replace('<', '«').replace('>', '»')
     
     def choose_measurements(self, text):
-        text = text.replace('[', '|[')
-        text = text.replace(']', ']|')
-        split_text = text.split('|')
+        text = text.replace('[', '||[')
+        text = text.replace(']', ']||')
+        split_text = text.split('||')
 
         in_measurement = False
         correct_measurement = False
