@@ -160,6 +160,8 @@ class Console:
             self.write('Current units are: %s\nType units [system] to change them.' % self.measurement_system)
 
     def _replace_aliases(self):
+        if not self.words:  # Return if there are no words to replace with aliases
+            return
         replace_words = self.words 
         if replace_words[0] in self.alias_map:
             replace_words[0] = self.alias_map[replace_words[0]]
