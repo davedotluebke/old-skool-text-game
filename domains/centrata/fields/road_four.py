@@ -12,4 +12,5 @@ def load():
     road_four.add_exit('south', 'domains.centrata.fields.road_three', caution_tape_msg="The road to the south is temporarily closed for repairs. Please take the detour via the carved staircase.")
     road_four.add_exit('north', 'domains.centrata.fields.road_five')
     road_four.add_exit('down', 'domains.centrata.cave.carved_staircase')
+    road_four.add_exit('east', 'domains.centrata.prairie?0&0')
     return road_four

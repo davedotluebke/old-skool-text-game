@@ -11,4 +11,5 @@ def load():
     road_seven.set_description('streach of road', 'This stretch of road continues through the fields, north and south. You see a small hill to your west.')
     road_seven.add_exit('south', 'domains.centrata.fields.road_six')
     road_seven.add_exit('north', 'domains.centrata.fields.road_eight')
+    road_seven.add_exit('east', 'domains.centrata.prairie?0&3')
     return road_seven
