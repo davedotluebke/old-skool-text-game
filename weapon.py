@@ -5,9 +5,6 @@ from thing import Thing
 import gametools
 
 class Weapon(Thing):
-    #
-    # SPECIAL METHODS (i.e __method__() format)
-    #
     def __init__(self, default_name, path, damage, accuracy, unwieldiness, attack_verbs=['swing'], pref_id=None):
         Thing.__init__(self, default_name, path, pref_id)
         self.damage = damage
@@ -22,6 +19,9 @@ class Weapon(Thing):
             self.actions[i] = Action(Weapon.start_attack, True, False)
         # overwrite default drop action:
         self.actions['drop'] = Action(Weapon.weapon_drop, True, False)
+    #
+    # OTHER SPECIAL METHODS (i.e __method__() format)
+    #
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
