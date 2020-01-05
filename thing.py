@@ -41,7 +41,7 @@ class Thing(object):
         dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id))
 
     def __str__(self): 
-        return self.names[0]
+        return self.id
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
