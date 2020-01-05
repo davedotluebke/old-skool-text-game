@@ -371,6 +371,7 @@
                             setCookie('formip', former_ip_addresses, 60*24*7*4);
                         }
                     }
+                    ws.send('Connected!')
                 };
                 ws.onerror = function (event) {
                     if (port === "443") {
