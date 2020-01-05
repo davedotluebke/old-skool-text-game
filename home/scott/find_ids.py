@@ -1,4 +1,4 @@
-u«Zµìmþ™ZŠvÚ±î¸import thing
+import thing
 
 def find_id(s):
     matches = []
@@ -6,4 +6,3 @@ def find_id(s):
         if i.startswith(s):
             matches.append(i)
     return matches
-

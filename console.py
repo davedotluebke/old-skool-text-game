@@ -51,6 +51,7 @@ class Console:
         self.uploading_filename = ''
         self.current_directory = 'domains'
         self.change_players = False
+        self.try_all_console_commands = False
         self.connection = net_conn
         self.input_redirect = None
         self.width = Console.default_width
@@ -341,7 +342,7 @@ class Console:
                         self.write('You do not have permission to view this directory.')
                     return True
 
-            if self.user.wprivilages and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']:
+            if (self.user.wprivilages and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']) or self.try_all_console_commands:
                 try:
                     if cmd == 'ls': 
                         self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
