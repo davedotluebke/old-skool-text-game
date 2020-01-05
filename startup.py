@@ -30,7 +30,7 @@ else:
 if args.mode:
     mode = args.mode
 else:
-    mode = 'encrypt'
+    mode = 'nocrypt'
 
 if args.duration:
     duration = args.duration
