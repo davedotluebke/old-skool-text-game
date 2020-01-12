@@ -15,4 +15,5 @@ def load():
     pine_door = StaffDoorway('door', 'pine door', 'This is a strong pine door.', 'home.scott.house.er31795', allowed_players_list=['scott', 'tate', 'cedric', 'rivques'])
     pine_door.add_adjectives('pine', 'strong')
     pine_door.move_to(cliff, True)
+    
     return cliff
