@@ -1,7 +1,6 @@
 import gametools
 import room
 
-
 def load():
     roomPath =  gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)
