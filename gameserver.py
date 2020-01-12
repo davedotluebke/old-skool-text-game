@@ -28,7 +28,7 @@ class Game():
         a list of objects that have a heartbeat (a function that runs 
         periodically), and the IP address of the server. 
     """
-    def __init__(self, server=None, mode=False):
+    def __init__(self, server=None, mode=False, duration=86400):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.server_ip = server  # IP address of server, if specified
         self.is_ssl = ('ssl' in mode) or ('https' in mode)
@@ -38,6 +38,12 @@ class Game():
         self.keep_going = True  # game ends when set to False
         self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         self.start_time = 0
+        try:
+            self.duration = int(duration)
+        except ValueError:
+            self.duration = 86400
+        except TypeError:
+            self.duration = 86400
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
         self.time = 0  # number of heartbeats since game began
@@ -427,7 +433,7 @@ class Game():
         for h in self.heartbeat_users:
             self.schedule_event(0, h.heartbeat)
 
-        if time.time() > (self.start_time + 86400):
+        if time.time() > (self.start_time + self.duration):
             self.keep_going = False
         
         if self.keep_going:
@@ -438,9 +444,9 @@ class Game():
             self.events.stop()       
 
     def start_loop(self):
-        # To have a consistant 24 hour shutdown time
-        # The start time is always the last midnight the occured.
-        self.start_time = (time.time() // 86400)*86400
+        # Keep track of game start time to support periodic reboots 
+        # and to serve as a random seed for various things
+        self.start_time = time.time()
         print("Starting game...")
 
         while not self.server_ip:
@@ -476,7 +482,7 @@ class Game():
             if i.cons:
                 i.cons.write('The game is now shutting down.')
                 self.save_player(os.path.join(gametools.PLAYER_DIR, i.names[0]), i)
-                i.cons.write('#quit')
+                i.cons.write('--#quit')
         
         for j in consoles:
             if j and j.user: # Make sure to send all messages from consoles before fully quitting game

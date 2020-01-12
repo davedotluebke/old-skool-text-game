@@ -177,15 +177,14 @@ class Creature(Container):
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
             percent_damage = damage_done/enemy.hitpoints
             message = self.get_damage_message(percent_damage)
-            self.emit('&nD%s attacks &nd%s with its %s, %s!' % (self.id, enemy, self.weapon_wielding, message), ignore=[self, enemy])
+            self.emit('&nD%s attacks &nd%s with &v%s %s, %s!' % (self.id, enemy, self.id, self.weapon_wielding, message), ignore=[self, enemy])
             self.perceive('You attack &nd%s with your %s, %s!' % (enemy, self.weapon_wielding, message))
-            enemy.perceive('&nD%s attacks you with its %s, %s!' % (self.id, self.weapon_wielding, message))
+            enemy.perceive('&nD%s attacks you with &v%s %s, %s!' % (self.id, self.id, self.weapon_wielding, message))
             enemy.take_damage(self, damage_done)
-            #TODO: Proper names and introductions: The monster attacks you with its sword, Cedric attacks you with his sword, Madiline attacks you with her sword.
         else:
-            self.emit('&nD%s attacks &nd%s with its %s, but misses.' % (self.id, enemy, self.weapon_wielding), ignore=[self, enemy])
+            self.emit('&nD%s attacks &nd%s with &v%s %s, but misses.' % (self.id, enemy, self.id, self.weapon_wielding), ignore=[self, enemy])
             self.perceive('You attack &nd%s with your %s, but miss.' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nD%s attacks you with its %s, but misses.' % (self.id, self.weapon_wielding))
+            enemy.perceive('&nD%s attacks you with &v%s %s, but misses.' % (self.id, self.id, self.weapon_wielding))
         if self not in enemy.enemies:
             enemy.enemies.append(self)
 
@@ -255,18 +254,24 @@ class Creature(Container):
     actions['examine'] = Action(look_at, True, False)
 
 class NPC(Creature):
-    def __init__(self, ID, path, aggressive=0, pref_id=None):
+    def __init__(self, ID, path, aggressive=0, movement=1, pref_id=None):
         Creature.__init__(self, ID, path)
         self.aggressive = aggressive
+        self.movement_on = movement
         self.act_frequency = 3  # how many heartbeats between NPC actions
         self.act_soon = 0       # how many heartbeats till next action
-        self.choices = [self.move_around, self.talk]  # list of things NPC might do
+        self.choices = [self.talk, self.do_act]  # list of things NPC might do
+        if self.movement_on:
+            self.choices.insert(0, self.move_around)
         if self.aggressive:     # aggressive: 0 = will never attack anyone, even if attacked by them. Will flee. 1 = only attacks enemies. 2 = attacks anyone. highly aggressive.
             self.choices.append(self.attack_enemy)
         # list of strings that the NPC might say
         self.scripts = []
         self.current_script = None
         self.current_script_idx = 0
+        self.act_scripts = []
+        self.current_act_script = None
+        self.current_act_script_idx = 0
         self.attack_now = 0
         self.attacking = False
         self.forbidden_rooms = []
@@ -275,6 +280,9 @@ class NPC(Creature):
     
     def add_script(self, s):
         self.scripts.append(s)
+    
+    def add_act_script(self, s):
+        self.act_scripts.append(s)
 
     def forbid_room(self, r):
         self.forbidden_rooms.append(r)
@@ -360,4 +368,17 @@ class NPC(Creature):
                     self.current_script_idx = 0
             else:
                 self.current_script = random.choice(self.scripts)
+    
+    def do_act(self):
+        if self.act_scripts:
+            if self.current_act_script:
+                lines = self.current_act_script.splitlines()
+                index = self.current_act_script_idx
+                self.emit(lines[index])
+                self.current_act_script_idx += 1
+                if self.current_act_script_idx == len(lines):
+                    self.current_act_script = None
+                    self.current_act_script_idx = 0
+            else:
+                self.current_act_script = random.choice(self.act_scripts)
     

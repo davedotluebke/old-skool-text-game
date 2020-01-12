@@ -10,7 +10,7 @@ def load():
     shack = room.Room('shack', roomPath)
     shack.set_description('empty shack', 'This shack appears to be abandoned and has nothing but cobwebs and walls.')
     shack.add_exit('southeast', 'domains.school.forest.field')
-    shack.jumping_destination = gametools.load_room('domains.centrata.firefile_area.key_quest.wooden_plank')
+    shack.jumping_destination = gametools.load_room('domains.centrata.key_quest.wooden_plank')
     
     rake = scenery.Scenery("rake","broken rake", "This rake looks like it broke a long time ago.")
     rake.add_adjectives("broken")

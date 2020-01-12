@@ -15,4 +15,8 @@ def load():
     pine_door.add_adjectives('pine')
     pine_door.move_to(entryway, True)
 
+    stone_door = exit_door.Door('door', 'stone door', 'This is a sturdy stone door on the southeast side of the hallway.', 'home.scott.house.descents', 'southeast')
+    stone_door.add_adjectives('stone')
+    stone_door.move_to(entryway, True)
+
     return entryway

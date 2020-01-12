@@ -1,6 +1,7 @@
 import pickle
 import sys
 import importlib
+import connections_websock
 import os
 
 import gametools
@@ -22,7 +23,18 @@ def clone(params=None):
     player = Player(ID, __file__, console)
     return player
 
-
+# convention: tuple of (intransitive_self, intransitive_others, transitive_self, transitive_others, transitive_target)
+emotes = {'bow':    ('You take a sweeping bow.', 
+                    '&nD%s takes a sweeping bow.', 
+                    'You bow to &nd%s.', 
+                    '&nD%s bows to &nd%s.', 
+                    '&nD%s bows to you.'),
+          'giggle': ('You giggle.', 
+                    '&nD%s giggles.', 
+                    'You giggle at &nd%s.', 
+                    '&nD%s giggles at &nd%s.',
+                    '&nD%s giggles at you.')
+         }
 class Player(Creature):
     #
     # SPECIAL METHODS (i.e __method__() format)
@@ -61,7 +73,19 @@ class Player(Creature):
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
         self.versions[gametools.findGamePath(__file__)] = 2
-
+        self.prev_location_id = None
+        self.tutorial_messages = {
+            'domains.character_creation.species': 'Try typing "look north mirror" and then "enter north mirror".',
+            'domains.character_creation.adjective1': 'Try intoning something from the plaque.',
+            'domains.school.school.great_hall': 'Try going to the east.'
+        }
+        self.tutorial_act_messages = {
+            'look': 'Now try entering one of the mirrors.'
+        }
+        self.tutorial_act_messages_complete = {
+            'look': False
+        }
+        
     def get_saveable(self):
         saveable = super().get_saveable()
         try:
@@ -103,7 +127,7 @@ class Player(Creature):
         state = self.login_state
         if state == 'AWAITING_USERNAME':
             if  len(cmd.split()) != 1:
-                self.cons.write("Usernames must be a single word with no spaces.<br>"
+                self.cons.write("Usernames must be a single word with no spaces.\n"
                                 "Please enter your username:")
                 return
             self.names[0] = cmd.split()[0]  # strips any trailing whitespace
@@ -111,16 +135,16 @@ class Player(Creature):
             try:
                 f = open(filename, 'r+b')
                 f.close()  # success, player exists, so close file for now & check password
-                self.cons.write("Welcome back, %s!<br>Please enter your #password: " % self.names[0])
+                self.cons.write("Welcome back, %s!\nPlease enter your --#password: " % self.names[0])
                 self.login_state = 'AWAITING_PASSWORD'
             except FileNotFoundError:
                 self.cons.write("No player named "+self.names[0]+" found. "
-                            "Would you like to create a new player? (yes/no)<br>")
+                            "Would you like to create a new player? (yes/no)\n")
                 self.login_state = 'AWAITING_CREATE_CONFIRM'
             return
         elif state == 'AWAITING_CREATE_CONFIRM':
             if cmd == "yes": 
-                self.cons.write("Welcome, %s!<br>Please create a #password:" % self.names[0])
+                self.cons.write("Welcome, %s!\nPlease create a --#password:" % self.names[0])
                 self.login_state = 'AWAITING_NEW_PASSWORD'
                 return
             elif cmd == "no":
@@ -150,6 +174,11 @@ class Player(Creature):
             passwd = cmd
             # XXX temporary fix, need more security
             # TODO more secure password authentication goes here
+            for oid in Thing.ID_dict:
+                if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0] and passwd == Thing.ID_dict[oid].password:
+                    self.cons.write("A copy of %s is already in the game. Would you like to take over %s? (yes/no)" % (self.names[0], self.names[0]))
+                    self.login_state = 'AWAITING_RECONNECT_CONFIRM'
+                    return
             filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
             try:
                 try:
@@ -163,9 +192,49 @@ class Player(Creature):
                     self.cons.write("Your username or password is incorrect. Please try again.")
                     self.login_state = "AWAITING_USERNAME"
             except gametools.PlayerLoadError:
-                self.cons.write("Error loading data for player %s from file %s. <br>"
-                                "Please try again.<br>Please enter your username: " % (self.names[0], filename))
+                self.cons.write("Error loading data for player %s from file %s. \n"
+                                "Please try again.\nPlease enter your username: " % (self.names[0], filename))
                 self.login_state = "AWAITING_USERNAME"
+        elif state == 'AWAITING_RECONNECT_CONFIRM':
+            if cmd == 'yes':
+                for oid in Thing.ID_dict:
+                    if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0]:
+                        break
+                for websocket in connections_websock.conn_to_client:
+                    if connections_websock.conn_to_client[websocket] == self.cons:
+                        connections_websock.conn_to_client[websocket] = Thing.ID_dict[oid].cons
+                        Thing.ID_dict[oid].cons.connection = websocket
+            elif cmd == 'no':
+                self.cons.write("Okay, please enter your username: ")
+                self.login_state = "AWAITING_USERNAME"
+                return
+            elif cmd == 'restart':
+                self.cons.write("Erasing existing character and restarting from last save. Please enter your --#password again.")
+                for oid in Thing.ID_dict:
+                    if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0]:
+                        break
+                self.game.deregister_heartbeat(Thing.ID_dict[oid])
+                del Thing.ID_dict[oid]
+                self.login_state = "AWAITING_PASSWORD"
+            else:
+                self.cons.write("Please answer yes or no: ")
+                return
+    
+    def _schedule_interactive_tutorial(self, act):
+        if self.prev_location_id != self.location.id:
+            if self.location.id in self.tutorial_messages:    # list of rooms with interactive tutorial messages
+                Thing.game.schedule_event(30, self.provide_interactive_tutorial, self.location.id)
+        if act in self.tutorial_act_messages and not self.tutorial_act_messages_complete[act]:
+            Thing.game.schedule_event(15, self.provide_interactive_tutorial, act)
+        self.prev_location_id = self.location.id
+    
+    def provide_interactive_tutorial(self, rid_act):
+        if rid_act in self.tutorial_messages:
+            self.cons.write(self.tutorial_messages[rid_act])
+        
+        if rid_act in self.tutorial_act_messages:
+            self.cons.write(self.tutorial_act_messages[rid_act])
+            self.tutorial_act_messages_complete[rid_act] = True
     #
     # SET/GET METHODS (methods to set or query attributes)
     #
@@ -206,12 +275,15 @@ class Player(Creature):
             if cmd != None and cmd != '__noparse__' and cmd != '__quit__':
                 self._handle_login(cmd)
             return
+        sV = None
         if cmd:
             if cmd != '__noparse__' and cmd != '__quit__':
-                old_keep_going = Thing.game.parser.parse(self, self.cons, cmd)
+                sV = Thing.game.parser.parse(self, self.cons, cmd)
             elif cmd == '__quit__':
                 self.detach()
-           
+        
+        if sV:
+            self._schedule_interactive_tutorial(sV)
 
         if self.auto_attack:            # TODO: Player Preferences
             if self.attacking:
@@ -407,7 +479,6 @@ class Player(Creature):
         # TODO: a mode that prints long description only when first entering a room
         return True
     
-    
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
@@ -484,7 +555,7 @@ class Player(Creature):
         players back to the new room.'''
         obj = None
         if not self.wprivilages:
-            return "You cannot yet perform this magical incatation correctly."
+            return "You cannot yet perform this magical incantation correctly."
         if isinstance(obj, Creature):
             return "You cannot reload players or NPCs!"
         if len(p.words) < 2: 
@@ -507,7 +578,10 @@ class Player(Creature):
         mod = importlib.reload(obj.mod)
         try:
             if isinstance(obj, Room):
-                newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
+                if obj.params:
+                    newobj = mod.load(obj.params)
+                else:
+                    newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
         except Exception:
             dbg.debug('Error reloading object %s!' % obj)
             cons.user.perceive('An error occured while reloading %s.' % obj)
@@ -565,6 +639,23 @@ class Player(Creature):
         cons.write("You %s: %s" % (p.words[0], " ".join(p.words[1:])))
         return True
     
+    def emote_action(self, p, cons, oDO, oIDO):
+        if cons.user != self: 
+            return "I don't quite get what you are trying to do."
+        cmd = p.words[0]
+        if cmd not in emotes:
+            return "I don't quite understand what you are trying to do."
+        if not oDO:
+            # intransitive version of the emote verb
+            self.perceive(emotes[cmd][0])
+            self.emit(emotes[cmd][1] % self.id, [self])
+        else:
+            self.perceive(emotes[cmd][2] % oDO.id)
+            self.emit(emotes[cmd][3] % (self.id, oDO.id), [self])
+            if isinstance(oDO, Player):
+                oDO.perceive(emotes[cmd][4] % self.id)     
+        return True        
+    
     def introduce(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I'm not sure who's introducing whom."
@@ -572,7 +663,7 @@ class Player(Creature):
             return "Usage: 'introduce myself' or 'introduce <name>' with <name> of somebody present."
         if p.words[1] != 'myself':
             return "Introducing anybody other than 'myself' is not yet supported."
-        self.emit("&nD%s introduces himself as '%s'." % (self, self.proper_name))
+        self.emit("&nD%s introduces himself as '%s'." % (self.id, self.proper_name))
         self.perceive("You introduce yourself to all.")
         for obj in self.location.contents:
             if isinstance(obj, Creature) and obj != self:
@@ -611,6 +702,8 @@ class Player(Creature):
     actions['shout'] =      Action(say, True, True)
     actions['mutter'] =     Action(say, True, True)
     actions['whisper'] =    Action(say, True, True)
+    for verb in emotes:
+        actions[verb] =     Action(emote_action, True, True)
     actions['introduce'] =  Action(introduce, True, True)
     actions['engage'] =  Action(engage, True, False)
     actions['attack'] =  Action(engage, True, False)

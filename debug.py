@@ -10,6 +10,7 @@ class DebugLog():
         self.filter_strings = {}     # map of player ids to strings; print debug comments if any match
         self.ID_dict = {}
         self.set_logfile()
+        self.print_everything = False
 
     def set_logfile(self, filename="test_log.txt"):
         self.filename = filename
@@ -28,6 +29,8 @@ class DebugLog():
     def set_verbosity(self, v, ID):
         """Set a verbosity v for the given player id."""
         self.verbosity[ID] = v
+        if v > 5:
+            self.print_everything = True
 
     def debug(self, s = "default error msg", level = 1):
         """Print the string s if level is <= current verbosity level, or if s includes 
@@ -58,7 +61,7 @@ class DebugLog():
         for player_id in list(self.verbosity):
             if level <= self.verbosity[player_id]:
                 try:
-                    self.ID_dict[player_id].cons.write(s)
+                    self.ID_dict[player_id].cons.write('`'+s+'`')
                 except Exception:
                     print("AN ERROR OCCURED!")
                     print(s)
@@ -66,12 +69,14 @@ class DebugLog():
             found_match = any(filter_str in s for filter_str in self.filter_strings[player_id])
             if found_match:
                 try:
-                    self.ID_dict[player_id].cons.write(s)
+                    self.ID_dict[player_id].cons.write('`'+s+'`')
                 except Exception:
                     print("AN ERROR OCCURED!")
                     print(s)
         if self.log:
             self.log.write("%s\n" % s)
+        if self.print_everything:
+            print(s)
 
     def shut_down(self):
         """The function that closes down the DebugLog class and file."""
