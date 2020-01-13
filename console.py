@@ -2,6 +2,7 @@ import asyncio
 import subprocess
 import connections_websock
 import secrets
+import requests
 import os
 import re
 import platform
@@ -58,7 +59,6 @@ class Console:
         self.measurement_system = Console.default_measurement_system
         self.encode_str = str(encode_str)
         self.changing_passwords = False
-        self.removing_directory = False
         self.confirming_replace = False
         self.alias_map = {'n':       'go north',
                           's':       'go south',
@@ -412,8 +412,11 @@ class Console:
             f.close()
             self.write('Sucessfully uploaded file.')
             self.file_input = bytes()
-            add_return = subprocess.run(["git","add","-A"])
-            commit_return = subprocess.run(["git","commit","-m","%s uploaded file %s" % (self.user.names[0], self.uploading_filename)])
+            try:
+                r = request.post("http://127.0.0.1:6553", data={"filepath":self.current_directory+'/'+self.uploading_filename, "commitmsg":"%s uploaded file %s" % (self.user.names[0], self.uploading_filename)})
+                self.write(r.text)
+            except:
+                self.write(traceback.format_exc())
         else:
             self.write('A file named %s already exits. Would you like to replace it with the new version you\'ve uploaded? Y/n:' % (self.current_directory+'/'+self.uploading_filename))
             self.confirming_replace = True
@@ -490,13 +493,6 @@ class Console:
             self.user.password = command
             self.changing_passwords = False
             self.input_redirect = None
-        elif self.removing_directory:
-            if command in ['yes','y','Y','Yes','YES']:
-                os.remove(self.removing_directory)
-                add_return = subprocess.run(['git','add','-A'])
-                commit_return = subprocess.run(['git','commit','-m','%s removed file %s.' % (self.user.names[0], self.removing_directory)])
-                self.removing_directory = False
-                self.input_redirect = None
         elif self.confirming_replace:
             if command in ['yes','y','Y','Yes','YES']:
                 self.input_redirect = None
