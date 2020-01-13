@@ -15,7 +15,7 @@ def load():
     human.add_adjectives('north', 'human')
     r.insert(human)
 
-    elf = mirror.Mirror('shimering','an elf, smiling back at you', 'domains.character_creation.gender', species='elf')
+    elf = mirror.Mirror('shimmering','an elf, smiling back at you', 'domains.character_creation.gender', species='elf')
     elf.add_adjectives('south', 'elf')
     r.insert(elf)
 
