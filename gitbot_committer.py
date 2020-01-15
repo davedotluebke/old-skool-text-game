@@ -1,7 +1,8 @@
-import http.server, re, os, subprocess, urllib.parse
+import http.server, re, os, subprocess, urllib.parse, time
 
 # This file is run by the gitbot on the server (seperately) to listen for requests specifying git commits that should be done.
 
+start_time = time.time()
 class PostHandler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers['content-length'])
