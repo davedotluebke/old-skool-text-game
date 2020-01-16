@@ -398,7 +398,10 @@ class Console:
         replacing_file = True
         try:
             f = open(self.current_directory+'/'+self.uploading_filename, 'r')
-            dbg.debug('Found a file. Contents: %s' % f.read(), 2)
+            try:
+                dbg.debug('Found a file. Contents: %s' % f.read(), 2)
+            except UnicodeDecodeError:
+                dbg.debug('This file is in the wrong format.')
             f.close()
         except FileNotFoundError:
             replacing_file = False
@@ -413,7 +416,7 @@ class Console:
             self.write('Sucessfully uploaded file.')
             self.file_input = bytes()
             try:
-                r = request.post("http://127.0.0.1:6553", data={"filepath":self.current_directory+'/'+self.uploading_filename, "commitmsg":"%s uploaded file %s" % (self.user.names[0], self.uploading_filename)})
+                r = requests.post("http://127.0.0.1:6553", data={"filepath":self.current_directory+'/'+self.uploading_filename, "commitmsg":"%s uploaded file %s" % (self.user.names[0], self.uploading_filename)})
                 self.write(r.text)
             except:
                 self.write(traceback.format_exc())
