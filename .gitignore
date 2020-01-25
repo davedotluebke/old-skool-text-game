@@ -6,4 +6,4 @@ test_log.txt
 !testplayer.OADplayer
 *.sec
 *.pem
-.vscode
+settings.json
