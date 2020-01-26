@@ -28,7 +28,7 @@ class Game():
         a list of objects that have a heartbeat (a function that runs 
         periodically), and the IP address of the server. 
     """
-    def __init__(self, server=None, mode=False, duration=86400):
+    def __init__(self, server=None, mode=False, duration=86400, port=9124):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.server_ip = server  # IP address of server, if specified
         self.is_ssl = ('ssl' in mode) or ('https' in mode)
@@ -44,6 +44,12 @@ class Game():
             self.duration = 86400
         except TypeError:
             self.duration = 86400
+        try:
+            self.port = port
+        except ValueError:
+            self.port = 9124
+        except TypeError:
+            self.port = 9124
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
         self.time = 0  # number of heartbeats since game began
@@ -463,10 +469,10 @@ class Game():
             ssl_context.load_cert_chain("certificate.pem", "private_key.pem")
             ssl_context.set_ciphers("ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:RSA-AES128-GCM-SHA256:RSA-AES256-GCM-SHA384:RSA-AES128-SHA:RSA-AES256-SHA:RSA-3DES-EDE-SHA")
             self.events.run_until_complete(
-                websockets.serve(connections_websock.ws_handler, self.server_ip, 9124, ssl=ssl_context))
+                websockets.serve(connections_websock.ws_handler, self.server_ip, self.port, ssl=ssl_context))
         else:
-            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, 9124))
-        print("Listening on %s port 9124..." % self.server_ip)
+            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, self.port))
+        print("Listening on %s port %s..." % (self.server_ip, self.port))
         self.events.call_later(1,self.beat)
         self.events.run_forever()
 
