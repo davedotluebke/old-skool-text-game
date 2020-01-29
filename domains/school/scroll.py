@@ -41,6 +41,8 @@ class Scroll(Thing):
 
     def heartbeat(self):
         try:
+            if not self.user:
+                return
             r = self.user.location
             if not isinstance(r, Room):
                 return

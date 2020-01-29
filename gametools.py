@@ -1,16 +1,25 @@
 import os
 import importlib
+import logging
 from debug import dbg
 from walking_os import findAllPythonFiles
 
-# the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
-gameroot = os.path.dirname(__file__) 
 
+#
+# GLOBAL GAME ATTRIBUTES
+#
+
+gameroot = os.path.dirname(__file__)  # the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
+GAME_LOG = os.path.join(gameroot, "game_log.txt")
 PLAYER_DIR = os.path.join(gameroot, "saved_players")
 PLAYER_BACKUP_DIR = os.path.join(gameroot, "backup_saved_players")
 NEW_PLAYER_START_LOC = 'domains.character_creation.start_loc'
 DEFAULT_START_LOC = 'domains.school.school.great_hall'
 
+
+#
+# CUSTOM EXCEPTIONS
+#
 class PlayerSaveError(Exception):
     pass
 
@@ -20,6 +29,9 @@ class PlayerLoadError(Exception):
 class IncorrectPasswordError(Exception):
     pass
 
+#
+# UTILITY FUNCTIONS
+# 
 def validate_func(modpath, func):
     try:
         mod = importlib.import_module(modpath)
@@ -31,6 +43,55 @@ def validate_func(modpath, func):
         dbg.debug("Error checking load on module %s: no module with path" % modpath)
         return False
 
+def findGamePath(filepath):
+    """ Change an OS filename path (separated by forward or backward slashes) to a 
+    python-style module path separated by periods."""
+    gamePath = os.path.relpath(filepath, gameroot).replace("\\", ".").replace("/", ".")
+    (head, sep, tail) = gamePath.partition(".py")
+    gamePath = head
+    return gamePath
+
+def deconstructObjectPath(path_str):
+    """The game refers to object paths using python-style module paths separated by 
+    periods, but wizards can add parameters to be passed to the objects by adding 
+    a ? character after the object path and then separating multiple parameters by 
+    the & character. See domains.centrate.prairie.py for an example of this usage."""
+    path, sep, parameters = path_str.partition('?')
+    if parameters:
+        return path, [path_str]+parameters.split('&')
+    return path, None
+
+def walklevel(some_dir, level=1):
+    some_dir = some_dir.rstrip(os.path.sep)
+    assert os.path.isdir(some_dir)
+    num_sep = some_dir.count(os.path.sep)
+    for root, dirs, files in os.walk(some_dir):
+        yield root, dirs, files
+        num_sep_this = root.count(os.path.sep)
+        if num_sep + level <= num_sep_this:
+            del dirs[:]
+
+def request_all_inputs(player, dest):
+    Thing.ID_dict[player].cons.request_input(dest)
+
+#
+# LOGGING 
+#
+game_log_handler = logging.FileHandler(GAME_LOG)
+game_log_handler.setLevel(logging.DEBUG)
+game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+game_log_handler.setFormatter(game_log_formatter)
+
+def get_game_logger(logname):
+    # TODO: Eventually this will get more elaborate, see issue #137 
+    logger = logging.getLogger(logname)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(game_log_handler)
+    return logger
+
+#
+# OBJECT CREATION/LOADING FUNCTIONS
+#
 def clone(obj_module, params=None):
     '''Load specified module, call its clone() method, and return the resulting object.
     The object's module should be specified in python package format relative to the
@@ -52,12 +113,6 @@ def clone(obj_module, params=None):
     if obj == None:
         dbg.debug("Error cloning from module %s: clone() return None" % obj_module)
     return obj
-
-def deconstructObjectPath(path_str):
-    path, sep, parameters = path_str.partition('?')
-    if parameters:
-        return path, [path_str]+parameters.split('&')
-    return path, None
 
 def load_room(modpath, report_import_error=True):
     """Attempt to load a room from its modpath (e.g. 'domains.school.testroom'). 
@@ -83,21 +138,3 @@ def load_room(modpath, report_import_error=True):
         dbg.debug("Error loading from room module %s:load() returned None" % modpath)
     return room
     
-def findGamePath(filepath):
-    gamePath = os.path.relpath(filepath, gameroot).replace("\\", ".").replace("/", ".")
-    (head, sep, tail) = gamePath.partition(".py")
-    gamePath = head
-    return gamePath
-
-def walklevel(some_dir, level=1):
-    some_dir = some_dir.rstrip(os.path.sep)
-    assert os.path.isdir(some_dir)
-    num_sep = some_dir.count(os.path.sep)
-    for root, dirs, files in os.walk(some_dir):
-        yield root, dirs, files
-        num_sep_this = root.count(os.path.sep)
-        if num_sep + level <= num_sep_this:
-            del dirs[:]
-
-def request_all_inputs(player, dest):
-    Thing.ID_dict[player].cons.request_input(dest)

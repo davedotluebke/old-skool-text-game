@@ -15,13 +15,15 @@ class Thing(object):
     # SPECIAL METHODS (i.e __method__() format)
     #
     def __init__(self, default_name, path, pref_id=None, plural_name=None):
-        self.unlisted = False # should this thing be listed in room description  
-        self.path = gametools.findGamePath(path) if path else None
         self.versions = {gametools.findGamePath(__file__): 3}
+        self._add_ID(default_name if not pref_id else pref_id)
+        self.path = gametools.findGamePath(path) if path else None
+        # name the log for this object by its path + id, unless id already == path (Rooms)
+        self.log = gametools.get_game_logger(self.path if self.id==self.path else self.path+":"+self.id)
         self.names = [default_name]
         self.plural_names = [default_name+'s' if not plural_name else plural_name]
-        self._add_ID(default_name if not pref_id else pref_id)
         self.plurality = 1  # how many identical objects this Thing represents
+        self.unlisted = False # should this thing be listed in room description  
         self._weight = 0.0
         self._volume = 0.0
         self._value = 0
@@ -263,6 +265,8 @@ class Thing(object):
         state = self.__dict__.copy()
         if state.get("actions"):
             del state["actions"]
+        if state.get("log"):
+            del state["log"]
         default_obj = gametools.clone(self.path)
         default_state = default_obj.__dict__
         for attr in list(state):
@@ -319,7 +323,7 @@ class Thing(object):
             del Thing.ID_dict[self.id]
         except KeyError:
             dbg.debug('%s was already moved from Thing.ID_dict' % self, 2)
-        if self.location:
+        if self.location and hasattr(self.location, "extract"):
             self.location.extract(self)
             self.location = None
         if self in Thing.game.heartbeat_users:
