@@ -46,13 +46,15 @@ class Thing(object):
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
-    def _add_ID(self, preferred_id, remove_existing=False):
+    def _add_ID(self, preferred_id:str, remove_existing=False):
         """Add object to Thing.ID_dict (the dictionary mapping IDs to objects).
 
-        Takes a preferred ID string and (if necessary) creates a unique ID
-        string from it. Returns the unique ID string. If <remove_existing> is
-        set to True, first attempts to delete this object's current ID from 
-        Thing.ID_dict (useful for assigning new IDs to existing objects)"""
+        Takes a preferred ID string, replaces any spaces with underscores, 
+        and (if necessary) creates a unique ID string from it. Returns the 
+        unique ID string. If <remove_existing> is set to True, first attempts 
+        to delete this object's current ID from Thing.ID_dict (useful for 
+        assigning new IDs to existing objects)"""
+        preferred_id = preferred_id.replace(" ", "_")
         if remove_existing:
             try:
                 del Thing.ID_dict[self.id]
