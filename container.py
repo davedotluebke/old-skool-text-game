@@ -113,7 +113,9 @@ class Container(Thing):
 
     def extract(self, obj):
         """Remove obj (which may be plural) from this Container, returning 
-        the extracted object or returning True if the operation failed."""
+        the extracted object or returning True if the operation failed.
+        NOTE: if extraction is successful, obj.location is set to None. 
+        The calling code should set it to the objects new location, if any."""
         # TODO: raise exceptions specific to "object not found" or "not enough objects"
 
         if obj not in self.contents:
@@ -122,6 +124,7 @@ class Container(Thing):
         
         i = self.contents.index(obj)  # no need for try..except since we already know obj in list
         del self.contents[i]
+        obj.location = None
         return obj
 
     def close(self):
