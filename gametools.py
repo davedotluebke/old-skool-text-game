@@ -66,7 +66,7 @@ def request_all_inputs(player, dest):
 # LOGGING 
 #
 game_log_handler = logging.FileHandler(GAME_LOG)
-game_log_handler.setLevel(logging.DEBUG)
+game_log_handler.setLevel(logging.WARNING)
 game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 game_log_handler.setFormatter(game_log_formatter)
 
