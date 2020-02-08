@@ -161,7 +161,7 @@ class Player(Creature):
             # TODO secure password authentication goes here
             self.id = self._add_ID(self.names[0])            
             self.proper_name = self.names[0].capitalize()
-            dbg.debug("Creating player id %s with default name %s" % (self.id, self.names[0]))
+            self.log.info("Creating player id %s with default name %s" % (self.id, self.names[0]))
             start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
             start_room.insert(self)
             self.perceive("\nWelcome to Firefile Sorcery School!\n\n"
@@ -183,7 +183,7 @@ class Player(Creature):
             try:
                 try:
                     newuser = self.game.load_player(filename, self.cons, password=passwd)
-                    dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]))
+                    self.log.info("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]))
                     newuser.login_state = None
                     self.login_state = None
                     self.game.deregister_heartbeat(self)
@@ -299,7 +299,7 @@ class Player(Creature):
                         self.attacking = i
                         self.attack_enemy(i)
             except AttributeError:
-                dbg.debug('Error! Location is a string!')
+                self.log.error('Error! Location is a string!')
         elif self.engaged:
             if self.attacking:
                 if self.attacking == 'quit':
@@ -583,7 +583,7 @@ class Player(Creature):
                 else:
                     newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
         except Exception:
-            dbg.debug('Error reloading object %s!' % obj)
+            self.log.error('Error reloading object %s!' % obj)
             cons.user.perceive('An error occured while reloading %s.' % obj)
             for c in alive:
                 c.move_to(obj)

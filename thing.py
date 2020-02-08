@@ -40,7 +40,7 @@ class Thing(object):
         self._spawn_message = None
 
     def __del__(self):
-        dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id))
+        self.log.info('Deleting object: %s: %s.' % (self.names[0], self.id))
 
     def __str__(self): 
         return self.id
@@ -59,9 +59,9 @@ class Thing(object):
             try:
                 del Thing.ID_dict[self.id]
             except AttributeError:
-                dbg.debug('%s has no id attribute!' % self)
+                self.log.error('%s has no id attribute!' % self)
             except KeyError:
-                dbg.debug('%s.id was not in Thing.ID_dict!' % self)
+                self.log.error('%s.id was not in Thing.ID_dict!' % self)
         self.id = preferred_id
         while self.id in Thing.ID_dict:     # unique-ify self.id if necessary
             self.id = self.id + str(random.randint(0, 9))
@@ -104,8 +104,7 @@ class Thing(object):
 
     def set_weight(self, grams):
         if (grams < 0):
-            dbg.debug("Error: weight cannot be negative")
-            raise
+            raise ValueError("Error: weight cannot be negative")
         else:
             self._weight = grams
     
@@ -115,8 +114,7 @@ class Thing(object):
 
     def set_volume(self, liters):
         if (liters < 0):
-            dbg.debug("Error: volume cannot be negative")
-            raise
+            raise ValueError("Error: volume cannot be negative")
         else:
             self._volume = liters
     
@@ -129,8 +127,7 @@ class Thing(object):
             self._spawn_interval = None
             return
         if (seconds < 0):
-            dbg.debug("Error: spawn interval cannot be negative")
-            raise
+            raise ValueError("spawn interval cannot be negative")
         else:
             self._spawn_interval = seconds
 
@@ -282,7 +279,7 @@ class Thing(object):
         for i in saveable:
             if isinstance(saveable[i], set):
                 saveable[i] = list(saveable[i])
-                dbg.debug('%s.%s was set' % (self.id, i))
+                self.log.debug('%s.%s was set' % (self.id, i))
         
         return saveable
 
@@ -322,7 +319,7 @@ class Thing(object):
         try:
             del Thing.ID_dict[self.id]
         except KeyError:
-            dbg.debug('%s was already moved from Thing.ID_dict' % self, 2)
+            self.log.error('%s was already removed from Thing.ID_dict' % self)
         if self.location and hasattr(self.location, "extract"):
             self.location.extract(self)
             self.location = None
@@ -356,7 +353,7 @@ class Thing(object):
                     del self.__dict__['long_desc']
                 self.version_number = 2
             except KeyError:
-                dbg.debug('Error updating object %s in Thing.update_version()' % self)
+                self.log.error('Error updating object %s in Thing.update_version()' % self)
         
         if hasattr(self, 'version_number'):
             # Changing to dictionary-based versioning system
@@ -391,13 +388,13 @@ class Thing(object):
         try:
             if holder not in ignore and hasattr(holder, 'perceive'):
                 # immediate container can see messages, probably a creature/player
-                dbg.debug("creature holding this object is: " + holder.id, 4)
+                self.log.debug("creature holding this object is: " + holder.id)
                 holder.perceive(message)
         except TypeError:
-            dbg.debug("Warning, emit() called with non-list ignore parameter!")
+            self.log.warning("Warning, emit() called with non-list ignore parameter!")
         # now get list of recipients (usually creatures) contained by holder (usually a Room)
         recipients = [x for x in holder.contents if hasattr(x, 'perceive') and (x is not self) and (x not in ignore)]
-        dbg.debug("other creatures in this room include: " + str(recipients), 4)
+        self.log.debug("other creatures in this room include: " + str(recipients))
         for recipient in recipients:
             recipient.perceive(message)
 

@@ -1,5 +1,4 @@
 import sys
-import traceback
 import re
 
 from word2number import w2n
@@ -16,6 +15,9 @@ class Parser:
                 "1st":1, "2nd":2, "3rd":3, "4th":4, "5th":5, "6th":6, "7th":7, "8th":8, "9th":9, "10th":10}
     cardinals = w2n.american_number_system  # list of number words, e.g. "one", "eleven", "thousand"
     del cardinals["point"]  # don't need decimal-point notation 
+
+    def __init__(self):
+        self.log = gametools.get_game_logger("_parser")
 
     def _split_and_simplify(self, s):
         """Split command into words using whitespace, remove articles
@@ -95,8 +97,8 @@ class Parser:
         if sDO == "": sDO = None    # no direct object
         if sIDO == "": sIDO = None  # no indirect object 
         if not sIDO: 
-            dbg.debug("Possibly malformed input: found preposition %s but missing indirect object." % sPrep, 2)
-            dbg.debug("Ending a sentence in a preposition is something up with which I will not put.", 2)
+            self.log.warning("Possibly malformed input: found preposition %s but missing indirect object." % sPrep, 2)
+            self.log.warning("Ending a sentence in a preposition is something up with which I will not put.", 2)
         return (sV, sDO, sPrep, sIDO)
 
     def _collect_possible_objects(self, user:Player, inventory = True, environment = True):
@@ -206,7 +208,7 @@ class Parser:
                         sNoun))
                     return False
 
-            dbg.debug("local_matches in '%s' are: %s" % (s, ' '.join(obj.id for obj in local_matches)), 3)        
+            self.log.debug("local_matches in '%s' are: %s" % (s, ' '.join(obj.id for obj in local_matches)))        
             if len(local_matches) > 1:
                 candidates = ", or the ".join(o._short_desc for o in local_matches)
                 cons.write("By '%s', do you mean the %s? Please provide more adjectives, use 'my' to specify "
@@ -230,7 +232,7 @@ class Parser:
                     obj.plurality = number
                 matched_objects += [obj]
         
-        dbg.debug("matched_objects in '%s' are: %s" % (sObj, ' '.join(obj.id for obj in matched_objects)), 4)
+        self.log.debug("matched_objects in '%s' are: %s" % (sObj, ' '.join(obj.id for obj in matched_objects)))
         return matched_objects
 
     def _try_verb_from_obj(self, sV, obj, oDO, oIDO, cons):
@@ -243,14 +245,13 @@ class Parser:
         try:
             act = obj.actions[sV]
         except KeyError:
-            dbg.debug('%s had no action %s!' % (obj, sV))
+            self.log.error('%s had no action %s!' % (obj, sV))
             return False
         try:  ### ENACT THE VERB ###
             result = act.func(obj, self, cons, oDO, oIDO) 
         except Exception:  # error, roll back any plurality changes and return True
             cons.write('An error has occured. Please try a different action until the problem is resolved.')
-            dbg.debug(traceback.format_exc())
-            dbg.debug("Error caught!")
+            self.log.exception("Error occured in parser:")
             result = True   # upon error, don't go do a different action - user probably intended this one
         return result
 
@@ -276,7 +277,7 @@ class Parser:
             except IndexError:  # out of objects, done
                 break
             except AttributeError:  # something else went wrong, bail out
-                dbg.debug("AttributeError: called obj_list.pop() for obj_list = %s" % obj_list)
+                self.log.warning("AttributeError: called obj_list.pop() for obj_list = %s" % obj_list)
                 break
                 
 
@@ -289,7 +290,7 @@ class Parser:
         objects (if any) each time. 
         """
 
-        dbg.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console), 3)
+        self.log.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
         
         # Split command into words, remove articles, convert to lowercase--but
         # don't modify "strings" of text between quotes; treat these as 1 word
@@ -331,7 +332,7 @@ class Parser:
                              + " verb %s!" % sV)
             # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
             return True
-        dbg.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects), 4)
+        self.log.debug("Parser: Possible objects matching sV '%s': " % ' '.join(o.id for o in possible_verb_objects))
 
         # If multiple direct or indirect objects, enact the verb on each in turn.
         # See discussion in issue #89: the correct verb function (action) could come from 

@@ -32,17 +32,6 @@ class IncorrectPasswordError(Exception):
 #
 # UTILITY FUNCTIONS
 # 
-def validate_func(modpath, func):
-    try:
-        mod = importlib.import_module(modpath)
-        if hasattr(mod, func):
-            return True
-        else:
-            return False
-    except ImportError:
-        dbg.debug("Error checking load on module %s: no module with path" % modpath)
-        return False
-
 def findGamePath(filepath):
     """ Change an OS filename path (separated by forward or backward slashes) to a 
     python-style module path separated by periods."""
@@ -105,13 +94,13 @@ def clone(obj_module, params=None):
             obj = mod.clone()
         obj.mod = mod
     except ImportError:
-        dbg.debug("Error importing module %s" % obj_module)
+        get_game_logger("_gametools").error("Error importing module %s" % obj_module)
         return None
     except AttributeError:
-        dbg.debug("Error cloning from module %s: no clone() method" % obj_module)
+        get_game_logger("_gametools").error("Error cloning from module %s: no clone() method" % obj_module)
         return None
     if obj == None:
-        dbg.debug("Error cloning from module %s: clone() return None" % obj_module)
+        get_game_logger("_gametools").error("Error cloning from module %s: clone() return None" % obj_module)
     return obj
 
 def load_room(modpath, report_import_error=True):
@@ -129,12 +118,12 @@ def load_room(modpath, report_import_error=True):
         room.params = params
     except ImportError:
         if report_import_error:
-            dbg.debug("Error importing room module %s" % modpath)
+            get_game_logger("_gametools").error("Error importing room module %s" % modpath)
         return None
     except AttributeError:
-        dbg.debug("Error loading from room module %s: no load() method" % modpath)
+        get_game_logger("_gametools").error("Error loading from room module %s: no load() method" % modpath)
         return None
     if room == None:
-        dbg.debug("Error loading from room module %s:load() returned None" % modpath)
+        get_game_logger("_gametools").error("Error loading from room module %s:load() returned None" % modpath)
     return room
     

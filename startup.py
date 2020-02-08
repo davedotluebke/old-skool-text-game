@@ -2,7 +2,6 @@ import sys
 import argparse
 import ipaddress
 import importlib
-import traceback
 
 from debug import dbg
 import gametools
@@ -23,7 +22,7 @@ if args.server:
         ipaddress.ip_address(args.server)
         ip = args.server
     except ValueError:
-        dbg.debug("Error: %s is not a valid IP address! Exiting..." % args.server)
+        gametools.get_game_logger("_startup").critical("Error: %s is not a valid IP address! Exiting..." % args.server)
         sys.exit("Invalid IP address specified on command line")
 else:
     ip = None
