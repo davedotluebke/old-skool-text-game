@@ -1,7 +1,6 @@
 from thing import Thing
 from room import Room
 from creature import NPC
-from debug import dbg
 from action import Action
 from money import Money
 from money import get_change

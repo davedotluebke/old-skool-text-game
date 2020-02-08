@@ -8,7 +8,6 @@ import re
 import platform
 import traceback
 
-from debug import dbg
 from parse import Parser
 from player import Player
 import gametools

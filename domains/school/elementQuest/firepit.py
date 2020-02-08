@@ -1,5 +1,3 @@
-from debug import dbg
-
 import room
 import scenery
 import thing

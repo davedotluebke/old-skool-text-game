@@ -4,7 +4,6 @@ import re
 from word2number import w2n
 
 import gametools
-from debug import dbg
 from container import Container
 from player import Player
 

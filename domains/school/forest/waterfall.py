@@ -2,7 +2,6 @@ import gametools
 import room
 import scenery
 import action
-from debug import dbg
 
 class Waterfall(scenery.Scenery):
     #

@@ -5,7 +5,6 @@ import gametools
 import scenery
 import room
 import random
-from debug import dbg
 
 cooridoor_exits = {}
 

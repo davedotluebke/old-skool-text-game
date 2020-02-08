@@ -1,5 +1,3 @@
-from debug import dbg
-
 from thing import Thing
 from container import Container
 import gametools

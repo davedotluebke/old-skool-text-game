@@ -5,7 +5,6 @@ import connections_websock
 import os
 
 import gametools
-from debug import dbg
 
 from thing import Thing
 from room import Room

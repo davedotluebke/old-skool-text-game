@@ -1,7 +1,5 @@
 from collections import namedtuple
 
-from debug import dbg
-
 Action = namedtuple('Action', ['func', 'trans', 'intrans'])
 """An action the player can do, associated with an object in the game or
 with a class of objects.  Specifies an action function <func> which is

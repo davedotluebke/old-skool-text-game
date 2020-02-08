@@ -2,7 +2,6 @@ from thing import Thing
 from action import Action
 from room import Room
 from container import Container
-from debug import dbg
 
 class Scroll(Thing):
     #

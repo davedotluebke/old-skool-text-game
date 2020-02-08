@@ -5,7 +5,6 @@ from thing import Thing
 from liquid import Liquid
 from room import Room
 
-from debug import dbg
 from action import Action
 
 class PinkPotion(Liquid):
