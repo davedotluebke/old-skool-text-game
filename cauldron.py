@@ -49,16 +49,22 @@ class Cauldron(Container):
         self.destroy()
 
     def create_potion(self, i):
-        while self.contents:
-            a = self.contents[0]
-            self.extract(a)
-            a.destroy()
+        failmsg = 'Something has gone wrong; the cauldron emits a puff of smoke and the smell of magic gone wrong, but nothing else happens.'
+        potion_name = 'potions.'+i[1].replace(' ', '_')
         try:
-            created = gametools.clone('potions.'+i[1].replace(' ', '_'))
+            created = gametools.clone(potion_name)
             created.move_to(self)
         except FileNotFoundError:
-            dbg.debug('Error! Cauldron recipies dictionary called for the creation of %s, but no file was found!')
-        self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.get_short_desc()))
+            self.log.error('Cauldron recipies dictionary called for the creation of %s, but no file was found!' % potion_name)
+            self.emit(failmsg)
+        except: 
+            self.log.error('File found but unspecified error cloning potion %s ' % potion_name)
+            self.emit(failmsg)
+        else:
+            for a in set(self.contents) - {created}:
+                self.extract(a)
+                a.destroy()
+            self.emit('The contents of the cauldron simmer, smoke, then vanish with a bang! In their place a %s has formed.' % (created.get_short_desc()))
         
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
