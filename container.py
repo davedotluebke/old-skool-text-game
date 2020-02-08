@@ -1,6 +1,5 @@
 import importlib
 
-from debug import dbg
 from thing import Thing
 from action import Action
 import gametools
@@ -77,22 +76,22 @@ class Container(Thing):
         If <force_insert> is True, ignore weight and volume limits."""
         # error checking for max weight etc goes here
         if obj is self:
-            dbg.debug('Trying to insert into self - not allowed!')
+            self.log.debug('Trying to insert into self - not allowed!')
             return True
         if obj == None:
-            dbg.debug('Trying to insert a null object into %s!' % self)
+            self.log.debug('Trying to insert a null object into %s!' % self)
             return True
         if obj.id not in Thing.ID_dict and force_insert == False:
-            dbg.debug("Now returns True when an object's id not in Thing.ID_dict")
+            self.log.debug("Now returns True when an object's id not in Thing.ID_dict")
             return True
         contents_weight = 0.0
         contents_volume = 0.0
         for w in self.contents:
             contents_weight = contents_weight + w.get_weight()
             contents_volume = contents_volume + w.get_volume()
-        dbg.debug("insert(): %s currently carrying %d weight and %d volume" % (self.id, contents_weight, contents_volume), 4)
+        self.log.debug("insert(): %s currently carrying %d weight and %d volume" % (self.id, contents_weight, contents_volume))
         if (force_insert == True) or (self.max_weight_carried >= contents_weight+obj.get_weight() and self.max_volume_carried >= contents_volume+obj.get_volume()):
-            dbg.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.get_weight(), obj.get_volume()), 4)
+            self.log.debug("%s has room for %s's %d weight and %d volume" % (self.id, obj.id, obj.get_weight(), obj.get_volume()))
             # Success! The object fits in the container, add it.  
             self.contents.append(obj)
             obj.set_location(self)   # make this container the location of obj
@@ -105,10 +104,10 @@ class Container(Thing):
                         break
             return False
         else:
-            dbg.debug("The weight(%d) and volume(%d) of the %s can't be held by the %s, "
+            self.log.debug("The weight(%d) and volume(%d) of the %s can't be held by the %s, "
                   "which can only carry %d grams and %d liters (currently "
                   "holding %d grams and %d liters)" 
-                  % (obj.get_weight(), obj.get_volume(), obj.id, self.id, self.max_weight_carried, self.max_volume_carried, contents_weight, contents_volume), 3)
+                  % (obj.get_weight(), obj.get_volume(), obj.id, self.id, self.max_weight_carried, self.max_volume_carried, contents_weight, contents_volume))
             return True
 
     def extract(self, obj):
@@ -119,7 +118,7 @@ class Container(Thing):
         # TODO: raise exceptions specific to "object not found" or "not enough objects"
 
         if obj not in self.contents:
-            dbg.debug("Error! "+str(self)+" doesn't contain item "+str(obj.id))
+            self.log.error("Error! "+str(self)+" doesn't contain item "+str(obj.id))
             return True
         
         i = self.contents.index(obj)  # no need for try..except since we already know obj in list

@@ -2,7 +2,6 @@ import io
 import os
 import sys
 import ipaddress
-import traceback
 import random
 import time
 import asyncio
@@ -15,7 +14,6 @@ import json
 
 import gametools
 
-from debug import dbg
 from thing import Thing
 from player import Player
 from parse import Parser
@@ -30,6 +28,7 @@ class Game():
     """
     def __init__(self, server=None, mode=False, duration=86400, port=9124):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
+        self.log = gametools.get_game_logger("_gameserver")
         self.server_ip = server  # IP address of server, if specified
         self.is_ssl = ('ssl' in mode) or ('https' in mode)
         self.encryption_setting = not ('nocrypt' in mode or 'no' in mode or 'noencrypt' in mode)
@@ -109,10 +108,10 @@ class Game():
         # TODO: move below code for deleting player to Player.__del__()
         # Unlink player object from room, contents:
         if self.user.location.extract(self.user):
-            dbg.debug("Error deleting player from room during load_game()")
+            self.log.error("Error deleting player from room during load_game()")
         for o in self.user.contents: 
             if self.user.extract(o):
-                dbg.debug("Error deleting contents of player (%s) during load_game()" % o)
+                self.log.error("Error deleting contents of player (%s) during load_game()" % o)
         self.cons.user = None
         
         self.user, self.heartbeat_users = newgame.user, newgame.heartbeat_users
@@ -160,7 +159,7 @@ class Game():
         try:
             player.save_cons_attributes()
         except Exception:
-            dbg.debug('Error saving console attributes for player %s!' % player)
+            self.log.error('Error saving console attributes for player %s!' % player)
 
         # Keep a list of "broken objects" to destroy
         broken_objs = []
@@ -181,14 +180,14 @@ class Game():
                 if hasattr(obj, 'default_armor'):
                     l += [obj.default_armor]
             except Exception:
-                dbg.debug('Error uniquifying the ID of %s. Removing from player inventory.' % obj)
+                self.log.error('Error uniquifying the ID of %s. Removing from player inventory.' % obj)
                 broken_objs.append(obj)
                 
         for obj in broken_objs:
             try:
                 obj.destroy()
             except Exception:
-                dbg.debug('Error destroying object %s!' % obj)
+                self.log.exception('Error destroying object %s!' % obj)
                 # TODO: figure out what to do here
 
         if not filename.endswith('.OADplayer'): 
@@ -211,8 +210,7 @@ class Game():
             Thing.ID_dict = backup_ID_dict # ESSENTIAL THAT WE DO THIS!
         except TypeError:
             player.cons.write("Error writing to file %s" % filename)
-            dbg.debug('A TypeError occured while trying to save player %s. Printing below:' % player)
-            dbg.debug(traceback.format_exc())
+            self.log.exception('A TypeError occured while trying to save player %s. Printing below:' % player)
             Thing.ID_dict = backup_ID_dict
         # restore location & contents etc to obj references:
         for obj in l:
@@ -220,9 +218,7 @@ class Game():
                 obj._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(obj)
-                dbg.debug('An error occured while loading %s! Printing below:')
-                dbg.debug(traceback.format_exc())
-                dbg.debug('Error caught!')
+                self.log.exception('An error occured while loading %s! Printing below:')
 
         # restore original IDs by removing tag
         for obj in l:
@@ -280,7 +276,7 @@ class Game():
                 if o.contents:
                     eraselist += o.contents
                 if o.location.extract(o):
-                    dbg.debug("Error deleting player or inventory during load_game(): object %s contained in %s " % (o, o.location))
+                    self.log.error("Error deleting player or inventory during load_game(): object %s contained in %s " % (o, o.location))
                 if o in self.heartbeat_users:
                     self.deregister_heartbeat(o)
                 del Thing.ID_dict[o.id]
@@ -296,7 +292,7 @@ class Game():
         loc_str = newplayer.location
         newplayer.location = gametools.load_room(loc_str) 
         if newplayer.location == None: 
-            dbg.debug("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer))
+            self.log.warning("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer))
             cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
             newplayer.location = gametools.load_room('domains.school.school.great_hall')
 
@@ -310,9 +306,7 @@ class Game():
                 o._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(o)
-                dbg.debug('An error occured while loading %s! Printing below:')
-                dbg.debug(traceback.format_exc())
-                dbg.debug('Error caught!')
+                self.log.exception('An error occured while loading %s! Printing below:')
         # Now de-uniquify all IDs, replace object.id and ID_dict{} entry
         for o in l:
             try:
@@ -321,9 +315,7 @@ class Game():
                 o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
             except Exception:
                 broken_objs.append(o)
-                dbg.debug('An error occured while loading %s! Printing below:')
-                dbg.debug(traceback.format_exc())
-                dbg.debug('Error caught!')
+                self.log.exception('An error occured while loading %s! Printing below:')
 
         # Make sure that broken objects are removed from their container's contents list
         reference_check = [newplayer]
@@ -344,7 +336,7 @@ class Game():
             try:
                 o.destroy()
             except Exception:
-                dbg.debug('Error destroying object %s!' % o)
+                self.log.error('Error destroying object %s!' % o)
                 #TODO: Figure out what to do here
 
         room = newplayer.location
@@ -354,7 +346,7 @@ class Game():
             room.report_arrival(newplayer, silent=True)
             room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         except Exception:
-            dbg.debug('Error inserting player into location! Moving player back to default start location')
+            self.log.error('Error inserting player into location! Moving player back to default start location')
             room = gametools.load_room(newplayer.start_loc_id)
             cons.write("Restored game state from file %s" % filename)
             room.report_arrival(newplayer, silent=True)
@@ -391,14 +383,14 @@ class Game():
         if obj not in self.heartbeat_users:
             self.heartbeat_users.append(obj)
         else:
-            dbg.debug("object %s is already in the heartbeat_users list!" % obj, 2)
+            self.log.warning("object %s is already in the heartbeat_users list!" % obj)
     
     def deregister_heartbeat(self, obj):
         """Remove the specified object (obj) from the heartbeat_users list"""
         if obj in self.heartbeat_users:
             del self.heartbeat_users[self.heartbeat_users.index(obj)]
         else:
-            dbg.debug("object %s, not in heartbeat_users, tried to deregister heartbeat!" % obj, 2)
+            self.log.warning("object %s, not in heartbeat_users, tried to deregister heartbeat!" % obj)
     
     def schedule_event(self, delay, func, *params):
         """Helper function to guarentee that all asyncio event calls are in a try/except statement."""
@@ -410,9 +402,7 @@ class Game():
             try:
                 func(*params)
             except:
-                dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
-                dbg.debug(traceback.format_exc())
-                dbg.debug('Error caught!')
+                self.log.exception("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
         else:
             func(*params)
         profile_et = time.time()
@@ -427,14 +417,12 @@ class Game():
             self.total_times[funcname] = profile_t
             self.numrun_times[funcname] = 1
             self.maximum_times[funcname] = profile_t
-        dbg.debug("Function %s took %s seconds" % (funcname, profile_t), 4)
+        self.log.debug("Function %s took %s seconds" % (funcname, profile_t))
         
     
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-        dbg.debug("Beat! game.time = %s" % self.time, 5)
-        dbg.debug("Time since game began (in seconds): %s" % (time.time() - self.start_time), 5)
 
         for h in self.heartbeat_users:
             self.schedule_event(0, h.heartbeat)
@@ -494,6 +482,6 @@ class Game():
             if j and j.user: # Make sure to send all messages from consoles before fully quitting game
                 self.events.run_until_complete(connections_websock.ws_send(j))                
 
-        dbg.debug("Exiting main game loop!")
+        self.log.critical("Exiting main game loop!")
         dbg.shut_down()
         sys.exit(restart_code)
