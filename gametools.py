@@ -82,8 +82,16 @@ game_log_handler.setLevel(logging.WARNING)
 game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 game_log_handler.setFormatter(game_log_formatter)
 
-def get_game_logger(logname):
+def get_game_logger(obj):
     # TODO: Eventually this will get more elaborate, see issue #137 
+    if isinstance(obj, str):
+        logname = obj
+    else:
+        if obj.path:
+            # name the log for this object by its path + id, unless id already == path (Rooms)
+            logname = obj.path + "" if obj.id==obj.path else ":"+obj.id
+        else:
+            logname = obj.id
     logger = logging.getLogger(logname)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(game_log_handler)
