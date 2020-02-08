@@ -29,7 +29,7 @@ class Scroll(Thing):
             if self.user:
                 self.user = self.user.id
         except Exception:
-            dbg.debug('something went wrong in the scroll (again!)')
+            self.log.exception('something went wrong in the scroll (again!)')
     
     def _restore_objs_from_IDs(self):
         super()._restore_objs_from_IDs()
@@ -37,7 +37,7 @@ class Scroll(Thing):
             if self.user:
                 self.user = Thing.ID_dict[self.user]
         except Exception:
-            dbg.debug('something went wrong in the scroll (again!)')
+            self.log.exception('something went wrong in the scroll (again!)')
 
     def heartbeat(self):
         try:
@@ -47,7 +47,7 @@ class Scroll(Thing):
             if not isinstance(r, Room):
                 return
         except AttributeError:
-            dbg.debug('Error in scroll! No user with location')
+            self.log.exception('Error in scroll! No user with location')
             return
         if r.id in list(self.messages):
             if self.messages[r.id][1] == True:

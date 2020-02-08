@@ -399,15 +399,15 @@ class Console:
         try:
             f = open(self.current_directory+'/'+self.uploading_filename, 'r')
             try:
-                dbg.debug('Found a file. Contents: %s' % f.read(), 2)
+                self.user.log.debug('Found a file. Contents: %s' % f.read())
             except UnicodeDecodeError:
-                dbg.debug('This file is in the wrong format.')
+                self.user.log.error('This file is in the wrong format.')
             f.close()
         except FileNotFoundError:
             replacing_file = False
         
         if not replacing_file or not confirm_r:
-            dbg.debug('Decided to write file.', 2)
+            self.user.log.debug('Decided to write file.')
             if platform.system() != 'Windows' and b'\r\n' in file:
                 file = file.replace(b'\r\n', b'\n') 
             f = open(self.current_directory+'/'+self.uploading_filename, 'wb')
@@ -488,7 +488,7 @@ class Console:
 
     def request_input(self, dest):
         self.input_redirect = dest
-        dbg.debug("Input from console %s given to %s!" % (self, dest), 2)
+        self.user.log.info("Input from console %s given to %s!" % (self, dest))
     
     def console_recv(self, command):
         """Temporarily recieve information as a two-part command, e.g. changing passwords."""
@@ -525,7 +525,7 @@ class Console:
                 self.input_redirect.console_recv(self.command)
                 return "__noparse__"
             except AttributeError:
-                dbg.debug('Error! Input redirect is not valid!')
+                self.user.log.error('Error! Input redirect is not valid!')
                 self.input_redirect = None
         # replace any aliases with their completed version
         self.final_command = self._replace_aliases()

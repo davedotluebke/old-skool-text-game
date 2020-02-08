@@ -26,7 +26,7 @@ class Waterfall(scenery.Scenery):
             dest = gametools.load_room('domains.school.school.water_lounge')
             if dest == None:
                 cons.user.perceive("You try to enter the waterfall, but an error occurs! Please report it.")
-                dbg.debug('Error! dest() of waterfall returned None on load!')
+                self.log.error('Error! dest() of waterfall returned None on load!')
                 return True
             cons.user.perceive('You dive into the waterfall, and find yourself somewhere quite different.')
             cons.user.emit('&nD%s dives into the waterfall and dissapears from view.')

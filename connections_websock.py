@@ -58,7 +58,7 @@ async def ws_handler(websocket, path):
                         cons.filename_input = message_dict['filename']
                     else:
                         cons.filename_input = 'default_filename.py'
-                    dbg.debug('File added to file input!', 2)
+                    self.user.log.debug('File added to file input!')
             except KeyError:
                 cons = Console(websocket, Thing.game, encrypted_message)
                 conn_to_client[websocket] = cons
@@ -67,7 +67,7 @@ async def ws_handler(websocket, path):
                 except gametools.PlayerLoadError:
                     Thing.game.create_new_player(name, cons)
             except IndexError:
-                dbg.debug('IndexError in connections_websock!')
+                self.user.log.error('IndexError in connections_websock!')
     except websockets.exceptions.ConnectionClosed:
         websocket.close()
 
