@@ -492,6 +492,3 @@ class Thing(object):
     actions["get"] = Action(take, True, False)
     actions["drop"] = Action(drop, True, False)
     actions["count"] = Action(count, True, False)
-
-
-dbg.ID_dict = Thing.ID_dict # Allow the DebugLog to access Thing.ID_dict

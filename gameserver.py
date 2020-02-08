@@ -55,7 +55,6 @@ class Game():
         self.events = asyncio.get_event_loop()
 
         self.parser = Parser()
-        self.dbg = dbg
         self.users = []
 
         self.shutdown_console = None
@@ -483,5 +482,4 @@ class Game():
                 self.events.run_until_complete(connections_websock.ws_send(j))                
 
         self.log.critical("Exiting main game loop!")
-        dbg.shut_down()
         sys.exit(restart_code)
