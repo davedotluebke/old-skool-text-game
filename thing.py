@@ -18,8 +18,7 @@ class Thing(object):
         self.versions = {gametools.findGamePath(__file__): 3}
         self._add_ID(default_name if not pref_id else pref_id)
         self.path = gametools.findGamePath(path) if path else None
-        # name the log for this object by its path + id, unless id already == path (Rooms)
-        self.log = gametools.get_game_logger(self.path if self.id==self.path else self.path+":"+self.id)
+        self.log = gametools.get_game_logger(self)
         self.names = [default_name]
         self.plural_names = [default_name+'s' if not plural_name else plural_name]
         self.plurality = 1  # how many identical objects this Thing represents
@@ -85,6 +84,10 @@ class Thing(object):
     #
     # SET/GET METHODS (methods to set or query attributes)
     #
+    def name(self):
+        """Return the object's default name, usually names[0]."""
+        return names[0]
+        
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""
         self.names += list(sNames)
