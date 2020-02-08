@@ -667,7 +667,7 @@ class Player(Creature):
         self.perceive("You introduce yourself to all.")
         for obj in self.location.contents:
             if isinstance(obj, Creature) and obj != self:
-                obj.introduced.add(self.id)
+                obj.introduced.append(self.id)
         return True
 
     def engage(self, p, cons, oDO, oIDO):
