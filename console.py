@@ -343,10 +343,11 @@ class Console:
 
             if (self.user.wprivilages and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']) or self.try_all_console_commands:
                 try:
-                    if cmd == 'ls': 
-                        self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
+                    if cmd == 'ls' and platform.system == "Linux":
+                            self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
                     process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=self.current_directory)
-                    self.write(str(process.stdout, "utf-8"))
+                    syntax_hilite = '```python\n' if cmd == 'cat' else '```\n'
+                    self.write(syntax_hilite + str(process.stdout, "utf-8") + '\n```\n')
                     self.write(str(process.stderr, "utf-8"))
                     return True
                 except Exception:
