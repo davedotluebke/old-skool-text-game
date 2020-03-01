@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="codemirror-5.51.0/lib/codemirror.css">
+    </head>
+    <body>
+        <!-- Create a simple CodeMirror instance -->
+        <textarea id="text"></textarea>
+        <script src="codemirror-5.51.0/lib/codemirror.js"></script>
+        <script src="codemirror-5.51.0/mode/python/python.js"></script>
+        <script>
+            var editor;
+            function loadFile() {
+                editor = CodeMirror.fromTextArea(document.getElementById("text"), {
+                    lineNumbers: true
+                });
+                editor.getDoc().setValue('def func(x):\n  print(x)');
+            }
+            function saveFile() {
+                console.log(editor.getDoc().getValue());
+            }
+        </script>
+        <button onclick="loadFile()">Load File</button>
+        <button onclick="saveFile()">Save File</button>
+    </body>
+</html>
