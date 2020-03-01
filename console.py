@@ -48,6 +48,7 @@ class Console:
         self.file_input = bytes()
         self.filename_input = ''
         self.file_output = bytes()
+        self.filename_output = ''
         self.uploading_filename = ''
         self.current_directory = 'domains'
         self.change_players = False
@@ -319,6 +320,11 @@ class Console:
                     self.download_file(self.words[1:])
                     return True
             
+            if cmd == 'edit':
+                if self.user.wprivilages:
+                    self.download_file(self.words[1:], edit_flag=True)
+                    return True
+            
             if cmd == 'cd':
                 if self.user.wprivilages:
                     path = self._findPath(self.words[1:])
@@ -394,6 +400,8 @@ class Console:
     def upload_file(self, file, confirm_r=True):
         if self.confirming_replace:
             return
+        if not self.uploading_filename:
+            self.uploading_filename = self.filename_input
         replacing_file = True
         try:
             f = open(self.current_directory+'/'+self.uploading_filename, 'r')
@@ -414,17 +422,20 @@ class Console:
             f.close()
             self.write('Sucessfully uploaded file.')
             self.file_input = bytes()
+            self.filename_input = ""
             try:
                 r = requests.post("http://127.0.0.1:6553", data={"filepath":self.current_directory+'/'+self.uploading_filename, "commitmsg":"%s uploaded file %s" % (self.user.names[0], self.uploading_filename)})
                 self.write(r.text)
             except:
-                self.write(traceback.format_exc())
+                self.user.log.warning("Gitbot failed to accept POST request")
+                self.user.log.debug(traceback.format_exc())
+            self.uploading_filename = ""
         else:
             self.write('A file named %s already exits. Would you like to replace it with the new version you\'ve uploaded? Y/n:' % (self.current_directory+'/'+self.uploading_filename))
             self.confirming_replace = True
             self.input_redirect = self
 
-    def download_file(self, filename_words):
+    def download_file(self, filename_words, edit_flag=False):
         filename = ''
         for x in filename_words:
             filename += x
@@ -436,9 +447,9 @@ class Console:
             return
 
         self.file_output = f.read()
-        asyncio.ensure_future(connections_websock.file_send(self))
+        asyncio.ensure_future(connections_websock.file_send(self, edit_flag=edit_flag, filename=filename))
         f.close()
-        self.write('Downloading file %s...' % filename)
+        self.write('%s file %s...' % ('Downloading' if not edit_flag else 'Opening', filename))
 
     def sanitizeHTML(self, html):
         return html.replace('<', '«').replace('>', '»')

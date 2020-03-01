@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="codemirror-5.51.0/lib/codemirror.css">
+        <link rel="stylesheet" href="codemirror-5.51.0/theme/solarized.css">
+        <title>File Editor</title>
+    </head>
+    <body>
+        <script src="codemirror-5.51.0/lib/codemirror.js"></script>
+        <script src="codemirror-5.51.0/mode/python/python.js"></script>
+        <textarea id="codeEditorTextArea"></textarea>
+        <input type="hidden" name="filename" id="filename">
+        <script>
+            var codeEditor = CodeMirror.fromTextArea(document.getElementById("codeEditorTextArea"), {
+                mode: "python",
+                theme: "solarized dark",
+                lineNumbers: true,
+                autofocus: true
+            });
+            codeEditor.setSize("100%", "100%");
+            codeEditor.refresh();
+            function saveAndClose() {
+                window.close();
+            }
+        </script>
+        <button onclick="saveAndClose()">Save and Close</button>
+    </body>
+</html>
