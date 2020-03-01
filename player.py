@@ -484,11 +484,11 @@ class Player(Creature):
         if not self.wprivilages:
             return "You cannot yet perform this magical incantation correctly."
         cmd = ' '.join(p.words[1:])
-        cons.write("Executing command: '%s'" % cmd)
+        cons.write("Executing command: `'%s'`" % cmd)
         try: 
             exec(cmd)
         except Exception as inst:
-            cons.write("Unexpected error: " + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1]))
+            cons.write("Unexpected error: `" + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1])+"`")
             # cons.write(type(inst)+"\n"+inst)    # the exception instance
         return True
 
@@ -499,7 +499,7 @@ class Player(Creature):
         if not self.wprivilages:
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
-            cons.write("Usage: 'fetch <id>', where id is an entry in Thing.ID_dict[]")
+            cons.write("Usage: 'fetch <id>', where id is an entry in `Thing.ID_dict[]`")
             return True
         id = " ".join(p.words[1:])
         try:
@@ -522,10 +522,12 @@ class Player(Creature):
         if cons.user != self:
             return "I don't quite get what you mean."
         if not self.wprivilages:
-            return "You cannot yet perform this magical incatation correctly."
+            return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
-            cons.write("Usage:\n\t'clone <id>', where id is an entry in Thing.ID_dict[]"
-                       "\n\t'clone <path>', where path is of the form 'domains.school.test_object'")
+            cons.write("```"
+                       "Usage:\n\t'clone <id>', where id is an entry in Thing.ID_dict[]"
+                       "\n\t'clone <path>', where path is of the form 'domains.school.test_object'"
+                       "```")
             return True
         id = " ".join(p.words[1:])
         try:
@@ -535,7 +537,7 @@ class Player(Creature):
             objpath = id
         obj = gametools.clone(objpath)
         if obj == None:
-            return "There seems to be no object with true name '%s'!" % id
+            return "There seems to be no object with true name `'%s'`!" % id
         if isinstance(obj, Creature) or obj.move_to(self) == False:
             if obj.move_to(self.location) == False:
                 cons.write("You attempt to clone the %s but somehow cannot bring it to this place." % obj.names[0])
@@ -610,7 +612,7 @@ class Player(Creature):
         if not self.wprivilages:
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
-            cons.write("Usage: 'apparate <id>', where id is the entry of a Room in Thing.ID_dict[] or a path to it's module")
+            cons.write("Usage: 'apparate <id>', where id is the entry of a Room in `Thing.ID_dict[]` or a path to its module")
             return True
         id = " ".join(p.words[1:])
         try:
