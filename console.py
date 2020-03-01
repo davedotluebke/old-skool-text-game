@@ -55,6 +55,7 @@ class Console:
         self.try_all_console_commands = False
         self.connection = net_conn
         self.input_redirect = None
+        self.upload_confirm = True
         self.width = Console.default_width
         self.measurement_system = Console.default_measurement_system
         self.encode_str = str(encode_str)
@@ -322,6 +323,7 @@ class Console:
             
             if cmd == 'edit':
                 if self.user.wprivilages:
+                    self.upload_confirm = False
                     self.download_file(self.words[1:], edit_flag=True)
                     return True
             
@@ -423,6 +425,7 @@ class Console:
             self.write('Sucessfully uploaded file.')
             self.file_input = bytes()
             self.filename_input = ""
+            self.upload_confirm = True
             try:
                 r = requests.post("http://127.0.0.1:6553", data={"filepath":self.current_directory+'/'+self.uploading_filename, "commitmsg":"%s uploaded file %s" % (self.user.names[0], self.uploading_filename)})
                 self.write(r.text)
@@ -519,7 +522,7 @@ class Console:
 
     def take_input(self):
         if self.file_input:
-            self.upload_file(self.file_input)
+            self.upload_file(self.file_input, self.upload_confirm)
         if (self.raw_input == ''):
             return None
         (self.command, sep, self.raw_input) = self.raw_input.partition('\n')

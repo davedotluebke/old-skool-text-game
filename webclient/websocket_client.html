@@ -229,10 +229,16 @@
                     editorWindow.document.getElementById("filename").value = filename;
                 }
                 editorWindow.onbeforeunload = function(e) {
+                    if (editorWindow == undefined) {
+                        return;
+                    }
+                    if ((editorWindow.codeEditor.getValue() == "") || editorWindow.document.getElementById("saveCloseConfirm").value != "true"){
+                        editorWindow = undefined;
+                        e.returnValue = '';
+                        return null;
+                    }
                     encryptAndSend(editorWindow.codeEditor.getValue(), 'file', editorWindow.document.getElementById("filename").value);
                     editorWindow = undefined;
-                    //e.returnValue = '';
-                    //return null;
                 }
             }
 

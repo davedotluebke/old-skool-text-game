@@ -10,6 +10,7 @@
         <script src="codemirror-5.51.0/mode/python/python.js"></script>
         <textarea id="codeEditorTextArea"></textarea>
         <input type="hidden" name="filename" id="filename">
+        <input type="hidden" id="saveCloseConfirm" value="false">
         <script>
             var codeEditor = CodeMirror.fromTextArea(document.getElementById("codeEditorTextArea"), {
                 mode: "python",
@@ -19,10 +20,8 @@
             });
             codeEditor.setSize("100%", "100%");
             codeEditor.refresh();
-            function saveAndClose() {
-                window.close();
-            }
         </script>
-        <button onclick="saveAndClose()">Save and Close</button>
+        <button onclick="document.getElementById('saveCloseConfirm').value = 'true'; window.close()">Save and Close</button>
+        <button onclick="codeEditor.setValue(''); window.close()">Close without saving</button>
     </body>
 </html>
