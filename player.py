@@ -553,7 +553,33 @@ class Player(Creature):
         self.emit("&nD%s performs a magical incantation. You sense something has changed." % self.id, [self])
         
         return True                    
-    
+
+    def debug(self, p, cons, oDO, oIDO):
+        '''Start or stop debug logging for player actions, for a module, or for an object in the game.'''
+        usage = """
+Usage: `debug \[sec\] \[level\] obj`
+
+The *obj* argument may be:
+- a visible object or creature
+- an object id (i.e. an entry in `Thing.ID_dict[]`)
+- a path of the form 'domains.school.example_object'
+- the keyword *here*, which specifies the room containing the player
+- the keyword *me*, which specifies the player object itself.
+
+The optional *\[sec\]* argument specifies the duration, in seconds, of the debug logging. The default is 60 seconds.
+
+The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or `error`. All log messages at the specified level are displayed. If left unspecified, *\[level\]* defaults to `debug`.
+"""
+
+        if cons.user != self:
+            self.log.error("`player.debug()` action called but cons.user is %s instead of self!" % cons.user)
+            return "I don't quite get what you mean."
+        if not self.wprivileges:
+            return "You cannot yet perform this magical incantation correctly."
+        if len(p.words) < 2: 
+            cons.write(usage)
+        return "Debugging is not quite implemented yet, check back soon!"
+
     def reload(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.
         First extracts all of the objects from the room, then re-imports the object 
@@ -702,6 +728,7 @@ class Player(Creature):
     actions['execute'] =    Action(execute, True, True)
     actions['fetch'] =      Action(fetch, True, True)
     actions['clone'] =      Action(clone, True, True)
+    actions['debug'] =      Action(debug, True, True)
     actions['apparate'] =   Action(apparate, True, True)
     actions['reload'] =     Action(reload, True, True)
     actions['say'] =        Action(say, True, True)
