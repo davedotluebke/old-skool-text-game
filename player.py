@@ -61,7 +61,7 @@ class Player(Creature):
         self.engaged = False
         self.wizardry_skill = 0
         self.wizardry_element = None
-        self.wprivilages = False
+        self.wprivileges = False
         self.attacking = False
         self.hitpoints = 20
         self.health = 20
@@ -113,6 +113,11 @@ class Player(Creature):
         if self.versions[gametools.findGamePath(__file__)] == 1:
             self.password = "{\"F\":[1779033703,-1150833019,1013904242,-1521486534,1359893119,-1694144372,528734635,1541459225],\"A\":[1634952294],\"l\":32}"
             self.versions[gametools.findGamePath(__file__)] = 2
+        if self.versions[gametools.findGamePath(__file__)] == 2:
+            if hasattr(self, "wprivilages"):
+                self.wprivileges = self.wprivilages
+                del self.wprivilages
+            self.versions[gametools.findGamePath(__file__)] = 3
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
@@ -481,7 +486,7 @@ class Player(Creature):
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivilages:
+        if not self.wprivileges:
             return "You cannot yet perform this magical incantation correctly."
         cmd = ' '.join(p.words[1:])
         cons.write("Executing command: `'%s'`" % cmd)
@@ -496,7 +501,7 @@ class Player(Creature):
         '''Find an in-game object by ID and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivilages:
+        if not self.wprivileges:
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'fetch <id>', where id is an entry in `Thing.ID_dict[]`")
@@ -521,7 +526,7 @@ class Player(Creature):
         '''Clone a new copy of an object specified by ID or by module path, and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivilages:
+        if not self.wprivileges:
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("```"
@@ -548,14 +553,40 @@ class Player(Creature):
         self.emit("&nD%s performs a magical incantation. You sense something has changed." % self.id, [self])
         
         return True                    
-    
+
+    def debug(self, p, cons, oDO, oIDO):
+        '''Start or stop debug logging for player actions, for a module, or for an object in the game.'''
+        usage = """
+Usage: `debug \[sec\] \[level\] obj`
+
+The *obj* argument may be:
+- a visible object or creature
+- an object id (i.e. an entry in `Thing.ID_dict[]`)
+- a path of the form 'domains.school.example_object'
+- the keyword *here*, which specifies the room containing the player
+- the keyword *me*, which specifies the player object itself.
+
+The optional *\[sec\]* argument specifies the duration, in seconds, of the debug logging. The default is 60 seconds.
+
+The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or `error`. All log messages at the specified level are displayed. If left unspecified, *\[level\]* defaults to `debug`.
+"""
+
+        if cons.user != self:
+            self.log.error("`player.debug()` action called but cons.user is %s instead of self!" % cons.user)
+            return "I don't quite get what you mean."
+        if not self.wprivileges:
+            return "You cannot yet perform this magical incantation correctly."
+        if len(p.words) < 2: 
+            cons.write(usage)
+        return "Debugging is not quite implemented yet, check back soon!"
+
     def reload(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.
         First extracts all of the objects from the room, then re-imports the object 
         module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
         players back to the new room.'''
         obj = None
-        if not self.wprivilages:
+        if not self.wprivileges:
             return "You cannot yet perform this magical incantation correctly."
         if isinstance(obj, Creature):
             return "You cannot reload players or NPCs!"
@@ -609,7 +640,7 @@ class Player(Creature):
     def apparate(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivilages:
+        if not self.wprivileges:
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'apparate <id>', where id is the entry of a Room in `Thing.ID_dict[]` or a path to its module")
@@ -697,6 +728,7 @@ class Player(Creature):
     actions['execute'] =    Action(execute, True, True)
     actions['fetch'] =      Action(fetch, True, True)
     actions['clone'] =      Action(clone, True, True)
+    actions['debug'] =      Action(debug, True, True)
     actions['apparate'] =   Action(apparate, True, True)
     actions['reload'] =     Action(reload, True, True)
     actions['say'] =        Action(say, True, True)

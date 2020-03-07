@@ -36,7 +36,6 @@ class Game():
         if connections_websock.encryption_installed:
             connections_websock.encryption_enabled = self.encryption_setting
         self.keep_going = True  # game ends when set to False
-        self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         self.start_time = 0
         try:
             self.duration = int(duration)
@@ -422,13 +421,10 @@ class Game():
     
     def catch_func_errs(self, func, *params):
         profile_st = time.time()
-        if (self.handle_exceptions):
-            try:
-                func(*params)
-            except:
-                self.log.exception("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
-        else:
+        try:
             func(*params)
+        except:
+            self.log.exception("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
         profile_et = time.time()
         profile_t = profile_et - profile_st
         funcname = str(func).replace('<','[').replace('>',']')
