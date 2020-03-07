@@ -298,10 +298,7 @@ class Console:
                 if self.user.wprivilages:
                     allow_edits = False
                     try:
-                        for i in self.game.player_edit_privilages[self.user.names[0]]:
-                            if re.fullmatch(i, self.current_directory):
-                                allow_edits = True
-                                break
+                        allow_edits = self.game.get_edit_privilages(self.user.names[0], path)
                     except KeyError:
                         pass
                     if allow_edits:
@@ -334,10 +331,7 @@ class Console:
                     if path == '.':
                         allow_reads = True
                     try:
-                        for i in self.game.player_read_privilages[self.user.names[0]]:
-                            if re.fullmatch(i,path):
-                                allow_reads = True
-                                break
+                        allow_reads = self.game.get_read_privilages(self.user.names[0], path)
                     except KeyError:
                         pass
                     if allow_reads:
