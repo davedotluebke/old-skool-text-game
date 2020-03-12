@@ -54,8 +54,8 @@ class Game():
         self.users = []
 
         self.shutdown_console = None
-        self.player_read_privilages = {'scott':['.*'], 'rivques':['.*']}     # Note: administrators are responsible for making sure that 
-        self.player_edit_privilages = {'scott':['domains.*','home/scott.*','saved_players.*'], 'rivques':['domains.*', 'home/rivques.*', 'saved_players.*']} # wizards can view and edit their own files
+        self.player_read_privileges = {'scott':['.*'], 'rivques':['.*']}     # Note: administrators are responsible for making sure that 
+        self.player_edit_privileges = {'scott':['domains.*','home/scott.*','saved_players.*'], 'rivques':['domains.*', 'home/rivques.*', 'saved_players.*']} # wizards can view and edit their own files
 
         self.total_times = {}
         self.numrun_times = {}
