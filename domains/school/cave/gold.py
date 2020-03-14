@@ -1,7 +1,9 @@
-import thing
+import money
 
 def clone():
-    gold = thing.Thing('gold', __file__)
-    gold.set_description('bunch of shiny gold coins', 'This is a collection of seven shiny, real gold coins.')
-    gold.set_weight(74000)
+    gold = money.Money('gold', __file__, value=400)
+    gold.set_description('gold coin', 'This is a shiny gold coin.')
+    gold.add_names('coin')
+    gold.add_plural_names('coins')
+    gold.add_adjectives('gold', 'shiny')
     return gold
