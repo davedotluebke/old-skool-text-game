@@ -11,6 +11,11 @@ room_remaps = {'-1,0':'domains.centrata.fields.road_four',
                '-1,4':'domains.centrata.fields.road_eight',
                '0,2':'domains.centrata.fields.questentry'}
 
+MIN_X = -3 # dictated by coordinates in room_remaps
+MAX_X = 7
+MIN_Y = -1 # dictates by coordinates in room_remaps
+MAX_Y = 9
+
 def connection_exists(x, y, delta_x, delta_y, threshold):
     """Return a true or false indicating whether a grid cell at 
     (x, y) has a connection in direction (delta_x, delta_y), 
@@ -21,6 +26,14 @@ def connection_exists(x, y, delta_x, delta_y, threshold):
     south, check (3,3, (0,1)). Uses a random number seeded on combination 
     of bits from the inputs and compares it to the provided threshold."""
 
+    if x < MIN_X:
+        return False
+    if x+1 > MAX_X:
+        return False
+    if y < MIN_Y:
+        return False
+    if y+1 > MAX_Y:
+        return False
     x_bits = (x & 0xff) << 10
     y_bits = (y & 0xff) << 2
     delta_x_bits = (delta_x & 0x01) << 1
@@ -70,7 +83,7 @@ def load(param_list):
     random.seed(coords)
 
     prairie_details = ['a flock of birds', 'a small tree', 'a field of bluets', 'a small pond', 'a big bush']
-    blocking_details = ['a group of trees', 'a big heard of bison']
+    blocking_details = ['a group of trees', 'a big herd of bison']
 
     num_non_blocking_details = random.randint(0, 2)
     num_blocking_details = len(no_exit_directions)
