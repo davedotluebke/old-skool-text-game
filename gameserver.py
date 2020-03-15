@@ -196,7 +196,7 @@ class Game():
             for obj in l:
                 obj._change_objs_to_IDs()
             saveables = [x.get_saveable() for x in l]
-            f.write(json.dumps(saveables, sort_keys=True, indent=4))
+            f.write(json.dumps(saveables, skipkeys=True, sort_keys=True, indent=4))
             Thing.ID_dict = backup_ID_dict
             player.cons.write("Saved player data to file %s" % filename)
             f.close()
