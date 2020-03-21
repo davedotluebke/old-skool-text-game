@@ -4,17 +4,20 @@ import scenery
 import room
 import random
 
-room_remaps = {'-1,0':'domains.centrata.fields.road_four',
+room_remaps = {'-1,-1':'domains.centrata.fields.road_three',
+               '-1,0':'domains.centrata.fields.road_four',
                '-1,1':'domains.centrata.fields.road_five',
                '-1,2':'domains.centrata.fields.road_six',
                '-1,3':'domains.centrata.fields.road_seven',
                '-1,4':'domains.centrata.fields.road_eight',
-               '0,2':'domains.centrata.fields.questentry'}
+               '0,-2':'domains.centrata.fields.road_two',
+               '0,2':'domains.centrata.fields.questentry',
+               '1,-3':'domains.centrata.fields.road_one'}
 
-MIN_X = -3 # dictated by coordinates in room_remaps
-MAX_X = 7
-MIN_Y = -1 # dictates by coordinates in room_remaps
-MAX_Y = 9
+MIN_X = -1 # dictated by coordinates in room_remaps
+MAX_X = 9
+MIN_Y = -3 # dictates by coordinates in room_remaps
+MAX_Y = 7
 
 def connection_exists(x, y, delta_x, delta_y, threshold):
     """Return a true or false indicating whether a grid cell at 
