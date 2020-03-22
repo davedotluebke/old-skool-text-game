@@ -10,11 +10,11 @@ from walking_os import findAllPythonFiles
 
 gameroot = os.path.dirname(__file__)  # the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
 GAME_LOG = os.path.join(gameroot, "game_log.txt")
+PLAYER_ROLES_FILE = os.path.join(gameroot, "player_roles.json")
 PLAYER_DIR = os.path.join(gameroot, "saved_players")
 PLAYER_BACKUP_DIR = os.path.join(gameroot, "backup_saved_players")
 NEW_PLAYER_START_LOC = 'domains.character_creation.start_loc'
 DEFAULT_START_LOC = 'domains.school.school.great_hall'
-
 
 #
 # CUSTOM EXCEPTIONS
@@ -49,6 +49,16 @@ def deconstructObjectPath(path_str):
         return path, [path_str]+parameters.split('&')
     return path, None
 
+def check_player_exists(p):
+    """Return whether a given player exists, i.e. has a save file."""
+    filename = os.path.join(PLAYER_DIR, p) + '.OADplayer'
+    try:
+        f = open(filename, 'r+b')
+        f.close()  # success, player exists, so close file for now
+        return True
+    except FileNotFoundError: 
+        return False
+        
 def walklevel(some_dir, level=1):
     some_dir = some_dir.rstrip(os.path.sep)
     assert os.path.isdir(some_dir)

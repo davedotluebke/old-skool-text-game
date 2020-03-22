@@ -445,44 +445,9 @@ class Player(Creature):
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
-    # 
-    def inventory(self, p, cons, oDO, oIDO):
-        if cons.user != self:
-            return "You can't look at another player's inventory!"
-        message = "You are carrying:\n"
-        if not self.contents:
-            message += '\tnothing'
-        for i in self.contents:
-            if i == self.weapon_wielding or i == self.armor_worn: 
-                continue
-            message += "\t&ni%s\n" % i.id
-        if self.weapon_wielding != self.default_weapon: 
-            message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
-        if self.armor_worn != self.default_armor:
-            message += 'You are wearing &nd%s.\n' % self.armor_worn.id
-        self.perceive(message)
-        return True
-    
-    def toggle_terse(self, p, cons, oDO, oIDO):
-        if cons.user != self:
-            return "I don't quite get what you mean."
-        try: 
-            if p.words[1] == "on": 
-                self.terse = True
-            elif p.words[1] == "off": 
-                self.terse = False
-            else: 
-                return """Usage: 'terse [on/off]'
-                Use long descriptions (off) or short descriptions (on) when entering a place.
-                With no specifier, 'terse' toggles between on and off."""
-        except IndexError:
-            self.terse = not self.terse
-        cons.write("Terse mode %s. %s" % ("on" if self.terse else "off",
-            "Short descriptions will be used when entering a place; type 'look' for full description" if self.terse else
-            "Full descriptions will be used entering a place."))
-        # TODO: a mode that prints long description only when first entering a room
-        return True
-    
+    #
+    # Wizard-specific actions:
+    #   
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
@@ -556,20 +521,18 @@ class Player(Creature):
 
     def debug(self, p, cons, oDO, oIDO):
         '''Start or stop debug logging for player actions, for a module, or for an object in the game.'''
-        usage = """
-Usage: `debug \[sec\] \[level\] obj`
+        usage = """Usage: `debug [sec] [level] obj`
+        The *obj* argument may be:
+        - a visible object or creature
+        - an object id (i.e. an entry in `Thing.ID_dict[]`)
+        - a path of the form 'domains.school.example_object'
+        - the keyword *here*, which specifies the room containing the player
+        - the keyword *me*, which specifies the player object itself.
 
-The *obj* argument may be:
-- a visible object or creature
-- an object id (i.e. an entry in `Thing.ID_dict[]`)
-- a path of the form 'domains.school.example_object'
-- the keyword *here*, which specifies the room containing the player
-- the keyword *me*, which specifies the player object itself.
+        The optional *\[sec\]* argument specifies the duration, in seconds, of the debug logging. The default is 60 seconds.
 
-The optional *\[sec\]* argument specifies the duration, in seconds, of the debug logging. The default is 60 seconds.
-
-The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or `error`. All log messages at the specified level are displayed. If left unspecified, *\[level\]* defaults to `debug`.
-"""
+        The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or `error`. All log messages at the specified level are displayed. If left unspecified, *\[level\]* defaults to `debug`.
+        """
 
         if cons.user != self:
             self.log.error("`player.debug()` action called but cons.user is %s instead of self!" % cons.user)
@@ -577,10 +540,16 @@ The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or 
         if not self.wprivileges:
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
-            cons.write(usage)
+            return usage
+        if len(p.words == 2):
+            if p.words[1] == "me":
+                obj = self
+            elif p.words[1] == "here":
+                obj = self.location
+        
         return "Debugging is not quite implemented yet, check back soon!"
 
-    def reload(self, p, cons, oDO, oIDO):
+    def reload_room(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.
         First extracts all of the objects from the room, then re-imports the object 
         module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
@@ -638,6 +607,7 @@ The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or 
         return True
 
     def apparate(self, p, cons, oDO, oIDO):
+        """Teleport the wizard to a given room, specified by id or path."""
         if cons.user != self:
             return "I don't quite get what you mean."
         if not self.wprivileges:
@@ -662,6 +632,101 @@ The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or 
         room.report_arrival(self, silent=True)
         return True
 
+    def groups(self, p, cons, oDO, oIDO): 
+        """Change or list player-group associations, e.g. add player to 'wizards' or 'admins' group."""
+        usage = "**Usage**: groups [add|remove] [player] [group]\n"\
+        "  Adds or removes the specified player to/from the specified group, or lists the "\
+        "player-group associations for the specified player and/or group. Both player "\
+        "and group must be given if an action (add/remove) is specified.  If both "\
+        "player and group are specified but no action (add/remove), the player is added or "\
+        "removed from the group depending on whether the player already belonged to the group. "\
+        "The special player string 'me' can be used to indicate the calling user.  "
+        
+        if cons.user != self:
+            return "I don't quite get what you mean."    
+        words = p.words    
+        if len(words) < 2:
+            cons.write(usage + '\n' + cons.game.list_wizard_roles())
+            return True
+        if words[1] == 'add' or words[1] == 'remove':
+            # next arguments should be <player> <group>
+            if len(words) != 4:
+                cons.write(usage)
+                return True
+            action, player, group = words[1], words[2], words[3]
+        else:  # arguments might be <player>, or <group>, or <player> <group>
+            if len(words) == 2:  # one argument, either <player> or <group>
+                role_exists = words[1] in cons.game.roles
+                if role_exists:  # argument is <group>
+                    cons.write(cons.game.list_wizard_roles(role=words[1]))
+                player = self.name() if words[1] == 'me' else words[1]
+                player_exists = gametools.check_player_exists(player)
+                if player_exists:  # argument is <player> 
+                    cons.write(cons.game.list_wizard_roles(wiz=player))
+                if not player_exists and not role_exists:
+                    cons.write("Error: %s does not appear to be the name of a player or a group!" % words[1])
+                return True
+            if len(words) == 3:
+                action, player, group = "toggle", words[1], words[2]
+        player = self.name() if player == 'me' else player
+        if not gametools.check_player_exists(player):
+            cons.write("Error: no player named %s appears to exist!" % player)
+            return True
+        if not group in cons.game.roles:
+            cons.write("Error: no group named %s appears to exist!" % group)
+            return True
+        if action == "add" or (action == "toggle" and player not in cons.game.roles[group]): 
+            cons.game.add_wizard_role(player, group)
+            cons.write("Added %s to group %s" %(player, group))
+        elif action == "remove" or (action == "toggle" and player in cons.game.roles[group]):
+            cons.game.remove_wizard_role(player, group)
+            cons.write("Removed %s from group %s" % (player, group))
+        else:
+            cons.write("Error: couldn't apply action %s to player %s and group %s!" % (action, player, group))
+        return True        
+        
+            
+        
+    #
+    # Non-wizard player actions:
+    # 
+    def inventory(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "You can't look at another player's inventory!"
+        message = "You are carrying:\n"
+        if not self.contents:
+            message += '\tnothing'
+        for i in self.contents:
+            if i == self.weapon_wielding or i == self.armor_worn: 
+                continue
+            message += "\t&ni%s\n" % i.id
+        if self.weapon_wielding != self.default_weapon: 
+            message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
+        if self.armor_worn != self.default_armor:
+            message += 'You are wearing &nd%s.\n' % self.armor_worn.id
+        self.perceive(message)
+        return True
+    
+    def toggle_terse(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "I don't quite get what you mean."
+        try: 
+            if p.words[1] == "on": 
+                self.terse = True
+            elif p.words[1] == "off": 
+                self.terse = False
+            else: 
+                return """Usage: 'terse [on/off]'
+                Use long descriptions (off) or short descriptions (on) when entering a place.
+                With no specifier, 'terse' toggles between on and off."""
+        except IndexError:
+            self.terse = not self.terse
+        cons.write("Terse mode %s. %s" % ("on" if self.terse else "off",
+            "Short descriptions will be used when entering a place; type 'look' for full description" if self.terse else
+            "Full descriptions will be used entering a place."))
+        # TODO: a mode that prints long description only when first entering a room
+        return True
+  
     def say(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you are trying to say."
@@ -723,14 +788,17 @@ The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or 
         return True
 
     actions = dict(Creature.actions)  # make a copy
-    actions['inventory'] =  Action(inventory, False, True)
-    actions['terse'] =      Action(toggle_terse, False, True)
+    # Wizard-specific actions
     actions['execute'] =    Action(execute, True, True)
     actions['fetch'] =      Action(fetch, True, True)
     actions['clone'] =      Action(clone, True, True)
     actions['debug'] =      Action(debug, True, True)
     actions['apparate'] =   Action(apparate, True, True)
-    actions['reload'] =     Action(reload, True, True)
+    actions['reload'] =     Action(reload_room, True, True)
+    actions['groups'] =      Action(groups, True, True)
+    # player actions
+    actions['inventory'] =  Action(inventory, False, True)
+    actions['terse'] =      Action(toggle_terse, False, True)
     actions['say'] =        Action(say, True, True)
     actions['shout'] =      Action(say, True, True)
     actions['mutter'] =     Action(say, True, True)

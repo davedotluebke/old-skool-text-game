@@ -87,7 +87,7 @@ class Thing(object):
     #
     def name(self):
         """Return the object's default name, usually names[0]."""
-        return names[0]
+        return self.names[0]
         
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""

@@ -1,0 +1,14 @@
+{
+    "roles": {
+        "admins": ["scott", "cedric"],
+        "wizards": ["scott", "cedric", "rivques"],
+        "scott": ["scott"], 
+        "cedric": ["cedric"], 
+        "rivques": ["rivques"]
+    },
+    "wizards": {
+        "scott": ["scott", "wizards", "admins"],
+        "cedric": ["cedric", "wizards", "admins"],
+        "rivques": ["rivques", "wizards"]
+    }
+}

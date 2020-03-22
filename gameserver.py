@@ -11,6 +11,7 @@ import functools
 import websockets
 import connections_websock
 import json
+import pprint
 
 import gametools
 
@@ -63,6 +64,55 @@ class Game():
         self.total_times = {}
         self.numrun_times = {}
         self.maximum_times = {}
+
+        # default list of administrators and wizards, will be overwritten if PLAYER_ROLES_FILES exists 
+        self.roles = {"admins": ["scott", "cedric"], "wizards": ["scott", "cedric"], "scott": ["scott"], "cedric": ["cedric"]}
+        self.wizards = {"scott":["scott", "wizards", "admins"], "cedric":["cedric", "wizards", "admins"]}
+        try:
+            f = open(gametools.PLAYER_ROLES_FILE)
+            player_roles = json.loads(f.read())
+            f.close()
+            self.roles = player_roles.roles
+            self.wizards = player_roles.wizards
+        except FileNotFoundError: 
+            self.log.error("Couldn't open player_roles file '%s'; using default roles and wizards" % gametools.PLAYER_ROLES_FILE)
+        except AttributeError:
+            self.log.error("Error reading data from player_roles; attempting to use default roles & wizards")
+
+    def add_wizard_role(self, wizard, role):
+        """Associate a player with a given role (e.g. the "admins" role or "wizards" role)"""
+        self.wizards.setdefault(wizard, []).append(role)
+        self.roles.setdefault(role, []).append(wizard)
+        self.log.info("Added player %s to role %s" % (wizard, role))
+
+    def remove_wizard_role(self, wizard, role):
+        """Disassociate a player from a given role"""
+        try: 
+            del self.wizards[wizard][role]
+            del self.roles[role][wizard]
+        except KeyError:
+            self.log.error("Couldn't disassociate wizard %s from role %s" % (wizard, role))
+
+    def list_wizard_roles(self, wiz=None, role=None):
+        """Return a human-readable string listing:
+        - the roles for the specified wizard, if any, and
+        - the wizards in the specified role, if any; 
+        If neither wizard or role is specified, list all wizards and all roles.\n"""
+        msg = ""
+        if wiz:
+            try:
+                msg += "```game.wizards[%s] = %s```\n" % (wiz, pprint.pformat(self.wizards[wiz], width=40, indent=4))
+            except: 
+                msg += "No wizard '%s' in `game.wizards[]`\n" % wiz
+        if role: 
+            try:
+                msg += "```game.roles[%s] = %s```\n" % (role, pprint.pformat(self.roles[role], width=40, indent=4))
+            except: 
+                msg += "No role '%s' in `game.roles[]`\n" % role
+        if not wiz and not role:
+            msg += "```game.wizards[] = %s```\n" % pprint.pformat(self.wizards, width=40, indent=4)
+            msg += "```game.roles[] = %s```\n" % pprint.pformat(self.roles, width=40, indent=4)
+        return msg
 
     def save_game(self, filename):
         raise NotImplementedError("Saving games no longer works.")
