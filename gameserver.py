@@ -72,8 +72,8 @@ class Game():
             f = open(gametools.PLAYER_ROLES_FILE)
             player_roles = json.loads(f.read())
             f.close()
-            self.roles = player_roles.roles
-            self.wizards = player_roles.wizards
+            self.roles = player_roles['roles']
+            self.wizards = player_roles['wizards']
         except FileNotFoundError: 
             self.log.error("Couldn't open player_roles file '%s'; using default roles and wizards" % gametools.PLAYER_ROLES_FILE)
         except AttributeError:
@@ -88,8 +88,8 @@ class Game():
     def remove_wizard_role(self, wizard, role):
         """Disassociate a player from a given role"""
         try: 
-            del self.wizards[wizard][role]
-            del self.roles[role][wizard]
+            self.wizards[wizard].remove(role)
+            self.roles[role].remove(wizard)
         except KeyError:
             self.log.error("Couldn't disassociate wizard %s from role %s" % (wizard, role))
 
