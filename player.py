@@ -258,10 +258,7 @@ class Player(Creature):
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
     def detach(self, nocons=False):
-        try:
-            del dbg.verbosity[self.id]
-        except KeyError:
-            pass
+        # TODO: Deal with logs in player
         if not nocons:
             self.cons.detach(self)
         self.cons = None

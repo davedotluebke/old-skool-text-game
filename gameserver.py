@@ -3,6 +3,7 @@ import os
 import sys
 import ipaddress
 import random
+import re
 import time
 import asyncio
 import pathlib
@@ -64,6 +65,30 @@ class Game():
         self.total_times = {}
         self.numrun_times = {}
         self.maximum_times = {}
+    
+    def get_file_privileges(self, player_name, path, check_type='read'):
+        if re.match("home/%s/.*" % player_name, path) or re.match("home/%s" % player_name, path):
+            return True
+        elif check_type == "read" and path == ".":  # "." is the game root directory for technical reasons. TODO: Change this to "/"
+            return True
+        f = open("player_edit_privileges.json", "r")
+        access_dict = json.loads(f.read())
+        f.close()
+        for i in access_dict:
+            if re.match(i, path):
+                try:
+                    if player_name in access_dict[i][check_type]:
+                        return True
+                except AttributeError:
+                    self.log.warning("Invalid check_type in get_file_privileges: %s" % check_type)
+        return False
+
+    def get_read_privileges(self, player_name, path):
+        return get_file_privileges(player_name, path)
+
+    def get_edit_privileges(self, player_name, path):
+        return get_file_privileges(player_name, path, check_type='edit')
+
 
         # default list of administrators and wizards, will be overwritten if PLAYER_ROLES_FILES exists 
         self.roles = {"admins": ["scott", "cedric"], "wizards": ["scott", "cedric"], "scott": ["scott"], "cedric": ["cedric"]}
