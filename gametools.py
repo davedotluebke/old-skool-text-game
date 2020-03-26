@@ -3,18 +3,23 @@ import importlib
 import logging
 from walking_os import findAllPythonFiles
 
-
 #
 # GLOBAL GAME ATTRIBUTES
+#   Convention: all directories and files are relative to the game file system,
+#   which is rooted in the real file system at "gameroot". It is the responsibility
+#   of the code using these globals to prepend gameroot if needed at the point of use.
 #
-
 gameroot = os.path.dirname(__file__)  # the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
-GAME_LOG = os.path.join(gameroot, "game_log.txt")
-PLAYER_ROLES_FILE = os.path.join(gameroot, "player_roles.json")
-PLAYER_DIR = os.path.join(gameroot, "saved_players")
-PLAYER_BACKUP_DIR = os.path.join(gameroot, "backup_saved_players")
-NEW_PLAYER_START_LOC = 'domains.character_creation.start_loc'
-DEFAULT_START_LOC = 'domains.school.school.great_hall'
+
+GAME_LOG = "/game_log.txt"
+PLAYER_ROLES_FILE = "/player_roles.json"
+PLAYER_DIR = "/saved_players"
+PLAYER_BACKUP_DIR = "/backup_saved_players"
+DOMAIN_DIR = "/domains/"
+HOME_DIR = "/home/"
+
+NEW_PLAYER_START_LOC = "domains.character_creation.start_loc"
+DEFAULT_START_LOC = "domains.school.school.great_hall"
 
 #
 # CUSTOM EXCEPTIONS
@@ -31,6 +36,28 @@ class IncorrectPasswordError(Exception):
 #
 # UTILITY FUNCTIONS
 # 
+def expandGameDir(gamedir:str, player:str=None):
+    """Expand leading tilde character: if first character is '~',
+    ~wizard becomes /home/wizard and ~ becomes /home/{player}"""
+    root, sep, rest = gamedir.partition('/')
+    if root and root[0] == '~':
+        if root == '~':
+            if player:
+                return '/home/'+player+'/'+rest
+            else:
+                return '/home/{ERROR NO PLAYER SPECIFIED}/'+rest
+        else:
+            return '/home/'+root[1:]+'/'+rest
+    else:
+        return gamedir
+        
+def realDir(gamedir):
+    """Convert a path rooted in the game filesystem to the real filesystem.
+    This is done by expanding leading ~ shortcuts to home directories and
+    stripping leading slashes, then joining onto `gameroot` directory path."""
+    realdir = expandGameDir(gamedir).lstrip('/')  
+    return os.path.normpath(os.path.join(gameroot, realdir))
+
 def findGamePath(filepath):
     """ Change an OS filename path (separated by forward or backward slashes) to a 
     python-style module path separated by periods."""
@@ -43,7 +70,7 @@ def deconstructObjectPath(path_str):
     """The game refers to object paths using python-style module paths separated by 
     periods, but wizards can add parameters to be passed to the objects by adding 
     a ? character after the object path and then separating multiple parameters by 
-    the & character. See domains.centrate.prairie.py for an example of this usage."""
+    the & character. See domains.centrata.prairie.py for an example of this usage."""
     path, sep, parameters = path_str.partition('?')
     if parameters:
         return path, [path_str]+parameters.split('&')
@@ -51,7 +78,7 @@ def deconstructObjectPath(path_str):
 
 def check_player_exists(p):
     """Return whether a given player exists, i.e. has a save file."""
-    filename = os.path.join(PLAYER_DIR, p) + '.OADplayer'
+    filename = os.path.join(gameroot, PLAYER_DIR, p) + '.OADplayer'
     try:
         f = open(filename, 'r+b')
         f.close()  # success, player exists, so close file for now
@@ -75,7 +102,7 @@ def request_all_inputs(player, dest):
 #
 # LOGGING 
 #
-game_log_handler = logging.FileHandler(GAME_LOG)
+game_log_handler = logging.FileHandler(os.path.join(gameroot, GAME_LOG))
 game_log_handler.setLevel(logging.WARNING)
 game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 game_log_handler.setFormatter(game_log_formatter)

@@ -9,10 +9,12 @@ import asyncio
 import pathlib
 import ssl
 import functools
-import websockets
-import connections_websock
 import json
 import pprint
+
+import websockets
+import connections_websock
+import miracle
 
 import gametools
 
@@ -31,6 +33,8 @@ class Game():
     def __init__(self, server=None, mode=False, duration=86400, port=9124):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.log = gametools.get_game_logger("_gameserver")
+        self.acl = miracle.Acl()
+        self.set_up_groups_and_acl()
         self.server_ip = server  # IP address of server, if specified
         self.is_ssl = ('ssl' in mode) or ('https' in mode)
         self.encryption_setting = not ('nocrypt' in mode or 'no' in mode or 'noencrypt' in mode)
@@ -67,6 +71,10 @@ class Game():
         self.maximum_times = {}
     
     def get_file_privileges(self, player_name, path, check_type='read'):
+        # 
+        # TODO: update to use new ACL-based permissions system
+        # 
+        raise NotImplementedError
         if re.match("home/%s/.*" % player_name, path) or re.match("home/%s" % player_name, path):
             return True
         elif check_type == "read" and path == ".":  # "." is the game root directory for technical reasons. TODO: Change this to "/"
@@ -89,12 +97,12 @@ class Game():
     def get_edit_privileges(self, player_name, path):
         return get_file_privileges(player_name, path, check_type='edit')
 
-
+    def set_up_groups_and_acl(self):
         # default list of administrators and wizards, will be overwritten if PLAYER_ROLES_FILES exists 
-        self.roles = {"admins": ["scott", "cedric"], "wizards": ["scott", "cedric"], "scott": ["scott"], "cedric": ["cedric"]}
+        self.roles = {"admin": ["scott", "cedric"], "wizard": ["scott", "cedric"], "apprentice": [], "scott": ["scott"], "cedric": ["cedric"]}
         self.wizards = {"scott":["scott", "wizards", "admins"], "cedric":["cedric", "wizards", "admins"]}
         try:
-            f = open(gametools.PLAYER_ROLES_FILE)
+            f = open(gametools.realDir(gametools.PLAYER_ROLES_FILE))
             player_roles = json.loads(f.read())
             f.close()
             self.roles = player_roles['roles']
@@ -104,6 +112,41 @@ class Game():
         except AttributeError:
             self.log.error("Error reading data from player_roles; attempting to use default roles & wizards")
 
+        self.acl.add_roles(self.roles.keys())
+        # create permissions for each wizard's home directory:
+        for w in self.wizards.keys():  
+            self.acl.add({gametools.HOME_DIR+w: ('read', 'write')})  
+            self.acl.grant(w, gametools.HOME_DIR+w, 'read')
+            self.acl.grant(w, gametools.HOME_DIR+w, 'write')
+            self.acl.grant('admin', gametools.HOME_DIR+w, 'read')
+            self.acl.grant('admin', gametools.HOME_DIR+w, 'write')
+        # create permissions for each domain:
+        for d in [x.name for x in os.scandir(os.path.join(gametools.gameroot, gametools.DOMAIN_DIR)) if x.is_dir() and x.name != '__pycache__'] :
+            self.acl.add({gametools.DOMAIN_DIR+d: ('read', 'write')})
+            self.acl.grant(d, gametools.DOMAIN_DIR+d, 'read')
+            self.acl.grant(d, gametools.DOMAIN_DIR+d, 'write')
+            self.acl.grant('admin', gametools.DOMAIN_DIR+d, 'read')
+            self.acl.grant('admin', gametools.DOMAIN_DIR+d, 'write')
+        # everyone can read core game files, but not write
+        self.acl.add({'/': ('read', 'write')})
+        self.acl.grant('admin', '/', 'read')
+        self.acl.grant('admin', '/', 'write')
+        self.acl.grant('wizard', '/', 'read')
+        self.acl.add({'/saved_players': ('read', 'write')})
+        self.acl.grant('admin', '/saved_players', 'read')
+        self.acl.grant('admin', '/saved_players', 'write')
+        self.acl.add({'/backup_saved_players': ('read', 'write')})
+        self.acl.grant('admin', '/backup_saved_players', 'read')
+        
+        """
+        self.acl.add_resource('wiz_commands')       # apparate, reload, emote
+        self.acl.add_resource('code_commands')      # clone, fetch
+        self.acl.add_resource('execute')            # execute an arbitrary Python command
+        self.acl.add_resource('edit_own_files')     # edit files in wizard's home directory
+        self.acl.add_resource('edit_domain_files')  # edit files in wizard's domain
+        self.acl.add_resource('player_actions')     # reset password & domain; edit player save files
+        """
+    
     def add_wizard_role(self, wizard, role):
         """Associate a player with a given role (e.g. the "admins" role or "wizards" role)"""
         self.wizards.setdefault(wizard, []).append(role)
@@ -201,6 +244,8 @@ class Game():
         f.close()
     
     def create_backups(self, filename, player, other_filename):        
+        """Makes up to 20 backups of <filename>. 
+        NOTE: filenames are real filesystem paths, not game filesystem."""
         if not other_filename.endswith('.OADplayer'):
             other_filename += '.OADplayer'
         
@@ -545,7 +590,7 @@ class Game():
         for i in players:
             if i.cons:
                 i.cons.write('The game is now shutting down.')
-                self.save_player(os.path.join(gametools.PLAYER_DIR, i.names[0]), i)
+                self.save_player(os.path.join(gameroot, gametools.PLAYER_DIR, i.names[0]), i)
                 i.cons.write('--#quit')
         
         for j in consoles:

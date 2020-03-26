@@ -36,8 +36,7 @@ class Console:
                \t'move vines'\n\n
                You can create shortcuts to reduce typing; type 'alias' for 
                more details. Type 'width' to change the console's text width. 
-               Type 'quit' to save your progress and leave 
-               the game."""
+               Type 'quit' to save your progress and leave the game."""
 
     def __init__(self, net_conn, game = None, encode_str='88838_defaultencodestr_9yq9h'):
         self.game = game
@@ -50,7 +49,7 @@ class Console:
         self.file_output = bytes()
         self.filename_output = ''
         self.uploading_filename = ''
-        self.current_directory = 'domains'
+        self.current_directory = '/domains'  # always in 'game directory space'
         self.change_players = False
         self.try_all_console_commands = False
         self.connection = net_conn
@@ -61,57 +60,21 @@ class Console:
         self.encode_str = str(encode_str)
         self.changing_passwords = False
         self.confirming_replace = False
-        self.alias_map = {'n':       'go north',
-                          's':       'go south',
-                          'e':       'go east', 
-                          'w':       'go west', 
-                          'nw':      'go northwest',
-                          'sw':      'go southwest',
-                          'ne':      'go northeast',
-                          'se':      'go southeast',
-                          'u':       'go up',
-                          'd':       'go down',
-                          'i':       'inventory',
-                          'l':       'look',
-                          'x':       'execute'
-                          }
-        self.legal_tags = {'span':     ['style'],
-                           'div':      ['style'],
-                           'b':        ['style'],
-                           'br':       ['style'],
-                           'code':     ['code'],
-                           'dl':       ['style'],
-                           'dd':       ['style'],
-                           'dt':       ['style'],
-                           'del':      ['style'],
-                           'em':       ['style'],
-                           'h1':       ['style'],
-                           'h2':       ['style'],
-                           'h3':       ['style'],
-                           'h4':       ['style'],
-                           'h5':       ['style'],
-                           'h6':       ['style'],
-                           'hr':       ['style'],
-                           'i':        ['style'],
-                           'ins':      ['style'],
-                           'li':       ['style', 'value'],
-                           'mark':     ['style'],
-                           'meter':    ['style', 'high', 'low', 'max', 'min', 'optimum', 'value'],
-                           'ol':       ['style', 'start', 'reversed', 'type'],
-                           'p':        ['style'],
-                           'pre':      ['style'],
-                           'progress': ['style', 'max', 'value'],
-                           'q':        ['style'],
-                           's':        ['style'],
-                           'kbd':      ['style'],
-                           'samp':     ['style'],
-                           'small':    ['style'],
-                           'strong':   ['style'],
-                           'sub':      ['style'],
-                           'sup':      ['style'],
-                           'u':        ['style'],
-                           'ul':       ['style']}
-        self.empty_elements = ['br', 'hr']
+        self.alias_map = {
+            'n':       'go north',
+            's':       'go south',
+            'e':       'go east', 
+            'w':       'go west', 
+            'nw':      'go northwest',
+            'sw':      'go southwest',
+            'ne':      'go northeast',
+            'se':      'go southeast',
+            'u':       'go up',
+            'd':       'go down',
+            'i':       'inventory',
+            'l':       'look',
+            'x':       'execute'
+        }
 
     def detach(self, user):
         if self.user == user:
@@ -318,6 +281,8 @@ class Console:
                     return True
             
             if cmd == 'edit':
+                # allowed = False
+                # for (pop file/dirs off path)
                 if self.user.wprivilages:
                     self.upload_confirm = False
                     self.download_file(self.words[1:], edit_flag=True)
@@ -383,8 +348,8 @@ class Console:
             
             if cmd == 'quit':
                 self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user.id, self.user.id))
-                self.game.save_player(os.path.join(gametools.PLAYER_DIR, self.user.names[0]), self.user)
-                self.game.create_backups(os.path.join(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, os.path.join(gametools.PLAYER_DIR, self.user.names[0]))
+                self.game.save_player(os.path.join(gameroot, gametools.PLAYER_DIR, self.user.names[0]), self.user)
+                self.game.create_backups(os.path.join(gameroot, gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, os.path.join(gameroot, gametools.PLAYER_DIR, self.user.names[0]))
                 self.write("--#quit")
                 if len(self.words) > 1 and self.words[1] == 'game' and self.user.wprivileges:
                     self.game.shutdown_console = self
@@ -400,7 +365,7 @@ class Console:
             self.uploading_filename = self.filename_input
         replacing_file = True
         try:
-            f = open(self.current_directory+'/'+self.uploading_filename, 'r')
+            f = open(gametools.realDir(os.path.join(self.current_directory,self.uploading_filename), player=self.user), 'r')
             try:
                 self.user.log.debug('Found a file. Contents: %s' % f.read())
             except UnicodeDecodeError:
@@ -413,7 +378,7 @@ class Console:
             self.user.log.debug('Decided to write file.')
             if platform.system() != 'Windows' and b'\r\n' in file:
                 file = file.replace(b'\r\n', b'\n') 
-            f = open(self.current_directory+'/'+self.uploading_filename, 'wb')
+            f = open(gametools.realdir(os.path.join(self.current_directory, self.uploading_filename), player=self.user), 'wb')
             f.write(file)
             f.close()
             self.write('Sucessfully uploaded file.')
@@ -438,7 +403,7 @@ class Console:
             filename += x
 
         try:
-            f = open(self.current_directory+'/'+filename, 'rb')
+            f = open(gametools.realdir(os.path.join(self.current_directory,filename), player=self.user), 'rb')
         except FileNotFoundError:
             self.write("Couldn't find a file named %s." % filename)
             return
