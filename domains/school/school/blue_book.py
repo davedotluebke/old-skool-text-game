@@ -1,7 +1,7 @@
-from book import Book
+from domains.school.school.library_book import LibraryBook
 
 def clone():
-    blue_book = Book("blue book", None, "newer light blue book", "This book is newer, sky blue, and says \"Dragonsky\" on the cover.", pref_id="blue_book")
+    blue_book = LibraryBook("blue book", None, "newer light blue book", "This book is newer, sky blue, and says \"Dragonsky\" on the cover.", pref_id="blue_book")
     blue_book.add_names("book", "Dragonsky")
     blue_book.add_adjectives("blue", "newer", "light")
     blue_book.set_message('''
