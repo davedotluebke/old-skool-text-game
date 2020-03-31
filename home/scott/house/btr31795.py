@@ -1,6 +1,7 @@
 import room
 import gametools
 import scenery
+import home.scott.house.exit_door as exit_door
 
 def load():
     roomPath = gametools.findGamePath(__file__)
@@ -8,9 +9,12 @@ def load():
     if exists: return exists
     
     bathroom = room.Room('bathroom', pref_id=roomPath, indoor=True, safe=True)
-    bathroom.set_description('modern bathroom', 'This small bathroom has a bathtub, a shower, and a sink.')
-    bathroom.add_exit('east', 'home.scott.house.lr31795')
+    bathroom.set_description('modern bathroom', 'This small bathroom has a bathtub, a shower, and a sink. There is a door on the east side of the room.')
     bathroom.add_adjectives('modern')
+
+    bath_door = exit_door.Door('door', 'plain interior door', 'This is a plain interior door on the east side of the room.', 'home.scott.house.lr31795', 'east', 'everyone')
+    bath_door.add_adjectives('plain', 'interior', 'bathroom')
+    bath_door.move_to(bathroom, True)
 
     bathtub = gametools.clone('home.scott.house.bathtub')
     bathtub.move_to(bathroom, True)
