@@ -1,4 +1,5 @@
 import os
+import platform
 import importlib
 import logging
 from walking_os import findAllPythonFiles
@@ -36,6 +37,16 @@ class IncorrectPasswordError(Exception):
 #
 # UTILITY FUNCTIONS
 # 
+def normGameDir(gamedir:str):
+    """Collapse redundant separators and up-level references so that
+    A//B, A/B/, A/./B and A/foo/../B all become A/B. Uses os.path.normpath()
+    but (on Windows) then replaces backslashes with forward slashes, since 
+    game directory paths use forward slashes as a separator."""
+    if platform.system() == 'Windows':
+        return os.path.normpath(gamedir).replace('\\','/')
+    else:
+        return os.path.normpath(gamedir)
+
 def expandGameDir(gamedir:str, player:str=None):
     """Expand leading tilde character: if first character is '~',
     ~wizard becomes /home/wizard and ~ becomes /home/{player}"""
@@ -51,11 +62,15 @@ def expandGameDir(gamedir:str, player:str=None):
     else:
         return gamedir
         
-def realDir(gamedir):
-    """Convert a path rooted in the game filesystem to the real filesystem.
-    This is done by expanding leading ~ shortcuts to home directories and
-    stripping leading slashes, then joining onto `gameroot` directory path."""
-    realdir = expandGameDir(gamedir).lstrip('/')  
+def realDir(*gamedir, player=None):
+    """Convert path(s) rooted in the game filesystem to the real filesystem.
+    This is done by expanding the leading ~ shortcut, if any, in the first
+    argument to a home directory; then stripping any leading slashes; then 
+    joining this path and any others; then prepending the result with the 
+    `gameroot` directory path (which is rooted in the real filesystem); then
+    finally converting the result to a "normalized path", e.g. removing
+    duplicate slashes and converting to backslashes if on Windows."""
+    realdir = os.path.join(expandGameDir(gamedir[0], player), *gamedir[1:]).lstrip('/')  
     return os.path.normpath(os.path.join(gameroot, realdir))
 
 def findGamePath(filepath):
@@ -78,7 +93,7 @@ def deconstructObjectPath(path_str):
 
 def check_player_exists(p):
     """Return whether a given player exists, i.e. has a save file."""
-    filename = os.path.join(gameroot, PLAYER_DIR, p) + '.OADplayer'
+    filename = gametools.realDir(PLAYER_DIR, p) + '.OADplayer'
     try:
         f = open(filename, 'r+b')
         f.close()  # success, player exists, so close file for now
@@ -102,7 +117,7 @@ def request_all_inputs(player, dest):
 #
 # LOGGING 
 #
-game_log_handler = logging.FileHandler(os.path.join(gameroot, GAME_LOG))
+game_log_handler = logging.FileHandler(realDir(GAME_LOG))
 game_log_handler.setLevel(logging.WARNING)
 game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 game_log_handler.setFormatter(game_log_formatter)

@@ -135,7 +135,7 @@ class Player(Creature):
                                 "Please enter your username:")
                 return
             self.names[0] = cmd.split()[0]  # strips any trailing whitespace
-            filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+            filename = gametools.realDir(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
             try:
                 f = open(filename, 'r+b')
                 f.close()  # success, player exists, so close file for now & check password
@@ -183,7 +183,7 @@ class Player(Creature):
                     self.cons.write("A copy of %s is already in the game. Would you like to take over %s? (yes/no)" % (self.names[0], self.names[0]))
                     self.login_state = 'AWAITING_RECONNECT_CONFIRM'
                     return
-            filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+            filename = gametools.realDir(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
             try:
                 try:
                     newuser = self.game.load_player(filename, self.cons, password=passwd)

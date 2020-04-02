@@ -63,44 +63,46 @@ class Game():
         self.users = []
 
         self.shutdown_console = None
-        self.player_read_privilages = {'scott':['.*'], 'rivques':['.*']}     # Note: administrators are responsible for making sure that 
-        self.player_edit_privilages = {'scott':['domains.*','home/scott.*','saved_players.*'], 'rivques':['domains.*', 'home/rivques.*', 'saved_players.*']} # wizards can view and edit their own files
 
         self.total_times = {}
         self.numrun_times = {}
         self.maximum_times = {}
     
     def get_file_privileges(self, player_name, path, check_type='read'):
-        # 
-        # TODO: update to use new ACL-based permissions system
-        # 
-        raise NotImplementedError
-        if re.match("home/%s/.*" % player_name, path) or re.match("home/%s" % player_name, path):
+        """Return True if the given player belongs to any groups that have 
+        the specified permission ('read' or 'edit') on the specified file. 
+        Tests the given filename first, then repeatedly tests the containing
+        directory up to & including the root ('/') of the game filesystem."""        
+        groups = self.wizards[player_name]
+        path = gametools.expandGameDir(path, player_name)  # expand ~ aliases
+        path = gametools.normGameDir(path)  # collapse redundant /'s and ..'s
+        # See whether any of the groups player belongs to has permission.
+        # Note acl.check_any() returns False if any parameters don't exist
+        if self.acl.check_any(groups, path, check_type):  
             return True
-        elif check_type == "read" and path == ".":  # "." is the game root directory for technical reasons. TODO: Change this to "/"
-            return True
-        f = open("player_edit_privileges.json", "r")
-        access_dict = json.loads(f.read())
-        f.close()
-        for i in access_dict:
-            if re.match(i, path):
-                try:
-                    if player_name in access_dict[i][check_type]:
-                        return True
-                except AttributeError:
-                    self.log.warning("Invalid check_type in get_file_privileges: %s" % check_type)
+        while path != '/':
+            trunc_path = os.path.dirname(path)  # truncate path to containing dir
+            if trunc_path == path: 
+                break  # no more / to truncate
+            path = trunc_path
+            if self.acl.check_any(groups, path, check_type):  
+                return True
         return False
 
     def get_read_privileges(self, player_name, path):
-        return get_file_privileges(player_name, path)
+        return self.get_file_privileges(player_name, path)
 
     def get_edit_privileges(self, player_name, path):
-        return get_file_privileges(player_name, path, check_type='edit')
+        return self.get_file_privileges(player_name, path, check_type='edit')
+
+    def is_wizard(self, player_name):
+        """Return True if the specified player is a wizard."""
+        return player_name in self.wizards
 
     def set_up_groups_and_acl(self):
         # default list of administrators and wizards, will be overwritten if PLAYER_ROLES_FILES exists 
         self.roles = {"admin": ["scott", "cedric"], "wizard": ["scott", "cedric"], "apprentice": [], "scott": ["scott"], "cedric": ["cedric"]}
-        self.wizards = {"scott":["scott", "wizards", "admins"], "cedric":["cedric", "wizards", "admins"]}
+        self.wizards = {"scott":["scott", "wizard", "admin"], "cedric":["cedric", "wizard", "admin"]}
         try:
             f = open(gametools.realDir(gametools.PLAYER_ROLES_FILE))
             player_roles = json.loads(f.read())
@@ -121,7 +123,7 @@ class Game():
             self.acl.grant('admin', gametools.HOME_DIR+w, 'read')
             self.acl.grant('admin', gametools.HOME_DIR+w, 'write')
         # create permissions for each domain:
-        for d in [x.name for x in os.scandir(os.path.join(gametools.gameroot, gametools.DOMAIN_DIR)) if x.is_dir() and x.name != '__pycache__'] :
+        for d in [x.name for x in os.scandir(gametools.realDir(gametools.DOMAIN_DIR)) if x.is_dir() and x.name != '__pycache__'] :
             self.acl.add({gametools.DOMAIN_DIR+d: ('read', 'write')})
             self.acl.grant(d, gametools.DOMAIN_DIR+d, 'read')
             self.acl.grant(d, gametools.DOMAIN_DIR+d, 'write')
@@ -590,7 +592,7 @@ class Game():
         for i in players:
             if i.cons:
                 i.cons.write('The game is now shutting down.')
-                self.save_player(os.path.join(gameroot, gametools.PLAYER_DIR, i.names[0]), i)
+                self.save_player(gametools.realDir(gametools.PLAYER_DIR, i.names[0]), i)
                 i.cons.write('--#quit')
         
         for j in consoles:

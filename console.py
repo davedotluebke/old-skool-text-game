@@ -164,38 +164,6 @@ class Console:
             return
         self.write(self._set_verbosity(level))
     
-    def _findPath(self, pathwords):
-        path = ''
-        cont_path = ''
-        dot_idx = False
-        for i in pathwords:
-            path += i+' '
-        path = path[:-1]
-        if path.startswith("~"):
-            path = path.replace("~", "/home/%s" % self.user.names[0])
-        if '..' in path: #TODO: Handle multiple '..' correctly
-            num_back = path.count('..')
-            dirlist = self.current_directory.split('/')[0:-num_back]
-            for j in dirlist:
-                cont_path += j+'/'
-            path = path.replace('..','')
-            dot_idx = True
-        elif self.current_directory == '.':
-            cont_path = ''
-        else:
-            cont_path = self.current_directory+'/'
-        path = path.replace('\\','/')
-        if path.startswith('/') and not dot_idx:
-            path = path[1:]
-            cont_path = ''
-        path = cont_path + path
-        path = path.replace('//','/')
-        if path.endswith('/'):
-            path = path[:-1]
-        if path == '':
-            path = '.'
-        return path
-    
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
         if len(self.words) > 0:
@@ -213,8 +181,8 @@ class Console:
                 return True
 
             if cmd == 'debug':
-                # check wizard privilages before allowing
-                if self.user.wprivileges:
+                # check wizard privileges before allowing
+                if self.game.is_wizard(self.user.name()):
                     # TODO allow wizards to subscribe to bugs logged for particular objects; might move out of console commands
                     pass
                 else:
@@ -222,8 +190,8 @@ class Console:
                     return True
             
             if cmd == 'verbose':
-                # check wizard privilages before allowing
-                if self.user.wprivileges:
+                # check wizard privileges before allowing
+                if self.game.is_wizard(self.user.name()):
                     self._handle_verbose()
                     return True
                 else:
@@ -231,8 +199,8 @@ class Console:
                     return True
             
             if cmd == 'profile':
-                # check wizard privilages before allowing
-                if self.user.wprivileges:
+                # check wizard privileges before allowing
+                if self.game.is_wizard(self.user.name()):
                     self.write(self.game.get_profiling_report())
                     return True
 
@@ -257,10 +225,10 @@ class Console:
                     return True
             
             if cmd == 'upload':
-                if self.user.wprivileges:
+                if self.game.is_wizard(self.user.name()):
                     allow_edits = False
                     try:
-                        allow_edits = self.game.get_edit_privilages(self.user.names[0], path)
+                        allow_edits = self.game.get_edit_privileges(self.user.names[0], path)
                     except KeyError:
                         pass
                     if allow_edits:
@@ -276,42 +244,41 @@ class Console:
                     return True
 
             if cmd == 'download':
-                if self.user.wprivileges:
+                if self.game.is_wizard(self.user.name()):
                     self.download_file(self.words[1:])
                     return True
             
             if cmd == 'edit':
                 # allowed = False
                 # for (pop file/dirs off path)
-                if self.user.wprivilages:
+                if self.game.is_wizard(self.user.name()):
                     self.upload_confirm = False
                     self.download_file(self.words[1:], edit_flag=True)
                     return True
             
             if cmd == 'cd':
-                if self.user.wprivileges:
-                    path = self._findPath(self.words[1:])
-                    allow_reads = False
-                    if path == '.':
-                        allow_reads = True
-                    try:
-                        allow_reads = self.game.get_read_privilages(self.user.names[0], path)
-                    except KeyError:
-                        pass
+                if self.game.is_wizard(self.user.name()):  
+                    arg = self.command.partition(' ')[2]  # everything after `cd`
+                    arg = arg if arg else '~'  # no dir given -> go to home dir
+                    path = gametools.expandGameDir(arg, player=self.user.name())
+                    path = os.path.join(self.current_directory, path)
+                    path = gametools.normGameDir(path)
+                    allow_reads = self.game.get_read_privileges(self.user.name(), path)
                     if allow_reads:
-                        if os.path.exists(path):
+                        if os.path.exists(gametools.realDir(path)):
                             self.current_directory = path
+                            self.write("Current directory now %s" % path)
                         else:
                             self.write('Error! No such file or directory.')
                     else:
                         self.write('You do not have permission to view this directory.')
                     return True
 
-            if (self.user.wprivileges and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']) or self.try_all_console_commands:
+            if self.game.is_wizard(self.user.name()) and (cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp'] or self.try_all_console_commands):
                 try:
                     if cmd == 'ls' and  platform.system == "Linux":
                             self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
-                    process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=self.current_directory)
+                    process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=gametools.realDir(self.current_directory))
                     syntax_hilite = '```python\n' if cmd == 'cat' else '```\n'
                     self.write(syntax_hilite + str(process.stdout, "utf-8") + '\n```\n')
                     self.write(str(process.stderr, "utf-8"))
@@ -345,11 +312,10 @@ class Console:
                 else:
                     self.write("Usage: load [filename]")
                 return True
-            
             if cmd == 'quit':
                 self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user.id, self.user.id))
-                self.game.save_player(os.path.join(gameroot, gametools.PLAYER_DIR, self.user.names[0]), self.user)
-                self.game.create_backups(os.path.join(gameroot, gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, os.path.join(gameroot, gametools.PLAYER_DIR, self.user.names[0]))
+                self.game.save_player(gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]), self.user)
+                self.game.create_backups(gametools.realDir(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]))
                 self.write("--#quit")
                 if len(self.words) > 1 and self.words[1] == 'game' and self.user.wprivileges:
                     self.game.shutdown_console = self
@@ -365,7 +331,7 @@ class Console:
             self.uploading_filename = self.filename_input
         replacing_file = True
         try:
-            f = open(gametools.realDir(os.path.join(self.current_directory,self.uploading_filename), player=self.user), 'r')
+            f = open(gametools.realDir(self.current_directory, self.uploading_filename, player=self.user.name()), 'r')
             try:
                 self.user.log.debug('Found a file. Contents: %s' % f.read())
             except UnicodeDecodeError:
@@ -378,7 +344,7 @@ class Console:
             self.user.log.debug('Decided to write file.')
             if platform.system() != 'Windows' and b'\r\n' in file:
                 file = file.replace(b'\r\n', b'\n') 
-            f = open(gametools.realdir(os.path.join(self.current_directory, self.uploading_filename), player=self.user), 'wb')
+            f = open(gametools.realdir(self.current_directory, self.uploading_filename, player=self.user.name()), 'wb')
             f.write(file)
             f.close()
             self.write('Sucessfully uploaded file.')
@@ -403,7 +369,7 @@ class Console:
             filename += x
 
         try:
-            f = open(gametools.realdir(os.path.join(self.current_directory,filename), player=self.user), 'rb')
+            f = open(gametools.realdir(self.current_directory,filename, player=self.user.name()), 'rb')
         except FileNotFoundError:
             self.write("Couldn't find a file named %s." % filename)
             return
