@@ -168,6 +168,10 @@ class Console:
         """Handle any commands internal to the console, returning True if the command string was handled."""
         if len(self.words) > 0:
             cmd = self.words[0]
+            arg = self.command.partition(' ')[2]  # everything after the command
+            path = gametools.expandGameDir(arg, player=self.user.name())
+            path = os.path.join(self.current_directory, path)
+            path = gametools.normGameDir(path)
             if cmd == 'alias':
                 self._add_alias(self.command)
                 return True
@@ -226,18 +230,9 @@ class Console:
             
             if cmd == 'upload':
                 if self.game.is_wizard(self.user.name()):
-                    allow_edits = False
-                    try:
-                        allow_edits = self.game.get_edit_privileges(self.user.names[0], path)
-                    except KeyError:
-                        pass
+                    allow_edits = self.game.get_edit_privileges(self.user.name(), path)
                     if allow_edits:
-                        if len(self.words) > 1 and self.words[1]:
-                            self.uploading_filename = self.words[1] #TODO: make sure this is a valid filename
-                        else:
-                            self.uploading_filename = self.filename_input
-                        if '.' not in self.uploading_filename:
-                            self.uploading_filename += '.py'
+                        self.uploading_filename = os.path.basename(path)  # returns '' if path doesn't end with a filename
                         self.write('Please select a file to --#upload:')
                     else:
                         self.write('You do not have permission to write to this directory.')
@@ -245,7 +240,7 @@ class Console:
 
             if cmd == 'download':
                 if self.game.is_wizard(self.user.name()):
-                    self.download_file(self.words[1:])
+                    self.download_file(path)
                     return True
             
             if cmd == 'edit':
@@ -253,16 +248,13 @@ class Console:
                 # for (pop file/dirs off path)
                 if self.game.is_wizard(self.user.name()):
                     self.upload_confirm = False
-                    self.download_file(self.words[1:], edit_flag=True)
+                    self.download_file(path, edit_flag=True)
                     return True
             
             if cmd == 'cd':
                 if self.game.is_wizard(self.user.name()):  
-                    arg = self.command.partition(' ')[2]  # everything after `cd`
-                    arg = arg if arg else '~'  # no dir given -> go to home dir
-                    path = gametools.expandGameDir(arg, player=self.user.name())
-                    path = os.path.join(self.current_directory, path)
-                    path = gametools.normGameDir(path)
+                    if not arg:   # no dir given -> go to home dir
+                        path = gametools.expandGameDir('~', player=self.user.name())
                     allow_reads = self.game.get_read_privileges(self.user.name(), path)
                     if allow_reads:
                         if os.path.exists(gametools.realDir(path)):
@@ -317,7 +309,7 @@ class Console:
                 self.game.save_player(gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]), self.user)
                 self.game.create_backups(gametools.realDir(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]))
                 self.write("--#quit")
-                if len(self.words) > 1 and self.words[1] == 'game' and self.user.wprivileges:
+                if len(self.words) > 1 and self.words[1] == 'game' and self.game.is_admin(self.user.name()):
                     self.game.shutdown_console = self
                     self.game.keep_going = False
                 return "__quit__"
@@ -328,10 +320,12 @@ class Console:
         if self.confirming_replace:
             return
         if not self.uploading_filename:
-            self.uploading_filename = self.filename_input
+            full_filename = os.path.join(self.current_directory, self.filename_input)
+            self.uploading_filename = full_filename
+
         replacing_file = True
         try:
-            f = open(gametools.realDir(self.current_directory, self.uploading_filename, player=self.user.name()), 'r')
+            f = open(gametools.realDir(self.uploading_filename, player=self.user.name()), 'r')
             try:
                 self.user.log.debug('Found a file. Contents: %s' % f.read())
             except UnicodeDecodeError:
@@ -344,7 +338,7 @@ class Console:
             self.user.log.debug('Decided to write file.')
             if platform.system() != 'Windows' and b'\r\n' in file:
                 file = file.replace(b'\r\n', b'\n') 
-            f = open(gametools.realdir(self.current_directory, self.uploading_filename, player=self.user.name()), 'wb')
+            f = open(gametools.realDir(self.uploading_filename, player=self.user.name()), 'wb')
             f.write(file)
             f.close()
             self.write('Sucessfully uploaded file.')
@@ -352,24 +346,23 @@ class Console:
             self.filename_input = ""
             self.upload_confirm = True
             try:
-                r = requests.post("http://127.0.0.1:6553", data={"filepath":self.current_directory+'/'+self.uploading_filename, "commitmsg":"%s uploaded file %s" % (self.user.names[0], self.uploading_filename)})
+                r = requests.post("http://127.0.0.1:6553", data={"filepath":self.uploading_filename, "commitmsg":"%s uploaded file %s" % (self.user.name(), self.uploading_filename)})
                 self.write(r.text)
             except:
                 self.user.log.warning("Gitbot failed to accept POST request")
                 self.user.log.debug(traceback.format_exc())
             self.uploading_filename = ""
         else:
-            self.write('A file named %s already exits. Would you like to replace it with the new version you\'ve uploaded? Y/n:' % (self.current_directory+'/'+self.uploading_filename))
+            self.write('A file named %s already exits. Would you like to replace it with the new version you\'ve uploaded? Y/n:' % (self.uploading_filename))
             self.confirming_replace = True
             self.input_redirect = self
 
-    def download_file(self, filename_words, edit_flag=False):
-        filename = ''
-        for x in filename_words:
-            filename += x
-
+    def download_file(self, filename, edit_flag=False):
+        if not filename:
+            self.write("Error: no file specified to download.")
+            return
         try:
-            f = open(gametools.realdir(self.current_directory,filename, player=self.user.name()), 'rb')
+            f = open(gametools.realdir(filename, player=self.user.name()), 'rb')
         except FileNotFoundError:
             self.write("Couldn't find a file named %s." % filename)
             return

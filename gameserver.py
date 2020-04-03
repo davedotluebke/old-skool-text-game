@@ -93,7 +93,7 @@ class Game():
         return self.get_file_privileges(player_name, path)
 
     def get_edit_privileges(self, player_name, path):
-        return self.get_file_privileges(player_name, path, check_type='edit')
+        return self.get_file_privileges(player_name, path, check_type='write')
 
     def is_wizard(self, player_name):
         """Return True if the specified player is a wizard."""
