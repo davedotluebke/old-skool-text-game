@@ -1,5 +1,6 @@
 import gametools
 import room
+import scenery
 
 def load():
     roomPath = gametools.findGamePath(__file__)
@@ -19,4 +20,11 @@ def load():
 
     scale = gametools.clone('domains.school.school.dragon_scale')
     potion_storage.insert(scale)
+
+    glass = scenery.Scenery('glass', 'broken glass', 'These shards of broken glass cover the floor. Evidently there have been some explosions here in the past.', unlisted=True)
+    glass.add_adjectives('broken')
+    glass.add_names('shards')
+    glass.add_response(['take', 'sweep', 'clean'], 'The glass shards are too small to easy clean off the floor.')
+    potion_storage.insert(glass, True)
+
     return potion_storage

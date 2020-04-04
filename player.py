@@ -757,11 +757,11 @@ class Player(Creature):
             return "Usage: 'introduce myself' or 'introduce <name>' with <name> of somebody present."
         if p.words[1] != 'myself':
             return "Introducing anybody other than 'myself' is not yet supported."
-        self.emit("&nD%s introduces himself as '%s'." % (self.id, self.proper_name))
+        self.emit("&nD%s introduces %s as '%s'." % (self.id, "themselves", self.proper_name))
         self.perceive("You introduce yourself to all.")
         for obj in self.location.contents:
             if isinstance(obj, Creature) and obj != self:
-                obj.introduced.add(self.id)
+                obj.introduced.append(self.id)
         return True
 
     def engage(self, p, cons, oDO, oIDO):

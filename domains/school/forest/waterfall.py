@@ -9,7 +9,7 @@ class Waterfall(scenery.Scenery):
     #
     def __init__(self):
         super().__init__('waterfall', 'rushing waterfall', 'This is a wide, rushing waterfall. '
-        'It flows from above a rocky cliff to a large pool below.')
+        'It flows from above a rocky cliff to a large pool below. You feel like you can make out something behind it, but you\'re not sure.')
         self.add_adjectives('rushing')
     
     #

@@ -14,12 +14,12 @@ def load():
     arena.add_exit('south', 'domains.school.school.balcony')
     arena.add_exit('west', 'domains.school.school.four_worlds_room')
 
-    platform = scenery.Scenery('platform', 'small platform', 'This small platform is undecorated. It stands slightly higher than than the lowest seating.')
+    platform = scenery.Scenery('platform', 'small platform', 'This small platform is undecorated. It stands slightly higher than than the lowest seating.', unlisted=True)
     platform.add_adjectives('small', 'high')
     platform.add_response(['stand', 'mount'], 'You stand on the platform, feeling more confident than before.')
     platform.move_to(arena, True)
 
-    seating = scenery.Scenery('seating', 'seating', 'This seating overlooks the platform in the middle of the room.')
+    seating = scenery.Scenery('seating', 'seating', 'This seating overlooks the platform in the middle of the room.', unlisted=True)
     seating.add_response(['sit'], 'You sit in one of the seats.')
     seating.move_to(arena, True)
 

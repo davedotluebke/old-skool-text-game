@@ -244,6 +244,18 @@ class Thing(object):
                 return 'their'
         # other gender or no gender specified:
         return 'it'
+    
+    def reflexive_pronoun(self):
+        """Return 'himself', 'herself', 'themselves', or 'itself' as appropriate."""
+        if hasattr(self, 'gender'):
+            if self.gender == 'male':
+                return 'himself'
+            elif self.gender == 'female':
+                return 'herself'
+            elif self.gender == 'non-binary':
+                return 'themselves'
+        # other gender or no gender specified:
+        return 'itself'
 
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)

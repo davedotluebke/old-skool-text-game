@@ -14,4 +14,7 @@ def load():
     entryway.add_exit('southwest', 'domains.school.forest.kitchen')
     entryway.add_exit('south', 'domains.school.forest.hallway')
 
+    chandelier = scenery.Scenery('chandelier', 'chandalier', 'This chandalier hangs very high from the ceiling.', unlisted=True)
+    chandelier.move_to(entryway, True)
+
     return entryway

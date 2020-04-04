@@ -8,8 +8,9 @@ def load():
     if exists: return exists
     
     living_room = room.Room('living room', pref_id=roomPath, indoor=True, safe=True)
-    living_room.set_description('well-kept living room', 'This is a comfortable living room, while quite small. It has a couch on one wall. You see a door to the east and a large window to the southeast.')
-    living_room.add_exit('west', 'home.scott.house.btr31795')
+    living_room.set_description('well-kept living room', 'This is a comfortable living room, while quite small. '
+    'It has a couch on one wall. You see doors to the east and west, open doorways to the north and south,'
+    ' and a large window to the southeast.')
     living_room.add_exit('up', 'home.scott.house.br31795')
     living_room.add_exit('south', 'home.scott.house.mr31795')
     living_room.add_exit('north', 'home.scott.house.er31795')
@@ -19,6 +20,10 @@ def load():
     d = exit_door.Door('door', 'strong birch door', 'This is a strong birch door on the east side of the room.', 'domains.school.school.hallway', 'east')
     d.add_adjectives('birch')
     d.move_to(living_room, True)
+
+    bath_door = exit_door.Door('door', 'plain interior door', 'This is a plain interior door on the west side of the room.', 'home.scott.house.btr31795', 'west')
+    bath_door.add_adjectives('plain', 'interior', 'bathroom')
+    bath_door.move_to(living_room, True)
 
     w = exit_door.Window('window', 'large window', 'This is a very large window looking over the great hall.', 'domains.school.school.great_hall')
     w.add_adjectives('large')

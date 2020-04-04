@@ -4,18 +4,46 @@ import creature
 import action
 
 class Door(scenery.Scenery):
-    def __init__(self, default_name, short_desc, long_desc, dest, direction, allowed_players=None):
+    opposite_directions = {
+        'north':     'south',
+        'south':     'north',
+        'east':      'west',
+        'west':      'east',
+        'down':      'up',
+        'up':        'down',
+        'northwest': 'southeast',
+        'northeast': 'southwest',
+        'southeast': 'northwest',
+        'southwest': 'northeast'
+    }
+    def __init__(self, default_name, short_desc, long_desc, dest, direction, allowed_to_lock=['scott', 'isla']):
         super().__init__(default_name, short_desc, long_desc)
         self.dest = dest
         self.direction = direction
         self.add_adjectives(direction)
         self.actions['open'] = action.Action(Door.enter_door, True, False)
         self.actions['enter'] = action.Action(Door.enter_door, True, False)
+        self.actions['lock'] = action.Action(Door.lock_door, True, False)
+        self.actions['unlock'] = action.Action(Door.unlock_door, True, False)
         self.unlisted = True
+        self.locked = False
+        self.allowed_to_lock = allowed_to_lock
     
+    def toggle_matching(self, lock_setting):
+        try:
+            r = gametools.load_room(self.dest)
+            for i in r.contents:
+                if isinstance(i, Door) and i.direction == Door.opposite_directions[self.direction]:
+                    i.locked = lock_setting
+        except:
+            return
+
     def enter_door(self, p, cons, oDO, oIDO):
         if self != oDO:
             return "Did you mean to open and go through the door?"
+        if self.locked:
+            cons.user.perceive("The door is locked.")
+            return True
         dest_room = gametools.load_room(self.dest)
         if not dest_room:
             return "For some reason you are unable to go through the door."
@@ -23,6 +51,29 @@ class Door(scenery.Scenery):
         cons.user.emit('&nD%s opens the door and passes through it.' % cons.user)
         cons.user.perceive('You pass through the door and find yourself in a new location.')
         cons.user.location.report_arrival(cons.user)
+        return True
+    
+    
+    def lock_door(self, p, cons, oDO, oIDO):
+        if self.locked:
+            return "The door is already locked!"
+        if self.allowed_to_lock != 'everyone' and cons.user.names[0] not in self.allowed_to_lock:
+            cons.user.perceive('You don\'t have the key.')
+        self.locked = True
+        self.toggle_matching(True)
+        cons.user.perceive('You lock the door.')
+        cons.user.emit('&nD%s locks the door.')
+        return True
+
+    def unlock_door(self, p, cons, oDO, oIDO):
+        if not self.locked:
+            return "The door is already unlocked!"
+        if self.allowed_to_lock != 'everyone' and cons.user.names[0] not in self.allowed_to_lock:
+            cons.user.perceive('You don\'t have the key.')
+        self.locked = False
+        self.toggle_matching(False)
+        cons.user.perceive('You unlock the door.')
+        cons.user.emit('&nD%s unlocks the door.')
         return True
 
 class Window(scenery.Scenery):

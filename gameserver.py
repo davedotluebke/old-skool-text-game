@@ -321,7 +321,7 @@ class Game():
             for obj in l:
                 obj._change_objs_to_IDs()
             saveables = [x.get_saveable() for x in l]
-            f.write(json.dumps(saveables, sort_keys=True, indent=4))
+            f.write(json.dumps(saveables, skipkeys=True, sort_keys=True, indent=4))
             Thing.ID_dict = backup_ID_dict
             player.cons.write("Saved player data to file %s" % filename)
             f.close()
@@ -552,7 +552,19 @@ class Game():
             self.events.call_later(1,self.beat)
         else:
             # quit the game
-            self.events.stop()       
+            self.events.stop()   
+
+    def open_socket(self):
+        if self.is_ssl:
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ssl_context.load_default_certs()
+            ssl_context.load_cert_chain("certificate.pem", "private_key.pem")
+            ssl_context.set_ciphers("ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:RSA-AES128-GCM-SHA256:RSA-AES256-GCM-SHA384:RSA-AES128-SHA:RSA-AES256-SHA:RSA-3DES-EDE-SHA")
+            self.events.run_until_complete(
+                websockets.serve(connections_websock.ws_handler, self.server_ip, 9124, ssl=ssl_context))
+        else:
+            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, 9124))
+
 
     def start_loop(self):
         # Keep track of game start time to support periodic reboots 
@@ -568,16 +580,16 @@ class Game():
             except ValueError:
                 print("Error: %s is not a valid IP address! Please try again." % input_ip)
         
-        if self.is_ssl:
-            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            ssl_context.load_default_certs()
-            ssl_context.load_cert_chain("certificate.pem", "private_key.pem")
-            ssl_context.set_ciphers("ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:RSA-AES128-GCM-SHA256:RSA-AES256-GCM-SHA384:RSA-AES128-SHA:RSA-AES256-SHA:RSA-3DES-EDE-SHA")
-            self.events.run_until_complete(
-                websockets.serve(connections_websock.ws_handler, self.server_ip, self.port, ssl=ssl_context))
-        else:
-            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, self.port))
-        print("Listening on %s port %s..." % (self.server_ip, self.port))
+        socket_sucessfully_opened = False
+        while not socket_sucessfully_opened:
+            try:
+                self.open_socket()
+                socket_sucessfully_opened = True
+            except OSError:
+                traceback.print_exc()
+                time.sleep(4*60)
+
+        print("Listening on %s port 9124..." % self.server_ip)
         self.events.call_later(1,self.beat)
         self.events.run_forever()
 
