@@ -1694,3 +1694,102 @@ Traceback (most recent call last):
   File "/mnt/c/Users/Owen Luebke/Programming/GitHub/old-skool-text-game/player.py", line 274, in heartbeat
     cmd = self.cons.take_input()
 AttributeError: 'NoneType' object has no attribute 'take_input'
+2020-04-03 21:07:13,640 - _gameserver - ERROR - An error occured while attepting to complete event (timestamp 187, callback <bound method Player.heartbeat of <player.Player object at 0x7f112fa921d0>>, payload [])! Printing below:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/gameserver.py", line 522, in catch_func_errs
+    func(*params)
+  File "/src/old-skool-text-game/player.py", line 274, in heartbeat
+    cmd = self.cons.take_input()
+  File "/src/old-skool-text-game/console.py", line 449, in take_input
+    internal = self._handle_console_commands()
+  File "/src/old-skool-text-game/console.py", line 251, in _handle_console_commands
+    self.download_file(path, edit_flag=True)
+  File "/src/old-skool-text-game/console.py", line 365, in download_file
+    f = open(gametools.realdir(filename, player=self.user.name()), 'rb')
+AttributeError: module 'gametools' has no attribute 'realdir'
+2020-04-03 21:07:30,671 - _gameserver - ERROR - An error occured while attepting to complete event (timestamp 204, callback <bound method Player.heartbeat of <player.Player object at 0x7f112fa921d0>>, payload [])! Printing below:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/gameserver.py", line 522, in catch_func_errs
+    func(*params)
+  File "/src/old-skool-text-game/player.py", line 274, in heartbeat
+    cmd = self.cons.take_input()
+  File "/src/old-skool-text-game/console.py", line 449, in take_input
+    internal = self._handle_console_commands()
+  File "/src/old-skool-text-game/console.py", line 251, in _handle_console_commands
+    self.download_file(path, edit_flag=True)
+  File "/src/old-skool-text-game/console.py", line 365, in download_file
+    f = open(gametools.realdir(filename, player=self.user.name()), 'rb')
+AttributeError: module 'gametools' has no attribute 'realdir'
+2020-04-03 21:07:37,681 - _gameserver - ERROR - An error occured while attepting to complete event (timestamp 211, callback <bound method Player.heartbeat of <player.Player object at 0x7f112fa921d0>>, payload [])! Printing below:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/gameserver.py", line 522, in catch_func_errs
+    func(*params)
+  File "/src/old-skool-text-game/player.py", line 274, in heartbeat
+    cmd = self.cons.take_input()
+  File "/src/old-skool-text-game/console.py", line 449, in take_input
+    internal = self._handle_console_commands()
+  File "/src/old-skool-text-game/console.py", line 251, in _handle_console_commands
+    self.download_file(path, edit_flag=True)
+  File "/src/old-skool-text-game/console.py", line 365, in download_file
+    f = open(gametools.realdir(filename, player=self.user.name()), 'rb')
+AttributeError: module 'gametools' has no attribute 'realdir'
+2020-04-03 21:07:40,686 - _gameserver - ERROR - An error occured while attepting to complete event (timestamp 214, callback <bound method Player.heartbeat of <player.Player object at 0x7f112fa921d0>>, payload [])! Printing below:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/gameserver.py", line 522, in catch_func_errs
+    func(*params)
+  File "/src/old-skool-text-game/player.py", line 274, in heartbeat
+    cmd = self.cons.take_input()
+  File "/src/old-skool-text-game/console.py", line 449, in take_input
+    internal = self._handle_console_commands()
+  File "/src/old-skool-text-game/console.py", line 251, in _handle_console_commands
+    self.download_file(path, edit_flag=True)
+  File "/src/old-skool-text-game/console.py", line 365, in download_file
+    f = open(gametools.realdir(filename, player=self.user.name()), 'rb')
+AttributeError: module 'gametools' has no attribute 'realdir'
+2020-04-03 21:09:09,249 - _gameserver - ERROR - An error occured while attepting to complete event (timestamp 243, callback <bound method Player.heartbeat of <player.Player object at 0x7f112fa921d0>>, payload [])! Printing below:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/gameserver.py", line 522, in catch_func_errs
+    func(*params)
+  File "/src/old-skool-text-game/player.py", line 274, in heartbeat
+    cmd = self.cons.take_input()
+  File "/src/old-skool-text-game/console.py", line 449, in take_input
+    internal = self._handle_console_commands()
+  File "/src/old-skool-text-game/console.py", line 251, in _handle_console_commands
+    self.download_file(path, edit_flag=True)
+  File "/src/old-skool-text-game/console.py", line 365, in download_file
+    f = open(gametools.realDir(filename, player=self.user.name()), 'rb')
+AttributeError: module 'gametools' has no attribute 'realdir'
+2020-04-03 21:13:50,358 - _gametools - ERROR - Error importing room module domains.school.school.library
+2020-04-03 21:13:55,355 - _gametools - ERROR - Error importing room module domains.school.school.library
+2020-04-03 21:14:15,408 - _gametools - ERROR - Error importing room module home.fastar.entryway
+2020-04-03 21:14:15,426 - _gametools - ERROR - Error importing room module home.cedric.blank_room
+2020-04-03 21:14:20,401 - _gametools - ERROR - Error importing room module domains.school.school.library
+2020-04-03 21:14:31,426 - _gametools - ERROR - Error importing room module domains.school.school.library
+2020-04-03 21:14:40,439 - _gametools - ERROR - Error importing room module domains.school.school.library
+2020-04-03 21:14:40,441 - _gametools - ERROR - Error importing module domains.school.school.library
+2020-04-03 21:14:50,457 - _gametools - ERROR - Error importing room module domains.school.school.library
+2020-04-03 21:14:54,509 - : - ERROR - Error! Location is a string!
+2020-04-03 21:15:15,767 - : - ERROR - scott668163-saveplayer978950 was already removed from Thing.ID_dict
+2020-04-03 21:15:15,769 - _gameserver - ERROR - An error occured while attepting to complete event (timestamp 15, callback <bound method Player.heartbeat of <player.Player object at 0x7f85bb890240>>, payload [])! Printing below:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/gameserver.py", line 522, in catch_func_errs
+    func(*params)
+  File "/src/old-skool-text-game/player.py", line 274, in heartbeat
+    cmd = self.cons.take_input()
+AttributeError: 'NoneType' object has no attribute 'take_input'
+2020-04-03 21:15:28,795 - _gametools - ERROR - Error importing room module domains.school.school.library
+2020-04-03 21:15:45,822 - _gametools - ERROR - Error importing room module domains.school.school.library
+2020-04-03 21:17:14,942 - _gametools - ERROR - Error importing room module domains.school.school.library
+2020-04-03 21:20:03,931 - _gametools - ERROR - Error importing room module domains.school.school.library
+2020-04-03 21:20:08,961 - _gametools - ERROR - Error importing module domains.school.school.library_bookcase
+2020-04-03 21:23:33,361 - _gameserver - ERROR - An error occured while attepting to complete event (timestamp 415, callback <bound method Player.heartbeat of <player.Player object at 0x7f85bb8a5b00>>, payload [])! Printing below:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/gameserver.py", line 522, in catch_func_errs
+    func(*params)
+  File "/src/old-skool-text-game/player.py", line 274, in heartbeat
+    cmd = self.cons.take_input()
+  File "/src/old-skool-text-game/console.py", line 449, in take_input
+    internal = self._handle_console_commands()
+  File "/src/old-skool-text-game/console.py", line 312, in _handle_console_commands
+    if len(self.words) > 1 and self.words[1] == 'game' and self.game.is_admin(self.user.name()):
+AttributeError: 'Game' object has no attribute 'is_admin'
