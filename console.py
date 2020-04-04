@@ -362,7 +362,7 @@ class Console:
             self.write("Error: no file specified to download.")
             return
         try:
-            f = open(gametools.realdir(filename, player=self.user.name()), 'rb')
+            f = open(gametools.realDir(filename, player=self.user.name()), 'rb')
         except FileNotFoundError:
             self.write("Couldn't find a file named %s." % filename)
             return
