@@ -42,8 +42,6 @@ class Flashlight(Thing):
             return "I don't know what you mean by put in this context"
     
     def put_away(self, p, cons, oDO, oIDO):
-        i = cons.user.visible_inventory.index(self)
-        del cons.user.visible_inventory[i]
         if self.emits_light:
             self.change_room_light(self, -1)
         cons.user.perceive('You put away the flashlight')

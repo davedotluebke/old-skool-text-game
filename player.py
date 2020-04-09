@@ -431,9 +431,6 @@ class Player(Creature):
             else:
                 self.cons.write(message) 
                    
-    def hold_object(self, obj):
-        self.visible_inventory.append(obj)
-
     def attack_enemy(self, enemy):
         if self.attacking in self.location.contents:
             self.attack(enemy)
