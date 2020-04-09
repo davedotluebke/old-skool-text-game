@@ -184,24 +184,6 @@ class Console:
                 self.write(self.help_msg)
                 return True
 
-            if cmd == 'debug':
-                # check wizard privileges before allowing
-                if self.game.is_wizard(self.user.name()):
-                    # TODO allow wizards to subscribe to bugs logged for particular objects; might move out of console commands
-                    pass
-                else:
-                    self.write("You do not have debug privileges. If you would like to report a bug, type \"bug\" instead.")
-                    return True
-            
-            if cmd == 'verbose':
-                # check wizard privileges before allowing
-                if self.game.is_wizard(self.user.name()):
-                    self._handle_verbose()
-                    return True
-                else:
-                    self.write("Type \"terse\" to print short descriptions when entering a room.")
-                    return True
-            
             if cmd == 'profile':
                 # check wizard privileges before allowing
                 if self.game.is_wizard(self.user.name()):

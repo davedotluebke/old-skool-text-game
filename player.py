@@ -518,7 +518,7 @@ class Player(Creature):
 
     def debug(self, p, cons, oDO, oIDO):
         '''Start or stop debug logging for player actions, for a module, or for an object in the game.'''
-        usage = """Usage: `debug [sec] [level] obj`
+        usage = """Usage: `debug [sec ] [level] obj`
         The *obj* argument may be:
         - a visible object or creature
         - an object id (i.e. an entry in `Thing.ID_dict[]`)
@@ -530,19 +530,34 @@ class Player(Creature):
 
         The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or `error`. All log messages at the specified level are displayed. If left unspecified, *\[level\]* defaults to `debug`.
         """
+        DEFAULT_DEBUG_DURATION = 60
+        DEFAULT_DEBUG_LEVEL = 'debug'
 
         if cons.user != self:
             self.log.error("`player.debug()` action called but cons.user is %s instead of self!" % cons.user)
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.user.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             return usage
-        if len(p.words == 2):
-            if p.words[1] == "me":
+        if oDO:
+            # player directly specified an object that the parser understands
+            obj = oDO
+        else:
+            # find & strip the seconds operator and debug level, if specified
+            sec = [s in p.words[1:] if s.isnumeric()]
+            sec = sec[0] if sec else DEFAULT_DEBUG_DURATION 
+            levels = {'critical', 'error', 'warning', 'info', 'debug'}
+            dbg_level = [d in p.words[1:] if d in levels]
+            dbg_level = dbg_level[0] if dbg_level else DEFAULT_DEBUG_LEVEL
+            words = [x in p.words[1:] if not x.isnumeric() and x not in levels]
+            if words[1] == "me":
                 obj = self
             elif p.words[1] == "here":
                 obj = self.location
+            else:
+                raise NotImplementedError
+        
         
         return "Debugging is not quite implemented yet, check back soon!"
 
