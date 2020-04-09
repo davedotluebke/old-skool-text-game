@@ -24,7 +24,6 @@ class Creature(Container):
         self.weapon_wielding = self.default_weapon
         self.armor_worn = self.default_armor
         self.closed_err = "You can't put things in creatures!"
-        self.visible_inventory = []     #Things the creature is holding, you can see them.
         self.invisible = False
         self.introduced = set()
         self.proper_name = default_name.capitalize()
@@ -96,11 +95,6 @@ class Creature(Container):
                 cons.write("It is wielding a %s." % (self.weapon_wielding._short_desc))        #if we use "bare hands" we will have to change this XXX not true anymore
             if self.armor_worn and (self.armor_worn != self.default_armor):
                 cons.write("It is wearing %s." % (self.armor_worn._short_desc))
-            if self.visible_inventory and self.visible_inventory != [self.armor_worn, self.weapon_wielding] and self.visible_inventory != [self.weapon_wielding, self.armor_worn]:
-                cons.write('It is holding:')
-                for i in self.visible_inventory:
-                    if i != self.armor_worn and i != self.weapon_wielding:
-                        cons.write('\na '+i._short_desc)
             return True
         else:
             return "Not sure what you are trying to look at!"
@@ -133,7 +127,6 @@ class Creature(Container):
                 if isinstance(w, Weapon) and w.damage > self.default_weapon.damage:
                     self.weapon_wielding = w
                     self.log.info("weapon chosen: %s" % self.weapon_wielding)
-                    self.visible_inventory.append(self.weapon_wielding)
                     self.perceive('You wield the %s, rather than using your %s.' % (self.weapon_wielding._short_desc, self.default_weapon._short_desc))
                     break
         if not self.armor_worn or self.armor_worn == self.default_armor:
@@ -141,7 +134,6 @@ class Creature(Container):
                 if isinstance(a, Armor) and a.bonus > self.default_armor.bonus:
                     self.armor_worn = a
                     self.log.info("armor chosen: %s" % self.armor_worn)
-                    self.visible_inventory.append(self.armor_worn)
                     self.perceive('You wear the %s, rather than your %s.' % (self.armor_worn._short_desc, self.default_armor._short_desc))
                     break
     

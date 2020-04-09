@@ -11,8 +11,8 @@ def load():
     clearing.add_adjectives('bright')
     clearing.add_exit('north', 'domains.school.forest.woods')
 
-    horster = gametools.clone('domains.school.forest.scavenger')
-    clearing.insert(horster)
+    # horster = gametools.clone('domains.school.forest.scavenger')
+    # clearing.insert(horster)
 
     ruby = gametools.clone('domains.school.forest.ruby')
     clearing.insert(ruby)
