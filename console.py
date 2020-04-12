@@ -249,8 +249,8 @@ class Console:
                 return True
 
             if cmd == 'debug':
-                # check wizard privilages before allowing
-                if self.user.wprivilages:
+                # check wizard privileges before allowing
+                if self.user.wprivileges:
                     self.game.handle_exceptions = not self.game.handle_exceptions
                     self.write("Toggle debug exception handling to %s" % ("on" if self.game.handle_exceptions else "off"))
                     return True
@@ -259,8 +259,8 @@ class Console:
                     return True
             
             if cmd == 'verbose':
-                # check wizard privilages before allowing
-                if self.user.wprivilages:
+                # check wizard privileges before allowing
+                if self.user.wprivileges:
                     self._handle_verbose()
                     return True
                 else:
@@ -268,8 +268,8 @@ class Console:
                     return True
             
             if cmd == 'profile':
-                # check wizard privilages before allowing
-                if self.user.wprivilages:
+                # check wizard privileges before allowing
+                if self.user.wprivileges:
                     self.write(self.game.get_profiling_report())
                     return True
 
@@ -294,10 +294,10 @@ class Console:
                     return True
             
             if cmd == 'upload':
-                if self.user.wprivilages:
+                if self.user.wprivileges:
                     allow_edits = False
                     try:
-                        for i in self.game.player_edit_privilages[self.user.names[0]]:
+                        for i in self.game.player_edit_privileges[self.user.names[0]]:
                             if re.fullmatch(i, self.current_directory):
                                 allow_edits = True
                                 break
@@ -316,18 +316,18 @@ class Console:
                     return True
 
             if cmd == 'download':
-                if self.user.wprivilages:
+                if self.user.wprivileges:
                     self.download_file(self.words[1:])
                     return True
             
             if cmd == 'cd':
-                if self.user.wprivilages:
+                if self.user.wprivileges:
                     path = self._findPath(self.words[1:])
                     allow_reads = False
                     if path == '.':
                         allow_reads = True
                     try:
-                        for i in self.game.player_read_privilages[self.user.names[0]]:
+                        for i in self.game.player_read_privileges[self.user.names[0]]:
                             if re.fullmatch(i,path):
                                 allow_reads = True
                                 break
@@ -342,7 +342,7 @@ class Console:
                         self.write('You do not have permission to view this directory.')
                     return True
 
-            if (self.user.wprivilages and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']) or self.try_all_console_commands:
+            if (self.user.wprivileges and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']) or self.try_all_console_commands:
                 try:
                     if cmd == 'ls': 
                         self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
@@ -385,7 +385,7 @@ class Console:
                 self.game.save_player(os.path.join(gametools.PLAYER_DIR, self.user.names[0]), self.user)
                 self.game.create_backups(os.path.join(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, os.path.join(gametools.PLAYER_DIR, self.user.names[0]))
                 self.write("--#quit")
-                if len(self.words) > 1 and self.words[1] == 'game' and self.user.wprivilages:
+                if len(self.words) > 1 and self.words[1] == 'game' and self.user.wprivileges:
                     self.game.shutdown_console = self
                     self.game.keep_going = False
                 return "__quit__"

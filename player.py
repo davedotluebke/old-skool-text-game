@@ -77,7 +77,7 @@ class Player(Creature):
         self.engaged = False
         self.wizardry_skill = 0
         self.wizardry_element = None
-        self.wprivilages = False
+        self.wprivileges = False
         self.attacking = False
         self.hitpoints = 20
         self.health = 20
@@ -129,6 +129,12 @@ class Player(Creature):
         if self.versions[gametools.findGamePath(__file__)] == 1:
             self.password = "{\"F\":[1779033703,-1150833019,1013904242,-1521486534,1359893119,-1694144372,528734635,1541459225],\"A\":[1634952294],\"l\":32}"
             self.versions[gametools.findGamePath(__file__)] = 2
+        if self.versions[gametools.findGamePath(__file__)] == 2:
+            if hasattr(self, "wprivilages"):
+                self.wprivileges = self.wprivilages
+                del self.wprivilages
+            self.versions[gametools.findGamePath(__file__)] = 3
+
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
@@ -497,7 +503,7 @@ class Player(Creature):
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivilages:
+        if not self.wprivileges:
             return "You cannot yet perform this magical incantation correctly."
         cmd = ' '.join(p.words[1:])
         cons.write("Executing command: '%s'" % cmd)
@@ -512,7 +518,7 @@ class Player(Creature):
         '''Find an in-game object by ID and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivilages:
+        if not self.wprivileges:
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'fetch <id>', where id is an entry in Thing.ID_dict[]")
@@ -537,7 +543,7 @@ class Player(Creature):
         '''Clone a new copy of an object specified by ID or by module path, and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivilages:
+        if not self.wprivileges:
             return "You cannot yet perform this magical incatation correctly."
         if len(p.words) < 2: 
             cons.write("Usage:\n\t'clone <id>', where id is an entry in Thing.ID_dict[]"
@@ -569,7 +575,7 @@ class Player(Creature):
         module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
         players back to the new room.'''
         obj = None
-        if not self.wprivilages:
+        if not self.wprivileges:
             return "You cannot yet perform this magical incantation correctly."
         if isinstance(obj, Creature):
             return "You cannot reload players or NPCs!"
@@ -623,7 +629,7 @@ class Player(Creature):
     def apparate(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivilages:
+        if not self.wprivileges:
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'apparate <id>', where id is the entry of a Room in Thing.ID_dict[] or a path to it's module")
@@ -678,11 +684,11 @@ class Player(Creature):
             return "Usage: 'introduce myself' or 'introduce <name>' with <name> of somebody present."
         if p.words[1] != 'myself':
             return "Introducing anybody other than 'myself' is not yet supported."
-        self.emit("&nD%s introduces himself as '%s'." % (self.id, self.proper_name))
+        self.emit("&nD%s introduces %s as '%s'." % (self.id, "themselves", self.proper_name))
         self.perceive("You introduce yourself to all.")
         for obj in self.location.contents:
             if isinstance(obj, Creature) and obj != self:
-                obj.introduced.add(self.id)
+                obj.introduced.append(self.id)
         return True
 
     def engage(self, p, cons, oDO, oIDO):

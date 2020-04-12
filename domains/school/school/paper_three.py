@@ -4,7 +4,7 @@ import action
 #
 # ACTION METHODS 
 # 
-def read(p, cons, oDO, oIDO):
+def read(obj, p, cons, oDO, oIDO):
     cons.write('You read: Notice: I shall be out this week. Everything shall continue as normal.')
     return True
 

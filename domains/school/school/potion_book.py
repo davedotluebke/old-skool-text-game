@@ -1,16 +1,16 @@
-import book
+import domains.school.school.library_book as library_book
 import gametools
 
 def clone():
-    potion_book = book.Book("leather book", __file__, "leather-bound tome", "This is an old leather-bound book titled \"Potion Recipes for the Beginning and Intermediate Sorcerer (First Edition).\"", pref_id="potion_book")
+    potion_book = library_book.LibraryBook("leather book", __file__, "leather-bound tome", "This is an old leather-bound book titled \"Potion Recipes for the Beginning and Intermediate Wizard (Third Edition).\"", pref_id="potion_book")
     potion_book.add_names("tome", "book")
     potion_book.add_adjectives("leather-bound", "leather")
     potion_book.set_message('''
-============================================================
-|Potion Recipes for the Beginning and Intermediate Sorcerer|
-|                                                          |
-|                 (First Edition)                          |
-============================================================
+==========================================================
+|Potion Recipes for the Beginning and Intermediate Wizard|
+|                                                        |
+|                 (Third Edition)                        |
+==========================================================
 #*
   Spells                      Pg
 ==================================

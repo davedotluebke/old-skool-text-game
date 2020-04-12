@@ -10,10 +10,10 @@ class Scroll(Thing):
     #
     def __init__(self, default_name, path, pref_id=None):
         super().__init__(default_name, path, pref_id)
-        self.set_description('scroll', 'This scroll appears to say something on it.')
+        self.set_description('scroll', 'This scroll appears to say something on it. Try "reading" it.')
         self.current_message = ''
         self.messages = {
-            'domains.school.school.great_hall':        ['Make a potion to hide thee. Use this potion to sneak past an unbeatable enemy.\nDue next class.', False],
+            'domains.school.school.great_hall':        ['Make a potion to hide thee. Find the ancient recipe in the library. Use it to sneak past an unbeatable enemy.\nDue next class.', False],
             'domains.school.elementQuest.path_choice': ['Thou must continue on thy journey\nAnd in thy journey\nThou must choose a path\nAnd thou must be careful, because thy choice defines thy destiny. ', False],
             'domains.school.school.fire_lounge':       ['Thy class begins shortly.', False],
             'domains.school.school.water_lounge':      ['Thy class begins shortly.', False],

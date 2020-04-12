@@ -1,5 +1,6 @@
 import gametools
 import room
+import scenery
 
 def load():
     roomPath =  gametools.findGamePath(__file__)
@@ -15,4 +16,10 @@ def load():
     grand_entry.add_exit('southwest', 'domains.school.forest.field')
     grand_entry.add_exit('northwest', 'domains.school.forest.garden')
     grand_entry.add_exit('east', 'domains.school.school.great_hall')
+
+    pillar = scenery.Scenery('pillar', 'huge pillar', 'This huge fluted pillar has ionic capitals.', unlisted=True)
+    pillar.add_adjectives('huge', 'fluted', 'ionic')
+    pillar.add_names('pillars')
+    pillar.move_to(grand_entry, True)
+    
     return grand_entry

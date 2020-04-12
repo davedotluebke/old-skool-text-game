@@ -10,7 +10,7 @@ from container import Container
 from player import Player
 
 class Parser:
-    inventory_verbs = set(('put', 'give', 'drop', 'sell'))  # verbs that only apply to carried items
+    inventory_verbs = set(('give', 'drop', 'sell'))  # verbs that only apply to carried items
     environment_verbs = set(('take', 'get', 'buy'))  # verbs that only apply to items not carried
     ordinals = {"first":1, "second":2, "third":3, "fourth":4, "fifth":5, "sixth":6, "seventh":7, "eighth":8, "ninth":9, "tenth":10,
                 "1st":1, "2nd":2, "3rd":3, "4th":4, "5th":5, "6th":6, "7th":7, "8th":8, "9th":9, "10th":10}
