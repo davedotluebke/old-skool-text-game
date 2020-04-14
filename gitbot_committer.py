@@ -35,5 +35,7 @@ class PostHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(process_one.stdout + process_two.stdout)
 
+queryRE = re.compile(r'filepath=(.*)&commitmsg=(.*)')
+
 server = http.server.HTTPServer(server_address=('127.0.0.1', 6553), RequestHandlerClass=PostHandler)
 server.serve_forever()
