@@ -515,17 +515,15 @@ class Player(Creature):
 
     def debug(self, p, cons, oDO, oIDO):
         '''Start or stop debug logging for player actions, for a module, or for an object in the game.'''
-        usage = """Usage: `debug [sec ] [level] obj`
-        The *obj* argument may be:
+        usage = """Usage: `debug [sec] [level] obj`
+        The `obj` argument may be:
         - a visible object or creature
         - an object id (i.e. an entry in `Thing.ID_dict[]`)
-        - a path of the form 'domains.school.example_object'
-        - the keyword *here*, which specifies the room containing the player
-        - the keyword *me*, which specifies the player object itself.
-
-        The optional *\[sec\]* argument specifies the duration, in seconds, of the debug logging. The default is 60 seconds.
-
-        The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or `error`. All log messages at the specified level are displayed. If left unspecified, *\[level\]* defaults to `debug`.
+        - a path of the form `domains.school.example_object`
+        - the keyword `here`, which specifies the room containing the player
+        - the keyword `me`, which specifies the player object itself.
+        The optional `[sec]` argument specifies the duration, in seconds, of the debug logging. The default is 60 seconds.
+        The optional `[level]` argument must be one of `debug`, `info`, `warning`, or `error`. All log messages at the specified level are displayed. If left unspecified, `[level]` defaults to `debug`.
         """
         DEFAULT_DEBUG_DURATION = 60
         DEFAULT_DEBUG_LEVEL = 'debug'
@@ -533,30 +531,44 @@ class Player(Creature):
         if cons.user != self:
             self.log.error("`player.debug()` action called but cons.user is %s instead of self!" % cons.user)
             return "I don't quite get what you mean."
-        if not self.game.is_wizard(self.user.name()):
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             return usage
+        # find & strip the seconds operator and debug level, if specified
+        sec = [s for s in p.words[1:] if s.isnumeric()]
+        sec = sec[0] if sec else DEFAULT_DEBUG_DURATION 
+        levels = {'critical', 'error', 'warning', 'info', 'debug'}
+        dbg_level = [d for d in p.words[1:] if d in levels]
+        dbg_level = dbg_level[0] if dbg_level else DEFAULT_DEBUG_LEVEL
+        w = p.words[:1] + [x for x in p.words[1:] if not x.isnumeric() and x not in levels]
         if oDO:
-            # player directly specified an object that the parser understands
-            obj = oDO
+            obj = oDO # player specified an object that the parser understands
         else:
-            # find & strip the seconds operator and debug level, if specified
-            sec = [s in p.words[1:] if s.isnumeric()]
-            sec = sec[0] if sec else DEFAULT_DEBUG_DURATION 
-            levels = {'critical', 'error', 'warning', 'info', 'debug'}
-            dbg_level = [d in p.words[1:] if d in levels]
-            dbg_level = dbg_level[0] if dbg_level else DEFAULT_DEBUG_LEVEL
-            words = [x in p.words[1:] if not x.isnumeric() and x not in levels]
-            if words[1] == "me":
+            if w[1] == "me":
                 obj = self
-            elif p.words[1] == "here":
+            elif w[1] == "here":
                 obj = self.location
-            else:
-                raise NotImplementedError
-        
-        
-        return "Debugging is not quite implemented yet, check back soon!"
+            else: 
+                # re-parse the stripped words[] to find possible objects
+                # TODO: encapsulate this code from parse() rather than cut-and-pasting it
+                oDO_list = []
+                (sV, sDO, sPrep, sIDO) = p.diagram_sentence(w)
+                # FIRST, search for nearby objects that support the verb user typed
+                possible_objects = p._collect_possible_objects(self, inventory=True, environment=True)
+                # THEN, check for objects matching the direct & indirect object strings
+                if sIDO:  
+                    return usage  # debug command accepts exactly 1 direct object
+                if sDO:   
+                    # set oDO to object(s) matching direct object strings
+                    oDO_list = p.find_matching_objects(sDO, possible_objects, cons)
+                if not sDO or not oDO_list:
+                    return "ERROR: No object specified to debug!\n\n" + usage
+                if len(oDO_list) > 1:
+                    return "ERROR: Multiple objects specified to debug!\n\n" + usage
+                obj = oDO_list[0]
+        self.perceive(f"Debug called! ```Obj = {obj.id}, duration = {sec}s, level = {dbg_level}```")
+        return True
 
     def reload_room(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.
