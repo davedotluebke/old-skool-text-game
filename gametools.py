@@ -123,7 +123,7 @@ game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s -
 game_log_handler.setFormatter(game_log_formatter)
 
 def get_game_logger(obj):
-    # TODO: Eventually this will get more elaborate, see issue #137 
+    """Returns the logger associated with object `obj`, creating if needed."""
     if isinstance(obj, str):
         logname = obj
     else:

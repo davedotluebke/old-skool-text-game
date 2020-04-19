@@ -3,6 +3,7 @@ import sys
 import importlib
 import connections_websock
 import os
+import logging
 
 import gametools
 
@@ -10,6 +11,7 @@ from thing import Thing
 from room import Room
 from creature import Creature
 from action import Action
+from conshandler import ConsHandler
 
 
 def clone(params=None):
@@ -34,6 +36,7 @@ emotes = {'bow':    ('You take a sweeping bow.',
                     '&nD%s giggles at &nd%s.',
                     '&nD%s giggles at you.')
          }
+
 class Player(Creature):
     #
     # SPECIAL METHODS (i.e __method__() format)
@@ -541,6 +544,7 @@ class Player(Creature):
         levels = {'critical', 'error', 'warning', 'info', 'debug'}
         dbg_level = [d for d in p.words[1:] if d in levels]
         dbg_level = dbg_level[0] if dbg_level else DEFAULT_DEBUG_LEVEL
+        dbg_level = dbg_level.upper()
         w = p.words[:1] + [x for x in p.words[1:] if not x.isnumeric() and x not in levels]
         if oDO:
             obj = oDO # player specified an object that the parser understands
@@ -568,6 +572,9 @@ class Player(Creature):
                     return "ERROR: Multiple objects specified to debug!\n\n" + usage
                 obj = oDO_list[0]
         self.perceive(f"Debug called! ```Obj = {obj.id}, duration = {sec}s, level = {dbg_level}```")
+        dbg_handler = ConsHandler(cons, dbg_level)
+        obj.log.addHandler(dbg_handler)
+        # TODO: add an event to remove & destroy dbg_handler in <duration> seconds
         return True
 
     def reload_room(self, p, cons, oDO, oIDO):
