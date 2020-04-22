@@ -43,7 +43,7 @@ class ConsHandler(Handler):
         try:
             msg = self.format(record)
             cons = self.cons
-            cons.write(msg + self.terminator)
+            cons.write('```' + msg +'```' + self.terminator)
             self.flush()
         except RecursionError:  # See issue 36272 (python std library)
             raise
@@ -53,7 +53,7 @@ class ConsHandler(Handler):
     
 
     def __repr__(self):
-        level = getLevelName(self.level)
+        level = self.level
         name = getattr(self.cons, 'name', '')
         #  bpo-36015: name can be an int
         name = str(name)

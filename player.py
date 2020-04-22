@@ -48,6 +48,7 @@ class Player(Creature):
         self.login_state = None
         self.password = None
         self.start_loc_id = None
+        self.handlers = {}  # list of debug handlers for wizards
         self.set_description("formless soul", "A formless player without a name")
         self.set_weight(175/2.2)
         self.set_volume(66)
@@ -571,11 +572,32 @@ class Player(Creature):
                 if len(oDO_list) > 1:
                     return "ERROR: Multiple objects specified to debug!\n\n" + usage
                 obj = oDO_list[0]
-        self.perceive(f"Debug called! ```Obj = {obj.id}, duration = {sec}s, level = {dbg_level}```")
+        # Check if this player already has a handler for this object
+        if obj.id in self.handlers:
+            self.remove_dbg_handler(obj)
+            return True
+        self.perceive(f"Now debugging object `{obj.id}` at level `{dbg_level}` for the next {sec} seconds!")
         dbg_handler = ConsHandler(cons, dbg_level)
         obj.log.addHandler(dbg_handler)
-        # TODO: add an event to remove & destroy dbg_handler in <duration> seconds
+        self.handlers[obj.id] = dbg_handler
+        # Add an event to remove & destroy dbg_handler in <duration> seconds
+        self.cons.game.schedule_event(int(sec), self.remove_dbg_handler, obj)
         return True
+
+    def remove_dbg_handler(self, obj):
+        try: 
+            handler = self.handlers[obj.id]
+        except AttributeError or KeyError:
+            self.log.error(f"remove_debug_handler() called for `{obj}` but no handler stored for player `{self.id}`!")
+            return
+        try: 
+            obj.log.removeHandler(handler)
+            handler.close()
+            del self.handlers[obj.id]
+            self.perceive(f"No longer debugging object `{obj}`.")
+        except AttributeError:
+            self.log.error(f"AttributeError removing debug handler {handler} from object {obj}")
+
 
     def reload_room(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.

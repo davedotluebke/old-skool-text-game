@@ -524,7 +524,7 @@ class Game():
             self.log.exception("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
         profile_et = time.time()
         profile_t = profile_et - profile_st
-        funcname = str(func).replace('<','[').replace('>',']')
+        funcname = str(func)
         if funcname in self.total_times:
             self.total_times[funcname] += profile_t
             self.numrun_times[funcname] += 1
