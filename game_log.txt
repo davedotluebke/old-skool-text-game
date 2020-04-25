@@ -1,1 +1,38 @@
 Game log
+2020-04-25 18:47:12,795 - _parser - ERROR - Error occured in parser:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/parse.py", line 250, in _try_verb_from_obj
+    result = act.func(obj, self, cons, oDO, oIDO)
+  File "/src/old-skool-text-game/magic.py", line 10, in castChecks
+    return cast(parser, cons, oDO, oIDo, path, specifications)
+NameError: name 'oIDo' is not defined
+2020-04-25 18:47:24,811 - _parser - ERROR - Error occured in parser:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/parse.py", line 250, in _try_verb_from_obj
+    result = act.func(obj, self, cons, oDO, oIDO)
+  File "/src/old-skool-text-game/magic.py", line 10, in castChecks
+    return cast(parser, cons, oDO, oIDo, path, specifications)
+NameError: name 'oIDo' is not defined
+2020-04-25 19:00:02,778 - _gameserver - ERROR - An error occured while attepting to complete event (timestamp 38, callback <function end_light at 0x7f60bc88fc80>, payload [<console.Console object at 0x7f60bc8b3400>])! Printing below:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/gameserver.py", line 522, in catch_func_errs
+    func(*params)
+  File "/src/old-skool-text-game/spells/illuminate.py", line 16, in end_light
+    cons.user.percieve('You stop glowing.')
+AttributeError: 'Player' object has no attribute 'percieve'
+2020-04-25 19:02:07,967 - _gameserver - ERROR - An error occured while attepting to complete event (timestamp 20, callback <function end_light at 0x7f7d09359c80>, payload [<console.Console object at 0x7f7d0937d400>])! Printing below:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/gameserver.py", line 522, in catch_func_errs
+    func(*params)
+  File "/src/old-skool-text-game/spells/illuminate.py", line 16, in end_light
+    cons.user.percieve('You stop glowing.')
+AttributeError: 'Player' object has no attribute 'percieve'
+2020-04-25 19:08:16,322 - _parser - ERROR - Error occured in parser:
+Traceback (most recent call last):
+  File "/src/old-skool-text-game/parse.py", line 250, in _try_verb_from_obj
+    result = act.func(obj, self, cons, oDO, oIDO)
+  File "/src/old-skool-text-game/player.py", line 793, in introduce
+    obj.introduced.append(self.id)
+AttributeError: 'set' object has no attribute 'append'
+2020-04-25 19:09:26,449 - : - ERROR - Error! Location is a string!
+2020-04-25 19:10:38,623 - : - ERROR - Error! Location is a string!

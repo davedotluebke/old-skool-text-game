@@ -12,13 +12,14 @@ def get_mana(parser, cons, oDO, oIDO, spell_info):
 
 def end_light(cons):
     cons.user.emits_light = False
-    cons.user.emit('&nD%s stops glowing.')
-    cons.user.percieve('You stop glowing.')
+    cons.user.emit('&nD%s stops glowing.' % cons.user)
+    cons.user.perceive('You stop glowing.')
 
 def spell(parser, cons, oDO, oIDO, spell_info):
     '''Actually execute the spell.'''
     cons.user.emits_light = True
-    cons.user.emit('&nD%s begins glowing.')
-    cons.user.percieve('You begin glowing.')
+    cons.user.emit('&nD%s begins glowing.' % cons.user)
+    cons.user.perceive('You begin glowing.')
     duration = int(spell_info[0])
     cons.game.schedule_event(duration, end_light, cons)
+    return True

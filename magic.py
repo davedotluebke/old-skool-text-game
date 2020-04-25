@@ -7,7 +7,7 @@ def castChecks(player, parser, cons, oDO, oIDO):
         path = player.spellsKnown[parser.words[1]]
     except KeyError:
         return "You don't know any spell called %s!" % parser.words[1]
-    return cast(parser, cons, oDO, oIDo, path, specifications)
+    return cast(parser, cons, oDO, oIDO, path, specifications)
     
 def cast(parser, cons, oDO, oIDO, path, spell_info=[]):
     try:
@@ -30,3 +30,6 @@ def cast(parser, cons, oDO, oIDO, path, spell_info=[]):
         cons.write(e.args[0])
         return True
     except Exception as e:
+        cons.user.log.error(e)
+        cons.write('An error occured in casting the spell!')
+        return True

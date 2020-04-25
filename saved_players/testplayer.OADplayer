@@ -5,18 +5,18 @@
         "adj1": "happy",
         "adj2": "green-eyed",
         "adjectives": [
+            "female",
             "happy",
-            "green-eyed",
-            "female"
+            "green-eyed"
         ],
-        "armor_worn": "skin188-saveplayer819637",
+        "armor_worn": "skin188-saveplayer414785",
         "contents": [
-            "scroll018-saveplayer819637"
+            "scroll018-saveplayer414785"
         ],
-        "default_armor": "skin188-saveplayer819637",
-        "default_weapon": "bare_hands8441-saveplayer819637",
+        "default_armor": "skin188-saveplayer414785",
+        "default_weapon": "bare_hands8441-saveplayer414785",
         "gender": "female",
-        "id": "testplayer10-saveplayer819637",
+        "id": "testplayer10-saveplayer414785",
         "location": "domains.school.forest.waterfall",
         "names": [
             "testplayer",
@@ -46,25 +46,28 @@
         ],
         "species": "elf",
         "start_loc_id": "domains.school.school.great_hall",
+        "tutorial_act_messages_complete": {
+            "look": true
+        },
         "versions": {
             "container": 1,
             "creature": 1,
             "player": 3,
             "thing": 3
         },
-        "weapon_wielding": "bare_hands8441-saveplayer819637",
+        "weapon_wielding": "bare_hands8441-saveplayer414785",
         "wprivileges": true
     },
     {
-        "id": "scroll018-saveplayer819637",
-        "location": "testplayer10-saveplayer819637",
+        "id": "scroll018-saveplayer414785",
+        "location": "testplayer10-saveplayer414785",
         "path": "domains.school.scroll",
         "versions": {
             "thing": 3
         }
     },
     {
-        "id": "bare_hands8441-saveplayer819637",
+        "id": "bare_hands8441-saveplayer414785",
         "path": "default_weapon",
         "versions": {
             "thing": 3,
@@ -72,7 +75,7 @@
         }
     },
     {
-        "id": "skin188-saveplayer819637",
+        "id": "skin188-saveplayer414785",
         "path": "default_armor",
         "versions": {
             "armor": 1,
