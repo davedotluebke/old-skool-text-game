@@ -529,7 +529,7 @@ class Player(Creature):
         """
         DEFAULT_DEBUG_DURATION = 60
         DEFAULT_DEBUG_LEVEL = 'debug'
-
+        """
         if cons.user != self:
             self.log.error("`player.debug()` action called but cons.user is %s instead of self!" % cons.user)
             return "I don't quite get what you mean."
@@ -553,7 +553,7 @@ class Player(Creature):
             elif p.words[1] == "here":
                 obj = self.location
             else:
-                raise NotImplementedError
+                raise NotImplementedError"""
         
         
         return "Debugging is not quite implemented yet, check back soon!"

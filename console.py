@@ -248,9 +248,9 @@ class Console:
                         self.write('You do not have permission to view this directory.')
                     return True
 
-            if self.game.is_wizard(self.user.name()) and (cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp'] or self.try_all_console_commands):
+            if self.game.is_wizard(self.user.name()) and (cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp', 'pwd'] or self.try_all_console_commands):
                 try:
-                    if cmd == 'ls' and  platform.system == "Linux":
+                    if cmd == 'ls' and  platform.system() == "Linux":
                             self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
                     process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=gametools.realDir(self.current_directory))
                     syntax_hilite = '```python\n' if cmd == 'cat' else '```\n'
