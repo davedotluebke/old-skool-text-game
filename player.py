@@ -3,6 +3,7 @@ import sys
 import importlib
 import connections_websock
 import os
+import magic
 
 import gametools
 
@@ -69,6 +70,10 @@ class Player(Creature):
         self.gender = None
         self.adj1 = None
         self.adj2 = None
+        # Convention: Each spell is a key-value pair where the key is the name
+        # of the spell (for the player, e.g. 'apparate') and the value is a 
+        # python-style path to the spell (e.g. 'spells.apparate')
+        self.spellsKnown = {'illuminate': 'spells.illuminate'}
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
         self.versions[gametools.findGamePath(__file__)] = 2
@@ -827,6 +832,7 @@ class Player(Creature):
     for verb in emotes:
         actions[verb] =     Action(emote_action, True, True)
     actions['introduce'] =  Action(introduce, True, True)
-    actions['engage'] =  Action(engage, True, False)
-    actions['attack'] =  Action(engage, True, False)
+    actions['engage'] =     Action(engage, True, False)
+    actions['attack'] =     Action(engage, True, False)
     actions['disengage'] =  Action(disengage, False, True)
+    actions['cast'] =       Action(magic.castChecks, True, False)
