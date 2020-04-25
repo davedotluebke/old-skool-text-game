@@ -3,6 +3,7 @@ import sys
 import importlib
 import connections_websock
 import os
+import logging
 
 import gametools
 
@@ -10,6 +11,7 @@ from thing import Thing
 from room import Room
 from creature import Creature
 from action import Action
+from conshandler import ConsHandler
 
 
 def clone(params=None):
@@ -34,6 +36,7 @@ emotes = {'bow':    ('You take a sweeping bow.',
                     '&nD%s giggles at &nd%s.',
                     '&nD%s giggles at you.')
          }
+
 class Player(Creature):
     #
     # SPECIAL METHODS (i.e __method__() format)
@@ -45,6 +48,7 @@ class Player(Creature):
         self.login_state = None
         self.password = None
         self.start_loc_id = None
+        self.handlers = {}  # list of debug handlers for wizards
         self.set_description("formless soul", "A formless player without a name")
         self.set_weight(175/2.2)
         self.set_volume(66)
@@ -515,48 +519,84 @@ class Player(Creature):
 
     def debug(self, p, cons, oDO, oIDO):
         '''Start or stop debug logging for player actions, for a module, or for an object in the game.'''
-        usage = """Usage: `debug [sec ] [level] obj`
-        The *obj* argument may be:
+        usage = """Usage: `debug [sec] [level] obj`
+        The `obj` argument may be:
         - a visible object or creature
         - an object id (i.e. an entry in `Thing.ID_dict[]`)
-        - a path of the form 'domains.school.example_object'
-        - the keyword *here*, which specifies the room containing the player
-        - the keyword *me*, which specifies the player object itself.
-
-        The optional *\[sec\]* argument specifies the duration, in seconds, of the debug logging. The default is 60 seconds.
-
-        The optional *\[level\]* argument must be one of `debug`, `info`, `warning`, or `error`. All log messages at the specified level are displayed. If left unspecified, *\[level\]* defaults to `debug`.
+        - a path of the form `domains.school.example_object`
+        - the keyword `here`, which specifies the room containing the player
+        - the keyword `me`, which specifies the player object itself.
+        The optional `[sec]` argument specifies the duration, in seconds, of the debug logging. The default is 60 seconds.
+        The optional `[level]` argument must be one of `debug`, `info`, `warning`, or `error`. All log messages at the specified level are displayed. If left unspecified, `[level]` defaults to `debug`.
         """
         DEFAULT_DEBUG_DURATION = 60
         DEFAULT_DEBUG_LEVEL = 'debug'
-        """
         if cons.user != self:
             self.log.error("`player.debug()` action called but cons.user is %s instead of self!" % cons.user)
             return "I don't quite get what you mean."
-        if not self.game.is_wizard(self.user.name()):
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             return usage
+        # find & strip the seconds operator and debug level, if specified
+        sec = [s for s in p.words[1:] if s.isnumeric()]
+        sec = sec[0] if sec else DEFAULT_DEBUG_DURATION 
+        levels = {'critical', 'error', 'warning', 'info', 'debug'}
+        dbg_level = [d for d in p.words[1:] if d in levels]
+        dbg_level = dbg_level[0] if dbg_level else DEFAULT_DEBUG_LEVEL
+        dbg_level = dbg_level.upper()
+        w = p.words[:1] + [x for x in p.words[1:] if not x.isnumeric() and x not in levels]
         if oDO:
-            # player directly specified an object that the parser understands
-            obj = oDO
+            obj = oDO # player specified an object that the parser understands
         else:
-            # find & strip the seconds operator and debug level, if specified
-            sec = [s in p.words[1:] if s.isnumeric()]
-            sec = sec[0] if sec else DEFAULT_DEBUG_DURATION 
-            levels = {'critical', 'error', 'warning', 'info', 'debug'}
-            dbg_level = [d in p.words[1:] if d in levels]
-            dbg_level = dbg_level[0] if dbg_level else DEFAULT_DEBUG_LEVEL
-            words = [x in p.words[1:] if not x.isnumeric() and x not in levels]
-            if words[1] == "me":
+            if w[1] == "me":
                 obj = self
-            elif p.words[1] == "here":
+            elif w[1] == "here":
                 obj = self.location
-            else:
-                raise NotImplementedError"""
-        
-        
-        return "Debugging is not quite implemented yet, check back soon!"
+            else: 
+                # re-parse the stripped words[] to find possible objects
+                # TODO: encapsulate this code from parse() rather than cut-and-pasting it
+                oDO_list = []
+                (sV, sDO, sPrep, sIDO) = p.diagram_sentence(w)
+                # FIRST, search for nearby objects that support the verb user typed
+                possible_objects = p._collect_possible_objects(self, inventory=True, environment=True)
+                # THEN, check for objects matching the direct & indirect object strings
+                if sIDO:  
+                    return usage  # debug command accepts exactly 1 direct object
+                if sDO:   
+                    # set oDO to object(s) matching direct object strings
+                    oDO_list = p.find_matching_objects(sDO, possible_objects, cons)
+                if not sDO or not oDO_list:
+                    return "ERROR: No object specified to debug!\n\n" + usage
+                if len(oDO_list) > 1:
+                    return "ERROR: Multiple objects specified to debug!\n\n" + usage
+                obj = oDO_list[0]
+        # Check if this player already has a handler for this object
+        if obj.id in self.handlers:
+            self.remove_dbg_handler(obj)
+            return True
+        self.perceive(f"Now debugging object `{obj.id}` at level `{dbg_level}` for the next {sec} seconds!")
+        dbg_handler = ConsHandler(cons, dbg_level)
+        obj.log.addHandler(dbg_handler)
+        self.handlers[obj.id] = dbg_handler
+        # Add an event to remove & destroy dbg_handler in <duration> seconds
+        self.cons.game.schedule_event(int(sec), self.remove_dbg_handler, obj)
+        return True
+
+    def remove_dbg_handler(self, obj):
+        try: 
+            handler = self.handlers[obj.id]
+        except AttributeError or KeyError:
+            self.log.error(f"remove_debug_handler() called for `{obj}` but no handler stored for player `{self.id}`!")
+            return
+        try: 
+            obj.log.removeHandler(handler)
+            handler.close()
+            del self.handlers[obj.id]
+            self.perceive(f"No longer debugging object `{obj}`.")
+        except AttributeError:
+            self.log.error(f"AttributeError removing debug handler {handler} from object {obj}")
+
 
     def reload_room(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.
