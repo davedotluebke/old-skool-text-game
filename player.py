@@ -74,6 +74,8 @@ class Player(Creature):
         # of the spell (for the player, e.g. 'apparate') and the value is a 
         # python-style path to the spell (e.g. 'spells.apparate')
         self.spellsKnown = {'illuminate': 'spells.illuminate'}
+        self.max_mana = 10
+        self.mana = self.max_mana
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
         self.versions[gametools.findGamePath(__file__)] = 2
@@ -730,7 +732,7 @@ class Player(Creature):
             message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
         if self.armor_worn != self.default_armor:
             message += 'You are wearing &nd%s.\n' % self.armor_worn.id
-        self.perceive(message)
+        self.perceive(message, force=True)
         return True
     
     def toggle_terse(self, p, cons, oDO, oIDO):

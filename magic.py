@@ -23,7 +23,12 @@ def cast(parser, cons, oDO, oIDO, path, spell_info=[]):
     except gametools.BadSpellInfoError as e:
         cons.write(e.args[0])
         return True
-    # TODO: deal with mana here
+    # TODO: deal with emerald mana here
+    if mana <= cons.user.mana:
+        cons.user.mana -= mana
+    else:
+        cons.write("You don't have enough mana to cast this spell.")
+        return True
     try:
         return lib.spell(parser, cons, oDO, oIDO, spell_info)
     except gametools.BadSpellInfoError as e:
