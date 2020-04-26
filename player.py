@@ -73,8 +73,8 @@ class Player(Creature):
         # Convention: Each spell is a key-value pair where the key is the name
         # of the spell (for the player, e.g. 'apparate') and the value is a 
         # python-style path to the spell (e.g. 'spells.apparate')
-        self.spellsKnown = {'illuminate': 'spells.illuminate'}
-        self.max_mana = 10
+        self.spellsKnown = {}
+        self.max_mana = 100
         self.mana = self.max_mana
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
@@ -246,6 +246,11 @@ class Player(Creature):
         if rid_act in self.tutorial_act_messages:
             self.cons.write(self.tutorial_act_messages[rid_act])
             self.tutorial_act_messages_complete[rid_act] = True
+    
+    def restore_mana(self):
+        if self.mana < self.max_mana:
+            self.mana += 1
+        
     #
     # SET/GET METHODS (methods to set or query attributes)
     #
@@ -277,6 +282,9 @@ class Player(Creature):
         
         if self.health < self.hitpoints:
             self.heal()
+        
+        if self.mana < self.max_mana:
+            self.restore_mana()
         
         cmd = self.cons.take_input()
         if self.login_state != None:
