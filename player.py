@@ -813,7 +813,11 @@ class Player(Creature):
         self.perceive("You introduce yourself to all.")
         for obj in self.location.contents:
             if isinstance(obj, Creature) and obj != self:
-                obj.introduced.append(self.id)
+                try:
+                    obj.introduced.add(self.id)
+                except AttributeError: # XXX fix set save/restore code instead of this hack
+                    obj.introduced = set(obj.introduced)
+                    obj.introduced.add(self.id)
         return True
 
     def engage(self, p, cons, oDO, oIDO):
