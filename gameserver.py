@@ -323,10 +323,12 @@ class Game():
             saveables = [x.get_saveable() for x in l]
             f.write(json.dumps(saveables, skipkeys=True, sort_keys=True, indent=4))
             Thing.ID_dict = backup_ID_dict
-            player.cons.write("Saved player data to file %s" % filename)
+            player.cons.write("Saved player data!")
+            player.log.info(f"Saved player data to file {filename}")
             f.close()
         except IOError:
             player.cons.write("Error writing to file %s" % filename)
+            player.log.error(f"Error writing player data! filename = {filename}")
             Thing.ID_dict = backup_ID_dict # ESSENTIAL THAT WE DO THIS!
         except TypeError:
             player.cons.write("Error writing to file %s" % filename)
