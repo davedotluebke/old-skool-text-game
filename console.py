@@ -229,8 +229,12 @@ class Console:
                 # allowed = False
                 # for (pop file/dirs off path)
                 if self.game.is_wizard(self.user.name()):
-                    self.upload_confirm = False
-                    self.download_file(path, edit_flag=True)
+                    allow_edits = self.game.get_edit_privileges(self.user.name(), path)
+                    if allow_edits:
+                        self.upload_confirm = False
+                        self.download_file(path, edit_flag=True)
+                    else:
+                        self.write('You do not have permission to write to this directory.')
                     return True
             
             if cmd == 'cd':

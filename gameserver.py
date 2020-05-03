@@ -80,6 +80,10 @@ class Game():
         # Note acl.check_any() returns False if any parameters don't exist
         if self.acl.check_any(groups, path, check_type):  
             return True
+        # If there are permissions set on the given file, we don't want to
+        # continue checking higher levels. If there are not, we do want this
+        if self.acl.get_permissions(path):
+            return False
         while path != '/':
             trunc_path = os.path.dirname(path)  # truncate path to containing dir
             if trunc_path == path: 
@@ -87,6 +91,8 @@ class Game():
             path = trunc_path
             if self.acl.check_any(groups, path, check_type):  
                 return True
+            if self.acl.get_permissions(path):
+                return False
         return False
 
     def get_read_privileges(self, player_name, path):
@@ -275,6 +281,14 @@ class Game():
             except FileNotFoundError:
                 pass
     
+    def is_jsonable(self, x):
+        """Test to see if an item is json-serialisable. Used as a last resort to prevent players from not saving."""
+        try:
+            json.dumps(x)
+            return True
+        except (TypeError, OverflowError):
+            return False
+    
     def save_player(self, filename, player):
         try:
             player.save_cons_attributes()
@@ -321,6 +335,13 @@ class Game():
             for obj in l:
                 obj._change_objs_to_IDs()
             saveables = [x.get_saveable() for x in l]
+            for i in saveables:
+                sub_amt = 0
+                for sidx in range(0, len(i)):
+                    j = list(i.keys())[sidx - sub_amt]
+                    if not self.is_jsonable(i[j]):
+                        del i[j]
+                        sub_amt += 1
             f.write(json.dumps(saveables, skipkeys=True, sort_keys=True, indent=4))
             Thing.ID_dict = backup_ID_dict
             player.cons.write("Saved player data!")

@@ -449,7 +449,7 @@ class Player(Creature):
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         cmd = ' '.join(p.words[1:])
         cons.write("Executing command: `'%s'`" % cmd)
@@ -464,7 +464,7 @@ class Player(Creature):
         '''Find an in-game object by ID and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'fetch <id>', where id is an entry in `Thing.ID_dict[]`")
@@ -489,7 +489,7 @@ class Player(Creature):
         '''Clone a new copy of an object specified by ID or by module path, and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("```"
@@ -604,7 +604,7 @@ class Player(Creature):
         module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
         players back to the new room.'''
         obj = None
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if isinstance(obj, Creature):
             return "You cannot reload players or NPCs!"
@@ -659,7 +659,7 @@ class Player(Creature):
         """Teleport the wizard to a given room, specified by id or path."""
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'apparate <id>', where id is the entry of a Room in `Thing.ID_dict[]` or a path to its module")
@@ -692,7 +692,9 @@ class Player(Creature):
         "The special player string 'me' can be used to indicate the calling user.  "
         
         if cons.user != self:
-            return "I don't quite get what you mean."    
+            return "I don't quite get what you mean."  
+        if not self.game.is_wizard(self.name()):
+            return "You cannot yet perform this magical incantation correctly."  
         words = p.words    
         if len(words) < 2:
             cons.write(usage + '\n' + cons.game.list_wizard_roles())
@@ -753,7 +755,7 @@ class Player(Creature):
             message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
         if self.armor_worn != self.default_armor:
             message += 'You are wearing &nd%s.\n' % self.armor_worn.id
-        self.perceive(message)
+        self.perceive(message, force=True)
         return True
     
     def toggle_terse(self, p, cons, oDO, oIDO):
