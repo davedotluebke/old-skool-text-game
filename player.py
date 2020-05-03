@@ -683,12 +683,13 @@ class Player(Creature):
 
     def groups(self, p, cons, oDO, oIDO): 
         """Change or list player-group associations, e.g. add player to 'wizards' or 'admins' group."""
-        usage = "**Usage**: groups [add|remove] [player] [group]\n"\
+        usage = "**Usage**: groups [add|remove|create] [player] [group]\n"\
         "  Adds or removes the specified player to/from the specified group, or lists the "\
         "player-group associations for the specified player and/or group. Both player "\
-        "and group must be given if an action (add/remove) is specified.  If both "\
-        "player and group are specified but no action (add/remove), the player is added or "\
+        "and group must be given if an action (add/remove/create) is specified.  If both "\
+        "player and group are specified but no action (add/remove/create), the player is added or "\
         "removed from the group depending on whether the player already belonged to the group. "\
+        "If create is specified, it will create the group if the player does not exist. " \
         "The special player string 'me' can be used to indicate the calling user.  "
         
         if cons.user != self:
@@ -699,7 +700,7 @@ class Player(Creature):
         if len(words) < 2:
             cons.write(usage + '\n' + cons.game.list_wizard_roles())
             return True
-        if words[1] == 'add' or words[1] == 'remove':
+        if words[1] == 'add' or words[1] == 'remove' or words[1] == 'create':
             # next arguments should be <player> <group>
             if len(words) != 4:
                 cons.write(usage)
@@ -723,10 +724,10 @@ class Player(Creature):
         if not gametools.check_player_exists(player):
             cons.write("Error: no player named %s appears to exist!" % player)
             return True
-        if not group in cons.game.roles:
+        if not group in cons.game.roles and action != "create":
             cons.write("Error: no group named %s appears to exist!" % group)
             return True
-        if action == "add" or (action == "toggle" and player not in cons.game.roles[group]): 
+        if action == "add" or action == "create" or (action == "toggle" and player not in cons.game.roles[group]): 
             cons.game.add_wizard_role(player, group)
             cons.write("Added %s to group %s" %(player, group))
         elif action == "remove" or (action == "toggle" and player in cons.game.roles[group]):
