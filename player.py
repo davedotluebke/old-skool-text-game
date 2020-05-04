@@ -449,7 +449,7 @@ class Player(Creature):
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         cmd = ' '.join(p.words[1:])
         cons.write("Executing command: `'%s'`" % cmd)
@@ -464,7 +464,7 @@ class Player(Creature):
         '''Find an in-game object by ID and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'fetch <id>', where id is an entry in `Thing.ID_dict[]`")
@@ -489,7 +489,7 @@ class Player(Creature):
         '''Clone a new copy of an object specified by ID or by module path, and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("```"
@@ -531,7 +531,6 @@ class Player(Creature):
         """
         DEFAULT_DEBUG_DURATION = 60
         DEFAULT_DEBUG_LEVEL = 'debug'
-
         if cons.user != self:
             self.log.error("`player.debug()` action called but cons.user is %s instead of self!" % cons.user)
             return "I don't quite get what you mean."
@@ -605,7 +604,7 @@ class Player(Creature):
         module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
         players back to the new room.'''
         obj = None
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if isinstance(obj, Creature):
             return "You cannot reload players or NPCs!"
@@ -660,7 +659,7 @@ class Player(Creature):
         """Teleport the wizard to a given room, specified by id or path."""
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'apparate <id>', where id is the entry of a Room in `Thing.ID_dict[]` or a path to its module")
@@ -684,21 +683,24 @@ class Player(Creature):
 
     def groups(self, p, cons, oDO, oIDO): 
         """Change or list player-group associations, e.g. add player to 'wizards' or 'admins' group."""
-        usage = "**Usage**: groups [add|remove] [player] [group]\n"\
+        usage = "**Usage**: groups [add|remove|create] [player] [group]\n"\
         "  Adds or removes the specified player to/from the specified group, or lists the "\
         "player-group associations for the specified player and/or group. Both player "\
-        "and group must be given if an action (add/remove) is specified.  If both "\
-        "player and group are specified but no action (add/remove), the player is added or "\
+        "and group must be given if an action (add/remove/create) is specified.  If both "\
+        "player and group are specified but no action (add/remove/create), the player is added or "\
         "removed from the group depending on whether the player already belonged to the group. "\
+        "If create is specified, it will create the group if the player does not exist. " \
         "The special player string 'me' can be used to indicate the calling user.  "
         
         if cons.user != self:
-            return "I don't quite get what you mean."    
+            return "I don't quite get what you mean."  
+        if not self.game.is_wizard(self.name()):
+            return "You cannot yet perform this magical incantation correctly."  
         words = p.words    
         if len(words) < 2:
             cons.write(usage + '\n' + cons.game.list_wizard_roles())
             return True
-        if words[1] == 'add' or words[1] == 'remove':
+        if words[1] == 'add' or words[1] == 'remove' or words[1] == 'create':
             # next arguments should be <player> <group>
             if len(words) != 4:
                 cons.write(usage)
@@ -722,10 +724,10 @@ class Player(Creature):
         if not gametools.check_player_exists(player):
             cons.write("Error: no player named %s appears to exist!" % player)
             return True
-        if not group in cons.game.roles:
+        if not group in cons.game.roles and action != "create":
             cons.write("Error: no group named %s appears to exist!" % group)
             return True
-        if action == "add" or (action == "toggle" and player not in cons.game.roles[group]): 
+        if action == "add" or action == "create" or (action == "toggle" and player not in cons.game.roles[group]): 
             cons.game.add_wizard_role(player, group)
             cons.write("Added %s to group %s" %(player, group))
         elif action == "remove" or (action == "toggle" and player in cons.game.roles[group]):
@@ -754,7 +756,7 @@ class Player(Creature):
             message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
         if self.armor_worn != self.default_armor:
             message += 'You are wearing &nd%s.\n' % self.armor_worn.id
-        self.perceive(message)
+        self.perceive(message, force=True)
         return True
     
     def toggle_terse(self, p, cons, oDO, oIDO):
@@ -814,7 +816,11 @@ class Player(Creature):
         self.perceive("You introduce yourself to all.")
         for obj in self.location.contents:
             if isinstance(obj, Creature) and obj != self:
-                obj.introduced.append(self.id)
+                try:
+                    obj.introduced.add(self.id)
+                except AttributeError: # XXX fix set save/restore code instead of this hack
+                    obj.introduced = set(obj.introduced)
+                    obj.introduced.add(self.id)
         return True
 
     def engage(self, p, cons, oDO, oIDO):

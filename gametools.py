@@ -93,7 +93,7 @@ def deconstructObjectPath(path_str):
 
 def check_player_exists(p):
     """Return whether a given player exists, i.e. has a save file."""
-    filename = gametools.realDir(PLAYER_DIR, p) + '.OADplayer'
+    filename = realDir(PLAYER_DIR, p) + '.OADplayer'
     try:
         f = open(filename, 'r+b')
         f.close()  # success, player exists, so close file for now
@@ -185,4 +185,4 @@ def load_room(modpath, report_import_error=True):
     if room == None:
         get_game_logger("_gametools").error("Error loading from room module %s:load() returned None" % modpath)
     return room
-    
+

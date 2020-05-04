@@ -229,8 +229,12 @@ class Console:
                 # allowed = False
                 # for (pop file/dirs off path)
                 if self.game.is_wizard(self.user.name()):
-                    self.upload_confirm = False
-                    self.download_file(path, edit_flag=True)
+                    allow_edits = self.game.get_edit_privileges(self.user.name(), path)
+                    if allow_edits:
+                        self.upload_confirm = False
+                        self.download_file(path, edit_flag=True)
+                    else:
+                        self.write('You do not have permission to write to this directory.')
                     return True
             
             if cmd == 'cd':
@@ -248,9 +252,9 @@ class Console:
                         self.write('You do not have permission to view this directory.')
                     return True
 
-            if self.game.is_wizard(self.user.name()) and (cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp'] or self.try_all_console_commands):
+            if self.game.is_wizard(self.user.name()) and (cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp', 'pwd'] or self.try_all_console_commands):
                 try:
-                    if cmd == 'ls' and  platform.system == "Linux":
+                    if cmd == 'ls' and  platform.system() == "Linux":
                             self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
                     process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=gametools.realDir(self.current_directory))
                     syntax_hilite = '```python\n' if cmd == 'cat' else '```\n'
