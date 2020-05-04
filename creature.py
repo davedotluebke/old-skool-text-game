@@ -71,6 +71,16 @@ class Creature(Container):
             self.weapon_wielding = Thing.ID_dict[self.weapon_wielding]
         if isinstance(self.armor_worn, str):
             self.armor_worn = Thing.ID_dict[self.armor_worn]
+    
+    def update_version(self):
+        if hasattr(self, 'version_number'):
+            self.versions[gametools.findGamePath(__file__)] = 1
+        
+        super().update_version()
+
+        if self.versions[gametools.findGamePath(__file__)] == 1:
+            self.introduced = set(self.introduced)
+            self.versions[gametools.findGamePath(__file__)] = 2
 
     def get_short_desc(self, perceiver=None, definite=False, indefinite=False):
         '''Overloads `Thing.get_short_desc()` to return short description of
