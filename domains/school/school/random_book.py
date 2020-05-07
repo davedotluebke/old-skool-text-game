@@ -45,9 +45,9 @@ def clone():
 
     page_msg = random.choices(book_messages, book_message_weights)[0]
     book_msg = """
-=============================================
+\=============================================
 %s
-=============================================""" % book_title
+\=============================================""" % book_title
    
     for i in range(0, number_pages):
         book_msg += "\n#*\n" + page_msg

@@ -5,15 +5,15 @@ def clone():
     blue_book.add_names("book", "Dragonsky")
     blue_book.add_adjectives("blue", "newer", "light")
     blue_book.set_message('''
-       ========================
+       \========================
        |       Dragonsky      |
        |                      |
        |    by Owen Luebke    |
-       ========================
+       \========================
 #*
-=================================
+\=================================
 | Chapter 1             Pgs 1-6 |
-=================================
+\=================================
 #*
 Chapter 1
     Once upon a time there were two twins. One was named Skylar, and the other was named Jennifer. They were each other’s best friends, too. They both enjoyed writing. Skylar wrote mostly poetry, and Jennifer wrote some non-fiction and a lot of autobiography, which was in a long book she wrote about her and Skylar’s lives. Her book stretched back to when she first learned to write at age 3, quite early. Their local elementary school was very supportive of their writing, and they were happy there.

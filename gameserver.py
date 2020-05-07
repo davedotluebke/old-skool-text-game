@@ -2,20 +2,22 @@ import io
 import os
 import sys
 import ipaddress
-import traceback
 import random
+import re
 import time
 import asyncio
 import pathlib
 import ssl
 import functools
+import json
+import pprint
+
 import websockets
 import connections_websock
-import json
+import miracle
 
 import gametools
 
-from debug import dbg
 from thing import Thing
 from player import Player
 from parse import Parser
@@ -28,15 +30,17 @@ class Game():
         a list of objects that have a heartbeat (a function that runs 
         periodically), and the IP address of the server. 
     """
-    def __init__(self, server=None, mode=False, duration=86400):
+    def __init__(self, server=None, mode=False, duration=86400, port=9124):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
+        self.log = gametools.get_game_logger("_gameserver")
+        self.acl = miracle.Acl()
+        self.set_up_groups_and_acl()
         self.server_ip = server  # IP address of server, if specified
         self.is_ssl = ('ssl' in mode) or ('https' in mode)
         self.encryption_setting = not ('nocrypt' in mode or 'no' in mode or 'noencrypt' in mode)
         if connections_websock.encryption_installed:
             connections_websock.encryption_enabled = self.encryption_setting
         self.keep_going = True  # game ends when set to False
-        self.handle_exceptions = True # game will catch all exceptions rather than let debugger handle them
         self.start_time = 0
         try:
             self.duration = int(duration)
@@ -44,22 +48,147 @@ class Game():
             self.duration = 86400
         except TypeError:
             self.duration = 86400
+        try:
+            self.port = port
+        except ValueError:
+            self.port = 9124
+        except TypeError:
+            self.port = 9124
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
         self.time = 0  # number of heartbeats since game began
         self.events = asyncio.get_event_loop()
 
         self.parser = Parser()
-        self.dbg = dbg
         self.users = []
 
         self.shutdown_console = None
-        self.player_read_privileges = {'scott':['.*'], 'rivques':['.*']}     # Note: administrators are responsible for making sure that 
-        self.player_edit_privileges = {'scott':['domains.*','home/scott.*','saved_players.*'], 'rivques':['domains.*', 'home/rivques.*', 'saved_players.*']} # wizards can view and edit their own files
 
         self.total_times = {}
         self.numrun_times = {}
         self.maximum_times = {}
+    
+    def get_file_privileges(self, player_name, path, check_type='read'):
+        """Return True if the given player belongs to any groups that have 
+        the specified permission ('read' or 'edit') on the specified file. 
+        Tests the given filename first, then repeatedly tests the containing
+        directory up to & including the root ('/') of the game filesystem."""        
+        groups = self.wizards[player_name]
+        path = gametools.expandGameDir(path, player_name)  # expand ~ aliases
+        path = gametools.normGameDir(path)  # collapse redundant /'s and ..'s
+        # See whether any of the groups player belongs to has permission.
+        # Note acl.check_any() returns False if any parameters don't exist
+        if self.acl.check_any(groups, path, check_type):  
+            return True
+        # If there are permissions set on the given file, we don't want to
+        # continue checking higher levels. If there are not, we do want this
+        if self.acl.get_permissions(path):
+            return False
+        while path != '/':
+            trunc_path = os.path.dirname(path)  # truncate path to containing dir
+            if trunc_path == path: 
+                break  # no more / to truncate
+            path = trunc_path
+            if self.acl.check_any(groups, path, check_type):  
+                return True
+            if self.acl.get_permissions(path):
+                return False
+        return False
+
+    def get_read_privileges(self, player_name, path):
+        return self.get_file_privileges(player_name, path)
+
+    def get_edit_privileges(self, player_name, path):
+        return self.get_file_privileges(player_name, path, check_type='write')
+
+    def is_wizard(self, player_name):
+        """Return True if the specified player is a wizard."""
+        return player_name in self.wizards
+
+    def set_up_groups_and_acl(self):
+        # default list of administrators and wizards, will be overwritten if PLAYER_ROLES_FILES exists 
+        self.roles = {"admin": ["scott", "cedric"], "wizard": ["scott", "cedric"], "apprentice": [], "scott": ["scott"], "cedric": ["cedric"]}
+        self.wizards = {"scott":["scott", "wizard", "admin"], "cedric":["cedric", "wizard", "admin"]}
+        try:
+            f = open(gametools.realDir(gametools.PLAYER_ROLES_FILE))
+            player_roles = json.loads(f.read())
+            f.close()
+            self.roles = player_roles['roles']
+            self.wizards = player_roles['wizards']
+        except FileNotFoundError: 
+            self.log.error("Couldn't open player_roles file '%s'; using default roles and wizards" % gametools.PLAYER_ROLES_FILE)
+        except AttributeError:
+            self.log.error("Error reading data from player_roles; attempting to use default roles & wizards")
+
+        self.acl.add_roles(self.roles.keys())
+        # create permissions for each wizard's home directory:
+        for w in self.wizards.keys():  
+            self.acl.add({gametools.HOME_DIR+w: ('read', 'write')})  
+            self.acl.grant(w, gametools.HOME_DIR+w, 'read')
+            self.acl.grant(w, gametools.HOME_DIR+w, 'write')
+            self.acl.grant('admin', gametools.HOME_DIR+w, 'read')
+            self.acl.grant('admin', gametools.HOME_DIR+w, 'write')
+        # create permissions for each domain:
+        for d in [x.name for x in os.scandir(gametools.realDir(gametools.DOMAIN_DIR)) if x.is_dir() and x.name != '__pycache__'] :
+            self.acl.add({gametools.DOMAIN_DIR+d: ('read', 'write')})
+            self.acl.grant(d, gametools.DOMAIN_DIR+d, 'read')
+            self.acl.grant(d, gametools.DOMAIN_DIR+d, 'write')
+            self.acl.grant('admin', gametools.DOMAIN_DIR+d, 'read')
+            self.acl.grant('admin', gametools.DOMAIN_DIR+d, 'write')
+        # everyone can read core game files, but not write
+        self.acl.add({'/': ('read', 'write')})
+        self.acl.grant('admin', '/', 'read')
+        self.acl.grant('admin', '/', 'write')
+        self.acl.grant('wizard', '/', 'read')
+        self.acl.add({'/saved_players': ('read', 'write')})
+        self.acl.grant('admin', '/saved_players', 'read')
+        self.acl.grant('admin', '/saved_players', 'write')
+        self.acl.add({'/backup_saved_players': ('read', 'write')})
+        self.acl.grant('admin', '/backup_saved_players', 'read')
+        
+        """
+        self.acl.add_resource('wiz_commands')       # apparate, reload, emote
+        self.acl.add_resource('code_commands')      # clone, fetch
+        self.acl.add_resource('execute')            # execute an arbitrary Python command
+        self.acl.add_resource('edit_own_files')     # edit files in wizard's home directory
+        self.acl.add_resource('edit_domain_files')  # edit files in wizard's domain
+        self.acl.add_resource('player_actions')     # reset password & domain; edit player save files
+        """
+    
+    def add_wizard_role(self, wizard, role):
+        """Associate a player with a given role (e.g. the "admins" role or "wizards" role)"""
+        self.wizards.setdefault(wizard, []).append(role)
+        self.roles.setdefault(role, []).append(wizard)
+        self.log.info("Added player %s to role %s" % (wizard, role))
+
+    def remove_wizard_role(self, wizard, role):
+        """Disassociate a player from a given role"""
+        try: 
+            self.wizards[wizard].remove(role)
+            self.roles[role].remove(wizard)
+        except KeyError:
+            self.log.error("Couldn't disassociate wizard %s from role %s" % (wizard, role))
+
+    def list_wizard_roles(self, wiz=None, role=None):
+        """Return a human-readable string listing:
+        - the roles for the specified wizard, if any, and
+        - the wizards in the specified role, if any; 
+        If neither wizard or role is specified, list all wizards and all roles.\n"""
+        msg = ""
+        if wiz:
+            try:
+                msg += "```game.wizards[%s] = %s```\n" % (wiz, pprint.pformat(self.wizards[wiz], width=40, indent=4))
+            except: 
+                msg += "No wizard '%s' in `game.wizards[]`\n" % wiz
+        if role: 
+            try:
+                msg += "```game.roles[%s] = %s```\n" % (role, pprint.pformat(self.roles[role], width=40, indent=4))
+            except: 
+                msg += "No role '%s' in `game.roles[]`\n" % role
+        if not wiz and not role:
+            msg += "```game.wizards[] = %s```\n" % pprint.pformat(self.wizards, width=40, indent=4)
+            msg += "```game.roles[] = %s```\n" % pprint.pformat(self.roles, width=40, indent=4)
+        return msg
 
     def save_game(self, filename):
         raise NotImplementedError("Saving games no longer works.")
@@ -103,10 +232,10 @@ class Game():
         # TODO: move below code for deleting player to Player.__del__()
         # Unlink player object from room, contents:
         if self.user.location.extract(self.user):
-            dbg.debug("Error deleting player from room during load_game()")
+            self.log.error("Error deleting player from room during load_game()")
         for o in self.user.contents: 
             if self.user.extract(o):
-                dbg.debug("Error deleting contents of player (%s) during load_game()" % o)
+                self.log.error("Error deleting contents of player (%s) during load_game()" % o)
         self.cons.user = None
         
         self.user, self.heartbeat_users = newgame.user, newgame.heartbeat_users
@@ -123,6 +252,8 @@ class Game():
         f.close()
     
     def create_backups(self, filename, player, other_filename):        
+        """Makes up to 20 backups of <filename>. 
+        NOTE: filenames are real filesystem paths, not game filesystem."""
         if not other_filename.endswith('.OADplayer'):
             other_filename += '.OADplayer'
         
@@ -150,11 +281,19 @@ class Game():
             except FileNotFoundError:
                 pass
     
+    def is_jsonable(self, x):
+        """Test to see if an item is json-serialisable. Used as a last resort to prevent players from not saving."""
+        try:
+            json.dumps(x)
+            return True
+        except (TypeError, OverflowError):
+            return False
+    
     def save_player(self, filename, player):
         try:
             player.save_cons_attributes()
         except Exception:
-            dbg.debug('Error saving console attributes for player %s!' % player)
+            self.log.error('Error saving console attributes for player %s!' % player)
 
         # Keep a list of "broken objects" to destroy
         broken_objs = []
@@ -175,14 +314,14 @@ class Game():
                 if hasattr(obj, 'default_armor'):
                     l += [obj.default_armor]
             except Exception:
-                dbg.debug('Error uniquifying the ID of %s. Removing from player inventory.' % obj)
+                self.log.error('Error uniquifying the ID of %s. Removing from player inventory.' % obj)
                 broken_objs.append(obj)
                 
         for obj in broken_objs:
             try:
                 obj.destroy()
             except Exception:
-                dbg.debug('Error destroying object %s!' % obj)
+                self.log.exception('Error destroying object %s!' % obj)
                 # TODO: figure out what to do here
 
         if not filename.endswith('.OADplayer'): 
@@ -196,17 +335,25 @@ class Game():
             for obj in l:
                 obj._change_objs_to_IDs()
             saveables = [x.get_saveable() for x in l]
+            for i in saveables:
+                sub_amt = 0
+                for sidx in range(0, len(i)):
+                    j = list(i.keys())[sidx - sub_amt]
+                    if not self.is_jsonable(i[j]):
+                        del i[j]
+                        sub_amt += 1
             f.write(json.dumps(saveables, skipkeys=True, sort_keys=True, indent=4))
             Thing.ID_dict = backup_ID_dict
-            player.cons.write("Saved player data to file %s" % filename)
+            player.cons.write("Saved player data!")
+            player.log.info(f"Saved player data to file {filename}")
             f.close()
         except IOError:
             player.cons.write("Error writing to file %s" % filename)
+            player.log.error(f"Error writing player data! filename = {filename}")
             Thing.ID_dict = backup_ID_dict # ESSENTIAL THAT WE DO THIS!
         except TypeError:
             player.cons.write("Error writing to file %s" % filename)
-            dbg.debug('A TypeError occured while trying to save player %s. Printing below:' % player)
-            dbg.debug(traceback.format_exc())
+            self.log.exception('A TypeError occured while trying to save player %s. Printing below:' % player)
             Thing.ID_dict = backup_ID_dict
         # restore location & contents etc to obj references:
         for obj in l:
@@ -214,9 +361,7 @@ class Game():
                 obj._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(obj)
-                dbg.debug('An error occured while loading %s! Printing below:')
-                dbg.debug(traceback.format_exc())
-                dbg.debug('Error caught!')
+                self.log.exception('An error occured while loading %s! Printing below:')
 
         # restore original IDs by removing tag
         for obj in l:
@@ -274,7 +419,7 @@ class Game():
                 if o.contents:
                     eraselist += o.contents
                 if o.location.extract(o):
-                    dbg.debug("Error deleting player or inventory during load_game(): object %s contained in %s " % (o, o.location))
+                    self.log.error("Error deleting player or inventory during load_game(): object %s contained in %s " % (o, o.location))
                 if o in self.heartbeat_users:
                     self.deregister_heartbeat(o)
                 del Thing.ID_dict[o.id]
@@ -290,7 +435,7 @@ class Game():
         loc_str = newplayer.location
         newplayer.location = gametools.load_room(loc_str) 
         if newplayer.location == None: 
-            dbg.debug("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer))
+            self.log.warning("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer))
             cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
             newplayer.location = gametools.load_room('domains.school.school.great_hall')
 
@@ -304,9 +449,7 @@ class Game():
                 o._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(o)
-                dbg.debug('An error occured while loading %s! Printing below:')
-                dbg.debug(traceback.format_exc())
-                dbg.debug('Error caught!')
+                self.log.exception('An error occured while loading %s! Printing below:')
         # Now de-uniquify all IDs, replace object.id and ID_dict{} entry
         for o in l:
             try:
@@ -315,9 +458,7 @@ class Game():
                 o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
             except Exception:
                 broken_objs.append(o)
-                dbg.debug('An error occured while loading %s! Printing below:')
-                dbg.debug(traceback.format_exc())
-                dbg.debug('Error caught!')
+                self.log.exception('An error occured while loading %s! Printing below:')
 
         # Make sure that broken objects are removed from their container's contents list
         reference_check = [newplayer]
@@ -338,7 +479,7 @@ class Game():
             try:
                 o.destroy()
             except Exception:
-                dbg.debug('Error destroying object %s!' % o)
+                self.log.error('Error destroying object %s!' % o)
                 #TODO: Figure out what to do here
 
         room = newplayer.location
@@ -348,7 +489,7 @@ class Game():
             room.report_arrival(newplayer, silent=True)
             room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         except Exception:
-            dbg.debug('Error inserting player into location! Moving player back to default start location')
+            self.log.error('Error inserting player into location! Moving player back to default start location')
             room = gametools.load_room(newplayer.start_loc_id)
             cons.write("Restored game state from file %s" % filename)
             room.report_arrival(newplayer, silent=True)
@@ -385,14 +526,14 @@ class Game():
         if obj not in self.heartbeat_users:
             self.heartbeat_users.append(obj)
         else:
-            dbg.debug("object %s is already in the heartbeat_users list!" % obj, 2)
+            self.log.warning("object %s is already in the heartbeat_users list!" % obj)
     
     def deregister_heartbeat(self, obj):
         """Remove the specified object (obj) from the heartbeat_users list"""
         if obj in self.heartbeat_users:
             del self.heartbeat_users[self.heartbeat_users.index(obj)]
         else:
-            dbg.debug("object %s, not in heartbeat_users, tried to deregister heartbeat!" % obj, 2)
+            self.log.warning("object %s, not in heartbeat_users, tried to deregister heartbeat!" % obj)
     
     def schedule_event(self, delay, func, *params):
         """Helper function to guarentee that all asyncio event calls are in a try/except statement."""
@@ -400,18 +541,13 @@ class Game():
     
     def catch_func_errs(self, func, *params):
         profile_st = time.time()
-        if (self.handle_exceptions):
-            try:
-                func(*params)
-            except:
-                dbg.debug("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
-                dbg.debug(traceback.format_exc())
-                dbg.debug('Error caught!')
-        else:
+        try:
             func(*params)
+        except:
+            self.log.exception("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
         profile_et = time.time()
         profile_t = profile_et - profile_st
-        funcname = str(func).replace('<','[').replace('>',']')
+        funcname = str(func)
         if funcname in self.total_times:
             self.total_times[funcname] += profile_t
             self.numrun_times[funcname] += 1
@@ -421,14 +557,12 @@ class Game():
             self.total_times[funcname] = profile_t
             self.numrun_times[funcname] = 1
             self.maximum_times[funcname] = profile_t
-        dbg.debug("Function %s took %s seconds" % (funcname, profile_t), 4)
+        self.log.debug("Function %s took %s seconds" % (funcname, profile_t))
         
     
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
-        dbg.debug("Beat! game.time = %s" % self.time, 5)
-        dbg.debug("Time since game began (in seconds): %s" % (time.time() - self.start_time), 5)
 
         for h in self.heartbeat_users:
             self.schedule_event(0, h.heartbeat)
@@ -493,13 +627,12 @@ class Game():
         for i in players:
             if i.cons:
                 i.cons.write('The game is now shutting down.')
-                self.save_player(os.path.join(gametools.PLAYER_DIR, i.names[0]), i)
+                self.save_player(gametools.realDir(gametools.PLAYER_DIR, i.names[0]), i)
                 i.cons.write('--#quit')
         
         for j in consoles:
             if j and j.user: # Make sure to send all messages from consoles before fully quitting game
                 self.events.run_until_complete(connections_websock.ws_send(j))                
 
-        dbg.debug("Exiting main game loop!")
-        dbg.shut_down()
+        self.log.critical("Exiting main game loop!")
         sys.exit(restart_code)

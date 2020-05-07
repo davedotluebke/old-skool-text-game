@@ -5,7 +5,6 @@ import gametools
 import scenery
 import room
 import random
-from debug import dbg
 
 cooridoor_exits = {}
 
@@ -35,7 +34,6 @@ def connection_exists(x, y, z, delta_x, delta_y, delta_z, threshold, direction_s
     all_bits = x_bits | y_bits | z_bits | delta_x_bits | delta_y_bits | delta_z_bits
     random.seed(all_bits)
     num = random.random()
-    #dbg.debug("Coordinates: %s, %s, %s. Direction: %s, %s, %s. Seed: %s. Num: %s" % (x, y, z, delta_x, delta_y, delta_z, all_bits, num))
     return num < threshold
 
 masks = {'north':0x01, 'south':0x02, 'east':0x04, 'west':0x08, 'up':0x10, 'down':0x20}

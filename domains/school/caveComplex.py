@@ -1,4 +1,3 @@
-from debug import dbg
 import gametools
 
 from thing import Thing

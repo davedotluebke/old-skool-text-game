@@ -12,7 +12,7 @@ def load():
     r.set_description('boundless room', 'You find yourself in a room with a glass floor and walls. '
         'You see one mirror, with a plaque above it.')
 
-    mirror_obj = mirror.Mirror('shimering','a reflection of the plaque above',gametools.DEFAULT_START_LOC)
+    mirror_obj = mirror.Mirror('shimmering','a reflection of the plaque above',gametools.DEFAULT_START_LOC)
     r.insert(mirror_obj)
 
     plaque_obj = plaque.Plaque(mirror_obj, 1)
