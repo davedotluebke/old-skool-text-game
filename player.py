@@ -34,6 +34,21 @@ emotes = {'bow':    ('You take a sweeping bow.',
                     'You giggle at &nd%s.', 
                     '&nD%s giggles at &nd%s.',
                     '&nD%s giggles at you.')
+          'smile': ('You smile.', 
+                    '&nD%s smiles.', 
+                    'You smile at &nd%s.', 
+                    '&nD%s smiles at &nd%s.',
+                    '&nD%s smiles at you.')
+          'sneer': ('You sneer.', 
+                    '&nD%s sneers.', 
+                    'You sneer at &nd%s.', 
+                    '&nD%s sneers at &nd%s.',
+                    '&nD%s sneers at you.')
+          'pout': ('You pout.', 
+                    '&nD%s pouts.', 
+                    'You pout at &nd%s.', 
+                    '&nD%s pouts at &nd%s.',
+                    '&nD%s pouts at you.')
          }
 class Player(Creature):
     #
