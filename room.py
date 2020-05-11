@@ -1,6 +1,5 @@
 import gametools
 
-from debug import dbg
 from thing import Thing
 from container import Container
 from action import Action
@@ -58,7 +57,7 @@ class Room(Container):
             if isinstance(obj, Container) and (obj.see_inside or hasattr(obj, 'cons')):
                 if obj.contents: 
                     obj_list += obj.contents 
-        dbg.debug('Room %s: light level is %s' % (self.id, total_light), 4)
+        self.log.debug('Room %s: light level is %s' % (self.id, total_light))
         return (total_light <= 0)
 
     def report_arrival(self, user, silent=False):
@@ -125,7 +124,7 @@ class Room(Container):
                 destPath = self.exits[sExit]  # filename of the destination room module
                 dest = gametools.load_room(destPath)
             except KeyError:
-                dbg.debug("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]))
+                self.log.error("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]))
                 cons.write("There was an internal error with the exit. ")
                 return True
             if cons.user.move_to(dest):

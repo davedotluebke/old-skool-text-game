@@ -8,7 +8,6 @@ import re
 import platform
 import traceback
 
-from debug import dbg
 from parse import Parser
 from player import Player
 import gametools
@@ -37,8 +36,7 @@ class Console:
                \t'move vines'\n\n
                You can create shortcuts to reduce typing; type 'alias' for 
                more details. Type 'width' to change the console's text width. 
-               Type 'quit' to save your progress and leave 
-               the game."""
+               Type 'quit' to save your progress and leave the game."""
 
     def __init__(self, net_conn, game = None, encode_str='88838_defaultencodestr_9yq9h'):
         self.game = game
@@ -49,68 +47,34 @@ class Console:
         self.file_input = bytes()
         self.filename_input = ''
         self.file_output = bytes()
+        self.filename_output = ''
         self.uploading_filename = ''
-        self.current_directory = 'domains'
+        self.current_directory = '/domains'  # always in 'game directory space'
         self.change_players = False
         self.try_all_console_commands = False
         self.connection = net_conn
         self.input_redirect = None
+        self.upload_confirm = True
         self.width = Console.default_width
         self.measurement_system = Console.default_measurement_system
         self.encode_str = str(encode_str)
         self.changing_passwords = False
         self.confirming_replace = False
-        self.alias_map = {'n':       'go north',
-                          's':       'go south',
-                          'e':       'go east', 
-                          'w':       'go west', 
-                          'nw':      'go northwest',
-                          'sw':      'go southwest',
-                          'ne':      'go northeast',
-                          'se':      'go southeast',
-                          'u':       'go up',
-                          'd':       'go down',
-                          'i':       'inventory',
-                          'l':       'look',
-                          'x':       'execute'
-                          }
-        self.legal_tags = {'span':     ['style'],
-                           'div':      ['style'],
-                           'b':        ['style'],
-                           'br':       ['style'],
-                           'code':     ['code'],
-                           'dl':       ['style'],
-                           'dd':       ['style'],
-                           'dt':       ['style'],
-                           'del':      ['style'],
-                           'em':       ['style'],
-                           'h1':       ['style'],
-                           'h2':       ['style'],
-                           'h3':       ['style'],
-                           'h4':       ['style'],
-                           'h5':       ['style'],
-                           'h6':       ['style'],
-                           'hr':       ['style'],
-                           'i':        ['style'],
-                           'ins':      ['style'],
-                           'li':       ['style', 'value'],
-                           'mark':     ['style'],
-                           'meter':    ['style', 'high', 'low', 'max', 'min', 'optimum', 'value'],
-                           'ol':       ['style', 'start', 'reversed', 'type'],
-                           'p':        ['style'],
-                           'pre':      ['style'],
-                           'progress': ['style', 'max', 'value'],
-                           'q':        ['style'],
-                           's':        ['style'],
-                           'kbd':      ['style'],
-                           'samp':     ['style'],
-                           'small':    ['style'],
-                           'strong':   ['style'],
-                           'sub':      ['style'],
-                           'sup':      ['style'],
-                           'u':        ['style'],
-                           'ul':       ['style']}
-        self.empty_elements = ['br', 'hr']
+        self.alias_map = {
+            'n':       'go north',
+            's':       'go south',
+            'e':       'go east', 
+            'w':       'go west', 
+            'nw':      'go northwest',
+            'sw':      'go southwest',
+            'ne':      'go northeast',
+            'se':      'go southeast',
+            'u':       'go up',
+            'd':       'go down',
+            'i':       'inventory',
+            'l':       'look',
+            'x':       'execute'
+        }
 
     def detach(self, user):
         if self.user == user:
@@ -200,42 +164,14 @@ class Console:
             return
         self.write(self._set_verbosity(level))
     
-    def _findPath(self, pathwords):
-        path = ''
-        cont_path = ''
-        dot_idx = False
-        for i in pathwords:
-            path += i+' '
-        path = path[:-1]
-        if path.startswith("~"):
-            path = path.replace("~", "/home/%s" % self.user.names[0])
-        if '..' in path: #TODO: Handle multiple '..' correctly
-            num_back = path.count('..')
-            dirlist = self.current_directory.split('/')[0:-num_back]
-            for j in dirlist:
-                cont_path += j+'/'
-            path = path.replace('..','')
-            dot_idx = True
-        elif self.current_directory == '.':
-            cont_path = ''
-        else:
-            cont_path = self.current_directory+'/'
-        path = path.replace('\\','/')
-        if path.startswith('/') and not dot_idx:
-            path = path[1:]
-            cont_path = ''
-        path = cont_path + path
-        path = path.replace('//','/')
-        if path.endswith('/'):
-            path = path[:-1]
-        if path == '':
-            path = '.'
-        return path
-    
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
         if len(self.words) > 0:
             cmd = self.words[0]
+            arg = self.command.partition(' ')[2]  # everything after the command
+            path = gametools.expandGameDir(arg, player=self.user.name())
+            path = os.path.join(self.current_directory, path)
+            path = gametools.normGameDir(path)
             if cmd == 'alias':
                 self._add_alias(self.command)
                 return True
@@ -248,28 +184,9 @@ class Console:
                 self.write(self.help_msg)
                 return True
 
-            if cmd == 'debug':
-                # check wizard privileges before allowing
-                if self.user.wprivileges:
-                    self.game.handle_exceptions = not self.game.handle_exceptions
-                    self.write("Toggle debug exception handling to %s" % ("on" if self.game.handle_exceptions else "off"))
-                    return True
-                else:
-                    self.write("You do not have permission to change the game's debug mode. If you would like to report a bug, type \"bug\" instead.")
-                    return True
-            
-            if cmd == 'verbose':
-                # check wizard privileges before allowing
-                if self.user.wprivileges:
-                    self._handle_verbose()
-                    return True
-                else:
-                    self.write("Type \"terse\" to print short descriptions when entering a room.")
-                    return True
-            
             if cmd == 'profile':
                 # check wizard privileges before allowing
-                if self.user.wprivileges:
+                if self.game.is_wizard(self.user.name()):
                     self.write(self.game.get_profiling_report())
                     return True
 
@@ -294,60 +211,54 @@ class Console:
                     return True
             
             if cmd == 'upload':
-                if self.user.wprivileges:
-                    allow_edits = False
-                    try:
-                        for i in self.game.player_edit_privileges[self.user.names[0]]:
-                            if re.fullmatch(i, self.current_directory):
-                                allow_edits = True
-                                break
-                    except KeyError:
-                        pass
+                if self.game.is_wizard(self.user.name()):
+                    allow_edits = self.game.get_edit_privileges(self.user.name(), path)
                     if allow_edits:
-                        if len(self.words) > 1 and self.words[1]:
-                            self.uploading_filename = self.words[1] #TODO: make sure this is a valid filename
-                        else:
-                            self.uploading_filename = self.filename_input
-                        if '.' not in self.uploading_filename:
-                            self.uploading_filename += '.py'
+                        self.uploading_filename = os.path.basename(path)  # returns '' if path doesn't end with a filename
                         self.write('Please select a file to --#upload:')
                     else:
                         self.write('You do not have permission to write to this directory.')
                     return True
 
             if cmd == 'download':
-                if self.user.wprivileges:
-                    self.download_file(self.words[1:])
+                if self.game.is_wizard(self.user.name()):
+                    self.download_file(path)
+                    return True
+            
+            if cmd == 'edit':
+                # allowed = False
+                # for (pop file/dirs off path)
+                if self.game.is_wizard(self.user.name()):
+                    allow_edits = self.game.get_edit_privileges(self.user.name(), path)
+                    if allow_edits:
+                        self.upload_confirm = False
+                        self.download_file(path, edit_flag=True)
+                    else:
+                        self.write('You do not have permission to write to this directory.')
                     return True
             
             if cmd == 'cd':
-                if self.user.wprivileges:
-                    path = self._findPath(self.words[1:])
-                    allow_reads = False
-                    if path == '.':
-                        allow_reads = True
-                    try:
-                        for i in self.game.player_read_privileges[self.user.names[0]]:
-                            if re.fullmatch(i,path):
-                                allow_reads = True
-                                break
-                    except KeyError:
-                        pass
+                if self.game.is_wizard(self.user.name()):  
+                    if not arg:   # no dir given -> go to home dir
+                        path = gametools.expandGameDir('~', player=self.user.name())
+                    allow_reads = self.game.get_read_privileges(self.user.name(), path)
                     if allow_reads:
-                        if os.path.exists(path):
+                        if os.path.exists(gametools.realDir(path)):
                             self.current_directory = path
+                            self.write("Current directory now %s" % path)
                         else:
                             self.write('Error! No such file or directory.')
                     else:
                         self.write('You do not have permission to view this directory.')
                     return True
 
-            if (self.user.wprivileges and cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']) or self.try_all_console_commands:
+            if self.game.is_wizard(self.user.name()) and (cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp', 'pwd'] or self.try_all_console_commands):
                 try:
-                    if cmd == 'ls': 
-                        self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
-                    process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=self.current_directory)
-                    self.write(str(process.stdout, "utf-8"))
+                    if cmd == 'ls' and  platform.system() == "Linux":
+                            self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
+                    process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=gametools.realDir(self.current_directory))
+                    syntax_hilite = '```python\n' if cmd == 'cat' else '```\n'
+                    self.write(syntax_hilite + str(process.stdout, "utf-8") + '\n```\n')
                     self.write(str(process.stderr, "utf-8"))
                     return True
                 except Exception:
@@ -379,13 +290,12 @@ class Console:
                 else:
                     self.write("Usage: load [filename]")
                 return True
-            
             if cmd == 'quit':
                 self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user.id, self.user.id))
-                self.game.save_player(os.path.join(gametools.PLAYER_DIR, self.user.names[0]), self.user)
-                self.game.create_backups(os.path.join(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, os.path.join(gametools.PLAYER_DIR, self.user.names[0]))
+                self.game.save_player(gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]), self.user)
+                self.game.create_backups(gametools.realDir(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]))
                 self.write("--#quit")
-                if len(self.words) > 1 and self.words[1] == 'game' and self.user.wprivileges:
+                if len(self.words) > 1 and self.words[1] == 'game' and self.game.is_admin(self.user.name()):
                     self.game.shutdown_console = self
                     self.game.keep_going = False
                 return "__quit__"
@@ -395,51 +305,58 @@ class Console:
     def upload_file(self, file, confirm_r=True):
         if self.confirming_replace:
             return
+        if not self.uploading_filename:
+            full_filename = os.path.join(self.current_directory, self.filename_input)
+            self.uploading_filename = full_filename
+
         replacing_file = True
         try:
-            f = open(self.current_directory+'/'+self.uploading_filename, 'r')
+            f = open(gametools.realDir(self.uploading_filename, player=self.user.name()), 'r')
             try:
-                dbg.debug('Found a file. Contents: %s' % f.read(), 2)
+                self.user.log.debug('Found a file. Contents: %s' % f.read())
             except UnicodeDecodeError:
-                dbg.debug('This file is in the wrong format.')
+                self.user.log.error('This file is in the wrong format.')
             f.close()
         except FileNotFoundError:
             replacing_file = False
         
         if not replacing_file or not confirm_r:
-            dbg.debug('Decided to write file.', 2)
+            self.user.log.debug('Decided to write file.')
             if platform.system() != 'Windows' and b'\r\n' in file:
                 file = file.replace(b'\r\n', b'\n') 
-            f = open(self.current_directory+'/'+self.uploading_filename, 'wb')
+            f = open(gametools.realDir(self.uploading_filename, player=self.user.name()), 'wb')
             f.write(file)
             f.close()
             self.write('Sucessfully uploaded file.')
             self.file_input = bytes()
+            self.filename_input = ""
+            self.upload_confirm = True
             try:
-                r = requests.post("http://127.0.0.1:6553", data={"filepath":self.current_directory+'/'+self.uploading_filename, "commitmsg":"%s uploaded file %s" % (self.user.names[0], self.uploading_filename)})
+                r = requests.post("http://127.0.0.1:6553", data={"filepath":self.uploading_filename, "commitmsg":"%s uploaded file %s" % (self.user.name(), self.uploading_filename)})
                 self.write(r.text)
             except:
-                self.write(traceback.format_exc())
+                self.user.log.warning("Gitbot failed to accept POST request")
+                self.user.log.debug(traceback.format_exc())
+            self.uploading_filename = ""
         else:
-            self.write('A file named %s already exits. Would you like to replace it with the new version you\'ve uploaded? Y/n:' % (self.current_directory+'/'+self.uploading_filename))
+            self.write('A file named %s already exits. Would you like to replace it with the new version you\'ve uploaded? Y/n:' % (self.uploading_filename))
             self.confirming_replace = True
             self.input_redirect = self
 
-    def download_file(self, filename_words):
-        filename = ''
-        for x in filename_words:
-            filename += x
-
+    def download_file(self, filename, edit_flag=False):
+        if not filename:
+            self.write("Error: no file specified to download.")
+            return
         try:
-            f = open(self.current_directory+'/'+filename, 'rb')
+            f = open(gametools.realDir(filename, player=self.user.name()), 'rb')
         except FileNotFoundError:
             self.write("Couldn't find a file named %s." % filename)
             return
 
         self.file_output = f.read()
-        asyncio.ensure_future(connections_websock.file_send(self))
+        asyncio.ensure_future(connections_websock.file_send(self, edit_flag=edit_flag, filename=filename))
         f.close()
-        self.write('Downloading file %s...' % filename)
+        self.write('%s file %s...' % ('Downloading' if not edit_flag else 'Opening', filename))
 
     def sanitizeHTML(self, html):
         return html.replace('<', '«').replace('>', '»')
@@ -488,7 +405,7 @@ class Console:
 
     def request_input(self, dest):
         self.input_redirect = dest
-        dbg.debug("Input from console %s given to %s!" % (self, dest), 2)
+        self.user.log.info("Input from console %s given to %s!" % (self, dest))
     
     def console_recv(self, command):
         """Temporarily recieve information as a two-part command, e.g. changing passwords."""
@@ -509,7 +426,7 @@ class Console:
 
     def take_input(self):
         if self.file_input:
-            self.upload_file(self.file_input)
+            self.upload_file(self.file_input, self.upload_confirm)
         if (self.raw_input == ''):
             return None
         (self.command, sep, self.raw_input) = self.raw_input.partition('\n')
@@ -525,7 +442,7 @@ class Console:
                 self.input_redirect.console_recv(self.command)
                 return "__noparse__"
             except AttributeError:
-                dbg.debug('Error! Input redirect is not valid!')
+                self.user.log.error('Error! Input redirect is not valid!')
                 self.input_redirect = None
         # replace any aliases with their completed version
         self.final_command = self._replace_aliases()

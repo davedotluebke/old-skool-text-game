@@ -16,7 +16,6 @@ import functools
 from thing import Thing
 from console import Console
 import gametools
-from debug import dbg
 
 # From the websockets.serve() documentation:
 # Since there's no useful way to propagate exceptions triggered in handlers,
@@ -52,13 +51,12 @@ async def ws_handler(websocket, path):
                 if message_dict['type'] == 'command':
                     cons.raw_input += data
                 elif message_dict['type'] == 'file':
-                    data = base64.b64decode(data) 
-                    cons.file_input = data 
+                    cons.file_input = bytes(data, "utf-8")
                     if 'filename' in message_dict and message_dict['filename'] != '':
                         cons.filename_input = message_dict['filename']
                     else:
                         cons.filename_input = 'default_filename.py'
-                    dbg.debug('File added to file input!', 2)
+                    cons.user.log.debug('File added to file input!')
             except KeyError:
                 cons = Console(websocket, Thing.game, encrypted_message)
                 conn_to_client[websocket] = cons
@@ -67,7 +65,7 @@ async def ws_handler(websocket, path):
                 except gametools.PlayerLoadError:
                     Thing.game.create_new_player(name, cons)
             except IndexError:
-                dbg.debug('IndexError in connections_websock!')
+                self.user.log.error('IndexError in connections_websock!')
     except websockets.exceptions.ConnectionClosed:
         websocket.close()
 
@@ -85,10 +83,11 @@ async def ws_send(cons):
     cons.raw_output = ''
     await cons.connection.send(output)
 
-async def file_send(cons):
+async def file_send(cons, edit_flag=False, filename='gamefile.py'):
     raw_file = cons.file_output
-    b64_file = str(base64.b64encode(raw_file), "utf-8")
-    json_output = json.dumps({"type": "file", "data": b64_file})
+    # b64_file = str(base64.b64encode(raw_file), "utf-8")
+    # json_output = json.dumps({"type": "file", "data": b64_file, "behaviour": edit_flag})
+    json_output = json.dumps({"type": "file", "data": str(raw_file, 'utf-8'), "behaviour": edit_flag, "filename": filename})
     if encryption_enabled:
         json_bytes = bytes(json_output, "utf-8")
         output = crypto_obj.encrypt(json_bytes, cons.encode_str)

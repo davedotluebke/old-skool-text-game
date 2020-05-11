@@ -1,0 +1,6 @@
+{
+    "domains.*": {
+        "read": ["scott", "cedric", "rivques"],
+        "edit": ["scott", "cedric", "rivques"]
+    }
+}

@@ -16,7 +16,7 @@
             }
 
             function openGame () {
-                var focuser = window.open('websocket_client.html', 'newwindow','width=666px, height=438px', false);
+                var focuser = window.open('websocket_client.html', '_blank','width=666px, height=438px', false);
                 focuser.onbeforeunload = closeGame;
                 focuser.resizeTo(666, 438);
                 document.getElementById('gameOpen').disabled = 'disabled';

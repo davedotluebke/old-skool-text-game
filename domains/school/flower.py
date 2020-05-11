@@ -1,4 +1,3 @@
-from debug import dbg
 from action import Action
 
 from thing import Thing
@@ -25,9 +24,7 @@ class Flower(Thing):
                 return 'I\'m not sure what you mean.'
         if oIDO == self:
             if sDO == 'petal' and sPrep in ['from', 'off']:
-                import domains.school.forest.petal as petal_path
-                petal_path.set_species(self.type)
-                petal = gametools.clone("domains.school.forest.petal")
+                petal = gametools.clone("domains.school.forest.petal", self.type)
                 petal.move_to(cons.user)
                 cons.write('You pick a petal from the %s.' % self.type)
                 cons.user.emit("&nD%s picks a petal from a %s.", (cons.user.id, self.type))

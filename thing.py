@@ -1,6 +1,5 @@
 from num2words import num2words
 
-from debug import dbg
 from action import Action
 import random
 import copy
@@ -15,13 +14,14 @@ class Thing(object):
     # SPECIAL METHODS (i.e __method__() format)
     #
     def __init__(self, default_name, path, pref_id=None, plural_name=None):
-        self.unlisted = False # should this thing be listed in room description  
+        self.versions = {gametools.findGamePath(__file__): 4}
+        self._add_ID(default_name if not pref_id else pref_id)
         self.path = gametools.findGamePath(path) if path else None
-        self.versions = {gametools.findGamePath(__file__): 3}
+        self.log = gametools.get_game_logger(self)
         self.names = [default_name]
         self.plural_names = [default_name+'s' if not plural_name else plural_name]
-        self._add_ID(default_name if not pref_id else pref_id)
         self.plurality = 1  # how many identical objects this Thing represents
+        self.unlisted = False # should this thing be listed in room description  
         self._weight = 0.0
         self._volume = 0.0
         self._value = 0
@@ -38,7 +38,7 @@ class Thing(object):
         self._spawn_message = None
 
     def __del__(self):
-        dbg.debug('Deleting object: %s: %s.' % (self.names[0], self.id))
+        self.log.info('Deleting object: %s: %s.' % (self.names[0], self.id))
 
     def __str__(self): 
         return self.id
@@ -46,20 +46,22 @@ class Thing(object):
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
-    def _add_ID(self, preferred_id, remove_existing=False):
+    def _add_ID(self, preferred_id:str, remove_existing=False):
         """Add object to Thing.ID_dict (the dictionary mapping IDs to objects).
 
-        Takes a preferred ID string and (if necessary) creates a unique ID
-        string from it. Returns the unique ID string. If <remove_existing> is
-        set to True, first attempts to delete this object's current ID from 
-        Thing.ID_dict (useful for assigning new IDs to existing objects)"""
+        Takes a preferred ID string, replaces any spaces with underscores, 
+        and (if necessary) creates a unique ID string from it. Returns the 
+        unique ID string. If <remove_existing> is set to True, first attempts 
+        to delete this object's current ID from Thing.ID_dict (useful for 
+        assigning new IDs to existing objects)"""
+        preferred_id = preferred_id.replace(" ", "_")
         if remove_existing:
             try:
                 del Thing.ID_dict[self.id]
             except AttributeError:
-                dbg.debug('%s has no id attribute!' % self)
+                self.log.error('%s has no id attribute!' % self)
             except KeyError:
-                dbg.debug('%s.id was not in Thing.ID_dict!' % self)
+                self.log.error('%s.id was not in Thing.ID_dict!' % self)
         self.id = preferred_id
         while self.id in Thing.ID_dict:     # unique-ify self.id if necessary
             self.id = self.id + str(random.randint(0, 9))
@@ -83,6 +85,10 @@ class Thing(object):
     #
     # SET/GET METHODS (methods to set or query attributes)
     #
+    def name(self):
+        """Return the object's default name, usually names[0]."""
+        return self.names[0]
+        
     def add_names(self, *sNames):
         """Add one or more strings as possible noun names for this object, each as a separate argument"""
         self.names += list(sNames)
@@ -102,8 +108,7 @@ class Thing(object):
 
     def set_weight(self, grams):
         if (grams < 0):
-            dbg.debug("Error: weight cannot be negative")
-            raise
+            raise ValueError("Error: weight cannot be negative")
         else:
             self._weight = grams
     
@@ -113,8 +118,7 @@ class Thing(object):
 
     def set_volume(self, liters):
         if (liters < 0):
-            dbg.debug("Error: volume cannot be negative")
-            raise
+            raise ValueError("Error: volume cannot be negative")
         else:
             self._volume = liters
     
@@ -127,8 +131,7 @@ class Thing(object):
             self._spawn_interval = None
             return
         if (seconds < 0):
-            dbg.debug("Error: spawn interval cannot be negative")
-            raise
+            raise ValueError("spawn interval cannot be negative")
         else:
             self._spawn_interval = seconds
 
@@ -275,6 +278,8 @@ class Thing(object):
         state = self.__dict__.copy()
         if state.get("actions"):
             del state["actions"]
+        if state.get("log"):
+            del state["log"]
         default_obj = gametools.clone(self.path)
         default_state = default_obj.__dict__
         for attr in list(state):
@@ -289,8 +294,9 @@ class Thing(object):
         # XXX temporary code to prevent all save calls from failing
         for i in saveable:
             if isinstance(saveable[i], set):
-                saveable[i] = list(saveable[i])
-                dbg.debug('%s.%s was set' % (self.id, i))
+                saveable["__set__" + i] = list(saveable[i])
+                del saveable[i]
+                self.log.debug(f'{self.id}.{i} was set, changed to "__set__"-prefixed list __set__{i}')
         
         return saveable
 
@@ -330,8 +336,8 @@ class Thing(object):
         try:
             del Thing.ID_dict[self.id]
         except KeyError:
-            dbg.debug('%s was already moved from Thing.ID_dict' % self, 2)
-        if self.location:
+            self.log.error('%s was already removed from Thing.ID_dict' % self)
+        if self.location and hasattr(self.location, "extract"):
             self.location.extract(self)
             self.location = None
         if self in Thing.game.heartbeat_users:
@@ -342,7 +348,11 @@ class Thing(object):
         Also call update_version() to make sure that all objects are up to date."""
         state = self.__dict__.copy()
         for attr in list(saveable):
-            state[attr] = saveable[attr]
+            # any sets were converted to lists and prefixed with __set__
+            if attr.startswith("__set__"):
+                state[attr[len("__set__"):]] = set(saveable[attr])
+            else:
+                state[attr] = saveable[attr]
 
         self.__dict__.update(state)
 
@@ -364,12 +374,16 @@ class Thing(object):
                     del self.__dict__['long_desc']
                 self.version_number = 2
             except KeyError:
-                dbg.debug('Error updating object %s in Thing.update_version()' % self)
+                self.log.error('Error updating object %s in Thing.update_version()' % self)
         
         if hasattr(self, 'version_number'):
             # Changing to dictionary-based versioning system
             self.versions[gametools.findGamePath(__file__)] = 3
             del self.__dict__['version_number']
+        
+        if self.versions[gametools.findGamePath(__file__)] <= 3:
+            self.adjectives = set(self.adjectives)
+            self.versions[gametools.findGamePath(__file__)] = 4
 
     def delete(self):
         if self.contents:
@@ -399,13 +413,13 @@ class Thing(object):
         try:
             if holder not in ignore and hasattr(holder, 'perceive'):
                 # immediate container can see messages, probably a creature/player
-                dbg.debug("creature holding this object is: " + holder.id, 4)
+                self.log.debug("creature holding this object is: " + holder.id)
                 holder.perceive(message)
         except TypeError:
-            dbg.debug("Warning, emit() called with non-list ignore parameter!")
+            self.log.warning("Warning, emit() called with non-list ignore parameter!")
         # now get list of recipients (usually creatures) contained by holder (usually a Room)
         recipients = [x for x in holder.contents if hasattr(x, 'perceive') and (x is not self) and (x not in ignore)]
-        dbg.debug("other creatures in this room include: " + str(recipients), 4)
+        self.log.debug("other creatures in this room include: " + str(recipients))
         for recipient in recipients:
             recipient.perceive(message)
 
@@ -501,6 +515,3 @@ class Thing(object):
     actions["get"] = Action(take, True, False)
     actions["drop"] = Action(drop, True, False)
     actions["count"] = Action(count, True, False)
-
-
-dbg.ID_dict = Thing.ID_dict # Allow the DebugLog to access Thing.ID_dict

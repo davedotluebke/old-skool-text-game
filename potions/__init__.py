@@ -5,7 +5,6 @@ from thing import Thing
 from liquid import Liquid
 from room import Room
 
-from debug import dbg
 from action import Action
 
 class PinkPotion(Liquid):
@@ -93,7 +92,7 @@ class ExplorationPotion(Liquid):
             if r != None:
                 cons.user.move_to(r)
                 cons.user.perceive("You find yourself sinking into a new place.")
-                dbg.debug("Exploration potion moved user %s to location %s" % (cons.user, dest), 2)
+                self.log.info("Exploration potion moved user %s to location %s" % (cons.user, dest))
                 r.report_arrival(cons.user)
                 break
         return True

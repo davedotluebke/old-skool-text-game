@@ -3,7 +3,6 @@ import room
 
 from domains.school.school.library_book import LibraryBook
 
-from debug import dbg
 from scenery import Scenery
 from action import Action
 

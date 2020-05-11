@@ -3,14 +3,15 @@ import sys
 import importlib
 import connections_websock
 import os
+import logging
 
 import gametools
-from debug import dbg
 
 from thing import Thing
 from room import Room
 from creature import Creature
 from action import Action
+from conshandler import ConsHandler
 
 
 def clone(params=None):
@@ -50,6 +51,7 @@ emotes = {'bow':    ('You take a sweeping bow.',
                     '&nD%s pouts at &nd%s.',
                     '&nD%s pouts at you.')
          }
+
 class Player(Creature):
     #
     # SPECIAL METHODS (i.e __method__() format)
@@ -61,6 +63,7 @@ class Player(Creature):
         self.login_state = None
         self.password = None
         self.start_loc_id = None
+        self.handlers = {}  # list of debug handlers for wizards
         self.set_description("formless soul", "A formless player without a name")
         self.set_weight(175/2.2)
         self.set_volume(66)
@@ -135,7 +138,6 @@ class Player(Creature):
                 del self.wprivilages
             self.versions[gametools.findGamePath(__file__)] = 3
 
-
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
@@ -152,7 +154,7 @@ class Player(Creature):
                                 "Please enter your username:")
                 return
             self.names[0] = cmd.split()[0]  # strips any trailing whitespace
-            filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+            filename = gametools.realDir(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
             try:
                 f = open(filename, 'r+b')
                 f.close()  # success, player exists, so close file for now & check password
@@ -182,7 +184,7 @@ class Player(Creature):
             # TODO secure password authentication goes here
             self.id = self._add_ID(self.names[0])            
             self.proper_name = self.names[0].capitalize()
-            dbg.debug("Creating player id %s with default name %s" % (self.id, self.names[0]))
+            self.log.info("Creating player id %s with default name %s" % (self.id, self.names[0]))
             start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
             start_room.insert(self)
             self.perceive("\nWelcome to Firefile Sorcery School!\n\n"
@@ -200,11 +202,11 @@ class Player(Creature):
                     self.cons.write("A copy of %s is already in the game. Would you like to take over %s? (yes/no)" % (self.names[0], self.names[0]))
                     self.login_state = 'AWAITING_RECONNECT_CONFIRM'
                     return
-            filename = os.path.join(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
+            filename = gametools.realDir(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
             try:
                 try:
                     newuser = self.game.load_player(filename, self.cons, password=passwd)
-                    dbg.debug("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]))
+                    self.log.info("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]))
                     newuser.login_state = None
                     self.login_state = None
                     self.game.deregister_heartbeat(self)
@@ -275,10 +277,7 @@ class Player(Creature):
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
     def detach(self, nocons=False):
-        try:
-            del dbg.verbosity[self.id]
-        except KeyError:
-            pass
+        # TODO: Deal with logs in player
         if not nocons:
             self.cons.detach(self)
         self.cons = None
@@ -320,7 +319,7 @@ class Player(Creature):
                         self.attacking = i
                         self.attack_enemy(i)
             except AttributeError:
-                dbg.debug('Error! Location is a string!')
+                self.log.error('Error! Location is a string!')
         elif self.engaged:
             if self.attacking:
                 if self.attacking == 'quit':
@@ -451,9 +450,6 @@ class Player(Creature):
             else:
                 self.cons.write(message) 
                    
-    def hold_object(self, obj):
-        self.visible_inventory.append(obj)
-
     def attack_enemy(self, enemy):
         if self.attacking in self.location.contents:
             self.attack(enemy)
@@ -462,55 +458,20 @@ class Player(Creature):
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
-    # 
-    def inventory(self, p, cons, oDO, oIDO):
-        if cons.user != self:
-            return "You can't look at another player's inventory!"
-        message = "You are carrying:\n"
-        if not self.contents:
-            message += '\tnothing'
-        for i in self.contents:
-            if i == self.weapon_wielding or i == self.armor_worn: 
-                continue
-            message += "\t&ni%s\n" % i.id
-        if self.weapon_wielding != self.default_weapon: 
-            message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
-        if self.armor_worn != self.default_armor:
-            message += 'You are wearing &nd%s.\n' % self.armor_worn.id
-        self.perceive(message)
-        return True
-    
-    def toggle_terse(self, p, cons, oDO, oIDO):
-        if cons.user != self:
-            return "I don't quite get what you mean."
-        try: 
-            if p.words[1] == "on": 
-                self.terse = True
-            elif p.words[1] == "off": 
-                self.terse = False
-            else: 
-                return """Usage: 'terse [on/off]'
-                Use long descriptions (off) or short descriptions (on) when entering a place.
-                With no specifier, 'terse' toggles between on and off."""
-        except IndexError:
-            self.terse = not self.terse
-        cons.write("Terse mode %s. %s" % ("on" if self.terse else "off",
-            "Short descriptions will be used when entering a place; type 'look' for full description" if self.terse else
-            "Full descriptions will be used entering a place."))
-        # TODO: a mode that prints long description only when first entering a room
-        return True
-    
+    #
+    # Wizard-specific actions:
+    #   
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         cmd = ' '.join(p.words[1:])
-        cons.write("Executing command: '%s'" % cmd)
+        cons.write("Executing command: `'%s'`" % cmd)
         try: 
             exec(cmd)
         except Exception as inst:
-            cons.write("Unexpected error: " + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1]))
+            cons.write("Unexpected error: `" + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1])+"`")
             # cons.write(type(inst)+"\n"+inst)    # the exception instance
         return True
 
@@ -518,10 +479,10 @@ class Player(Creature):
         '''Find an in-game object by ID and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
-            cons.write("Usage: 'fetch <id>', where id is an entry in Thing.ID_dict[]")
+            cons.write("Usage: 'fetch <id>', where id is an entry in `Thing.ID_dict[]`")
             return True
         id = " ".join(p.words[1:])
         try:
@@ -543,11 +504,13 @@ class Player(Creature):
         '''Clone a new copy of an object specified by ID or by module path, and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
-            return "You cannot yet perform this magical incatation correctly."
+        if not self.game.is_wizard(self.name()):
+            return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
-            cons.write("Usage:\n\t'clone <id>', where id is an entry in Thing.ID_dict[]"
-                       "\n\t'clone <path>', where path is of the form 'domains.school.test_object'")
+            cons.write("```"
+                       "Usage:\n\t'clone <id>', where id is an entry in Thing.ID_dict[]"
+                       "\n\t'clone <path>', where path is of the form 'domains.school.test_object'"
+                       "```")
             return True
         id = " ".join(p.words[1:])
         try:
@@ -557,7 +520,7 @@ class Player(Creature):
             objpath = id
         obj = gametools.clone(objpath)
         if obj == None:
-            return "There seems to be no object with true name '%s'!" % id
+            return "There seems to be no object with true name `'%s'`!" % id
         if isinstance(obj, Creature) or obj.move_to(self) == False:
             if obj.move_to(self.location) == False:
                 cons.write("You attempt to clone the %s but somehow cannot bring it to this place." % obj.names[0])
@@ -568,14 +531,95 @@ class Player(Creature):
         self.emit("&nD%s performs a magical incantation. You sense something has changed." % self.id, [self])
         
         return True                    
-    
-    def reload(self, p, cons, oDO, oIDO):
+
+    def debug(self, p, cons, oDO, oIDO):
+        '''Start or stop debug logging for player actions, for a module, or for an object in the game.'''
+        usage = """Usage: `debug [sec] [level] obj`
+        The `obj` argument may be:
+        - a visible object or creature
+        - an object id (i.e. an entry in `Thing.ID_dict[]`)
+        - a path of the form `domains.school.example_object`
+        - the keyword `here`, which specifies the room containing the player
+        - the keyword `me`, which specifies the player object itself.
+        The optional `[sec]` argument specifies the duration, in seconds, of the debug logging. The default is 60 seconds.
+        The optional `[level]` argument must be one of `debug`, `info`, `warning`, or `error`. All log messages at the specified level are displayed. If left unspecified, `[level]` defaults to `debug`.
+        """
+        DEFAULT_DEBUG_DURATION = 60
+        DEFAULT_DEBUG_LEVEL = 'debug'
+        if cons.user != self:
+            self.log.error("`player.debug()` action called but cons.user is %s instead of self!" % cons.user)
+            return "I don't quite get what you mean."
+        if not self.game.is_wizard(self.name()):
+            return "You cannot yet perform this magical incantation correctly."
+        if len(p.words) < 2: 
+            return usage
+        # find & strip the seconds operator and debug level, if specified
+        sec = [s for s in p.words[1:] if s.isnumeric()]
+        sec = sec[0] if sec else DEFAULT_DEBUG_DURATION 
+        levels = {'critical', 'error', 'warning', 'info', 'debug'}
+        dbg_level = [d for d in p.words[1:] if d in levels]
+        dbg_level = dbg_level[0] if dbg_level else DEFAULT_DEBUG_LEVEL
+        dbg_level = dbg_level.upper()
+        w = p.words[:1] + [x for x in p.words[1:] if not x.isnumeric() and x not in levels]
+        if oDO:
+            obj = oDO # player specified an object that the parser understands
+        else:
+            if w[1] == "me":
+                obj = self
+            elif w[1] == "here":
+                obj = self.location
+            else: 
+                # re-parse the stripped words[] to find possible objects
+                # TODO: encapsulate this code from parse() rather than cut-and-pasting it
+                oDO_list = []
+                (sV, sDO, sPrep, sIDO) = p.diagram_sentence(w)
+                # FIRST, search for nearby objects that support the verb user typed
+                possible_objects = p._collect_possible_objects(self, inventory=True, environment=True)
+                # THEN, check for objects matching the direct & indirect object strings
+                if sIDO:  
+                    return usage  # debug command accepts exactly 1 direct object
+                if sDO:   
+                    # set oDO to object(s) matching direct object strings
+                    oDO_list = p.find_matching_objects(sDO, possible_objects, cons)
+                if not sDO or not oDO_list:
+                    return "ERROR: No object specified to debug!\n\n" + usage
+                if len(oDO_list) > 1:
+                    return "ERROR: Multiple objects specified to debug!\n\n" + usage
+                obj = oDO_list[0]
+        # Check if this player already has a handler for this object
+        if obj.id in self.handlers:
+            self.remove_dbg_handler(obj)
+            return True
+        self.perceive(f"Now debugging object `{obj.id}` at level `{dbg_level}` for the next {sec} seconds!")
+        dbg_handler = ConsHandler(cons, dbg_level)
+        obj.log.addHandler(dbg_handler)
+        self.handlers[obj.id] = dbg_handler
+        # Add an event to remove & destroy dbg_handler in <duration> seconds
+        self.cons.game.schedule_event(int(sec), self.remove_dbg_handler, obj)
+        return True
+
+    def remove_dbg_handler(self, obj):
+        try: 
+            handler = self.handlers[obj.id]
+        except AttributeError or KeyError:
+            self.log.error(f"remove_debug_handler() called for `{obj}` but no handler stored for player `{self.id}`!")
+            return
+        try: 
+            obj.log.removeHandler(handler)
+            handler.close()
+            del self.handlers[obj.id]
+            self.perceive(f"No longer debugging object `{obj}`.")
+        except AttributeError:
+            self.log.error(f"AttributeError removing debug handler {handler} from object {obj}")
+
+
+    def reload_room(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.
         First extracts all of the objects from the room, then re-imports the object 
         module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
         players back to the new room.'''
         obj = None
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if isinstance(obj, Creature):
             return "You cannot reload players or NPCs!"
@@ -604,7 +648,7 @@ class Player(Creature):
                 else:
                     newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
         except Exception:
-            dbg.debug('Error reloading object %s!' % obj)
+            self.log.error('Error reloading object %s!' % obj)
             cons.user.perceive('An error occured while reloading %s.' % obj)
             for c in alive:
                 c.move_to(obj)
@@ -627,12 +671,13 @@ class Player(Creature):
         return True
 
     def apparate(self, p, cons, oDO, oIDO):
+        """Teleport the wizard to a given room, specified by id or path."""
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
-            cons.write("Usage: 'apparate <id>', where id is the entry of a Room in Thing.ID_dict[] or a path to it's module")
+            cons.write("Usage: 'apparate <id>', where id is the entry of a Room in `Thing.ID_dict[]` or a path to its module")
             return True
         id = " ".join(p.words[1:])
         try:
@@ -651,6 +696,104 @@ class Player(Creature):
         room.report_arrival(self, silent=True)
         return True
 
+    def groups(self, p, cons, oDO, oIDO): 
+        """Change or list player-group associations, e.g. add player to 'wizards' or 'admins' group."""
+        usage = "**Usage**: groups [add|remove|create] [player] [group]\n"\
+        "  Adds or removes the specified player to/from the specified group, or lists the "\
+        "player-group associations for the specified player and/or group. Both player "\
+        "and group must be given if an action (add/remove/create) is specified.  If both "\
+        "player and group are specified but no action (add/remove/create), the player is added or "\
+        "removed from the group depending on whether the player already belonged to the group. "\
+        "If create is specified, it will create the group if the player does not exist. " \
+        "The special player string 'me' can be used to indicate the calling user.  "
+        
+        if cons.user != self:
+            return "I don't quite get what you mean."  
+        if not self.game.is_wizard(self.name()):
+            return "You cannot yet perform this magical incantation correctly."  
+        words = p.words    
+        if len(words) < 2:
+            cons.write(usage + '\n' + cons.game.list_wizard_roles())
+            return True
+        if words[1] == 'add' or words[1] == 'remove' or words[1] == 'create':
+            # next arguments should be <player> <group>
+            if len(words) != 4:
+                cons.write(usage)
+                return True
+            action, player, group = words[1], words[2], words[3]
+        else:  # arguments might be <player>, or <group>, or <player> <group>
+            if len(words) == 2:  # one argument, either <player> or <group>
+                role_exists = words[1] in cons.game.roles
+                if role_exists:  # argument is <group>
+                    cons.write(cons.game.list_wizard_roles(role=words[1]))
+                player = self.name() if words[1] == 'me' else words[1]
+                player_exists = gametools.check_player_exists(player)
+                if player_exists:  # argument is <player> 
+                    cons.write(cons.game.list_wizard_roles(wiz=player))
+                if not player_exists and not role_exists:
+                    cons.write("Error: %s does not appear to be the name of a player or a group!" % words[1])
+                return True
+            if len(words) == 3:
+                action, player, group = "toggle", words[1], words[2]
+        player = self.name() if player == 'me' else player
+        if not gametools.check_player_exists(player):
+            cons.write("Error: no player named %s appears to exist!" % player)
+            return True
+        if not group in cons.game.roles and action != "create":
+            cons.write("Error: no group named %s appears to exist!" % group)
+            return True
+        if action == "add" or action == "create" or (action == "toggle" and player not in cons.game.roles[group]): 
+            cons.game.add_wizard_role(player, group)
+            cons.write("Added %s to group %s" %(player, group))
+        elif action == "remove" or (action == "toggle" and player in cons.game.roles[group]):
+            cons.game.remove_wizard_role(player, group)
+            cons.write("Removed %s from group %s" % (player, group))
+        else:
+            cons.write("Error: couldn't apply action %s to player %s and group %s!" % (action, player, group))
+        return True        
+        
+            
+        
+    #
+    # Non-wizard player actions:
+    # 
+    def inventory(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "You can't look at another player's inventory!"
+        message = "You are carrying:\n"
+        if not self.contents:
+            message += '\tnothing'
+        for i in self.contents:
+            if i == self.weapon_wielding or i == self.armor_worn: 
+                continue
+            message += "\t&ni%s\n" % i.id
+        if self.weapon_wielding != self.default_weapon: 
+            message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
+        if self.armor_worn != self.default_armor:
+            message += 'You are wearing &nd%s.\n' % self.armor_worn.id
+        self.perceive(message, force=True)
+        return True
+    
+    def toggle_terse(self, p, cons, oDO, oIDO):
+        if cons.user != self:
+            return "I don't quite get what you mean."
+        try: 
+            if p.words[1] == "on": 
+                self.terse = True
+            elif p.words[1] == "off": 
+                self.terse = False
+            else: 
+                return """Usage: 'terse [on/off]'
+                Use long descriptions (off) or short descriptions (on) when entering a place.
+                With no specifier, 'terse' toggles between on and off."""
+        except IndexError:
+            self.terse = not self.terse
+        cons.write("Terse mode %s. %s" % ("on" if self.terse else "off",
+            "Short descriptions will be used when entering a place; type 'look' for full description" if self.terse else
+            "Full descriptions will be used entering a place."))
+        # TODO: a mode that prints long description only when first entering a room
+        return True
+  
     def say(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you are trying to say."
@@ -688,7 +831,11 @@ class Player(Creature):
         self.perceive("You introduce yourself to all.")
         for obj in self.location.contents:
             if isinstance(obj, Creature) and obj != self:
-                obj.introduced.append(self.id)
+                try:
+                    obj.introduced.add(self.id)
+                except AttributeError: # XXX fix set save/restore code instead of this hack
+                    obj.introduced = set(obj.introduced)
+                    obj.introduced.add(self.id)
         return True
 
     def engage(self, p, cons, oDO, oIDO):
@@ -712,13 +859,17 @@ class Player(Creature):
         return True
 
     actions = dict(Creature.actions)  # make a copy
-    actions['inventory'] =  Action(inventory, False, True)
-    actions['terse'] =      Action(toggle_terse, False, True)
+    # Wizard-specific actions
     actions['execute'] =    Action(execute, True, True)
     actions['fetch'] =      Action(fetch, True, True)
     actions['clone'] =      Action(clone, True, True)
+    actions['debug'] =      Action(debug, True, True)
     actions['apparate'] =   Action(apparate, True, True)
-    actions['reload'] =     Action(reload, True, True)
+    actions['reload'] =     Action(reload_room, True, True)
+    actions['groups'] =      Action(groups, True, True)
+    # player actions
+    actions['inventory'] =  Action(inventory, False, True)
+    actions['terse'] =      Action(toggle_terse, False, True)
     actions['say'] =        Action(say, True, True)
     actions['shout'] =      Action(say, True, True)
     actions['mutter'] =     Action(say, True, True)

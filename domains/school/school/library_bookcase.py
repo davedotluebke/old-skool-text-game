@@ -1,6 +1,5 @@
 import gametools
 import random
-from debug import dbg
 from container import Container
 from action import Action
 from thing import Thing
