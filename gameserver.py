@@ -51,8 +51,10 @@ class Game():
         try:
             self.port = port
         except ValueError:
+            self.log.error("ValueError trying to set game.port; defaulting to 9124")
             self.port = 9124
         except TypeError:
+            self.log.error("TypeError trying to set game.port; defaulting to 9124")
             self.port = 9124
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
@@ -584,9 +586,9 @@ class Game():
             ssl_context.load_cert_chain("certificate.pem", "private_key.pem")
             ssl_context.set_ciphers("ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:RSA-AES128-GCM-SHA256:RSA-AES256-GCM-SHA384:RSA-AES128-SHA:RSA-AES256-SHA:RSA-3DES-EDE-SHA")
             self.events.run_until_complete(
-                websockets.serve(connections_websock.ws_handler, self.server_ip, 9124, ssl=ssl_context))
+                websockets.serve(connections_websock.ws_handler, self.server_ip, self.port, ssl=ssl_context))
         else:
-            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, 9124))
+            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, self.port))
 
 
     def start_loop(self):
