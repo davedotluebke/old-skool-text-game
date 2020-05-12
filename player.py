@@ -80,7 +80,6 @@ class Player(Creature):
         self.engaged = False
         self.wizardry_skill = 0
         self.wizardry_element = None
-        self.wprivileges = False
         self.attacking = False
         self.hitpoints = 20
         self.health = 20
