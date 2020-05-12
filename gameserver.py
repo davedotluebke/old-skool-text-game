@@ -614,7 +614,7 @@ class Game():
                 traceback.print_exc()
                 time.sleep(4*60)
 
-        print("Listening on %s port 9124..." % self.server_ip)
+        print("Listening on %s port %d..." % (self.server_ip, self.port))
         self.events.call_later(1,self.beat)
         self.events.run_forever()
 
