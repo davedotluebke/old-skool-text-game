@@ -1,6 +1,5 @@
 import gametools
 
-from debug import dbg
 from thing import Thing
 from scenery import Scenery
 from action import Action

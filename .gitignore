@@ -1,9 +1,10 @@
 .DS_Store
 *.pyc
 test_log.txt
+game_log.txt
 *.OAD
 *.OADplayer
 !testplayer.OADplayer
 *.sec
 *.pem
-settings.json
+.vscode/settings.json

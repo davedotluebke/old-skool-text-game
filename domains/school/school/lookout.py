@@ -20,10 +20,11 @@ def load():
     thick_forest.add_adjectives('thick')
     thick_forest.move_to(lookout, True)
 
-    house = scenery.Scenery('house', 'little house', 
-        'This small house sits near a clearing in the forest. It seems to be in a slight state of disrepair.')
-    house.add_adjectives('little', 'small')
-    house.move_to(lookout, True)
+    little_house = scenery.Scenery('house', 'little house',
+        'This is a little house near the edge of the school grounds '
+        'It seems to be somewhat in a state of disrepair.', unlisted=True)
+    little_house.add_adjectives('little', 'small')
+    little_house.move_to(lookout, True)
 
     garden = scenery.Scenery('garden', 'school garden',
         'This school garden appears to have a large variety of plants growing in it. '

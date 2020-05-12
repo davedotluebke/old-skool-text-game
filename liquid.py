@@ -1,7 +1,6 @@
 import gametools
 
 from thing import Thing
-from debug import dbg
 from action import Action
 
 from scenery import Scenery
@@ -34,23 +33,23 @@ class Liquid(Scenery):
         if sPrep == "out":
             if (oDO, oIDO) == (self, None) or (oDO, oIDO) == (None, self):
                 # e.g. "pour out potion" or "pour potion out"
-                cons.write("You pour out the %s on the ground." % self)
+                cons.write("You pour out the %s on the ground." % self.name())
                 cons.user.emit("&nD%s pours something on the ground." % cons.user.id)
                 self.destroy()
                 # TODO: actually delete the object
                 return True
         if oDO == self and sPrep in ("in", 'into') and isinstance(oIDO, Container) and oIDO.liquid:
             if loc.extract(self) == True:
-                cons.write("You can't get the %s out of the %s!" % (self, loc))
+                cons.write("You can't get the %s out of the %s!" % (self.name(), loc.name()))
                 return True
             if oIDO.insert(self):
-                cons.write("You can't get the %s into the %s!" % (self, loc))
+                cons.write("You can't get the %s into the %s!" % (self.name(), loc.name()))
                 loc.insert(self)  # put this object back into original Container
                 return True
-            cons.user.perceive('You pour the %s from the %s into the %s.' % (self, loc, oIDO))
+            cons.user.perceive('You pour the %s from the %s into the %s.' % (self.name(), loc.name(), oIDO.name()))
             return True
         else:
-            return "You can't pour the %s into the %s!" % (self, oIDO)
+            return "You can't pour the %s into the %s!" % (self.name(), oIDO.name())
     
     def drink(self, p, cons, oDO, oIDO):
         if self != oDO: 

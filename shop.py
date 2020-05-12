@@ -1,7 +1,6 @@
 from thing import Thing
 from room import Room
 from creature import NPC
-from debug import dbg
 from action import Action
 from money import Money
 from money import get_change
@@ -54,7 +53,7 @@ class Shopkeeper(NPC):
             try:
                 i = self.inventory.index(x) #TODO: Handle pluralities inside the shop's inventory
             except ValueError:
-                dbg.debug("Error! Shop %s doesn't contain item %s!" % (self, x))
+                self.log.error("Error! Shop %s doesn't contain item %s!" % (self, x))
                 continue
             items.append(self.inventory[i])
             del self.inventory[i]

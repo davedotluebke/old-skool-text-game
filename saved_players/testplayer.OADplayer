@@ -5,18 +5,18 @@
         "adj1": "happy",
         "adj2": "green-eyed",
         "adjectives": [
-            "female",
             "happy",
-            "green-eyed"
+            "green-eyed",
+            "female"
         ],
-        "armor_worn": "skin188-saveplayer398670",
+        "armor_worn": "skin188-saveplayer819637",
         "contents": [
-            "scroll018-saveplayer398670"
+            "scroll018-saveplayer819637"
         ],
-        "default_armor": "skin188-saveplayer398670",
-        "default_weapon": "bare hands8441-saveplayer398670",
+        "default_armor": "skin188-saveplayer819637",
+        "default_weapon": "bare_hands8441-saveplayer819637",
         "gender": "female",
-        "id": "testplayer10-saveplayer398670",
+        "id": "testplayer10-saveplayer819637",
         "location": "domains.school.forest.waterfall",
         "names": [
             "testplayer",
@@ -24,6 +24,7 @@
         ],
         "password": "{\"F\":[1779033703,-1150833019,1013904242,-1521486534,1359893119,-1694144372,528734635,1541459225],\"A\":[1634952294],\"l\":32}",
         "path": "player",
+        "prev_location_id": "domains.school.forest.waterfall",
         "proper_name": "Testplayer",
         "saved_cons_attributes": [
             {
@@ -48,22 +49,22 @@
         "versions": {
             "container": 1,
             "creature": 1,
-            "player": 2,
+            "player": 3,
             "thing": 3
         },
-        "weapon_wielding": "bare hands8441-saveplayer398670",
+        "weapon_wielding": "bare_hands8441-saveplayer819637",
         "wprivileges": true
     },
     {
-        "id": "scroll018-saveplayer398670",
-        "location": "testplayer10-saveplayer398670",
+        "id": "scroll018-saveplayer819637",
+        "location": "testplayer10-saveplayer819637",
         "path": "domains.school.scroll",
         "versions": {
             "thing": 3
         }
     },
     {
-        "id": "bare hands8441-saveplayer398670",
+        "id": "bare_hands8441-saveplayer819637",
         "path": "default_weapon",
         "versions": {
             "thing": 3,
@@ -71,7 +72,7 @@
         }
     },
     {
-        "id": "skin188-saveplayer398670",
+        "id": "skin188-saveplayer819637",
         "path": "default_armor",
         "versions": {
             "armor": 1,

@@ -44,12 +44,15 @@
         input:focus {
             outline-width: 0;
         }
-        div {
+        div, code {
             font-family:'Monaco','Consolas',monospace;
             font-size:15px;
         }
         b {
             color: #0421f5
+        }
+        code {
+            white-space: pre-wrap;
         }
         #box_caret_el {
             display: none;
@@ -117,6 +120,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
         <script>
             var converter = new showdown.Converter({simpleLineBreaks: true});
+            var editorWindow = undefined;
             var cmd_history = [''];
             var current_cmd = 0;
             var state = 'MAKE_CONNECTION';
@@ -218,6 +222,29 @@
                 }
             }
 
+            function openEditorWindow(file_contents, filename) {
+                if (editorWindow !== undefined) {
+                    editorWindow.saveAndClose();
+                }
+                editorWindow = window.open("code_editor.html", "_blank", 'width=666px, height=438px', false);
+                editorWindow.onload = function(e) {
+                    editorWindow.codeEditor.getDoc().setValue(file_contents);
+                    editorWindow.document.getElementById("filename").value = filename;
+                }
+                editorWindow.onbeforeunload = function(e) {
+                    if (editorWindow == undefined) {
+                        return;
+                    }
+                    if ((editorWindow.codeEditor.getValue() == "") || editorWindow.document.getElementById("saveCloseConfirm").value != "true"){
+                        editorWindow = undefined;
+                        e.returnValue = '';
+                        return null;
+                    }
+                    encryptAndSend(editorWindow.codeEditor.getValue(), 'file', editorWindow.document.getElementById("filename").value);
+                    editorWindow = undefined;
+                }
+            }
+
             var mode = Number(getCookie('mode'));
             if (mode != mode || mode == undefined || mode == null) {
                 mode = 0;
@@ -291,7 +318,7 @@
                     var msg = event.data;
                     msg = JSON.parse(msg);
                     if (msg['type'] == 'file') {
-                        receiveFile(msg['data']);
+                        receiveFile(msg['data'], msg['behaviour'], msg['filename']);
                         return;
                     }
                     message.innerHTML = converter.makeHtml(msg['data']);
@@ -313,7 +340,14 @@
                 messages.appendChild(message);
                 window.scrollTo(0,document.body.scrollHeight);
             }
-            function receiveFile(file_contents) {
+            function receiveFile(file_contents, behaviour, filename) {
+                if (filename === undefined) {
+                    filename = 'gamefile.py'
+                }
+                if (behaviour) {
+                    openEditorWindow(file_contents, filename);
+                    return;
+                }
                 var binaryData = [];
                 binaryData.push(file_contents);
                 const url = window.URL.createObjectURL(new Blob(binaryData, {type: "application/zip"}));
@@ -321,7 +355,7 @@
                 a.style.display = 'none';
                 a.href = url;
                 // TODO: the filename you want
-                a.download = 'gamefile.py';
+                a.download = filename;
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -454,15 +488,13 @@
                     var reader = new FileReader();
                     reader.fileName = file.name;
                     var rawData = new ArrayBuffer();           
-                    console.log(file.name);
                     reader.loadend = function() {
                     }
                     reader.onload = function(e) {
-                        rawData = e.target.result;
-                        encryptAndSend(rawData, "file", e.target.fileName);
-                        console.log("the File has been transferred.")
+                        fileText = e.target.result;
+                        encryptAndSend(fileText, "file", e.target.fileName);
                     }
-                    reader.readAsDataURL(file);
+                    reader.readAsText(file);
                 }
             }
         </script>
