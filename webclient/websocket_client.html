@@ -354,7 +354,7 @@
                 ws.onopen = function (event) {
                     receiveMessage("Successfully connected to " + ip_address);
                     if (port == "9124") {
-                        receiveMessage("<b style='text-color:red'>Warning! This is an insecure connection! Do not send any passwords or credit cards or it may be stolen by attackers!</b>")
+                        receiveMessage("<b style='color:red'>Warning! This is an insecure connection! Do not send any passwords or credit cards or it may be stolen by attackers!</b>")
                     }
                     state = 'PLAY_GAME';
                     var ip_address_already_exists = false;
@@ -402,6 +402,10 @@
                         window.close();
                     }
                     else {
+                        if (user_input.split(":").length == 2) {
+                            openWebSocket(user_input.split(":")[0], undefined, user_input.split(":")[1]);
+                            return;
+                        }
                         openWebSocket(user_input);
                         //setTimeout(receiveMessage,1,"I didn't understand your input.");
                     }
