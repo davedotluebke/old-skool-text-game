@@ -10,16 +10,16 @@ class Stone(Thing):
         super().__init__(default_name, path)
         self.mana = mana
         self.max_mana = max_mana
+        self.add_names('stone')
     #
     # SET/GET METHODS (methods to set or query attributes)
     #
-    def get_mana(self, attr='both'):
-        if attr == 'mana':
-            return self.mana
-        elif attr in ['max', 'max_mana']:
-            return self.max_mana
-        else:
-            return self.mana, self.max_mana
+    def get_mana(self):
+        return self.mana
+
+    def get_max_mana(self):
+        return self.max_mana
+
     def set_mana(self, mana):
         try:
             intmana = int(mana)
@@ -31,6 +31,7 @@ class Stone(Thing):
                 self.log.error('Mana must be non-negative')
         except TypeError:
             self.log.error('Mana must be a non-negative integer')
+
     def set_max_mana(self, mana):
         try:
             intmana = int(mana)
