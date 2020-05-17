@@ -248,7 +248,7 @@ class Console:
                         self.write('You do not have permission to view this directory.')
                     return True
 
-            if self.game.is_wizard(self.user.name()) and (cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp'] or self.try_all_console_commands):
+            if self.game.is_wizard(self.user.name()) and ((cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']) or self.try_all_console_commands):
                 try:
                     if cmd == 'ls' and  platform.system == "Linux":
                             self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]

@@ -265,7 +265,35 @@ class Player(Creature):
             pass
         del saveable['cons']
         return saveable
+    def get_mana(self):
+        return self.mana
 
+    def get_max_mana(self):
+        return self.max_mana
+
+    def set_mana(self, mana):
+        try:
+            intmana = int(mana)
+            if intmana != mana:
+                self.log.warning('Converted mana to integer')
+            if mana >= 0:
+                self.mana = intmana
+            else:
+                self.log.error('Mana must be non-negative')
+        except TypeError:
+            self.log.error('Mana must be a non-negative integer')
+
+    def set_max_mana(self, mana):
+        try:
+            intmana = int(mana)
+            if intmana != mana:
+                self.log.warning('Converted max_mana to integer')
+            if mana >= 0:
+                self.mana = intmana
+            else:
+                self.log.error('Mana must be non-negative')
+        except TypeError:
+            self.log.error('Mana must be a non-negative integer')
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
