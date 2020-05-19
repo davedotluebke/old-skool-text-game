@@ -355,7 +355,7 @@ class Game():
             Thing.ID_dict = backup_ID_dict # ESSENTIAL THAT WE DO THIS!
         except TypeError:
             player.cons.write("Error writing to file %s" % filename)
-            self.log.exception('A TypeError occured while trying to save player %s. Printing below:' % player)
+            self.log.exception('A TypeError occurred while trying to save player %s. Printing below:' % player)
             Thing.ID_dict = backup_ID_dict
         # restore location & contents etc to obj references:
         for obj in l:
@@ -363,7 +363,7 @@ class Game():
                 obj._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(obj)
-                self.log.exception('An error occured while loading %s! Printing below:')
+                self.log.exception('An error occurred while loading %s! Printing below:')
 
         # restore original IDs by removing tag
         for obj in l:
@@ -451,7 +451,7 @@ class Game():
                 o._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(o)
-                self.log.exception('An error occured while loading %s! Printing below:')
+                self.log.exception('An error occurred while loading %s! Printing below:')
         # Now de-uniquify all IDs, replace object.id and ID_dict{} entry
         for o in l:
             try:
@@ -460,7 +460,7 @@ class Game():
                 o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
             except Exception:
                 broken_objs.append(o)
-                self.log.exception('An error occured while loading %s! Printing below:')
+                self.log.exception('An error occurred while loading %s! Printing below:')
 
         # Make sure that broken objects are removed from their container's contents list
         reference_check = [newplayer]
@@ -546,7 +546,7 @@ class Game():
         try:
             func(*params)
         except:
-            self.log.exception("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
+            self.log.exception("An error occurred while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
         profile_et = time.time()
         profile_t = profile_et - profile_st
         funcname = str(func)

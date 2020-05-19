@@ -14,7 +14,7 @@ class Thing(object):
     # SPECIAL METHODS (i.e __method__() format)
     #
     def __init__(self, default_name, path, pref_id=None, plural_name=None):
-        self.versions = {gametools.findGamePath(__file__): 4}
+        self.versions = {gametools.findGamePath(__file__): 6}
         self._add_ID(default_name if not pref_id else pref_id)
         self.path = gametools.findGamePath(path) if path else None
         self.log = gametools.get_game_logger(self)
@@ -289,9 +289,6 @@ class Thing(object):
                or attr == 'versions':
                 saveable[attr] = state[attr]
         default_obj.destroy()
-        if 'adjectives' in saveable and isinstance(saveable['adjectives'], set):
-            saveable['adjectives'] = list(saveable['adjectives'])
-        # XXX temporary code to prevent all save calls from failing
         for i in saveable:
             if isinstance(saveable[i], set):
                 saveable["__set__" + i] = list(saveable[i])
@@ -381,9 +378,9 @@ class Thing(object):
             self.versions[gametools.findGamePath(__file__)] = 3
             del self.__dict__['version_number']
         
-        if self.versions[gametools.findGamePath(__file__)] <= 3:
+        if self.versions[gametools.findGamePath(__file__)] <= 5:
             self.adjectives = set(self.adjectives)
-            self.versions[gametools.findGamePath(__file__)] = 4
+            self.versions[gametools.findGamePath(__file__)] = 6
 
     def delete(self):
         if self.contents:

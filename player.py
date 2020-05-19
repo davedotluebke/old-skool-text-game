@@ -648,7 +648,7 @@ class Player(Creature):
                     newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
         except Exception:
             self.log.error('Error reloading object %s!' % obj)
-            cons.user.perceive('An error occured while reloading %s.' % obj)
+            cons.user.perceive('An error occurred while reloading %s.' % obj)
             for c in alive:
                 c.move_to(obj)
             return True
