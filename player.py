@@ -408,7 +408,9 @@ class Player(Creature):
                     if tag_type in ('n', 'N'):  # some tag types use 2 letters
                         tag_type = tag[0:2]
                         idstr = tag[2:]
-                    idstr = idstr.rstrip('.,!?;:\'"')  # remove any punctuation
+                    idstr_prepunc = idstr.rstrip('.,!?;:\'"')  # remove & save any punctuation
+                    idstr_punc = idstr[len(idstr_prepunc):]
+                    idstr = idstr_prepunc
                     O = Thing.ID_dict[idstr]
                 except IndexError:
                     subject = "<error: can't parse tag &%s>" % tag
@@ -440,7 +442,7 @@ class Player(Creature):
                 if tag_type[0] == 'V':
                     subject = O.possessive().capitalize()
                 
-                m2 = subject + m2.partition(tag)[2]
+                m2 = subject + idstr_punc + m2.partition(tag)[2]
                 message = m1 + m2
 
             super().perceive(message)
