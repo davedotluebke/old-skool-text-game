@@ -122,8 +122,10 @@ game_log_handler.setLevel(logging.WARNING)
 game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 game_log_handler.setFormatter(game_log_formatter)
 
-def get_game_logger(obj):
-    """Returns the logger associated with object `obj`, creating if needed."""
+def get_game_logger(obj, printing=False):
+    """Returns the logger associated with object `obj`, creating if needed. All
+       objects log messages to the default logfile via game_log_handler; if 
+       <printing> is set to True, messages are also printed to stderr."""
     if isinstance(obj, str):
         logname = obj
     else:
@@ -135,6 +137,8 @@ def get_game_logger(obj):
     logger = logging.getLogger(logname)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(game_log_handler)
+    if printing:
+        logger.addHandler(logging.StreamHandler())
     return logger
 
 #

@@ -14,7 +14,8 @@ argparser = argparse.ArgumentParser(description="Start the game server")
 argparser.add_argument("-s", "--server", help="IP address at which the server will listen for clients")
 argparser.add_argument("-m", "--mode", help="Whether or not to use https, ssl, or encryption")
 argparser.add_argument("-d", "--duration", help="How long to run before shutting down")
-argparser.add_argument("-p", "--port", help="The port which to serve the game on. Defaults to 9124.")
+argparser.add_argument("-p", "--port", help="The port which to serve the game on; defaults to 9124")
+argparser.add_argument("-r", "--retry", help="The number of times to retry (waiting 30s first) if the port is busy; defaults to 5")
 args = argparser.parse_args()
 if args.server:
     try:  # validate the ip address passed as an argument, if any
@@ -26,26 +27,17 @@ if args.server:
 else:
     ip = None
 
-if args.mode:
-    mode = args.mode
-else:
-    mode = 'nocrypt'
+mode = args.mode if args.mode else 'nocrypt'
+duration = args.duration if args.duration else 24*60*60 - 1  # One minute less than a single day
+port = args.port if args.port else 9124
+retry = args.retry if args.retry else 5
 
-if args.duration:
-    duration = args.duration
-else:
-    duration = 24*60*60 - 1  # One minute less than a single day
-
-if args.port:
-    port = args.port
-else:
-    port = 9124
 ## 
 ## "game" is a special global variable, an object of class Game that holds
 ## the actual game state. 
 ## 
 
-game = Game(ip, mode, duration, port)
+game = Game(ip, mode, duration, port, retry)
 
 Thing.game = game
 

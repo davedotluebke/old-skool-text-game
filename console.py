@@ -295,7 +295,7 @@ class Console:
                 self.game.save_player(gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]), self.user)
                 self.game.create_backups(gametools.realDir(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]))
                 self.write("--#quit")
-                if len(self.words) > 1 and self.words[1] == 'game' and self.game.is_admin(self.user.name()):
+                if len(self.words) > 1 and self.words[1] == 'game' and self.game.is_wizard(self.user.name()):
                     self.game.shutdown_console = self
                     self.game.keep_going = False
                 return "__quit__"
