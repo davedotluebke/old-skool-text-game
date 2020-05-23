@@ -10,7 +10,7 @@ class LibraryRoom(room.Room):
     def go_to(self, p, cons, oDO, oIDO):
         for i in list(cons.user.contents):
             if isinstance(i, LibraryBook):
-                cons.user.perceive('&nD%s disappears with a flash and reappears on the bookshelf.' % i.id)
+                cons.user.perceive('&nD%s disappears with a flash and reappears on the bookshelf!' % i.id)
                 i.move_to(self.bookcase)
         return super().go_to(p, cons, oDO, oIDO)
 
