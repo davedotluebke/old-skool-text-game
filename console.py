@@ -332,7 +332,7 @@ class Console:
             self.filename_input = ""
             self.upload_confirm = True
             try:
-                r = requests.post("http://127.0.0.1:6553", data={"filepath":self.uploading_filename, "commitmsg":"%s uploaded file %s" % (self.user.name(), self.uploading_filename)})
+                r = requests.post("http://127.0.0.1:6553", data={"filepath":gametools.realDir(self.uploading_filename, player=self.user.name()), "commitmsg":"%s uploaded file %s" % (self.user.name(), self.uploading_filename)})
                 self.write(r.text)
             except:
                 self.user.log.warning("Gitbot failed to accept POST request")
@@ -448,4 +448,3 @@ class Console:
         self.final_command = self._replace_aliases()
         return self.final_command
 
-# This is the end of file
