@@ -129,6 +129,7 @@
             var input_prompt_style_modes = ['', 'background-color: #000000; color: #00ff00; border:none; cursor:none','animation-name: crazymodeinput; animation-duration: 4s; animation-iteration-count: infinite', 'background-color: #00ffd0; cursor: none']
             var allow_right_clicks = [true, false, true, false];
             var box_caret = [false, true, false, false];
+            var editor_themes = ['solarized light', 'solarized dark', 'the-matrix', 'the-matrix']
             var b_style_modes = ['', 'color:#00ff00','','color: #d9c407'];
             var left_offset = 0;
             var caret_on = true;
@@ -222,12 +223,17 @@
                 }
             }
 
-            function openEditorWindow(file_contents, filename) {
+            function openEditorWindow(file_contents, filename, behaviour) {
                 if (editorWindow !== undefined) {
                     editorWindow.saveAndClose();
                 }
                 editorWindow = window.open("code_editor.html", "_blank", 'width=666px, height=438px', false);
                 editorWindow.onload = function(e) {
+                    if (behaviour == "vim") {
+                        editorWindow.codeMirrorSettingsObj["keyMap"] = "vim";
+                    }
+                    editorWindow.codeMirrorSettingsObj["theme"] = editor_themes[mode]
+                    editorWindow.displayEditor();
                     editorWindow.codeEditor.getDoc().setValue(file_contents);
                     editorWindow.document.getElementById("filename").value = filename;
                 }
@@ -345,7 +351,7 @@
                     filename = 'gamefile.py'
                 }
                 if (behaviour) {
-                    openEditorWindow(file_contents, filename);
+                    openEditorWindow(file_contents, filename, behaviour);
                     return;
                 }
                 var binaryData = [];
