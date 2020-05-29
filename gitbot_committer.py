@@ -1,6 +1,10 @@
 import http.server, re, os, subprocess, urllib.parse, time
 
 # This file is run by the gitbot on the server (seperately) to listen for requests specifying git commits that should be done.
+def check_if_dir_forbidden(dir, adminStatus):
+    if dir.startswith(os.getcwd()) or dir.ensdwith(os.getcwd()):
+        return False
+    
 
 start_time = time.time()
 class PostHandler(http.server.BaseHTTPRequestHandler):

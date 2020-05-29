@@ -96,7 +96,7 @@ def deconstructObjectPath(path_str):
 
 def check_player_exists(p):
     """Return whether a given player exists, i.e. has a save file."""
-    filename = gametools.realDir(PLAYER_DIR, p) + '.OADplayer'
+    filename = realDir(PLAYER_DIR, p) + '.OADplayer'
     try:
         f = open(filename, 'r+b')
         f.close()  # success, player exists, so close file for now
@@ -125,8 +125,10 @@ game_log_handler.setLevel(logging.WARNING)
 game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 game_log_handler.setFormatter(game_log_formatter)
 
-def get_game_logger(obj):
-    # TODO: Eventually this will get more elaborate, see issue #137 
+def get_game_logger(obj, printing=False):
+    """Returns the logger associated with object `obj`, creating if needed. All
+       objects log messages to the default logfile via game_log_handler; if 
+       <printing> is set to True, messages are also printed to stderr."""
     if isinstance(obj, str):
         logname = obj
     else:
@@ -138,6 +140,8 @@ def get_game_logger(obj):
     logger = logging.getLogger(logname)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(game_log_handler)
+    if printing:
+        logger.addHandler(logging.StreamHandler())
     return logger
 
 #
@@ -188,101 +192,3 @@ def load_room(modpath, report_import_error=True):
     if room == None:
         get_game_logger("_gametools").error("Error loading from room module %s:load() returned None" % modpath)
     return room
-    
-    return path, None
-
-def check_player_exists(p):
-    """Return whether a given player exists, i.e. has a save file."""
-    filename = gametools.realDir(PLAYER_DIR, p) + '.OADplayer'
-    try:
-        f = open(filename, 'r+b')
-        f.close()  # success, player exists, so close file for now
-        return True
-    except FileNotFoundError: 
-        return False
-        
-def walklevel(some_dir, level=1):
-    some_dir = some_dir.rstrip(os.path.sep)
-    assert os.path.isdir(some_dir)
-    num_sep = some_dir.count(os.path.sep)
-    for root, dirs, files in os.walk(some_dir):
-        yield root, dirs, files
-        num_sep_this = root.count(os.path.sep)
-        if num_sep + level <= num_sep_this:
-            del dirs[:]
-
-def request_all_inputs(player, dest):
-    Thing.ID_dict[player].cons.request_input(dest)
-
-#
-# LOGGING 
-#
-game_log_handler = logging.FileHandler(realDir(GAME_LOG))
-game_log_handler.setLevel(logging.WARNING)
-game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-game_log_handler.setFormatter(game_log_formatter)
-
-def get_game_logger(obj):
-    # TODO: Eventually this will get more elaborate, see issue #137 
-    if isinstance(obj, str):
-        logname = obj
-    else:
-        if obj.path:
-            # name the log for this object by its path + id, unless id already == path (Rooms)
-            logname = obj.path + "" if obj.id==obj.path else ":"+obj.id
-        else:
-            logname = obj.id
-    logger = logging.getLogger(logname)
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(game_log_handler)
-    return logger
-
-#
-# OBJECT CREATION/LOADING FUNCTIONS
-#
-def clone(obj_module, params=None):
-    '''Load specified module, call its clone() method, and return the resulting object.
-    The object's module should be specified in python package format relative to the
-    root of the game source tree, e.g. "domains.school.sword" refers to the python module
-        ${gameroot}/domains/school/sword.py.'''
-    try: 
-        mod = importlib.import_module(obj_module)
-        if params:
-            obj = mod.clone(params)
-        else:
-            obj = mod.clone()
-        obj.mod = mod
-    except ImportError:
-        get_game_logger("_gametools").error("Error importing module %s" % obj_module)
-        return None
-    except AttributeError:
-        get_game_logger("_gametools").error("Error cloning from module %s: no clone() method" % obj_module)
-        return None
-    if obj == None:
-        get_game_logger("_gametools").error("Error cloning from module %s: clone() return None" % obj_module)
-    return obj
-
-def load_room(modpath, report_import_error=True):
-    """Attempt to load a room from its modpath (e.g. 'domains.school.testroom'). 
-    If an ImportEerror occurs, will attempt to create a room if given paramaters.
-    Returns a reference to the room, or None if the given modpath could not be loaded."""
-    try: 
-        roomString, params = deconstructObjectPath(modpath)
-        mod = importlib.import_module(roomString)
-        if params:
-            room = mod.load(params)
-        else:
-            room = mod.load()
-        room.mod = mod # store the module to allow for reloading later
-        room.params = params
-    except ImportError:
-        if report_import_error:
-            get_game_logger("_gametools").error("Error importing room module %s" % modpath)
-        return None
-    except AttributeError:
-        get_game_logger("_gametools").error("Error loading from room module %s: no load() method" % modpath)
-        return None
-    if room == None:
-        get_game_logger("_gametools").error("Error loading from room module %s:load() returned None" % modpath)
-    return room
-    

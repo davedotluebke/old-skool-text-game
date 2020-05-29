@@ -4,6 +4,7 @@ import importlib
 import connections_websock
 import os
 import magic
+import logging
 
 import gametools
 
@@ -11,6 +12,7 @@ from thing import Thing
 from room import Room
 from creature import Creature
 from action import Action
+from conshandler import ConsHandler
 
 
 def clone(params=None):
@@ -33,8 +35,24 @@ emotes = {'bow':    ('You take a sweeping bow.',
                     '&nD%s giggles.', 
                     'You giggle at &nd%s.', 
                     '&nD%s giggles at &nd%s.',
-                    '&nD%s giggles at you.')
+                    '&nD%s giggles at you.'),
+          'smile': ('You smile.', 
+                    '&nD%s smiles.', 
+                    'You smile at &nd%s.', 
+                    '&nD%s smiles at &nd%s.',
+                    '&nD%s smiles at you.'),
+          'sneer': ('You sneer.', 
+                    '&nD%s sneers.', 
+                    'You sneer at &nd%s.', 
+                    '&nD%s sneers at &nd%s.',
+                    '&nD%s sneers at you.'),
+          'pout': ('You pout.', 
+                    '&nD%s pouts.', 
+                    'You pout at &nd%s.', 
+                    '&nD%s pouts at &nd%s.',
+                    '&nD%s pouts at you.')
          }
+
 class Player(Creature):
     #
     # SPECIAL METHODS (i.e __method__() format)
@@ -46,6 +64,7 @@ class Player(Creature):
         self.login_state = None
         self.password = None
         self.start_loc_id = None
+        self.handlers = {}  # list of debug handlers for wizards
         self.set_description("formless soul", "A formless player without a name")
         self.set_weight(175/2.2)
         self.set_volume(66)
@@ -62,7 +81,6 @@ class Player(Creature):
         self.engaged = False
         self.wizardry_skill = 0
         self.wizardry_element = None
-        self.wprivileges = False
         self.attacking = False
         self.hitpoints = 20
         self.health = 20
@@ -433,7 +451,9 @@ class Player(Creature):
                     if tag_type in ('n', 'N'):  # some tag types use 2 letters
                         tag_type = tag[0:2]
                         idstr = tag[2:]
-                    idstr = idstr.rstrip('.,!?;:\'"')  # remove any punctuation
+                    idstr_prepunc = idstr.rstrip('.,!?;:\'"')  # remove & save any punctuation
+                    idstr_punc = idstr[len(idstr_prepunc):]
+                    idstr = idstr_prepunc
                     O = Thing.ID_dict[idstr]
                 except IndexError:
                     subject = "<error: can't parse tag &%s>" % tag
@@ -465,7 +485,7 @@ class Player(Creature):
                 if tag_type[0] == 'V':
                     subject = O.possessive().capitalize()
                 
-                m2 = subject + m2.partition(tag)[2]
+                m2 = subject + idstr_punc + m2.partition(tag)[2]
                 message = m1 + m2
 
             super().perceive(message)
@@ -488,7 +508,7 @@ class Player(Creature):
     def execute(self, p, cons, oDO, oIDO):
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         cmd = ' '.join(p.words[1:])
         cons.write("Executing command: `'%s'`" % cmd)
@@ -503,7 +523,7 @@ class Player(Creature):
         '''Find an in-game object by ID and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'fetch <id>', where id is an entry in `Thing.ID_dict[]`")
@@ -528,7 +548,7 @@ class Player(Creature):
         '''Clone a new copy of an object specified by ID or by module path, and bring it to the player.'''
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("```"
@@ -570,7 +590,6 @@ class Player(Creature):
         """
         DEFAULT_DEBUG_DURATION = 60
         DEFAULT_DEBUG_LEVEL = 'debug'
-
         if cons.user != self:
             self.log.error("`player.debug()` action called but cons.user is %s instead of self!" % cons.user)
             return "I don't quite get what you mean."
@@ -584,6 +603,7 @@ class Player(Creature):
         levels = {'critical', 'error', 'warning', 'info', 'debug'}
         dbg_level = [d for d in p.words[1:] if d in levels]
         dbg_level = dbg_level[0] if dbg_level else DEFAULT_DEBUG_LEVEL
+        dbg_level = dbg_level.upper()
         w = p.words[:1] + [x for x in p.words[1:] if not x.isnumeric() and x not in levels]
         if oDO:
             obj = oDO # player specified an object that the parser understands
@@ -610,8 +630,32 @@ class Player(Creature):
                 if len(oDO_list) > 1:
                     return "ERROR: Multiple objects specified to debug!\n\n" + usage
                 obj = oDO_list[0]
-        self.perceive(f"Debug called! ```Obj = {obj.id}, duration = {sec}s, level = {dbg_level}```")
+        # Check if this player already has a handler for this object
+        if obj.id in self.handlers:
+            self.remove_dbg_handler(obj)
+            return True
+        self.perceive(f"Now debugging object `{obj.id}` at level `{dbg_level}` for the next {sec} seconds!")
+        dbg_handler = ConsHandler(cons, dbg_level)
+        obj.log.addHandler(dbg_handler)
+        self.handlers[obj.id] = dbg_handler
+        # Add an event to remove & destroy dbg_handler in <duration> seconds
+        self.cons.game.schedule_event(int(sec), self.remove_dbg_handler, obj)
         return True
+
+    def remove_dbg_handler(self, obj):
+        try: 
+            handler = self.handlers[obj.id]
+        except AttributeError or KeyError:
+            self.log.error(f"remove_debug_handler() called for `{obj}` but no handler stored for player `{self.id}`!")
+            return
+        try: 
+            obj.log.removeHandler(handler)
+            handler.close()
+            del self.handlers[obj.id]
+            self.perceive(f"No longer debugging object `{obj}`.")
+        except AttributeError:
+            self.log.error(f"AttributeError removing debug handler {handler} from object {obj}")
+
 
     def reload_room(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.
@@ -619,7 +663,7 @@ class Player(Creature):
         module, calls `load()` or `clone()` in the new module, then finally moves any creatures including
         players back to the new room.'''
         obj = None
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if isinstance(obj, Creature):
             return "You cannot reload players or NPCs!"
@@ -649,7 +693,7 @@ class Player(Creature):
                     newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
         except Exception:
             self.log.error('Error reloading object %s!' % obj)
-            cons.user.perceive('An error occured while reloading %s.' % obj)
+            cons.user.perceive('An error occurred while reloading %s.' % obj)
             for c in alive:
                 c.move_to(obj)
             return True
@@ -674,7 +718,7 @@ class Player(Creature):
         """Teleport the wizard to a given room, specified by id or path."""
         if cons.user != self:
             return "I don't quite get what you mean."
-        if not self.wprivileges:
+        if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
             cons.write("Usage: 'apparate <id>', where id is the entry of a Room in `Thing.ID_dict[]` or a path to its module")
@@ -698,21 +742,24 @@ class Player(Creature):
 
     def groups(self, p, cons, oDO, oIDO): 
         """Change or list player-group associations, e.g. add player to 'wizards' or 'admins' group."""
-        usage = "**Usage**: groups [add|remove] [player] [group]\n"\
+        usage = "**Usage**: groups [add|remove|create] [player] [group]\n"\
         "  Adds or removes the specified player to/from the specified group, or lists the "\
         "player-group associations for the specified player and/or group. Both player "\
-        "and group must be given if an action (add/remove) is specified.  If both "\
-        "player and group are specified but no action (add/remove), the player is added or "\
+        "and group must be given if an action (add/remove/create) is specified.  If both "\
+        "player and group are specified but no action (add/remove/create), the player is added or "\
         "removed from the group depending on whether the player already belonged to the group. "\
+        "If create is specified, it will create the group if the player does not exist. " \
         "The special player string 'me' can be used to indicate the calling user.  "
         
         if cons.user != self:
-            return "I don't quite get what you mean."    
+            return "I don't quite get what you mean."  
+        if not self.game.is_wizard(self.name()):
+            return "You cannot yet perform this magical incantation correctly."  
         words = p.words    
         if len(words) < 2:
             cons.write(usage + '\n' + cons.game.list_wizard_roles())
             return True
-        if words[1] == 'add' or words[1] == 'remove':
+        if words[1] == 'add' or words[1] == 'remove' or words[1] == 'create':
             # next arguments should be <player> <group>
             if len(words) != 4:
                 cons.write(usage)
@@ -736,10 +783,10 @@ class Player(Creature):
         if not gametools.check_player_exists(player):
             cons.write("Error: no player named %s appears to exist!" % player)
             return True
-        if not group in cons.game.roles:
+        if not group in cons.game.roles and action != "create":
             cons.write("Error: no group named %s appears to exist!" % group)
             return True
-        if action == "add" or (action == "toggle" and player not in cons.game.roles[group]): 
+        if action == "add" or action == "create" or (action == "toggle" and player not in cons.game.roles[group]): 
             cons.game.add_wizard_role(player, group)
             cons.write("Added %s to group %s" %(player, group))
         elif action == "remove" or (action == "toggle" and player in cons.game.roles[group]):
@@ -828,7 +875,11 @@ class Player(Creature):
         self.perceive("You introduce yourself to all.")
         for obj in self.location.contents:
             if isinstance(obj, Creature) and obj != self:
-                obj.introduced.append(self.id)
+                try:
+                    obj.introduced.add(self.id)
+                except AttributeError: # XXX fix set save/restore code instead of this hack
+                    obj.introduced = set(obj.introduced)
+                    obj.introduced.add(self.id)
         return True
 
     def engage(self, p, cons, oDO, oIDO):
