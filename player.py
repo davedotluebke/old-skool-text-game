@@ -267,7 +267,16 @@ class Player(Creature):
         return saveable
     def get_mana(self):
         return self.mana
-
+    
+    def calc_chance_mess_up(self, mana):
+        chanceWrong = (pow(10, 4*((mana-self.max_mana)/mana))- 1) / 100
+        if chanceWrong < 0:
+            return 0
+        elif chanceWrong > 1:
+            return 1
+        else:
+            return chanceWrong
+        
     def get_max_mana(self):
         return self.max_mana
 
