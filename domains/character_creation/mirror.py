@@ -44,10 +44,9 @@ class Mirror(thing.Thing):
     def enter(self, p, cons, oDO, oIDO):
         dest = gametools.load_room(self.dest)
         if self.dest == gametools.DEFAULT_START_LOC:
-            scroll = gametools.clone('domains.school.scroll')
-            scroll.user = cons.user
+            scroll = gametools.clone('domains.school.scroll', cons.user)
             scroll.move_to(cons.user)
-            thing.Thing.game.register_heartbeat(scroll)
+            scroll.fix_in_place("You get an intense feeling that you should keep this scroll with you.")
             cons.user.set_start_loc(dest)
 
         if cons.user.move_to(dest) == False:

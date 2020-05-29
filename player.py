@@ -98,6 +98,11 @@ class Player(Creature):
         self.game.register_heartbeat(self)
         self.versions[gametools.findGamePath(__file__)] = 2
         self.prev_location_id = None
+        self.quest_list = [ # list of quests this player knows about, followed by completion status (True or False)
+            ["Find the library", False],
+            ["Create a potion to hide thyself and use it to sneak past a terrible monster", False],
+            ["Complete a quest to find thy element", False]
+        ]
         self.tutorial_messages = {
             'domains.character_creation.species': 'Try typing "look north mirror" and then "enter north mirror".',
             'domains.character_creation.adjective1': 'Try intoning something from the plaque.',
@@ -312,6 +317,26 @@ class Player(Creature):
                 self.log.error('Mana must be non-negative')
         except TypeError:
             self.log.error('Mana must be a non-negative integer')
+    
+    def add_quest(self, quest_message):
+        """Add a quest to the player's list of quests."""
+        self.quest_list.append([quest_message, False])
+    
+    def complete_quest(self, quest_message):
+        """Complete a quest, setting its "complete" flag to True."""
+        l = [self.quest_list.index(x) for x in self.quest_list if x[0] == quest_message]
+        for i in l:
+            self.quest_list[i][1] = True
+    
+    def remove_quest(self, quest_message):
+        """Remove a quest from a player's list of quests. 
+        This is equivalent to cancelling the quest. To
+        mark a quest as complete, use the "complete quest"
+        method instead."""
+        l = [self.quest_list.index(x) for x in self.quest_list if x[0] == quest_message]
+        for i in l:
+            del self.quest_list[i]
+
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
