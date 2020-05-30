@@ -26,11 +26,17 @@ class Stone(Thing):
             if intmana != mana:
                 self.log.warning('Converted mana to integer')
             if mana >= 0:
-                self.mana = intmana
+                if intmana > self.max_mana:
+                    self.log.warning('Mana was grater than max mana.')
+                    return False
+                else:
+                    self.mana = intmana
+                    return True
             else:
                 self.log.error('Mana must be non-negative')
         except TypeError:
             self.log.error('Mana must be a non-negative integer')
+        return False
 
     def set_max_mana(self, mana):
         try:

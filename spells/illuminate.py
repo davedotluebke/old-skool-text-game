@@ -16,7 +16,7 @@ def bad_spell(parser, cons, oDO, oIDO, spell_info, stone, how_badly):
         option = random.randint(0, 2)
         if option == 0:
             #take damage
-            cons.user.take_damage(enemy=None, random.randint(0, 10))
+            cons.user.take_damage(None, random.randint(0, 10))
         elif option == 1:
             #shame them
             cons.user.perceive('You have failed drastically at this spell. It paints a sorry picture for you future endeavors.', True)

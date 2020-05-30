@@ -292,6 +292,8 @@ class Player(Creature):
         return self.mana
     
     def calc_chance_mess_up(self, mana):
+        if mana == 0:
+            return 0
         chanceWrong = (pow(10, 4*((mana-self.max_mana)/mana))- 1) / 100
         if chanceWrong < 0:
             return 0
