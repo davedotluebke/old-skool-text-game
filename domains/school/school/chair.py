@@ -1,6 +1,6 @@
 import thing
 import random
-import action
+from action import Action
 import gameserver
 
 class Chair(thing.Thing):

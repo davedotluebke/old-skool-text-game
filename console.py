@@ -180,6 +180,11 @@ class Console:
                 self._change_units(self.command)
                 return True
             
+            if cmd == 'shell':
+                self.try_all_console_commands = not self.try_all_console_commands
+                self.write(f'Toggled shell mode to {"on" if self.try_all_console_commands else "off"}')
+                return True
+            
             if cmd == 'help':
                 self.write(self.help_msg)
                 return True
@@ -229,8 +234,22 @@ class Console:
                 # allowed = False
                 # for (pop file/dirs off path)
                 if self.game.is_wizard(self.user.name()):
-                    self.upload_confirm = False
-                    self.download_file(path, edit_flag=True)
+                    allow_edits = self.game.get_edit_privileges(self.user.name(), path)
+                    if allow_edits:
+                        self.upload_confirm = False
+                        self.download_file(path, edit_flag=True)
+                    else:
+                        self.write('You do not have permission to write to this directory.')
+                    return True
+            
+            if cmd in ['vi', 'vim']:
+                if self.game.is_wizard(self.user.name()):
+                    allow_edits = self.game.get_edit_privileges(self.user.name(), path)
+                    if allow_edits:
+                        self.upload_confirm = False
+                        self.download_file(path, edit_flag="vim")
+                    else:
+                        self.write('You do not have permission to write to this directory.')
                     return True
             
             if cmd == 'cd':
@@ -248,11 +267,11 @@ class Console:
                         self.write('You do not have permission to view this directory.')
                     return True
 
-            if self.game.is_wizard(self.user.name()) and ((cmd in ['ls', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp']) or self.try_all_console_commands):
+            if self.game.is_wizard(self.user.name()) and (cmd in ['ls', 'dir', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp', 'pwd'] or self.try_all_console_commands):
                 try:
-                    if cmd == 'ls' and  platform.system == "Linux":
+                    if cmd == 'ls' and  platform.system() == "Linux":
                             self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
-                    process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=gametools.realDir(self.current_directory))
+                    process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=gametools.realDir(self.current_directory), shell=True)
                     syntax_hilite = '```python\n' if cmd == 'cat' else '```\n'
                     self.write(syntax_hilite + str(process.stdout, "utf-8") + '\n```\n')
                     self.write(str(process.stderr, "utf-8"))
@@ -291,7 +310,7 @@ class Console:
                 self.game.save_player(gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]), self.user)
                 self.game.create_backups(gametools.realDir(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]))
                 self.write("--#quit")
-                if len(self.words) > 1 and self.words[1] == 'game' and self.game.is_admin(self.user.name()):
+                if len(self.words) > 1 and self.words[1] == 'game' and self.game.is_wizard(self.user.name()):
                     self.game.shutdown_console = self
                     self.game.keep_going = False
                 return "__quit__"

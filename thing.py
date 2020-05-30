@@ -14,7 +14,7 @@ class Thing(object):
     # SPECIAL METHODS (i.e __method__() format)
     #
     def __init__(self, default_name, path, pref_id=None, plural_name=None):
-        self.versions = {gametools.findGamePath(__file__): 3}
+        self.versions = {gametools.findGamePath(__file__): 6}
         self._add_ID(default_name if not pref_id else pref_id)
         self.path = gametools.findGamePath(path) if path else None
         self.log = gametools.get_game_logger(self)
@@ -289,13 +289,11 @@ class Thing(object):
                or attr == 'versions':
                 saveable[attr] = state[attr]
         default_obj.destroy()
-        if 'adjectives' in saveable and isinstance(saveable['adjectives'], set):
-            saveable['adjectives'] = list(saveable['adjectives'])
-        # XXX temporary code to prevent all save calls from failing
         for i in saveable:
             if isinstance(saveable[i], set):
-                saveable[i] = list(saveable[i])
-                self.log.debug('%s.%s was set' % (self.id, i))
+                saveable["__set__" + i] = list(saveable[i])
+                del saveable[i]
+                self.log.debug(f'{self.id}.{i} was set, changed to "__set__"-prefixed list __set__{i}')
         
         return saveable
 
@@ -347,7 +345,11 @@ class Thing(object):
         Also call update_version() to make sure that all objects are up to date."""
         state = self.__dict__.copy()
         for attr in list(saveable):
-            state[attr] = saveable[attr]
+            # any sets were converted to lists and prefixed with __set__
+            if attr.startswith("__set__"):
+                state[attr[len("__set__"):]] = set(saveable[attr])
+            else:
+                state[attr] = saveable[attr]
 
         self.__dict__.update(state)
 
@@ -375,6 +377,10 @@ class Thing(object):
             # Changing to dictionary-based versioning system
             self.versions[gametools.findGamePath(__file__)] = 3
             del self.__dict__['version_number']
+        
+        if self.versions[gametools.findGamePath(__file__)] <= 5:
+            self.adjectives = set(self.adjectives)
+            self.versions[gametools.findGamePath(__file__)] = 6
 
     def delete(self):
         if self.contents:

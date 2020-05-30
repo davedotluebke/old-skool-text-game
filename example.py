@@ -1,4 +1,5 @@
 import thing
+import gametools
 
 def clone():
     example = thing.Thing('example', __file__)
