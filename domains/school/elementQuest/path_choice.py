@@ -87,7 +87,7 @@ def load():
     path_choice.set_description('circular room with four doors', 'You are in a circular room with four doors and a ladder down. Each of the doors has a sign above it. ' \
     'The one farthest left says "Path of Fire", the one to the right of that says "Path of Water", the second farthest right says "Path of Earth", and the one to the right of that says "Path of Air". ' \
     'There is a ladder in the centre of the room leading down.')
-    path_choice.add_exit('down', 'domains.school.cave.lair')
+    path_choice.add_exit('down', 'domains.school.school.gallary_east')
 
     fire = QuestDoor('fire', None)
     fire.set_description('door of fire', 'This door is warm and has a large label above it reading "Fire". ')
