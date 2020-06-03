@@ -21,46 +21,116 @@ class Door(scenery.Scenery):
         self.dest = dest
         self.direction = direction
         self.add_adjectives(direction)
-        self.actions['open'] = action.Action(Door.enter_door, True, False)
+        self.actions['open'] = action.Action(Door.open_door, True, False)
+        self.actions['close'] = action.Action(Door.close_door, True, False)
         self.actions['enter'] = action.Action(Door.enter_door, True, False)
         self.actions['lock'] = action.Action(Door.lock_door, True, False)
         self.actions['unlock'] = action.Action(Door.unlock_door, True, False)
+        del self.actions['look']
+        self.actions['look'] = action.Action(Door.look_at, True, False)
         self.unlisted = True
         self.locked = False
+        self.open_state = False # False for closed, True for open
         self.allowed_to_lock = allowed_to_lock
     
-    def toggle_matching(self, lock_setting):
+    def toggle_matching(self, lock_setting, open_state):
         try:
             r = gametools.load_room(self.dest)
             for i in r.contents:
                 if isinstance(i, Door) and i.direction == Door.opposite_directions[self.direction]:
                     i.locked = lock_setting
+                    i.open_state = open_state
+                    if open_state:
+                        r.add_exit(i.direction, i.dest)
+                    else:
+                        if i.direction in list(r.exits):
+                            del r.exits[i.direction]
         except:
             return
-
-    def enter_door(self, p, cons, oDO, oIDO):
+    
+    def look_at(self, p, cons, oDO, oIDO):
+        value = super().look_at(p, cons, oDO, oIDO)
+        if value != True:
+            return value
+        if self.open_state:
+            cons.user.perceive("Through this door you see:")
+            try:
+                dest_room = gametools.load_room(self.dest)
+                if not dest_room:
+                    cons.user.perceive("An AttributeError")
+                else:
+                    dest_room.look_at(p, cons, oDO, oIDO)
+            except:
+                cons.user.perceive("An error")
+        else:
+            cons.user.perceive("The door is closed.")
+        return True
+            
+    
+    def open_door(self, p, cons, oDO, oIDO):
         if self != oDO:
-            return "Did you mean to open and go through the door?"
+            return "Did you mean to open the door?"
         if self.locked:
             cons.user.perceive("The door is locked.")
             return True
+        if self.open_state:
+            cons.user.perceive("The door is already open!")
+            return True
+        
+        cons.user.perceive("You open the door.")
+        cons.user.emit("&nD%s opens the door.")
+        self.toggle_matching(self.locked, True)
+        self.open_state = True
+        self.location.add_exit(self.direction, self.dest)
+        return True
+
+    def close_door(self, p, cons, oDO, oIDO):
+        if self != oDO:
+            return "Did you mean to close the door?"
+        if not self.open_state:
+            cons.user.perceive("The door is already closed!")
+            return True
+        
+        cons.user.perceive("You close the door.")
+        cons.user.emit("&nD%s closes the door.")
+        self.toggle_matching(self.locked, False)
+        self.open_state = False
+        try:
+            del self.location.exits[self.direction]
+        except KeyError:
+            self.log.error('No exit in direction %s to delete!' % self.direction)
+        return True
+
+    def enter_door(self, p, cons, oDO, oIDO):
+        if self != oDO:
+            return "Did you mean to go through the door?"
+        if self.locked:
+            cons.user.perceive("The door is locked.")
+            return True
+        if not self.open_state:
+            value = self.open_door(p, cons, oDO, oIDO)
+            if value != True:
+                return value
         dest_room = gametools.load_room(self.dest)
         if not dest_room:
             return "For some reason you are unable to go through the door."
         cons.user.move_to(dest_room)
-        cons.user.emit('&nD%s opens the door and passes through it.' % cons.user)
+        cons.user.emit('&nD%s passes through the door.' % cons.user)
         cons.user.perceive('You pass through the door and find yourself in a new location.')
         cons.user.location.report_arrival(cons.user)
         return True
     
-    
     def lock_door(self, p, cons, oDO, oIDO):
         if self.locked:
             return "The door is already locked!"
+        if self.open_state:
+            value = self.close_door(p, cons, oDO, oIDO)
+            if value != True:
+                return value
         if self.allowed_to_lock != 'everyone' and cons.user.names[0] not in self.allowed_to_lock:
             cons.user.perceive('You don\'t have the key.')
         self.locked = True
-        self.toggle_matching(True)
+        self.toggle_matching(True, self.open_state)
         cons.user.perceive('You lock the door.')
         cons.user.emit('&nD%s locks the door.')
         return True
@@ -71,7 +141,7 @@ class Door(scenery.Scenery):
         if self.allowed_to_lock != 'everyone' and cons.user.names[0] not in self.allowed_to_lock:
             cons.user.perceive('You don\'t have the key.')
         self.locked = False
-        self.toggle_matching(False)
+        self.toggle_matching(False, self.open_state)
         cons.user.perceive('You unlock the door.')
         cons.user.emit('&nD%s unlocks the door.')
         return True
