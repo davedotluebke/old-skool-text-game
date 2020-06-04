@@ -2,6 +2,7 @@ import re
 import gametools
 from thing import Thing
 from action import Action
+import json
 
 class Book(Thing):
     #
@@ -11,6 +12,7 @@ class Book(Thing):
         super().__init__(default_name, path, pref_id)
         self.set_description(s_desc, l_desc)
         self.book_pages = dict()
+        self.spells = {}
         self.add_names('book')
         self.cons = None
         self.COVER_INDEX = -1
@@ -40,6 +42,7 @@ class Book(Thing):
         self.book_pages = {self.COVER_INDEX:"", self.TOC_INDEX:""}
         page_text = '\n'
         index = self.COVER_INDEX
+        self.spells[index] = {}
 
         for line_text in message.splitlines(True):
             if line_text.strip(' \t\r\n') == "#*": 
@@ -48,8 +51,20 @@ class Book(Thing):
                 self.book_pages[int(index)] = page_text
                 page_text = '\n'
                 index += 1
+                self.spells[index] = {}
                 continue
-            page_text += line_text 
+            if line_text.lstrip().startswith('\0'):
+                ## spell on page ##
+                line_text = line_text.lstrip()[1:]
+                try:
+                    spells_on_page = json.loads(line_text)
+                except Exception as e:
+                    self.log.error(e)
+                else:
+                    self.spells[index] = spells_on_page
+                continue
+            else:
+                page_text += line_text 
         
         page_text += '\n\n'
         self.book_pages[index] = page_text
@@ -66,6 +81,7 @@ class Book(Thing):
         next_vocab = ["n", "next", "next page", "turn page", "forward", "right", "continue", "go ahead", "go forward"]
         prev_vocab = ["p", "prev", "previous", "go back", "back", "backward", "left"]
         bookmark_vocab = ["b", "bookmark", "bookmark page", "mark", "mark page", "tag", "tag page", "fold", "fold corner", "earmark", "earmark page", "dogear", "dogear page", "dog-ear", "dog-ear page"]
+        learn_vocab = ["l", "learn", "memorize", "memorise"]
         quit_vocab = ["q", "quit", "quit reading", "end", "stop", "stop reading", "exit", "leave", "close", "close book", "shut", "shut book", "put away"]
 
         # perform requested command
@@ -133,7 +149,26 @@ class Book(Thing):
                     self.cons.user.emit("&nD%s stares intently at the cover." %(self.cons.user.id))
                 else:
                     self.cons.user.perceive("You dog-ear the page for later.")
-                    self.cons.user.emit("&nD%s dog-ears the page." %(self.cons.user.id))
+                    self.cons.user.emit("&nD%s dog-ears the page they are on." %(self.cons.user.id))
+        
+        elif command.startswith(tuple(learn_vocab)):
+            if self.spells[self.index] == {}:
+                self.cons.user.perceive("You don't see any spells on the page that you could learn.")
+            elif command.partition(" ")[2] in self.spells[self.index]:
+                spell_name = command.partition(" ")[2]
+                spell_path = self.spells[self.index][spell_name]
+                if spell_name in self.cons.user.spellsKnown:
+                    if self.cons.user.spellsKnown[spell_name] == spell_path:
+                        self.cons.user.perceive("You already know that spell!")
+                        return False
+                    else:
+                        self.cons.user.perceive("You relearn the %s spell from the page." % spell_name)
+                else:
+                    self.cons.user.perceive("You learn the %s spell from the page." % spell_name)
+                self.cons.user.spellsKnown[spell_name] = spell_path
+            else:
+                self.cons.user.perceive("There seems to be a spell on the page, but not one named %s." % command.partition(" ")[2])
+            return False
             
         elif command in quit_vocab: 
             # stop input_takeover
@@ -163,9 +198,9 @@ class Book(Thing):
         else:
             self.cons.write("\nPage %s:" %self.index, 4)
 
-        command_list = "Commands: (C)over  (TOC)  (N)ext  (P)revious  (B)ookmark  (Q)uit"
+        command_list = "Commands: (C)over  (TOC)  (N)ext  (P)revious  (B)ookmark  (L)earn \\[spell\\]  (Q)uit"
         if self.index == self.bookmark:
-            command_list = command_list.replace("(B)", "[B]");
+            command_list = command_list.replace("(B)", "[B]")
 
         self.cons.write("%s" % self.book_pages[self.index], 8)
         ##self.cons.user.perceive("\nYou are reading the &nd%s...\n\n" %self.id)
