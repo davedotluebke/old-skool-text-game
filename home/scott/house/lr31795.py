@@ -17,11 +17,11 @@ def load():
     living_room.add_names('room', 'space')
     living_room.add_adjectives('living', 'well-kept', 'comfortable')
 
-    d = doors_and_windows.Door('door', 'strong birch door', 'This is a strong birch door on the east side of the room.', 'domains.school.school.hallway', 'east')
+    d = doors_and_windows.Door('door', 'strong birch door', 'This is a strong birch door on the east side of the room.', 'domains.school.school.hallway', 'east', ['scott'])
     d.add_adjectives('birch')
     d.move_to(living_room, True)
 
-    bath_door = doors_and_windows.Door('door', 'plain interior door', 'This is a plain interior door on the west side of the room.', 'home.scott.house.btr31795', 'west')
+    bath_door = doors_and_windows.Door('door', 'plain interior door', 'This is a plain interior door on the west side of the room.', 'home.scott.house.btr31795', 'west', ['scott'])
     bath_door.add_adjectives('plain', 'interior', 'bathroom')
     bath_door.move_to(living_room, True)
 
