@@ -1,7 +1,7 @@
 import gametools
 import room
 import scenery
-import home.scott.house.exit_door as exit_door
+import doors_and_windows
 
 def load():
     roomPath = gametools.findGamePath(__file__)
@@ -14,21 +14,21 @@ def load():
     "in front of a mysterious door to the south. In front of the desk you see two blue fabric chairs facing it and a small end table. "
     "The office has two large windows, and a door to the west. ")
 
-    mj_door = exit_door.Door('door', 'plain white door', 'This plain white door is on the west side of the room. ',
+    mj_door = doors_and_windows.Door('door', 'plain white door', 'This plain white door is on the west side of the room. ',
     'domains.renaissance_school.lobby', 'west', 'everyone')
     mj_door.add_adjectives('plain', 'white', 'mj', 'mjs', 'mj\'s')
     mj_door.move_to(mjs_office, True)
 
-    strange_door = exit_door.Door('door', 'mysterious door', "This mysterious door is partially blocked by the bookcase. ",
+    strange_door = doors_and_windows.Door('door', 'mysterious door', "This mysterious door is partially blocked by the bookcase. ",
     "domains.school.forest.hallway", "south", "everyone")
     strange_door.add_adjectives("mysterious", "strange", "partially", "blocked")
     strange_door.move_to(mjs_office, True)
 
-    window1 = exit_door.Window("window", "large window", "This is a large but old window, with wavy glass.", "domains.centrata.village.north_village")
+    window1 = doors_and_windows.Window("window", "large window", "This is a large but old window, with wavy glass.", "domains.centrata.village.north_village")
     window1.add_adjectives("large", "old", "glass", "wavy")
     window1.move_to(mjs_office, True)
 
-    window2 = exit_door.Window("window", "large window", "This is a large but old window, with wavy glass.", "domains.centrata.village.back_street")
+    window2 = doors_and_windows.Window("window", "large window", "This is a large but old window, with wavy glass.", "domains.centrata.village.back_street")
     window2.add_adjectives("large", "old", "glass", "wavy")
     window2.move_to(mjs_office, True)
 

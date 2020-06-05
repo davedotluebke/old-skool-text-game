@@ -1,7 +1,6 @@
 import room
 import scenery
 import gametools
-import home.scott.house.exit_door as exit_door
 
 def load():
     roomPath = gametools.findGamePath(__file__)

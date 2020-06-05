@@ -1,7 +1,7 @@
 import gametools
 import room
 import scenery
-import home.scott.house.exit_door as exit_door
+import doors_and_windows
 
 def load():
     roomPath = gametools.findGamePath(__file__)
@@ -15,12 +15,12 @@ def load():
     "there is a door that exits the building.")
     lobby.add_exit('west', 'domains.renaissance_school.front_offices')
 
-    mj_door = exit_door.Door('door', 'plain white door', 'This plain white door is on the east side of the room. '
+    mj_door = doors_and_windows.Door('door', 'plain white door', 'This plain white door is on the east side of the room. '
     'It has a label on it reading "Sara Johson, head of school".', 'domains.renaissance_school.mjs_office', 'east', 'everyone')
     mj_door.add_adjectives('plain', 'white', 'mj', 'mjs', 'mj\'s')
     mj_door.move_to(lobby, True)
 
-    int_window = exit_door.Window("window", "interior window", "This strange interior window is between the front lobby and the front stairwell. ", "domains.renaissance_school.front_stairwell")
+    int_window = doors_and_windows.Window("window", "interior window", "This strange interior window is between the front lobby and the front stairwell. ", "domains.renaissance_school.front_stairwell")
     int_window.add_adjectives("interior")
     int_window.move_to(lobby, True)
 
