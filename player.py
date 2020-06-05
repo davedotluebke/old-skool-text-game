@@ -193,7 +193,7 @@ class Player(Creature):
             # XXX temporary fix for now
             self.password = passwd
             # TODO secure password authentication goes here
-            self.id = self._add_ID(self.names[0])            
+            self.id = self._add_ID(self.names[0], remove_existing=True)
             self.proper_name = self.names[0].capitalize()
             self.log.info("Creating player id %s with default name %s" % (self.id, self.names[0]))
             start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
@@ -222,6 +222,7 @@ class Player(Creature):
                     self.login_state = None
                     self.game.deregister_heartbeat(self)
                     del Thing.ID_dict[self.id]
+                    self.destroy()
                 except gametools.IncorrectPasswordError:
                     self.cons.write("Your username or password is incorrect. Please try again.")
                     self.login_state = "AWAITING_USERNAME"
