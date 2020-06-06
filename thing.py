@@ -504,6 +504,41 @@ class Thing(object):
             return True
         else:
             return "Not sure what you are trying to count!"
+    
+    def light_on_fire(self, p, cons, oDO, oIDO):
+        if not oDO or oDO == self:
+            return "Do you mean to light something on fire?"
+        if oIDO and oIDO != self:
+            return "Did you mean to light something on fire with the %s?" % self.name()
+        if not self.flammable:
+            return "The %s is not flammable."
+        if not self.burning:
+            return "The %s is not on fire."
+        if not oDO.flammable:
+            cons.user.perceive("You try to light the %s on fire, but are unsuccesful." % oDO.name())
+            return True
+        if hasattr(oDO, 'burning') and oDO.burning:
+            cons.user.perceive("The %s is already on fire!" % oDO)
+            return True
+
+        if hasattr(oDO, 'when_lit') and callable(oDO.when_lit): # this is for objects with special light_on_fire abilities
+            value = oDO.when_lit(p, cons, oDO, oIDO)
+        else:
+            oDO.burning = True
+            if hasattr(oDO, 'on_fire_description'):
+                oDO.set_description(oDO._short_desc, oDO.on_fire_description, oDO._plural_short_desc, oDO.unlisted)
+            else:
+                oDO.set_description(oDO._short_desc, oDO._long_desc+' It is on fire.', oDO._plural_short_desc, oDO.unlisted)
+            if hasattr(oDO, 'burn_time'):
+                cons.game.schedule_event(oDO.burn_time, oDO.destroy)
+            cons.user.perceive('You light the %s on fire.' % oDO.name())
+            self.emit('&nD%s lights the %s on fire.' % (cons.user, oDO.name()))
+            value = True
+        
+        if value != True:
+            return value
+
+        return True
 
     actions = {}
     actions["look"] = Action(look_at, True, False)
@@ -512,3 +547,6 @@ class Thing(object):
     actions["get"] = Action(take, True, False)
     actions["drop"] = Action(drop, True, False)
     actions["count"] = Action(count, True, False)
+    actions["light"] = Action(light_on_fire, True, False)
+    actions["burn"] = Action(light_on_fire, True, False)
+    actions["ignite"] = Action(light_on_fire, True, False)
