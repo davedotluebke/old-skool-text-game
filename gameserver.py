@@ -622,7 +622,7 @@ class Game():
                 self.log.exception(f"Failed to open socket at {self.server_ip}:{self.port}; retrying in 30 seconds")
                 time.sleep(30)
 
-        self.log.info("Listening on %s port %d..." % (self.server_ip, self.port))
+        self.log.info("Listening on %s port %d..." % (self.server_ip, int(self.port)))
         self.events.call_later(1,self.beat)
         self.events.run_forever()
 
