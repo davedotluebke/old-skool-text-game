@@ -234,14 +234,14 @@ class Thing(object):
         return 'its'  
 
     def pronoun(self):
-        """Return 'he', 'she', or 'it' as appropriate."""
+        """Return 'he', 'she', 'they', or 'it' as appropriate."""
         if hasattr(self, 'gender'):
             if self.gender == 'male': 
                 return 'he'
             elif self.gender == 'female':
                 return 'she'
             elif self.gender == 'non-binary':
-                return 'their'
+                return 'they'
         # other gender or no gender specified:
         return 'it'
     
@@ -253,7 +253,7 @@ class Thing(object):
             elif self.gender == 'female':
                 return 'herself'
             elif self.gender == 'non-binary':
-                return 'themselves'
+                return 'themself'
         # other gender or no gender specified:
         return 'itself'
 
