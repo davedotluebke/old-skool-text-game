@@ -1,6 +1,6 @@
 import gametools
 import room
-import home.scott.house.exit_door as exit_door
+import doors_and_windows
 
 def load():
     roomPath = gametools.findGamePath(__file__)
@@ -17,15 +17,15 @@ def load():
     living_room.add_names('room', 'space')
     living_room.add_adjectives('living', 'well-kept', 'comfortable')
 
-    d = exit_door.Door('door', 'strong birch door', 'This is a strong birch door on the east side of the room.', 'domains.school.school.hallway', 'east')
+    d = doors_and_windows.Door('door', 'strong birch door', 'This is a strong birch door on the east side of the room.', 'domains.school.school.hallway', 'east', ['scott'])
     d.add_adjectives('birch')
     d.move_to(living_room, True)
 
-    bath_door = exit_door.Door('door', 'plain interior door', 'This is a plain interior door on the west side of the room.', 'home.scott.house.btr31795', 'west')
+    bath_door = doors_and_windows.Door('door', 'plain interior door', 'This is a plain interior door on the west side of the room.', 'home.scott.house.btr31795', 'west', ['scott'])
     bath_door.add_adjectives('plain', 'interior', 'bathroom')
     bath_door.move_to(living_room, True)
 
-    w = exit_door.Window('window', 'large window', 'This is a very large window looking over the great hall.', 'domains.school.school.great_hall')
+    w = doors_and_windows.Window('window', 'large window', 'This is a very large window looking over the great hall.', 'domains.school.school.great_hall')
     w.add_adjectives('large')
     w.move_to(living_room, True)
 

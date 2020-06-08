@@ -30,6 +30,7 @@ class Doorway(scenery.Scenery):
             cons.user.perceive('You try to enter the doorway, but something blocks your path.')
             return True
         cons.user.wizardry_element = 'water'
+        cons.user.complete_quest('Complete a quest to find thy element')
         cons.user.perceive('As you swim through the doorway, you start to feel a buildup of pressue. '
                            'Somehow, however, it doesn\'t seem unconfortable. Then, all of the sudden, '
                            'you begin to feel as if you have given in to--no, '
