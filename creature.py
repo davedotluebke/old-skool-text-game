@@ -1,4 +1,4 @@
-#import random
+import random
 import gametools
 import random
 from thing import Thing
@@ -387,4 +387,3 @@ class NPC(Creature):
                     self.current_act_script_idx = 0
             else:
                 self.current_act_script = random.choice(self.act_scripts)
-    
