@@ -1,5 +1,6 @@
-#import random
+import random
 import gametools
+import random
 from thing import Thing
 from container import Container
 from weapon import Weapon
@@ -332,14 +333,17 @@ class NPC(Creature):
                 except NameError:
                     self.log.warning("Object "+str(self.id)+" heartbeat tried to run non-existant action choice "+str(choice)+"!")
             
-    def move_around(self):
+    def move_around(self, exit_list=None):
         """The NPC leaves the room, taking a random exit"""
-        try:
-            exit_list = list(self.location.exits)
+        if not exit_list:
+            try:
+                exit_list = list(self.location.exits)
+                exit = random.choice(exit_list)
+            except (AttributeError, IndexError):
+                self.log.debug('NPC %s sees no exits, returning from move_around()' % self.id)
+                return
+        else:
             exit = random.choice(exit_list)
-        except (AttributeError, IndexError):
-            self.log.debug('NPC %s sees no exits, returning from move_around()' % self.id)
-            return
 
         self.log.debug("Trying to move to the %s exit!" % (exit))
         current_room = self.location
@@ -383,4 +387,3 @@ class NPC(Creature):
                     self.current_act_script_idx = 0
             else:
                 self.current_act_script = random.choice(self.act_scripts)
-    
