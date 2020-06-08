@@ -120,6 +120,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
         <script>
             var converter = new showdown.Converter({simpleLineBreaks: true});
+            converter.setFlavor('github');
             var editorWindow = undefined;
             var cmd_history = [''];
             var current_cmd = 0;

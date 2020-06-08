@@ -1,9 +1,10 @@
 import importlib
 import gametools
+from random import random
 
 def castChecks(player, parser, cons, oDO, oIDO):
     if len(parser.words) < 2:
-        return "Usage: Cast [spell] [paramaters]"
+        return "Usage: Cast <spell> [paramaters] [with <stone>]"
     specifications = parser.words[2:]
     try:
         path = player.spellsKnown[parser.words[1]]
@@ -26,10 +27,11 @@ def cast(parser, cons, oDO, oIDO, path, spell_info=[], usingstone=False):
         cons.user.log.error(e)
         return True
     try:
-        mana = lib.get_mana(parser, cons, oDO, oIDO, spell_info, None)
+        origMana = lib.get_mana(parser, cons, oDO, oIDO, spell_info, None)
     except gametools.BadSpellInfoError as e:
         cons.write(e.args[0])
         return True
+    mana = origMana
     stone = None
     if usingstone:
         wordstring = ' '.join(parser.words)
@@ -47,14 +49,24 @@ def cast(parser, cons, oDO, oIDO, path, spell_info=[], usingstone=False):
                 mana -= stone_mana
             else:
                 mana = 0
+            if mana <= cons.user.mana:
+                cons.user.mana -= mana
+            else:
+                cons.write("You don't have enough mana to cast this spell.")
+                return True
             stone.set_mana(new_stone_mana)
-        
-    if mana <= cons.user.mana:
-        cons.user.mana -= mana
-    else:
-        cons.write("You don't have enough mana to cast this spell.")
-        return True
+    else:    
+        if mana <= cons.user.mana:
+            cons.user.mana -= mana
+        else:
+            cons.write("You don't have enough mana to cast this spell.")
+            return True
     try:
+        messUp = random()
+        if messUp <= cons.user.calc_chance_mess_up(origMana):
+            #They messed up
+            if hasattr(lib, "bad_spell") and callable(lib.bad_spell):
+                return lib.bad_spell(parser, cons, oDO, oIDO, spell_info, stone, (messUp - cons.user.calc_chance_mess_up(origMana)))
         return lib.spell(parser, cons, oDO, oIDO, spell_info, stone)
     except gametools.BadSpellInfoError as e:
         cons.write(e.args[0])
