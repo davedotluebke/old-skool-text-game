@@ -194,7 +194,7 @@ class Game():
             msg += "```game.roles[] = %s```\n" % pprint.pformat(self.roles, width=40, indent=4)
         return msg
 
-    def save_game(self, filename):
+    def save_game(self, filename):  # XXX currently broken
         raise NotImplementedError("Saving games no longer works.")
         if not filename.endswith('.OAD'): 
             filename += '.OAD'
@@ -210,7 +210,7 @@ class Game():
         except pickle.PickleError:
             self.cons.write("Error pickling when saving to file %s" % filename)
             
-    def load_game(self, filename):
+    def load_game(self, filename):  # XXX currently broken
         raise NotImplementedError("Loading games no longer works.")
         if not filename.endswith('.OAD'): 
             filename += '.OAD'
@@ -374,7 +374,6 @@ class Game():
             obj.id = head  
             obj._add_ID(obj.id)  # re-create original entry in ID_dict
         
-
     def load_player(self, filename, cons, oldplayer=None, password=None):
         """Load a single player and his/her inventory from a saved file.
 
@@ -544,13 +543,14 @@ class Game():
         self.events.call_later(delay, functools.partial(self.catch_func_errs, func, *params))
     
     def catch_func_errs(self, func, *params):
-        profile_st = time.time()
+        """Wrapper method; execute specified function with timing & exception handling"""
+        start_time = time.time()
         try:
             func(*params)
         except:
             self.log.exception("An error occurred while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
-        profile_et = time.time()
-        profile_t = profile_et - profile_st
+        end_time = time.time()
+        profile_t = start_time - end_time
         funcname = ":".join((func.__module__, func.__name__))
         if funcname in self.total_times:
             self.total_times[funcname] += profile_t
@@ -561,7 +561,6 @@ class Game():
             self.total_times[funcname] = profile_t
             self.numrun_times[funcname] = 1
             self.maximum_times[funcname] = profile_t
-        # self.log.debug("Function %s took %s seconds" % (funcname, profile_t))
         
     def log_func_profile(self):
         msg = "Function profiling report\n"
@@ -571,7 +570,7 @@ class Game():
         self.log.info(msg)
 
     def beat(self):
-        """Advance time, run scheduled events, and call registered heartbeat functions"""
+        """Advance time, call registered heartbeat functions, and schedule the next heartbeat"""
         self.time += 1
 
         for h in self.heartbeat_users:
