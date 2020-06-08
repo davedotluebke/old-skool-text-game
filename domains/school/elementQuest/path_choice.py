@@ -117,7 +117,7 @@ def load():
 
     air = QuestDoor('air', None)
     air.set_description('door of air', 'This door is as light as a feather. It has a large label over it reading "Air". ')
-    air.set_view('a blustery autumn day in some woods')
-    air.set_dest('domains.school.elementQuest.autumn_forest')
+    air.set_view('a barren entrence hall')
+    air.set_dest('domains.school.elementQuest.windy_hall')
     path_choice.insert(air)
     return path_choice
