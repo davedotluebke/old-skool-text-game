@@ -10,7 +10,7 @@ class Swallow(creature.NPC):
         possible_exits = list(self.location.exits)
         if self.location.id == "domains.school.elementQuest.portrait_gallery":
             possible_exits.append("domains.school.elementQuest.secret_lookout")
-        return super().move_around()
+        return super().move_around(exit_list=possible_exits)
 
 def clone():
     return Swallow()

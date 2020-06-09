@@ -18,15 +18,12 @@ def load():
     r.add_exit('west', 'domains.school.elementQuest.china_closet')
     r.add_exit('east', 'domains.school.elementQuest.wardrobe_room')
 
-
-
-    
     stand = scenery.Scenery ('stand', 'dark marble stand', 'This is a tall stand made of dark marble, atop it is a beautiful gold statue of a bird. On the side of the stand there is a plaque.', unlisted=True)
     stand.add_names('stand')
     stand.add_adjectives('dark', 'marble', 'tall')
     r.insert(stand)
 
-    statue = scenery.Scenery ('statue', 'golden statue of a bird', 'This is a intricate statue of a swallow. It looks like it was carved by hand out of pure gold.', unlisted=True)
+    statue = scenery.Scenery ('statue', 'golden statue of a bird', 'This is a intricate statue of a swallow atop a marble stand. It looks like it was carved by hand out of pure gold.', unlisted=True)
     statue.add_names('statue')
     statue.add_adjectives('intricate', 'gold', 'hand-carved', 'sollow')
     r.insert(statue)
