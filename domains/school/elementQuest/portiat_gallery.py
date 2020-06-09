@@ -11,29 +11,34 @@ def load():
     
     r = room.Room('hall', roomPath)
     r.indoor = True
-    r.set_description('circular carpeted room', 'You find yourself in a tidy circular room that is carpeted with a cozy red carpet. A beautiful gold statue of a bird atop a dark marble stand in the center of the room catches your eye. On the edge of the room, against the wall some wooden stairs lead up to the next level')
+    r.set_description('airy portriat gallery', 'You find yourself in a airy circler room. The walls are lined with many differnt portriats of birds. There is a plaque on the north wall. On the edge of the room, against the wall some wooden stairs lead up to the next level. The floor is made of smooth stone and well polished.')
     r.add_adjectives('windy')
     r.add_exit('up', 'domains.school.elementQuest.armor_museum')
     r.add_exit('down', 'domains.school.elementQuest.statue_room')
     r.add_exit('east', 'domains.school.elementQuest.sauna_room')
-
+''
 
 
     
-    stand = scenery.Scenery ('stand', 'dark marble stand', 'This is a tall stand made of dark marble, atop it is a beautiful gold statue of a bird. On the side of the stand there is a plaque.', unlisted=True)
-    stand.add_names('stand')
-    stand.add_adjectives('dark', 'marble', 'tall')
-    r.insert(stand)
+    dark_portriat = scenery.Scenery ('dark portriat', 'dark portriat', 'This portriat depicts a great horned out on a hunt in the dark of night. It is painted in oil paint.')
+    dark_portriat.add_names('portriat', 'painting')
+    dark_portriat.add_adjectives('dark', 'owl', 'night', 'oil')
+    r.insert(dark_portriat)
 
-    statue = scenery.Scenery ('statue', 'golden statue of a bird', 'This is a intricate statue of a swallow. It looks like it was carved by hand out of pure gold.', unlisted=True)
-    statue.add_names('statue')
-    statue.add_adjectives('intricate', 'gold', 'hand-carved', 'sollow')
-    r.insert(statue)
+    watercolor_portriat = scenery.Scenery ('watercolor portriat', 'watercolor portriat', 'This is a watercolor portriat. It depicts a eastern bluebird feeding its young on its nest in the branches of a beach tree. It makes you feel happy and hopefull.')
+    watercolor_portriat.add_names('portriat', 'painting')
+    watercolor_portriat.add_adjectives('light', 'bluebird', 'birdhouse', 'watercolor', 'water color')
+    r.insert(watercolor_portriat)
 
-    plaque = scenery.Scenery ('plaque', 'wooden plaque about statue', 'This is a spruce plaque about the statue. It looks like it was hand-carved and the letters are lined with pure gold.', unlisted=True)
+    patel_portriat = scenery.Scenery ('pastel portriat', 'pastel portriat', 'This is a vivid portriat that depicts a a flock of parrots on a branch in the jungle. Its colors impress you.')
+    patel_portriat.add_names('portriat', 'painting')
+    patel_portriat.add_adjectives('bright', 'parrot', 'jungle', 'pastel')
+    r.insert(patel_portriat)
+
+    plaque = scenery.Scenery ('plaque', 'metal plaque on wall', 'This is a normal metal plaque', unlisted=False)
     plaque.add_names('plaque')
-    plaque.add_adjectives('spruce', 'wood', 'wooden')
-    plaque.add_response(['read'], 'The plaque reads: \n Swallows fly hi and low \n Searching for food in the snow \n Some wounder where they go \n But only they know')
+    plaque.add_adjectives('metal', 'normal')
+    plaque.add_response(['read'], 'The plaque reads: Please do not touch any of the paintings. \n No flash photography \n No food or drink in the gallery')
     r.insert(plaque)
     
     return r
