@@ -20,6 +20,7 @@ class Lever(scenery.Scenery):
         hiiden_door.add_adjectives('hidden', 'carved', 'cracked')
         cons.user.location.insert(hidden_door)
         self.door = hidden_door
+        return True
 
 def load():
     roomPath = gametools.findGamePath(__file__)
@@ -38,43 +39,43 @@ def load():
 
 
 
-    dark_portriat = scenery.Scenery ('dark portriat', 'dark portriat', 'This portriat depicts a great horned out on a hunt in the dark of night. It is painted in oil paint. You feel and tingling go up your spine')
+    dark_portriat = scenery.Scenery ('portriat', 'dark portriat', 'This portriat depicts a great horned out on a hunt in the dark of night. It is painted in oil paint. You feel and tingling go up your spine')
     dark_portriat.add_names('portriat', 'painting')
     dark_portriat.add_adjectives('dark', 'owl', 'night', 'oil', 'great horned')
-    dark_portriat.add_response(['take','steel','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
+    dark_portriat.add_response(['take','steal','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
     r.insert(dark_portriat)
 
-    watercolor_portriat = scenery.Scenery ('watercolor portriat', 'watercolor portriat', 'This is a watercolor portriat. It depicts a eastern bluebird feeding its young on its nest in the branches of a beach tree. It makes you feel happy and hopefull.')
+    watercolor_portriat = scenery.Scenery ('portriat', 'watercolor portriat', 'This is a watercolor portriat. It depicts a eastern bluebird feeding its young on its nest in the branches of a beach tree. It makes you feel happy and hopefull.')
     watercolor_portriat.add_names('portriat', 'painting')
-    watercolor_portriat.add_adjectives('light', 'bluebird', 'birdhouse', 'watercolor', 'water color')
-    watercolor_portriat.add_response(['take','steel','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
+    watercolor_portriat.add_adjectives('light', 'bluebird', 'birdhouse', 'watercolor', 'water', 'color')
+    watercolor_portriat.add_response(['take','steal','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
     r.insert(watercolor_portriat)
 
-    pastel_portriat = scenery.Scenery ('pastel portriat', 'pastel portriat', 'This is a vivid portriat that depicts a flock of parrots on a branch in the jungle. Its vividness stuns you.')
+    pastel_portriat = scenery.Scenery ('portriat', 'pastel portriat', 'This is a vivid portriat that depicts a flock of parrots on a branch in the jungle. Its vividness stuns you.')
     pastel_portriat.add_names('portriat', 'painting')
     pastel_portriat.add_adjectives('bright', 'parrot', 'jungle', 'pastel')
-    pastel_portriat.add_response(['take','steel','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
+    pastel_portriat.add_response(['take','steal','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
     r.insert(pastel_portriat)
 
-    ink_portriat = scenery.Scenery ('ink portriat', 'ink portriat', 'This is a simple and old ink wash portriat painted on a very old piece of a paper. It depicts a a humbingbird hovering above a cluster of irises. The paper\'s age impresses you.')
+    ink_portriat = scenery.Scenery ('portriat', 'ink portriat', 'This is a simple and old ink wash portriat painted on a very old piece of a paper. It depicts a a humbingbird hovering above a cluster of irises. The paper\'s age impresses you.')
     ink_portriat.add_names('portriat', 'painting')
     ink_portriat.add_adjectives('simple', 'old', 'humbingbird', 'ink', 'inkwash')
-    ink_portriat.add_response(['take','steel','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
+    ink_portriat.add_response(['take','steal','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
     r.insert(ink_portriat)
 
-    encaustic_portriat = scenery.Scenery ('encaustic portriat', 'encaustic portriat', 'This encaustic painting looks like it is the oldest in the gallery. It is painted on a large slab of wood. It is abstract and seems to show a sparrow holding a seed in it\' mouth. Its abstractness intrest you.')
+    encaustic_portriat = scenery.Scenery ('portriat', 'encaustic portriat', 'This encaustic painting looks like it is the oldest in the gallery. It is painted on a large slab of wood. It is abstract and seems to show a sparrow holding a seed in it\' mouth. Its abstractness intrest you.')
     encaustic_portriat.add_names('portriat', 'painting')
     encaustic_portriat.add_adjectives('abstract', 'old', 'sparrow', 'encaustic', 'oldest', 'wood')
-    encaustic_portriat.add_response(['take','steel','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
+    encaustic_portriat.add_response(['take','steal','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
     r.insert(encaustic_portriat)
 
-    acrylic_portriat = scenery.Scenery ('acrylic portriat', 'acrylic portriat', 'This is an large acrylic portrait of a tree swallow swooping low over a lake, an ant held firmly in its beak. It is so realistic you almost feel like it is real.')
+    acrylic_portriat = scenery.Scenery ('portriat', 'acrylic portriat', 'This is an large acrylic portrait of a tree swallow swooping low over a lake, an ant held firmly in its beak. It is so realistic you almost feel like it is real.')
     acrylic_portriat.add_names('portriat', 'painting')
     acrylic_portriat.add_adjectives('realistic', 'lake', 'swallow', 'acrylic')
-    acrylic_portriat.add_response(['take','steel','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
+    acrylic_portriat.add_response(['take','steal','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
     r.insert(acrylic_portriat)
 
-    plaque = scenery.Scenery ('plaque', 'metal plaque on wall', 'This is a normal metal plaque', unlisted=False)
+    plaque = scenery.Scenery ('plaque', 'metal plaque on wall', 'This is a normal metal plaque on the wall, you can try "read" it.', unlisted=False)
     plaque.add_names('plaque')
     plaque.add_adjectives('metal', 'normal')
     plaque.add_response(['read'], 'The plaque reads: Please do not touch any of the paintings. \n No flash photography \n No food or drink in the gallery')
@@ -84,5 +85,7 @@ def load():
     east_door.add_adjectives('wooden','normal','boring')
     r.insert(east_door)
 
-    hidden_door =     
+    water_fountain = gametools.clone('domains.school.elementQuest.water_fountain')
+    r.insert(water_fountian)
+
     return r
