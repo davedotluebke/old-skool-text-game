@@ -768,7 +768,7 @@ class Player(Creature):
             if i == self.weapon_wielding or i == self.armor_worn: 
                 continue
             message += "\t&ni%s\n" % i.id
-        if self.weapon_wielding != self.default_weapon: 
+        if self.weapon_wielding not in self.default_weapons: 
             message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
         if self.armor_worn != self.default_armor:
             message += 'You are wearing &nd%s.\n' % self.armor_worn.id

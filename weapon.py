@@ -57,7 +57,7 @@ class Weapon(Thing):
             return "Did you mean to unwield a specific weapon, such as the %s?" % self
         if self != cons.user.weapon_wielding:
             return "But you aren't currently wielding the %s!" % self
-        cons.user.weapon_wielding = cons.user.default_weapon
+        cons.user.weapon_wielding = cons.user.default_weapons[0]
         cons.write("You cease wielding the %s." % self)
         cons.user.emit("&nD%s puts away the %s." % (cons.user, self), ignore=[cons.user])
         return True
@@ -65,7 +65,7 @@ class Weapon(Thing):
     def weapon_drop(self, p, cons, oDO, oIDO): 
         if self == oDO:
             if self == cons.user.weapon_wielding:
-                cons.user.weapon_wielding = cons.user.default_weapon
+                cons.user.weapon_wielding = cons.user.default_weapons[0]
         return Thing.drop(self, p, cons, oDO, oIDO)
 
     def start_attack(self, p, cons, oDO, oIDO):

@@ -313,8 +313,8 @@ class Game():
                 # recursively add associated objects
                 if obj.contents != None:
                     l += obj.contents
-                if hasattr(obj, 'default_weapon'):
-                    l += [obj.default_weapon]
+                if hasattr(obj, 'default_weapons'):
+                    l += obj.default_weapons
                 if hasattr(obj, 'default_armor'):
                     l += [obj.default_armor]
             except Exception:

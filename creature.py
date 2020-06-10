@@ -9,6 +9,7 @@ from action import Action
 class Creature(Container):
     def __init__(self, default_name, path, pref_id=None):
         Container.__init__(self, default_name, path, pref_id)
+        self.versions[gametools.findGamePath(__file__)] = 3
         self.closed = True
         self.closable = False
         self.see_inside = False
@@ -19,9 +20,9 @@ class Creature(Container):
         self.combat_skill = 0
         self.strength = 0
         self.dexterity = 1
-        self.default_weapon = gametools.clone("default_weapon")
+        self.default_weapons = [ gametools.clone("default_weapon_1"), gametools.clone("default_weapon_2") ]
+        self.weapon_wielding = self.default_weapons[0]
         self.default_armor = gametools.clone("default_armor")
-        self.weapon_wielding = self.default_weapon
         self.armor_worn = self.default_armor
         self.closed_err = "You can't put things in creatures!"
         self.invisible = False
@@ -30,7 +31,6 @@ class Creature(Container):
         self.dead = False
         self.wizardry_element = None
         self.healing = 0
-        self.versions[gametools.findGamePath(__file__)] = 1
 
     def get_saveable(self):
         saveable = super().get_saveable()
@@ -40,9 +40,25 @@ class Creature(Container):
             pass
         return saveable
 
-    def set_default_weapon(self, name, damage, accuracy, unwieldiness, attack_verbs=["hit"]):
-        self.default_weapon = Weapon(name, None, damage, accuracy, unwieldiness, attack_verbs)
-        self.weapon_wielding = self.default_weapon
+    def set_default_weapon(self, w, append=False):
+        """Set the default weapon to the given object"""
+        if isinstance(w, Weapon):
+            if append:
+                self.default_weapons += [w]
+            else:
+                self.default_weapons = [w]            
+        else:
+            self.log.error("set_default_weapon() given an object that is not a Weapon")
+    
+    def create_default_weapon(self, name, damage, accuracy, unwieldiness, attack_verbs=["hit"], append=False):
+        """Replace the default weapons with a single new weapon. For additional weapons use 
+        `add_default_weapon()`."""
+        w = Weapon(name, None, damage, accuracy, unwieldiness, attack_verbs)
+        if append:
+            self.default_weapons += [w]
+        else:
+            self.default_weapons = [w]
+        self.weapon_wielding = self.default_weapons[-1]  # wield the just-added weapon
 
     def set_default_armor(self, name, bonus, unwieldiness):
         self.default_armor = Armor(name, None, bonus, unwieldiness)
@@ -59,19 +75,35 @@ class Creature(Container):
         self.armor_worn = self.armor_worn.id
         self.weapon_wielding = self.weapon_wielding.id
         self.default_armor = self.default_armor.id
-        self.default_weapon = self.default_weapon.id
+        self.default_weapons = [x.id for x in self.default_weapons]
 
     def _restore_objs_from_IDs(self):
         super()._restore_objs_from_IDs()
-        if isinstance(self.default_weapon, str):
-            self.default_weapon = Thing.ID_dict[self.default_weapon]
-        if isinstance(self.default_armor, str):
-            self.default_armor = Thing.ID_dict[self.default_armor]
-        if isinstance(self.weapon_wielding, str):
-            self.weapon_wielding = Thing.ID_dict[self.weapon_wielding]
-        if isinstance(self.armor_worn, str):
-            self.armor_worn = Thing.ID_dict[self.armor_worn]
-    
+        try:
+            for i in self.default_weapons:
+                if isinstance(i, str):
+                    default_weapons.remove(i)
+                    default_weapons.append(Thing.ID_dict[i])
+        except:
+            self.log.exception("Error converting default_weapons[..] from string to object.")
+        try: 
+            if isinstance(self.weapon_wielding, str):
+                self.weapon_wielding = Thing.ID_dict[self.weapon_wielding]
+        except:
+            self.log.exception("Error converting weapon_wielding from string to object.  Using default weapon")
+            self.weapon_wielding = self.default_weapons[0]
+        try:
+            if isinstance(self.default_armor, str):
+                self.default_armor = Thing.ID_dict[self.default_armor]
+        except: 
+            self.log.exception("Error converting default_armor from string to object.")
+        try:
+            if isinstance(self.armor_worn, str):
+                self.armor_worn = Thing.ID_dict[self.armor_worn]
+        except: 
+            self.log.exception("Error converting armor_worn from string to object. Wearing default armor")
+            self.armor_worn = self.default_armor
+
     def update_version(self):
         if hasattr(self, 'version_number'):
             self.versions[gametools.findGamePath(__file__)] = 1
@@ -81,6 +113,9 @@ class Creature(Container):
         if self.versions[gametools.findGamePath(__file__)] == 1:
             self.introduced = set(self.introduced)
             self.versions[gametools.findGamePath(__file__)] = 2
+        if self.versions[gametools.findGamePath(__file__)] < 3:
+            del self.default_weapon
+            self.versions[gametools.findGamePath(__file__)] = 3
 
     def get_short_desc(self, perceiver=None, definite=False, indefinite=False):
         '''Overloads `Thing.get_short_desc()` to return short description of
@@ -101,8 +136,8 @@ class Creature(Container):
         Weapons it is wielding and any armor it is wearing.'''
         if self == oDO or self == oIDO:
             cons.write(self._long_desc)
-            if self.weapon_wielding and (self.weapon_wielding != self.default_weapon):
-                cons.write("It is wielding a %s." % (self.weapon_wielding._short_desc))        #if we use "bare hands" we will have to change this XXX not true anymore
+            if self.weapon_wielding and (self.weapon_wielding not in self.default_weapons):
+                cons.write("It is wielding a %s." % (self.weapon_wielding._short_desc))
             if self.armor_worn and (self.armor_worn != self.default_armor):
                 cons.write("It is wearing %s." % (self.armor_worn._short_desc))
             return True
@@ -132,12 +167,15 @@ class Creature(Container):
         return False
 
     def weapon_and_armor_grab(self):
-        if not self.weapon_wielding or self.weapon_wielding == self.default_weapon:
+        """If not already wielding a weapon, or wielding a default weapon, check
+        to see if the creature has a better weapon in its inventory and wield that.
+        Similarly, wear any armor carried if better than the creature's default armor"""
+        if not self.weapon_wielding or self.weapon_wielding in self.default_weapons:
             for w in self.contents:
-                if isinstance(w, Weapon) and w.damage > self.default_weapon.damage:
+                if isinstance(w, Weapon) and w.damage > self.default_weapons[-1].damage:
                     self.weapon_wielding = w
                     self.log.info("weapon chosen: %s" % self.weapon_wielding)
-                    self.perceive('You wield the %s, rather than using your %s.' % (self.weapon_wielding._short_desc, self.default_weapon._short_desc))
+                    self.perceive('You wield the %s, rather than using your %s.' % (w._short_desc, self.default_weapons[-1]._short_desc))
                     break
         if not self.armor_worn or self.armor_worn == self.default_armor:
             for a in self.contents:
@@ -154,12 +192,12 @@ class Creature(Container):
             message = 'making a small cut'
         elif percent_damage <= 0.2:
             message = 'doing minor damage'
+        elif percent_damage <= 0.3: 
+            message = 'doing major damage'
         elif percent_damage <= 0.4:
             message = 'inflicting a terrible wound'
-        elif percent_damage <= 0.6:
-            message = 'landing a devastating blow'
         else:
-            message = 'with unimaginable force'
+            message = 'landing a devastating blow'
         return message
 
     def gain_combat_skill(self, enemy):
@@ -172,20 +210,26 @@ class Creature(Container):
         if (self == enemy):
             self.log.warning('Creature tried to attack self!')
             return
-        chance_of_hitting = self.combat_skill + self.weapon_wielding.accuracy - enemy.get_armor_class()
+        w = self.weapon_wielding
+        if not w or w in self.default_weapons:
+            # choose a random default weapon each time
+            w = random.choice(self.default_weapons)
+            self.weapon_wielding = w
+            self.log.debug(f"Wielded new default weapon {w.name()}")
+        chance_of_hitting = self.combat_skill + w.accuracy - enemy.get_armor_class()
         if random.randint(1, 100) <= chance_of_hitting:
-            d = self.weapon_wielding.damage
+            d = w.damage
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
             percent_damage = damage_done/enemy.hitpoints
             message = self.get_damage_message(percent_damage)
-            self.emit('&nD%s attacks &nd%s with &v%s %s, %s!' % (self.id, enemy, self.id, self.weapon_wielding, message), ignore=[self, enemy])
-            self.perceive('You attack &nd%s with your %s, %s!' % (enemy, self.weapon_wielding, message))
-            enemy.perceive('&nD%s attacks you with &v%s %s, %s!' % (self.id, self.id, self.weapon_wielding, message))
+            self.emit(f'&nD{self.id} attacks &nd{enemy} with &v{self.id} {w.name()}, {message}!', ignore=[self, enemy])
+            self.perceive(f'You attack &nd{enemy} with your {w.name()}, {message}!')
+            enemy.perceive(f'&nD{self.id} attacks you with &v{self.id} {w.name()}, {message}!')
             enemy.take_damage(self, damage_done)
         else:
-            self.emit('&nD%s attacks &nd%s with &v%s %s, but misses.' % (self.id, enemy, self.id, self.weapon_wielding), ignore=[self, enemy])
-            self.perceive('You attack &nd%s with your %s, but miss.' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nD%s attacks you with &v%s %s, but misses.' % (self.id, self.id, self.weapon_wielding))
+            self.emit(f'&nD{self.id} attacks &nd{enemy} with &v{self.id} {w.name}, but misses.', ignore=[self, enemy])
+            self.perceive(f'You attack &nd{enemy} with your {w.name()}, but miss.')
+            enemy.perceive(f'&nD{self.id} attacks you with &v{self.id} {w.name()}, but misses.')
         if self not in enemy.enemies:
             enemy.enemies.append(self)
 

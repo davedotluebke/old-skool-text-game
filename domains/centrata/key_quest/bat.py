@@ -9,8 +9,8 @@ class Bat(creature.NPC):
         self.add_adjectives('vicious', 'vampire', 'red-eyed')
         self.choices = [self.attack_enemy]
         self.set_combat_vars(30, 40, 3, 87)
-        self.default_weapon = gametools.clone('domains.centrata.key_quest.bat_bite')
-        self.weapon_wielding = self.default_weapon
+        self.set_default_weapon(gametools.clone('domains.centrata.key_quest.bat_bite'))
+        self.weapon_wielding = self.default_weapons[0]
         self.introduction_complete = False
         self.new_bat_counter = 0
     
