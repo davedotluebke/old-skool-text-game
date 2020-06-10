@@ -17,7 +17,7 @@ class Lever(scenery.Scenery):
         cons.user.perceive('As you pull on the lever the room trembles and the painting of a tree swallow slides aside revealing a secret door carved into the west wall.')
         self.emit('&nD%s pulls on a hidden lever releaving a secret door to the west.')
         hidden_door = doors_and_windows.Door('door', 'hidden door', 'This is a hidden door carved into the west wall. A gentle breeze passes through the cracks in it.', 'domains.school.elementQuest.secret_lookout', 'west', [])
-        hiiden_door.add_adjectives('hidden', 'carved', 'cracked')
+        hidden_door.add_adjectives('hidden', 'carved', 'cracked')
         cons.user.location.insert(hidden_door)
         self.door = hidden_door
         return True
@@ -35,7 +35,6 @@ def load():
     r.add_adjectives('windy')
     r.add_exit('up', 'domains.school.elementQuest.armor_museum')
     r.add_exit('down', 'domains.school.elementQuest.statue_room')
-    r.add_exit('east', 'domains.school.elementQuest.sauna_room')
 
 
 
@@ -86,6 +85,6 @@ def load():
     r.insert(east_door)
 
     water_fountain = gametools.clone('domains.school.elementQuest.water_fountain')
-    r.insert(water_fountian)
+    r.insert(water_fountain)
 
     return r
