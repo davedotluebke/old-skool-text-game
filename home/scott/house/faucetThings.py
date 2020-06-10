@@ -1,5 +1,6 @@
 from action import Action
 from thing import Thing
+import gametools
 
 class FaucetThing(Thing):
     #
@@ -57,9 +58,9 @@ class FaucetThing(Thing):
         
         filling = oDO
         if not getattr(filling, 'liquid'):
-            cons.write('The water leaves the %s and goes down the drain in the %s.' % (filling, self.type))
+            cons.write('The water leaves the %s and goes down the drain in the %s.' % (filling.name(), self.type))
             return True
-        cons.write('Water comes out of the faucet and fills your %s.' % filling)
+        cons.write('Water comes out of the faucet and fills your %s.' % filling.name())
         self.emit('&nD%s fills a %s with water at the %s.' % (cons.user.id, filling, self.type))
         water = gametools.clone('domains.school.school.water')
         oDO.insert(water)

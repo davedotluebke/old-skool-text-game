@@ -1,6 +1,6 @@
 import gametools
 import room
-import home.scott.house.exit_door as exit_door
+import doors_and_windows
 
 def load():
     roomPath = gametools.findGamePath(__file__)
@@ -13,7 +13,7 @@ def load():
     magic_room.add_names('room')
     magic_room.add_adjectives('magic', 'magical')
 
-    d = exit_door.Door('door', 'strong osmium door', 'This door is made of pure osmium. It is on the west side of the room.', 'domains.school.school.water_kitchen', 'west')
+    d = doors_and_windows.Door('door', 'strong osmium door', 'This door is made of pure osmium. It is on the west side of the room.', 'domains.school.school.water_kitchen', 'west', ['scott'])
     d.add_adjectives('osmium', 'magic')
     magic_room.insert(d, True)
     magic_room.west_door = d

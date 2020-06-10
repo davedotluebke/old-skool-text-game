@@ -9,6 +9,7 @@ git merge origin -m "Merged daily changes to GitHub with daily wizard updates." 
 chgrp gameadmins *.py
 chgrp -R wizards domains home saved_players potions currencies game_log.txt
 chgrp wizards backup_saved_players/*.OADplayer
+find /game/ -type f -print0 | xargs -0 dos2unix -- 
 MERGE=$!
 
 if [[ $MERGE -gt 0 ]]
