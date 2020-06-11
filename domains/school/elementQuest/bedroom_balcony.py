@@ -34,5 +34,9 @@ def load():
     mountains = scenery.Scenery('mountains', 'mountains', 'These mountains are tall, steep, and covered in snow in some sections.', unlisted=True)
     mountains.add_adjectives('tall', 'steep', 'snowy')
     r.insert(mountains)
+
+    swallow = gametools.clone('domains.school.elementQuest.swallow')
+    r.set_spawn(swallow)
+    r.insert(swallow)
     
     return r

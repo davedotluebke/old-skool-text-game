@@ -13,7 +13,7 @@ def load():
     'Three large glass cases with armor are in the room. In the centre of the room you see a table covered with a large coat '
     'of arms. There is a door to the west, a doorway to the east, and a wooden staircase leading up and down.')
     r.add_adjectives('armor', 'tower')
-    r.add_exit('east', 'domains.school.elementQuest.armory')
+    r.add_exit('east', 'domains.school.elementQuest.armoury')
     r.add_exit('down', 'domains.school.elementQuest.portrait_gallery')
     r.add_exit('up', 'domains.school.elementQuest.living_space')
 
