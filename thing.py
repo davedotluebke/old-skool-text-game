@@ -14,7 +14,7 @@ class Thing(object):
     # SPECIAL METHODS (i.e __method__() format)
     #
     def __init__(self, default_name, path, pref_id=None, plural_name=None):
-        self.versions = {gametools.findGamePath(__file__): 4}
+        self.versions = {gametools.findGamePath(__file__): 6}
         self._add_ID(default_name if not pref_id else pref_id)
         self.path = gametools.findGamePath(path) if path else None
         self.log = gametools.get_game_logger(self)
@@ -234,14 +234,14 @@ class Thing(object):
         return 'its'  
 
     def pronoun(self):
-        """Return 'he', 'she', or 'it' as appropriate."""
+        """Return 'he', 'she', 'they', or 'it' as appropriate."""
         if hasattr(self, 'gender'):
             if self.gender == 'male': 
                 return 'he'
             elif self.gender == 'female':
                 return 'she'
             elif self.gender == 'non-binary':
-                return 'their'
+                return 'they'
         # other gender or no gender specified:
         return 'it'
     
@@ -253,7 +253,7 @@ class Thing(object):
             elif self.gender == 'female':
                 return 'herself'
             elif self.gender == 'non-binary':
-                return 'themselves'
+                return 'themself'
         # other gender or no gender specified:
         return 'itself'
 
@@ -289,9 +289,6 @@ class Thing(object):
                or attr == 'versions':
                 saveable[attr] = state[attr]
         default_obj.destroy()
-        if 'adjectives' in saveable and isinstance(saveable['adjectives'], set):
-            saveable['adjectives'] = list(saveable['adjectives'])
-        # XXX temporary code to prevent all save calls from failing
         for i in saveable:
             if isinstance(saveable[i], set):
                 saveable["__set__" + i] = list(saveable[i])
@@ -381,9 +378,9 @@ class Thing(object):
             self.versions[gametools.findGamePath(__file__)] = 3
             del self.__dict__['version_number']
         
-        if self.versions[gametools.findGamePath(__file__)] <= 3:
+        if self.versions[gametools.findGamePath(__file__)] <= 5:
             self.adjectives = set(self.adjectives)
-            self.versions[gametools.findGamePath(__file__)] = 4
+            self.versions[gametools.findGamePath(__file__)] = 6
 
     def delete(self):
         if self.contents:
@@ -507,6 +504,41 @@ class Thing(object):
             return True
         else:
             return "Not sure what you are trying to count!"
+    
+    def light_on_fire(self, p, cons, oDO, oIDO):
+        if not oDO or oDO == self:
+            return "Do you mean to light something on fire?"
+        if oIDO and oIDO != self:
+            return "Did you mean to light something on fire with the %s?" % self.name()
+        if not self.flammable:
+            return "The %s is not flammable."
+        if not self.burning:
+            return "The %s is not on fire."
+        if not oDO.flammable:
+            cons.user.perceive("You try to light the %s on fire, but are unsuccesful." % oDO.name())
+            return True
+        if hasattr(oDO, 'burning') and oDO.burning:
+            cons.user.perceive("The %s is already on fire!" % oDO)
+            return True
+
+        if hasattr(oDO, 'when_lit') and callable(oDO.when_lit): # this is for objects with special light_on_fire abilities
+            value = oDO.when_lit(p, cons, oDO, oIDO)
+        else:
+            oDO.burning = True
+            if hasattr(oDO, 'on_fire_description'):
+                oDO.set_description(oDO._short_desc, oDO.on_fire_description, oDO._plural_short_desc, oDO.unlisted)
+            else:
+                oDO.set_description(oDO._short_desc, oDO._long_desc+' It is on fire.', oDO._plural_short_desc, oDO.unlisted)
+            if hasattr(oDO, 'burn_time'):
+                cons.game.schedule_event(oDO.burn_time, oDO.destroy)
+            cons.user.perceive('You light the %s on fire.' % oDO.name())
+            self.emit('&nD%s lights the %s on fire.' % (cons.user, oDO.name()))
+            value = True
+        
+        if value != True:
+            return value
+
+        return True
 
     actions = {}
     actions["look"] = Action(look_at, True, False)
@@ -515,3 +547,6 @@ class Thing(object):
     actions["get"] = Action(take, True, False)
     actions["drop"] = Action(drop, True, False)
     actions["count"] = Action(count, True, False)
+    actions["light"] = Action(light_on_fire, True, False)
+    actions["burn"] = Action(light_on_fire, True, False)
+    actions["ignite"] = Action(light_on_fire, True, False)

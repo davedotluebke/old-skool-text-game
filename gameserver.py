@@ -30,12 +30,13 @@ class Game():
         a list of objects that have a heartbeat (a function that runs 
         periodically), and the IP address of the server. 
     """
-    def __init__(self, server=None, mode=False, duration=86400, port=9124):
+    def __init__(self, server=None, mode=False, duration=86400, port=9124, retry=5, silent=False):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
-        self.log = gametools.get_game_logger("_gameserver")
+        self.server_ip = server  # IP address of server, if specified
+        # print gameserver log messages to stderr only on localhost
+        self.log = gametools.get_game_logger("_gameserver", printing=(self.server_ip == '127.0.0.1'))
         self.acl = miracle.Acl()
         self.set_up_groups_and_acl()
-        self.server_ip = server  # IP address of server, if specified
         self.is_ssl = ('ssl' in mode) or ('https' in mode)
         self.encryption_setting = not ('nocrypt' in mode or 'no' in mode or 'noencrypt' in mode)
         if connections_websock.encryption_installed:
@@ -44,16 +45,19 @@ class Game():
         self.start_time = 0
         try:
             self.duration = int(duration)
-        except ValueError:
-            self.duration = 86400
-        except TypeError:
+        except:
+            self.log.exception("Error setting game.duration; defaulting to 86400 seconds")
             self.duration = 86400
         try:
             self.port = port
-        except ValueError:
+        except:
+            self.log.exception("Error setting game.port; defaulting to 9124")
             self.port = 9124
-        except TypeError:
-            self.port = 9124
+        try: 
+            self.retry = int(retry)
+        except:
+            self.log.exception("Error setting game.retry; defaulting to 5")
+            self.retry = 5
         
         self.heartbeat_users = []  # objects to call "heartbeat" callback every beat
         self.time = 0  # number of heartbeats since game began
@@ -353,7 +357,7 @@ class Game():
             Thing.ID_dict = backup_ID_dict # ESSENTIAL THAT WE DO THIS!
         except TypeError:
             player.cons.write("Error writing to file %s" % filename)
-            self.log.exception('A TypeError occured while trying to save player %s. Printing below:' % player)
+            self.log.exception('A TypeError occurred while trying to save player %s. Printing below:' % player)
             Thing.ID_dict = backup_ID_dict
         # restore location & contents etc to obj references:
         for obj in l:
@@ -361,7 +365,7 @@ class Game():
                 obj._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(obj)
-                self.log.exception('An error occured while loading %s! Printing below:')
+                self.log.exception('An error occurred while loading %s! Printing below:')
 
         # restore original IDs by removing tag
         for obj in l:
@@ -449,7 +453,7 @@ class Game():
                 o._restore_objs_from_IDs()
             except Exception:
                 broken_objs.append(o)
-                self.log.exception('An error occured while loading %s! Printing below:')
+                self.log.exception('An error occurred while loading %s! Printing below:')
         # Now de-uniquify all IDs, replace object.id and ID_dict{} entry
         for o in l:
             try:
@@ -458,7 +462,7 @@ class Game():
                 o.id = o._add_ID(head)  # if object with ID == head exists, will create a new ID
             except Exception:
                 broken_objs.append(o)
-                self.log.exception('An error occured while loading %s! Printing below:')
+                self.log.exception('An error occurred while loading %s! Printing below:')
 
         # Make sure that broken objects are removed from their container's contents list
         reference_check = [newplayer]
@@ -544,10 +548,10 @@ class Game():
         try:
             func(*params)
         except:
-            self.log.exception("An error occured while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
+            self.log.exception("An error occurred while attepting to complete event (timestamp %s, callback %s, payload %s)! Printing below:" % (self.time, func, [*params]))
         profile_et = time.time()
         profile_t = profile_et - profile_st
-        funcname = str(func)
+        funcname = ":".join((func.__module__, func.__name__))
         if funcname in self.total_times:
             self.total_times[funcname] += profile_t
             self.numrun_times[funcname] += 1
@@ -557,9 +561,15 @@ class Game():
             self.total_times[funcname] = profile_t
             self.numrun_times[funcname] = 1
             self.maximum_times[funcname] = profile_t
-        self.log.debug("Function %s took %s seconds" % (funcname, profile_t))
+        # self.log.debug("Function %s took %s seconds" % (funcname, profile_t))
         
-    
+    def log_func_profile(self):
+        msg = "Function profiling report\n"
+        msg+= "\tFunction name: # of invocations, average time, max time\n"
+        for f in self.total_times:
+            msg += "%s: %4.2d    %4.2e    %4.2e\n" % (f.rjust(50), self.numrun_times[f], self.total_times[f] / self.numrun_times[f], self.maximum_times[f])
+        self.log.info(msg)
+
     def beat(self):
         """Advance time, run scheduled events, and call registered heartbeat functions"""
         self.time += 1
@@ -584,16 +594,16 @@ class Game():
             ssl_context.load_cert_chain("certificate.pem", "private_key.pem")
             ssl_context.set_ciphers("ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:RSA-AES128-GCM-SHA256:RSA-AES256-GCM-SHA384:RSA-AES128-SHA:RSA-AES256-SHA:RSA-3DES-EDE-SHA")
             self.events.run_until_complete(
-                websockets.serve(connections_websock.ws_handler, self.server_ip, 9124, ssl=ssl_context))
+                websockets.serve(connections_websock.ws_handler, self.server_ip, self.port, ssl=ssl_context))
         else:
-            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, 9124))
+            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, self.port))
 
 
     def start_loop(self):
         # Keep track of game start time to support periodic reboots 
         # and to serve as a random seed for various things
         self.start_time = time.time()
-        print("Starting game...")
+        self.log.info("Starting game...")
 
         while not self.server_ip:
             input_ip = input('IP Address: ')
@@ -603,16 +613,16 @@ class Game():
             except ValueError:
                 print("Error: %s is not a valid IP address! Please try again." % input_ip)
         
-        socket_sucessfully_opened = False
-        while not socket_sucessfully_opened:
+        for i in range(0, self.retry):
             try:
                 self.open_socket()
+                break
                 socket_sucessfully_opened = True
-            except OSError:
-                traceback.print_exc()
-                time.sleep(4*60)
+            except:
+                self.log.exception(f"Failed to open socket at {self.server_ip}:{self.port}; retrying in 30 seconds")
+                time.sleep(30)
 
-        print("Listening on %s port 9124..." % self.server_ip)
+        self.log.info("Listening on %s port %d..." % (self.server_ip, int(self.port)))
         self.events.call_later(1,self.beat)
         self.events.run_forever()
 
@@ -635,4 +645,5 @@ class Game():
                 self.events.run_until_complete(connections_websock.ws_send(j))                
 
         self.log.critical("Exiting main game loop!")
+        self.log_func_profile()
         sys.exit(restart_code)

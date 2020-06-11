@@ -14,4 +14,7 @@ def clone():
 
     dusty_book = gametools.clone('home.scott.house.dusty_book')
     dusty_book.move_to(bookshelf, True)
+
+    spellbook = gametools.clone('home.scott.house.spellbook')
+    spellbook.move_to(bookshelf, True)
     return bookshelf

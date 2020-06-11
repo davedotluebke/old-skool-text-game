@@ -34,6 +34,9 @@ class PlayerLoadError(Exception):
 class IncorrectPasswordError(Exception):
     pass
 
+class BadSpellInfoError(AttributeError):
+    pass
+
 #
 # UTILITY FUNCTIONS
 # 
@@ -122,8 +125,10 @@ game_log_handler.setLevel(logging.WARNING)
 game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 game_log_handler.setFormatter(game_log_formatter)
 
-def get_game_logger(obj):
-    """Returns the logger associated with object `obj`, creating if needed."""
+def get_game_logger(obj, printing=False):
+    """Returns the logger associated with object `obj`, creating if needed. All
+       objects log messages to the default logfile via game_log_handler; if 
+       <printing> is set to True, messages are also printed to stderr."""
     if isinstance(obj, str):
         logname = obj
     else:
@@ -135,6 +140,8 @@ def get_game_logger(obj):
     logger = logging.getLogger(logname)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(game_log_handler)
+    if printing:
+        logger.addHandler(logging.StreamHandler())
     return logger
 
 #
@@ -185,4 +192,3 @@ def load_room(modpath, report_import_error=True):
     if room == None:
         get_game_logger("_gametools").error("Error loading from room module %s:load() returned None" % modpath)
     return room
-

@@ -2,6 +2,7 @@ import gametools
 import room
 import thing
 import action
+import scenery
 
 class QuestDoor(thing.Thing):
     #
@@ -86,8 +87,15 @@ def load():
     path_choice.indoor = True
     path_choice.set_description('circular room with four doors', 'You are in a circular room with four doors and a ladder down. Each of the doors has a sign above it. ' \
     'The one farthest left says "Path of Fire", the one to the right of that says "Path of Water", the second farthest right says "Path of Earth", and the one to the right of that says "Path of Air". ' \
-    'There is a ladder in the centre of the room leading down.')
-    path_choice.add_exit('down', 'domains.school.cave.lair')
+    'There is a ladder in the centre of the room leading down. You see a wooden sign next to it.')
+    path_choice.add_exit('down', 'domains.school.school.gallery_east')
+
+    sign = scenery.Scenery('sign', 'wooden sign', 'This wooden sign is in the middle of the room. It reads:\n'
+    'When thou art ready, thou must choose a path. Thou must be careful, because thy choice decides thy destiny.', unlisted=True)
+    sign.add_adjectives('wooden')
+    sign.add_response(['read'], 'The sign reads: When thou art ready, thou must choose a path. Thou must be careful, because thy choice decides thy destiny.')
+    sign.move_to(path_choice)
+
 
     fire = QuestDoor('fire', None)
     fire.set_description('door of fire', 'This door is warm and has a large label above it reading "Fire". ')
@@ -109,7 +117,7 @@ def load():
 
     air = QuestDoor('air', None)
     air.set_description('door of air', 'This door is as light as a feather. It has a large label over it reading "Air". ')
-    air.set_view('a blustery autumn day in some woods')
-    air.set_dest('domains.school.elementQuest.autumn_forest')
+    air.set_view('a barren entrence hall')
+    air.set_dest('domains.school.elementQuest.windy_hall')
     path_choice.insert(air)
     return path_choice

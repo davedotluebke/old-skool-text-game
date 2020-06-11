@@ -3,6 +3,7 @@ import sys
 import importlib
 import connections_websock
 import os
+import magic
 import logging
 
 import gametools
@@ -80,7 +81,6 @@ class Player(Creature):
         self.engaged = False
         self.wizardry_skill = 0
         self.wizardry_element = None
-        self.wprivileges = False
         self.attacking = False
         self.hitpoints = 20
         self.health = 20
@@ -88,10 +88,21 @@ class Player(Creature):
         self.gender = None
         self.adj1 = None
         self.adj2 = None
+        # Convention: Each spell is a key-value pair where the key is the name
+        # of the spell (for the player, e.g. 'apparate') and the value is a 
+        # python-style path to the spell (e.g. 'spells.apparate')
+        self.spellsKnown = {}
+        self.max_mana = 100
+        self.mana = self.max_mana
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
         self.versions[gametools.findGamePath(__file__)] = 2
         self.prev_location_id = None
+        self.quest_list = [ # list of quests this player knows about, followed by completion status (True or False)
+            ["Find the library", False],
+            ["Create a potion to hide thyself and use it to sneak past a terrible monster", False],
+            ["Complete a quest to find thy element", False]
+        ]
         self.tutorial_messages = {
             'domains.character_creation.species': 'Try typing "look north mirror" and then "enter north mirror".',
             'domains.character_creation.adjective1': 'Try intoning something from the plaque.',
@@ -182,7 +193,7 @@ class Player(Creature):
             # XXX temporary fix for now
             self.password = passwd
             # TODO secure password authentication goes here
-            self.id = self._add_ID(self.names[0])            
+            self.id = self._add_ID(self.names[0], remove_existing=True)
             self.proper_name = self.names[0].capitalize()
             self.log.info("Creating player id %s with default name %s" % (self.id, self.names[0]))
             start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
@@ -211,6 +222,7 @@ class Player(Creature):
                     self.login_state = None
                     self.game.deregister_heartbeat(self)
                     del Thing.ID_dict[self.id]
+                    self.destroy()
                 except gametools.IncorrectPasswordError:
                     self.cons.write("Your username or password is incorrect. Please try again.")
                     self.login_state = "AWAITING_USERNAME"
@@ -258,6 +270,11 @@ class Player(Creature):
         if rid_act in self.tutorial_act_messages:
             self.cons.write(self.tutorial_act_messages[rid_act])
             self.tutorial_act_messages_complete[rid_act] = True
+    
+    def restore_mana(self):
+        if self.mana < self.max_mana:
+            self.mana += 1
+        
     #
     # SET/GET METHODS (methods to set or query attributes)
     #
@@ -272,6 +289,65 @@ class Player(Creature):
             pass
         del saveable['cons']
         return saveable
+    def get_mana(self):
+        return self.mana
+    
+    def calc_chance_mess_up(self, mana):
+        if mana == 0:
+            return 0
+        chanceWrong = (pow(10, 4*((mana-self.max_mana)/mana))- 1) / 100
+        if chanceWrong < 0:
+            return 0
+        elif chanceWrong > 1:
+            return 1
+        else:
+            return chanceWrong
+        
+    def get_max_mana(self):
+        return self.max_mana
+
+    def set_mana(self, mana):
+        try:
+            intmana = int(mana)
+            if intmana != mana:
+                self.log.warning('Converted mana to integer')
+            if mana >= 0:
+                self.mana = intmana
+            else:
+                self.log.error('Mana must be non-negative')
+        except TypeError:
+            self.log.error('Mana must be a non-negative integer')
+
+    def set_max_mana(self, mana):
+        try:
+            intmana = int(mana)
+            if intmana != mana:
+                self.log.warning('Converted max_mana to integer')
+            if mana >= 0:
+                self.mana = intmana
+            else:
+                self.log.error('Mana must be non-negative')
+        except TypeError:
+            self.log.error('Mana must be a non-negative integer')
+    
+    def add_quest(self, quest_message):
+        """Add a quest to the player's list of quests."""
+        self.quest_list.append([quest_message, False])
+    
+    def complete_quest(self, quest_message):
+        """Complete a quest, setting its "complete" flag to True."""
+        l = [self.quest_list.index(x) for x in self.quest_list if x[0] == quest_message]
+        for i in l:
+            self.quest_list[i][1] = True
+    
+    def remove_quest(self, quest_message):
+        """Remove a quest from a player's list of quests. 
+        This is equivalent to cancelling the quest. To
+        mark a quest as complete, use the "complete quest"
+        method instead."""
+        l = [self.quest_list.index(x) for x in self.quest_list if x[0] == quest_message]
+        for i in l:
+            del self.quest_list[i]
 
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
@@ -289,6 +365,9 @@ class Player(Creature):
         
         if self.health < self.hitpoints:
             self.heal()
+        
+        if self.mana < self.max_mana:
+            self.restore_mana()
         
         cmd = self.cons.take_input()
         if self.login_state != None:
@@ -409,7 +488,9 @@ class Player(Creature):
                     if tag_type in ('n', 'N'):  # some tag types use 2 letters
                         tag_type = tag[0:2]
                         idstr = tag[2:]
-                    idstr = idstr.rstrip('.,!?;:\'"')  # remove any punctuation
+                    idstr_prepunc = idstr.rstrip('.,!?;:\'"')  # remove & save any punctuation
+                    idstr_punc = idstr[len(idstr_prepunc):]
+                    idstr = idstr_prepunc
                     O = Thing.ID_dict[idstr]
                 except IndexError:
                     subject = "<error: can't parse tag &%s>" % tag
@@ -441,7 +522,7 @@ class Player(Creature):
                 if tag_type[0] == 'V':
                     subject = O.possessive().capitalize()
                 
-                m2 = subject + m2.partition(tag)[2]
+                m2 = subject + idstr_punc + m2.partition(tag)[2]
                 message = m1 + m2
 
             super().perceive(message)
@@ -649,7 +730,7 @@ class Player(Creature):
                     newobj = mod.load()  # TODO: store and re-use parameters of original load() call?
         except Exception:
             self.log.error('Error reloading object %s!' % obj)
-            cons.user.perceive('An error occured while reloading %s.' % obj)
+            cons.user.perceive('An error occurred while reloading %s.' % obj)
             for c in alive:
                 c.move_to(obj)
             return True
@@ -877,6 +958,7 @@ class Player(Creature):
     for verb in emotes:
         actions[verb] =     Action(emote_action, True, True)
     actions['introduce'] =  Action(introduce, True, True)
-    actions['engage'] =  Action(engage, True, False)
-    actions['attack'] =  Action(engage, True, False)
+    actions['engage'] =     Action(engage, True, False)
+    actions['attack'] =     Action(engage, True, False)
     actions['disengage'] =  Action(disengage, False, True)
+    actions['cast'] =       Action(magic.castChecks, True, False)

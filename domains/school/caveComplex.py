@@ -18,7 +18,13 @@ class Lair(Room):
                 if cons.user.invisible != True:
                     cons.write('You try to enter the crawlway, but the monster blocks your path.')
                     return True
+                else:
+                    cons.user.complete_quest("Create a potion to hide thyself and use it to sneak past a terrible monster")
         return Room.go_to(self, p, cons, oDO, oIDO)
+    
+    actions = dict(Room.actions)
+    actions['go'] = Action(go_to, True, False)
+    actions['walk'] = Action(go_to, True, False)
 
 class CaveRoom(Room):
     #

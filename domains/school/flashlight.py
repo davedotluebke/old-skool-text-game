@@ -16,10 +16,11 @@ class Flashlight(Thing):
     #
     def _adjust_descriptions(self):
         if self.light: 
-            self._short_desc += " burning brightly"
-            self._plural_short_desc += " burning brightly"
-            self._long_desc += "\nThe flashlight is on, burning brightly."
-            self.add_adjectives("lit", "burning")
+            if "burning brightly" not in self._short_desc:
+                self._short_desc += " burning brightly"
+                self._plural_short_desc += " burning brightly"
+                self._long_desc += "\nThe flashlight is on, burning brightly."
+                self.add_adjectives("lit", "burning")
         else: 
             (head, sep, tail) = self._short_desc.partition(" burning brightly")
             self._short_desc = head

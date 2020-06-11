@@ -7,7 +7,7 @@
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
-            "pythonPath": "${config:python.pythonPath}",
+            "pythonPath": "${config:python.interpreterPath}",
             "program": "${workspaceRoot}/startup.py",
             //"cwd": "",
             "console": "integratedTerminal",
@@ -19,7 +19,7 @@
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
-            "pythonPath": "${config:python.pythonPath}",
+            "pythonPath": "${config:python.interpreterPath}",
             "program": "${workspaceRoot}/startup.py",
             "args": ["--server", "127.0.0.1", "--mode", "nocrypt"],
             //"cwd": "",
@@ -32,7 +32,7 @@
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
-            "pythonPath": "${config:python.pythonPath}",
+            "pythonPath": "${config:python.interpreterPath}",
             "program": "${file}"
         }
     ]
