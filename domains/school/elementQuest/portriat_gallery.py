@@ -80,6 +80,15 @@ def load():
     plaque.add_response(['read'], 'The plaque reads: Please do not touch any of the paintings. \n No flash photography \n No food or drink in the gallery')
     r.insert(plaque)
 
+    wall = scenery.Scenery('wall', 'wall', 'This stone wall raps around the room, there is a door to the east and a large crack in the west wall.', unlisted=True)
+    wall.add_names('wall')
+    wall.add_adjectives('stone', 'circular')
+
+    crack = scenery.Scenery('crack', 'large crack', 'This is a large crack it is located in the west section of the wall right above the acrylic painting. In the crack you notice a hidden lever.', unlisted=True)
+    crack.add_adjectives('large')
+    crack.add_names('crack', 'crevice')
+
+
     east_door = doors_and_windows.Door('door', 'wood door', 'This is a boring wooden dooor, it leads to the east.', 'domians.school.elementQuest.hall_to_sauna', 'east', [])
     east_door.add_adjectives('wooden','normal','boring')
     r.insert(east_door)
