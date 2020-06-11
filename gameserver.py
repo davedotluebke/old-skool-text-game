@@ -313,10 +313,6 @@ class Game():
                 # recursively add associated objects
                 if obj.contents != None:
                     l += obj.contents
-                if hasattr(obj, 'default_weapons'):
-                    l += obj.default_weapons
-                if hasattr(obj, 'default_armor'):
-                    l += [obj.default_armor]
             except Exception:
                 self.log.error('Error uniquifying the ID of %s. Removing from player inventory.' % obj)
                 broken_objs.append(obj)
