@@ -6,3 +6,5 @@ def clone():
     ice_block.add_names('cube')
     ice_block.set_weight(1838)
     ice_block.set_volume(2)
+
+    return ice_block

@@ -15,3 +15,5 @@ def clone():
 
     ice_chest.insert(ice_block)
     ice_chest.close()
+
+    return ice_chest

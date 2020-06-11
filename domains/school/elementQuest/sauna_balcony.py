@@ -18,3 +18,5 @@ def load():
 
     towel = gametools.clone('domains.school.elementQuest.towel')
     r.insert(towel)
+
+    return sauna_balcony
