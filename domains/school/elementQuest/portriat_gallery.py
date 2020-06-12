@@ -38,7 +38,7 @@ def load():
 
 
 
-    dark_portriat = scenery.Scenery ('portriat', 'dark portriat', 'This portriat depicts a great horned out on a hunt in the dark of night. It is painted in oil paint. You feel and tingling go up your spine')
+    dark_portriat = scenery.Scenery ('portriat', 'dark portriat', 'This portriat depicts a great horned out on a hunt in the dark of night. It is painted in oil paint. You feel and tingling go up your spine.')
     dark_portriat.add_names('portriat', 'painting')
     dark_portriat.add_adjectives('dark', 'owl', 'night', 'oil', 'great horned')
     dark_portriat.add_response(['take','steal','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')

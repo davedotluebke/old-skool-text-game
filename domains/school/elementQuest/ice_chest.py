@@ -9,9 +9,11 @@ def clone():
 
     ice_block = gametools.clone('domains.school.elementQuest.ice_block')
     ice_block.plurality = 5
+
+    ice_chest.closable = True
     ice_chest.set_max_volume_carried(100)
     ice_chest.set_max_weight_carried(50000)
-    ice_chest.fix_in_place('The ice chest is held to the floor so you can\'t move it.')
+    ice_chest.fix_in_place('The ice chest is held firerly to the floor so you can\'t move it.')
 
     ice_chest.insert(ice_block)
     ice_chest.close()
