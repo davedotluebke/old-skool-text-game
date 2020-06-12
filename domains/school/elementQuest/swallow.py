@@ -13,7 +13,7 @@ class Swallow(creature.NPC):
             'domains.school.elementQuest.portrait_gallery': False,
             'domains.school.elementQuest.secret_room': False
         }
-        self.set_spawn_interval(10)
+        self.set_spawn_interval(30)
         self.set_spawn_message('A swallow arrives.')
     
     def move_around(self):
