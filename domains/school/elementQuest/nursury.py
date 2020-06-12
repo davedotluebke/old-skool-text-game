@@ -40,6 +40,9 @@ def load():
     ground_cover_pot.plurarity = 2
     r.insert(ground_cover_pot)
 
+    changing_table = gametools.clone('domains.school.elementQuest.changing_table')
+    r.insert(changing_table)
+
     price_tag_bundle = gametools.clone('domains.school.element.price_tag_bundle')
     r.insert(price_tag_bundle)
 
