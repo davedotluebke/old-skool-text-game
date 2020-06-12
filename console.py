@@ -367,8 +367,13 @@ class Console:
         try:
             f = open(gametools.realDir(filename, player=self.user.name()), 'rb')
         except FileNotFoundError:
-            self.write("Couldn't find a file named %s." % filename)
-            return
+            if edit_flag:
+                f = open(gametools.realDir(filename, player=self.user.name()), 'x')
+                f.close()
+                f = open(gametools.realDir(filename, player=self.user.name()), 'rb')
+            else:
+                self.write("Couldn't find a file named %s." % filename)
+                return
 
         self.file_output = f.read()
         asyncio.ensure_future(connections_websock.file_send(self, edit_flag=edit_flag, filename=filename))

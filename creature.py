@@ -333,17 +333,23 @@ class NPC(Creature):
                 except NameError:
                     self.log.warning("Object "+str(self.id)+" heartbeat tried to run non-existant action choice "+str(choice)+"!")
             
-    def move_around(self, exit_list=None):
+    def move_around(self, exit_list=None, direction=None):
         """The NPC leaves the room, taking a random exit"""
         if not exit_list:
             try:
                 exit_list = list(self.location.exits)
-                exit = random.choice(exit_list)
+                if not direction:
+                    exit = random.choice(exit_list)
+                else:
+                    exit = exit_list[direction]
             except (AttributeError, IndexError):
                 self.log.debug('NPC %s sees no exits, returning from move_around()' % self.id)
                 return
         else:
-            exit = random.choice(exit_list)
+            if not direction:
+                exit = random.choice(exit_list)
+            else:
+                exit = exit_list[direction]
 
         self.log.debug("Trying to move to the %s exit!" % (exit))
         current_room = self.location
