@@ -1,5 +1,6 @@
 import gametools
 import container
+import scenery
 
 def clone():
     desk = container.Container('desk', __file__)
@@ -9,4 +10,14 @@ def clone():
     desk.add_adjectives('sturdy', 'dark', 'oak')
     desk.add_names('table')
 
-    prism = gametools.clone('domains.school.elementQuest.')
+    prism = gametools.clone('domains.school.elementQuest.prism')
+    desk.insert(prism)
+
+    lamp = scenery.Scenery('lamp', 'antique lamp', 'This is an antique lamp with a buetiful shade that shows sollows flying over a lake.')
+    lamp.add_adjectives('old', 'antique')
+    lamp.add_response(['take','steel', 'replace'], 'Despite you best efforts you can not seem to take it. It is as if magic was holding it in place.')
+
+    cracker_box = gametools.clone('domains.school.elementQuest.cracker_box')
+    desk.insert(cracker_box)
+
+    
