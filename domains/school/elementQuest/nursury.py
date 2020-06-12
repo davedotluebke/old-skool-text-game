@@ -12,7 +12,7 @@ def load():
     
     r = room.Room('nursury', roomPath)
     r.indoor = True
-    r.set_description('multi-porpuse nursery', 'You enter a small carpeted room. On the north side you see a changing table with a painting hanging over it and, a cradle and a some cabinits. On the south side of the room you see five flower pots')
+    r.set_description('multi-porpuse nursery', 'You enter a small carpeted room. On the north side you see a changing table with a painting hanging over it and, a cradle and a some cabinits. On the south side of the room you see five flower pots.')
     r.add_adjectives('windy')
     r.add_exit('up', 'domains.school.elementQuest.armor_museum')
     r.add_exit('down', 'domains.school.elementQuest.statue_room')
