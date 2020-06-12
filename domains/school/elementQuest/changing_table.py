@@ -8,8 +8,9 @@ def clone():
     changing_table.set_max_weight_carried(90000)
     changing_table.add_adjectives('changing', 'simple', 'plain')
     changing_table.add_names('place', 'changer')
+    changing_table.fix_in_place('The table is suprisingly heavy.')
 
-    tisue_box = gametools.clone('domains.renaissance_school.kleenex_box')
+    tisue_box = gametools.clone('domains.renaissance_school.kleenex')
     changing_table.insert(tisue_box)
 
     return changing_table

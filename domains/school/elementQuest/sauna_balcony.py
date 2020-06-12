@@ -12,11 +12,12 @@ def load():
     r.add_exit('west', 'domains.school.elementQuest.sauna_room')
     r.add_adjectives('sunny', 'stone', 'walled')
 
-    wall = scenery.Scenery('wall', 'stone wall', 'This is a stuby sturdy stone wall that surrounds the balcony.')
+    wall = scenery.Scenery('wall', 'stone wall', 'This is a stuby sturdy stone wall that surrounds the balcony.', unlisted=True)
     wall.add_adjectives('sturdy', 'stone')
-    wall.add_response(['breack', 'destroy', 'pound', 'crush'], 'You think about it but then you think that you probley shouldn\'t becuase it would be dangerous')
+    wall.add_response(['break', 'destroy', 'pound', 'crush'], 'You think about it but then you think that you probably shouldn\'t becuase it would be dangerous.')
+    r.insert(wall)
 
     towel = gametools.clone('domains.school.elementQuest.towel')
     r.insert(towel)
 
-    return sauna_balcony
+    return r

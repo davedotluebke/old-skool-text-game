@@ -12,7 +12,7 @@ def load():
     
     r = room.Room('nursury', roomPath)
     r.indoor = True
-    r.set_description('multi-porpuse nursery', 'You enter a small carpeted room. On the north side you see a changing table with a painting hanging over it and, a cradle and a some cabinits. On the south side of the room you see five flower pots')
+    r.set_description('multi-porpuse nursery', 'You enter a small carpeted room. On the north side you see a changing table with a painting hanging over it, a cradle, and some cabinets. On the south side of the room you see five flower pots.')
     r.add_adjectives('windy')
     r.add_exit('up', 'domains.school.elementQuest.armor_museum')
     r.add_exit('down', 'domains.school.elementQuest.statue_room')
@@ -29,8 +29,8 @@ def load():
     crib.add_response(['take', 'steel', 'remove', 'move'], 'Try as you might, you can not seem to be able to move the crib. It feels as if magic is holding it in place.')
     r.insert(crib)
 
-    cabinits = gametools.clone('domains.school.elementQuest.nursury_cabinits')
-    r.insert(cabinits)
+    cabinets = gametools.clone('domains.school.elementQuest.nursury_cabinets')
+    r.insert(cabinets)
 
     flower_pot = gametools.clone('domains.school.elementQuest.flower_pot')
     flower_pot.plurarity = 3

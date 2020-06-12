@@ -14,4 +14,4 @@ def load():
 
     chain_mail = gametools.clone('domains.school.elementQuest.chain_mail')
 
-    return armoury
+    return r
