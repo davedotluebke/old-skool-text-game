@@ -13,7 +13,7 @@ def load():
     'A large pedistal stands in the centre of the balcony, with a peculiarly-shaped space on it.')
     r.add_adjectives('crumbling')
 
-    east_door = doors_and_windows.Door('door', 'stone door', 'This is a stone door carved into the wall.', 'domians.school.elementQuest.portrait_gallery', 'east', [])
+    east_door = doors_and_windows.Door('door', 'stone door', 'This is a stone door carved into the wall.', 'domains.school.elementQuest.portrait_gallery', 'east', [])
     east_door.add_adjectives('stone','carved')
     r.insert(east_door)
 

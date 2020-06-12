@@ -9,7 +9,7 @@ def load():
 
     r = room.Room('balcony', roomPath, indoor = False)
     r.set_description('sunny balcony', 'You walk out onto a sunny stone balcony. The edge of the balcony is lined with a stone wall. From the blacony you can see jagged mountains that go on as far as the eye can see.')
-    r.add_exit('west', 'domians.school.elementQuest.sauna_room')
+    r.add_exit('west', 'domains.school.elementQuest.sauna_room')
     r.add_adjectives('sunny', 'stone', 'walled')
 
     wall = scenery.Scenery('wall', 'stone wall', 'This is a stuby sturdy stone wall that surrounds the balcony.')

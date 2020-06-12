@@ -2,7 +2,8 @@ import container
 import gametools
 
 def clone():
-    ice_chest = container.Container('chest', 'ice chest', 'This is a fancy mahogany ice chest. Its panels a intricately carved to resemble various types of birds in flight.')
+    ice_chest = container.Container('chest', __file__)
+    ice_chest.set_description('ice chest', 'This is a fancy mahogany ice chest. Its panels a intricately carved to resemble various types of birds in flight.')
     ice_chest.add_names('cooler', 'box')
     ice_chest.add_adjectives('ice', 'cooler', 'cooling', 'cold')
     ice_chest.closable = True

@@ -81,15 +81,18 @@ def load():
     r.insert(plaque)
 
     wall = scenery.Scenery('wall', 'wall', 'This stone wall raps around the room, there is a door to the east and a large crack in the west wall.', unlisted=True)
-    wall.add_names('wall')
     wall.add_adjectives('stone', 'circular')
+    r.insert(wall)
 
     crack = scenery.Scenery('crack', 'large crack', 'This is a large crack it is located in the west section of the wall right above the acrylic painting. In the crack you notice a hidden lever.', unlisted=True)
     crack.add_adjectives('large')
     crack.add_names('crack', 'crevice')
+    r.insert(crack)
 
+    l = Lever()
+    r.insert(l)
 
-    east_door = doors_and_windows.Door('door', 'wood door', 'This is a boring wooden door, it leads to the east.', 'domians.school.elementQuest.hall_to_sauna', 'east', [])
+    east_door = doors_and_windows.Door('door', 'wood door', 'This is a boring wooden door, it leads to the east.', 'domains.school.elementQuest.sauna_hall', 'east', [])
     east_door.add_adjectives('wooden','normal','boring')
     r.insert(east_door)
 

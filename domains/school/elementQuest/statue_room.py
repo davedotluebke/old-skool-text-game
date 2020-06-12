@@ -13,7 +13,7 @@ def load():
     r.indoor = True
     r.set_description('circular carpeted room', 'You find yourself in a tidy circular room that is carpeted with a cozy red carpet. A beautiful gold statue of a bird atop a dark marble stand in the center of the room catches your eye. On the edge of the room, against the wall some wooden stairs lead up to the next level')
     r.add_adjectives('windy')
-    r.add_exit('up', 'domains.school.elementQuest.portait_gallery')
+    r.add_exit('up', 'domains.school.elementQuest.portrait_gallery')
     r.add_exit('down', 'domains.school.elementQuest.windy_hall')
     r.add_exit('west', 'domains.school.elementQuest.china_closet')
     r.add_exit('east', 'domains.school.elementQuest.wardrobe_room')
