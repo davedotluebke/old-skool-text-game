@@ -219,7 +219,7 @@ class Console:
                 if self.game.is_wizard(self.user.name()):
                     allow_edits = self.game.get_edit_privileges(self.user.name(), path)
                     if allow_edits:
-                        self.uploading_filename = os.path.basename(path)  # returns '' if path doesn't end with a filename
+                        self.uploading_filename = path if os.path.basename(path) else ''  # returns '' if path doesn't end with a filename
                         self.write('Please select a file to --#upload:')
                     else:
                         self.write('You do not have permission to write to this directory.')
@@ -341,19 +341,25 @@ class Console:
             self.user.log.debug('Decided to write file.')
             if platform.system() != 'Windows' and b'\r\n' in file:
                 file = file.replace(b'\r\n', b'\n') 
-            f = open(gametools.realDir(self.uploading_filename, player=self.user.name()), 'wb')
-            f.write(file)
-            f.close()
-            self.write('Sucessfully uploaded file.')
+            try:
+                f = open(gametools.realDir(self.uploading_filename, player=self.user.name()), 'wb')
+                f.write(file)
+                f.close()
+                self.write('Sucessfully uploaded file.')
+                success = True
+            except Exception as e:
+                self.user.log.exception('Error writing file %s:' % gametools.realDir(self.uploading_filename, player=self.user.name()))
+                success = False
             self.file_input = bytes()
             self.filename_input = ""
             self.upload_confirm = True
-            try:
-                r = requests.post("http://127.0.0.1:6553", data={"filepath":gametools.realDir(self.uploading_filename, player=self.user.name()), "commitmsg":"%s uploaded file %s" % (self.user.name(), self.uploading_filename)})
-                self.write(r.text)
-            except:
-                self.user.log.warning("Gitbot failed to accept POST request")
-                self.user.log.debug(traceback.format_exc())
+            if success:
+                try:
+                    r = requests.post("http://127.0.0.1:6553", data={"filepath":gametools.realDir(self.uploading_filename, player=self.user.name()), "commitmsg":"%s uploaded file %s" % (self.user.name(), self.uploading_filename)})
+                    self.write(r.text)
+                except:
+                    self.user.log.warning("Gitbot failed to accept POST request")
+                    self.user.log.debug(traceback.format_exc())
             self.uploading_filename = ""
         else:
             self.write('A file named %s already exits. Would you like to replace it with the new version you\'ve uploaded? Y/n:' % (self.uploading_filename))
