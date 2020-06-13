@@ -14,6 +14,7 @@ def load():
     
     east_door = doors_and_windows.Door('door', 'glass door', 'This tinted glass door leads back into the tower.', 'domains.school.elementQuest.bedroom', 'east')
     east_door.add_adjectives('glass', 'bedroom')
+    east_door.open_door_fc()
     r.insert(east_door)
 
     feeder_one = scenery.Scenery('feeder', 'cylendrical bird feeder', 'This is a small cylendrical bird feeder with several perches.')

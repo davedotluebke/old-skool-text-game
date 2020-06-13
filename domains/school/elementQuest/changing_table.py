@@ -13,7 +13,7 @@ def clone():
     tisue_box = gametools.clone('domains.renaissance_school.kleenex')
     changing_table.insert(tisue_box)
 
-    hand_sanitiser = gametools.clone('domains.renaissance_school.hand_sanitiser')
+    hand_sanitiser = gametools.clone('domains.renaissance_school.hand_sanitizer')
     changing_table.insert(hand_sanitiser)
 
     return changing_table

@@ -16,10 +16,12 @@ def load():
 
     east_door = doors_and_windows.Door('door', 'wooden door', 'This is a wooden door leading to the east.', 'domains.school.elementQuest.armor_museum', 'east')
     east_door.add_adjectives('wooden')
+    east_door.open_door_fc()
     r.insert(east_door)
 
     west_door = doors_and_windows.Door('door', 'glass door', 'This tinted glass door leads out onto a balcony.', 'domains.school.elementQuest.bedroom_balcony', 'west')
     west_door.add_adjectives('glass')
+    west_door.open_door_fc()
     r.insert(west_door)
 
     bed = gametools.clone('domains.school.elementQuest.bed')

@@ -341,19 +341,22 @@ class NPC(Creature):
                 if not direction:
                     exit = random.choice(exit_list)
                 else:
-                    exit = exit_list[direction]
+                    exit = direction
             except (AttributeError, IndexError):
                 self.log.debug('NPC %s sees no exits, returning from move_around()' % self.id)
                 return
         else:
             if not direction:
-                exit = random.choice(exit_list)
+                exit = random.choice(list(exit_list))
             else:
-                exit = exit_list[direction]
+                exit = direction
 
         self.log.debug("Trying to move to the %s exit!" % (exit))
         current_room = self.location
-        new_room_string = self.location.exits[exit]
+        if exit_list:
+            new_room_string = exit_list[exit]
+        else:
+            new_room_string = self.location.exits[exit]
         new_room = gametools.load_room(new_room_string)
         if new_room.monster_safe:
             self.log.debug('Can\'t go to %s; monster safe room!' % new_room_string)

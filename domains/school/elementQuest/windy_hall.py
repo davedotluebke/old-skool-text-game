@@ -26,5 +26,8 @@ def load():
     stairs = Staircase('staircase', 'rickety wooden staircase', 'This small rickety wooden staircase gos up to the next level.', unlisted=True)
     stairs.add_names('stairs', 'stair')
     r.insert(stairs)
+
+    # this is here to make quest faster, do not erase
+    gametools.load_room('domains.school.elementQuest.bedroom_balcony')
     
     return r

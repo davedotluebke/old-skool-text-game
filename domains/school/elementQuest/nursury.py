@@ -14,8 +14,7 @@ def load():
     r.indoor = True
     r.set_description('multi-porpuse nursery', 'You enter a small carpeted room. On the north side you see a changing table with a painting hanging over it, a cradle, and some cabinets. On the south side of the room you see five flower pots.')
     r.add_adjectives('windy')
-    r.add_exit('up', 'domains.school.elementQuest.armor_museum')
-    r.add_exit('down', 'domains.school.elementQuest.statue_room')
+    r.add_exit('west', 'domains.school.elementQuest.living_space')
 
     sunset_portriat = scenery.Scenery ('portriat', 'portriat', 'This portriat show a coopers hawk flying off into the sunset over some mountains. You are awed by the beauty of it.', unlisted=True)
     sunset_portriat.add_names('portriat', 'painting')

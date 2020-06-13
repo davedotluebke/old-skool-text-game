@@ -16,7 +16,7 @@ class Lever(scenery.Scenery):
             cons.user.perceive('The door is already open!')
         cons.user.perceive('As you pull on the lever the room trembles and the painting of a tree swallow slides aside revealing a secret door carved into the west wall.')
         self.emit('&nD%s pulls on a hidden lever releaving a secret door to the west.')
-        hidden_door = doors_and_windows.Door('door', 'hidden door', 'This is a hidden door carved into the west wall. A gentle breeze passes through the cracks in it.', 'domains.school.elementQuest.secret_lookout', 'west', [])
+        hidden_door = doors_and_windows.Door('door', 'hidden door', 'This is a hidden door carved into the west wall. A gentle breeze passes through the cracks in it.', 'domains.school.elementQuest.secret_room', 'west', [])
         hidden_door.add_adjectives('hidden', 'carved', 'cracked')
         cons.user.location.insert(hidden_door)
         self.door = hidden_door
@@ -82,6 +82,7 @@ def load():
 
     wall = scenery.Scenery('wall', 'wall', 'This stone wall raps around the room, there is a door to the east and a large crack in the west wall.', unlisted=True)
     wall.add_adjectives('stone', 'circular')
+    wall.add_names('west')
     r.insert(wall)
 
     crack = scenery.Scenery('crack', 'large crack', 'This is a large crack it is located in the west section of the wall right above the acrylic painting. In the crack you notice a hidden lever.', unlisted=True)
