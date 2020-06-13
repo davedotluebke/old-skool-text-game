@@ -226,7 +226,7 @@ class Creature(Container):
             enemy.perceive(f'&nD{self.id} attacks you with &v{self.id} {w.name()}, {message}!')
             enemy.take_damage(self, damage_done)
         else:
-            self.emit(f'&nD{self.id} attacks &nd{enemy} with &v{self.id} {w.name}, but misses.', ignore=[self, enemy])
+            self.emit(f'&nD{self.id} attacks &nd{enemy} with &v{self.id} {w.name()}, but misses.', ignore=[self, enemy])
             self.perceive(f'You attack &nd{enemy} with your {w.name()}, but miss.')
             enemy.perceive(f'&nD{self.id} attacks you with &v{self.id} {w.name()}, but misses.')
         if self not in enemy.enemies:
