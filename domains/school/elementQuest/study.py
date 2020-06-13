@@ -10,12 +10,18 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    r = room.Room('nursury', roomPath)
+    r = room.Room('study', roomPath)
     r.indoor = True
-    r.set_description('multi-porpuse nursery', 'You enter a small carpeted room. On the north side you see a changing table with a painting hanging over it and, a cradle and a some cabinits. On the south side of the room you see five flower pots')
+    r.set_description('small study', 'You find yourself in a small study')
     r.add_adjectives('windy')
     r.add_exit('down', 'domains.school.elementQuest.bedroom')
+    r.add_exit('east', 'domains.school.elementQuest.living_space')
 
-    prism = gametools.clone('domains.school.elementQuest.prism')
+    desk = gametools.clone('domains.school.elementQuest.desk')
+    r.insert(desk)
+
+    chair = gametools.clone('domains.school.elementQuest.chair')
+    r.insert(chair)
+
 
     return r
