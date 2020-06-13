@@ -10,7 +10,7 @@ def clone():
     bed.set_max_volume_carried(7000)
     bed.set_max_weight_carried(4e9)
 
-    duvet = gametools.clone('domains.school.elementQuest.bed')
+    duvet = gametools.clone('domains.school.elementQuest.duvet')
     bed.insert(duvet)
     
     return bed

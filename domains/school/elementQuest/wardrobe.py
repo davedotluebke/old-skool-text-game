@@ -11,5 +11,6 @@ def clone():
     hanger.plurality = 10
     wardrobe.insert(hanger)
 
+    wardrobe.closable = True
     wardrobe.close()
     return wardrobe

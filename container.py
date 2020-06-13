@@ -213,7 +213,7 @@ class Container(Thing):
             cons.write("You put the %s %s the %s." % (oDO._short_desc, sPrep, self._short_desc))
             cons.user.emit("&nD%s puts a %s %s a %s." % (cons.user.id, oDO._short_desc, sPrep, self._short_desc))
         else:
-            cons.write("You cannot put the %s %s the %s.", (oDO._short_desc, sPrep, self._short_desc))
+            cons.write("You cannot put the %s %s the %s." % (oDO._short_desc, sPrep, self._short_desc))
         return True            
 
     def remove(self, p, cons, oDO, oIDO):

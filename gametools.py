@@ -73,7 +73,7 @@ def realDir(*gamedir, player=None):
     `gameroot` directory path (which is rooted in the real filesystem); then
     finally converting the result to a "normalized path", e.g. removing
     duplicate slashes and converting to backslashes if on Windows."""
-    realdir = os.path.join(expandGameDir(gamedir[0], player), *gamedir[1:]).lstrip('/')  
+    realdir = os.path.join(expandGameDir(gamedir[0], player), *gamedir[1:]).lstrip('/')
     return os.path.normpath(os.path.join(gameroot, realdir))
 
 def findGamePath(filepath):

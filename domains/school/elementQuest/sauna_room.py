@@ -12,7 +12,7 @@ def load():
     r.set_description( 'sauna', 'You go through a glass door and enter a suana.')
     r.add_adjectives('suana', 'short')
     r.add_exit('west', 'domains.school.elementQuest.sauna_hall')
-    r.add_exit('east', 'domians.school.elementQuest.sauna_balcony')
+    r.add_exit('east', 'domains.school.elementQuest.sauna_balcony')
     
     ice_melter = gametools.clone('domains.school.elementQuest.ice_melter')
     r.insert(ice_melter)

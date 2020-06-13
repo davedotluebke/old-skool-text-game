@@ -22,7 +22,7 @@ def load():
     glass_case.add_response(['close', 'shut'], 'The case is already closed!')
     r.insert(glass_case)
 
-    china_dishes = scenery.Scenery('china', 'fancy china', 'These china dishes have been delicately hand-painted with patterns of birds. You notice a gold rim around the sides.')
+    china_dishes = scenery.Scenery('china', 'fancy china', 'These china dishes have been delicately hand-painted with patterns of birds. You notice a gold rim around the sides.', unlisted=True)
     china_dishes.add_names('dishes')
     china_dishes.add_adjectives('fancy', 'hand-painted')
     china_dishes.add_response(['take', 'get'], 'The dishes are stored behind a glass case.')
