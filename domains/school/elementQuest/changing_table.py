@@ -10,10 +10,10 @@ def clone():
     changing_table.add_names('place', 'changer')
     changing_table.fix_in_place('The table is suprisingly heavy.')
 
-    tisue_box = gametools.clone('domains.renaissance_school.kleenex')
+    tisue_box = gametools.clone('domains.renaissance_school.kleenex_box')
     changing_table.insert(tisue_box)
 
-    hand_sanitiser = gametools.clone('domains.renaissance_school.hand_sanitizer')
+    hand_sanitiser = gametools.clone('domains.renaissance_school.hand_sanatizer')
     changing_table.insert(hand_sanitiser)
 
     return changing_table

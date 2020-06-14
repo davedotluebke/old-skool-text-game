@@ -7,7 +7,7 @@ class AirPortal(scenery.Scenery):
     def __init__(self):
         super().__init__('portal', 'misty portal', 'This is a strange misty portal beside the mountain. It is swirling rapidly.', unlisted=True)
         self.add_adjectives('misty', 'swirling', 'rapidly')
-        self.actions['enter'] = action.Action(self.enter, True, False)
+        self.actions['enter'] = action.Action(AirPortal.enter, True, False)
     
     def enter(self, p, cons, oDO, oIDO):
         cons.user.wizardry_element = 'air'

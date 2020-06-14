@@ -32,17 +32,17 @@ def load():
     r.insert(cabinets)
 
     flower_pot = gametools.clone('domains.school.elementQuest.flower_pot')
-    flower_pot.plurarity = 3
+    flower_pot.plurality = 3
     r.insert(flower_pot)
 
     ground_cover_pot = gametools.clone('domains.school.elementQuest.ground_cover_pot')
-    ground_cover_pot.plurarity = 2
+    ground_cover_pot.plurality = 2
     r.insert(ground_cover_pot)
 
     changing_table = gametools.clone('domains.school.elementQuest.changing_table')
     r.insert(changing_table)
 
-    price_tag_bundle = gametools.clone('domains.school.element.price_tag_bundle')
+    price_tag_bundle = gametools.clone('domains.school.elementQuest.price_tag_bundle')
     r.insert(price_tag_bundle)
 
     return r

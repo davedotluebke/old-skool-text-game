@@ -14,9 +14,11 @@ def clone():
     prism = gametools.clone('domains.school.elementQuest.prism')
     desk.insert(prism)
 
-    lamp = scenery.Scenery('lamp', 'antique lamp', 'This is an antique lamp with a buetiful shade that shows sollows flying over a lake.')
+    lamp = scenery.Scenery('lamp', 'antique lamp', 'This is an antique lamp with a buetiful shade that shows swallows flying over a lake.')
     lamp.add_adjectives('old', 'antique')
     lamp.add_response(['take','steel', 'replace'], 'Despite you best efforts you can not seem to take it. It is as if magic was holding it in place.')
+    desk.insert(lamp)
+
 
     cracker_box = gametools.clone('domains.school.elementQuest.cracker_box')
     cracker_box.plurality = 2
@@ -34,7 +36,7 @@ def clone():
     pencil.plurality = 6
     desk.insert(pencil)
 
-    pencil_holder = gametools.clone('domians.school.elementQuest.pencil_holder')
+    pencil_holder = gametools.clone('domains.school.elementQuest.pencil_holder')
     desk.insert(pencil_holder)
 
     tisue_box = gametools.clone('domains.renaissance_school.kleenex_box')
