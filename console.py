@@ -334,7 +334,7 @@ class Console:
             f.close()
         except FileNotFoundError:
             replacing_file = False
-        except PermissionError:
+        except Exception as e:
             self.log.exception("Unable to write this file.")
         
         if not replacing_file or not confirm_r:
