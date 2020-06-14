@@ -20,6 +20,7 @@ class Portal(thing.Thing):
     def enter(self, p, cons, oDO, oIDO):
         if oDO == self:
             cons.user.wizardry_element = 'fire'
+            cons.user.complete_quest('Complete a quest to find thy element')
             cons.user.perceive('You steel yourself and step through the flaming portal. Oddly, the '
                                'roaring flames do not burn, but instead the fire fills you with a '
                                'tingling warmth. The flames surround you and suddenly disappear as '
@@ -33,8 +34,8 @@ class Portal(thing.Thing):
             return True
         return "Did you mean to enter the portal?"
 
-    actions = dict(Thing.actions)
-    actions['enter'] = Action(enter, True, False)
+    actions = dict(thing.Thing.actions)
+    actions['enter'] = action.Action(enter, True, False)
 
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())

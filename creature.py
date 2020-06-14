@@ -41,7 +41,7 @@ class Creature(Container):
         return saveable
 
     def set_default_weapon(self, w, append=False):
-        """Set the default weapon to the given object"""
+        """Set the default weapon to the given object, or add a weapon if append is True"""
         if isinstance(w, Weapon):
             if append:
                 self.default_weapons += [w]
@@ -51,8 +51,7 @@ class Creature(Container):
             self.log.error("set_default_weapon() given an object that is not a Weapon")
     
     def create_default_weapon(self, name, damage, accuracy, unwieldiness, attack_verbs=["hit"], append=False):
-        """Replace the default weapons with a single new weapon. For additional weapons use 
-        `add_default_weapon()`."""
+        """Replace the default weapons with a single new weapon, or add a new weapon if append is True"""
         w = Weapon(name, None, damage, accuracy, unwieldiness, attack_verbs)
         if append:
             self.default_weapons += [w]
@@ -82,8 +81,8 @@ class Creature(Container):
         try:
             for i in self.default_weapons:
                 if isinstance(i, str):
-                    default_weapons.remove(i)
-                    default_weapons.append(Thing.ID_dict[i])
+                    self.default_weapons.remove(i)
+                    self.default_weapons.append(Thing.ID_dict[i])
         except:
             self.log.exception("Error converting default_weapons[..] from string to object.")
         try: 

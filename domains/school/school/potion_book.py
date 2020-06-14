@@ -12,7 +12,7 @@ def clone():
 |                 (Third Edition)                        |
 \==========================================================
 #*
-  Spells                      Pg
+  Potions                      Pg
 \==================================
 | Invisibility Potion          1 |
 | Pink Potion                  2 |

@@ -34,6 +34,9 @@ class PlayerLoadError(Exception):
 class IncorrectPasswordError(Exception):
     pass
 
+class BadSpellInfoError(AttributeError):
+    pass
+
 #
 # UTILITY FUNCTIONS
 # 
@@ -189,4 +192,3 @@ def load_room(modpath, report_import_error=True):
     if room == None:
         get_game_logger("_gametools").error("Error loading from room module %s:load() returned None" % modpath)
     return room
-

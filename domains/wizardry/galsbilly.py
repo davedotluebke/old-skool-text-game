@@ -1,4 +1,4 @@
-from room import Room
+"""This file is VERY OUTDATED. Update someday?from room import Room
 from scenery import Scenery
 from container import Container
 from domains.school.transporter import TransportRoom
@@ -87,3 +87,4 @@ test_o.move_to(central_fountain)
             return "I don't see anywhere named %s you can enter!" % sEnter.capitalize()
 
 
+"""
