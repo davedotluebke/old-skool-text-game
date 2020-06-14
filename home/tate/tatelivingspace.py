@@ -10,7 +10,7 @@ def load():
     bedroom = room.Room('cozy_room', roomPath)
     bedroom.indoor = True
     bedroom.set_description('cozy living space', ' This is a very cozy living space, with a coach, a fireplace, a velvet carpet, and a staircase in the corner. There is one door off of this room.')
-    bedroom.add_exit('up', 'home.tate.bedroom')
+    bedroom.add_exit('up', 'home.tate.cozy_bedroom')
     bedroom.add_exit('south', 'home.tate.entryway')
     coach = scenery.Scenery('coach','cozy nice coach', 'This cozy coach is very nice looking.')
     bed.add_adjectives('cozy', 'small')
