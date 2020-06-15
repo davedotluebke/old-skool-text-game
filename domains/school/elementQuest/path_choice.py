@@ -83,7 +83,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    path_choice = room.Room('circular room', roomPath)
+    path_choice = room.Room('circular room', roomPath, indoor=True, safe=True)
     path_choice.indoor = True
     path_choice.set_description('circular room with four doors', 'You are in a circular room with four doors and a ladder down. Each of the doors has a sign above it. ' \
     'The one farthest left says "Path of Fire", the one to the right of that says "Path of Water", the second farthest right says "Path of Earth", and the one to the right of that says "Path of Air". ' \
