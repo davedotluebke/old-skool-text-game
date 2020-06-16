@@ -180,14 +180,14 @@ class Creature(Container):
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
             percent_damage = damage_done/enemy.hitpoints
             message = self.get_damage_message(percent_damage)
-            self.emit('&nD%s attacks &nd%s with &v%s %s, %s!' % (self.id, enemy, self.id, self.weapon_wielding, message), ignore=[self, enemy])
-            self.perceive('You attack &nd%s with your %s, %s!' % (enemy, self.weapon_wielding, message))
-            enemy.perceive('&nD%s attacks you with &v%s %s, %s!' % (self.id, self.id, self.weapon_wielding, message))
+            self.emit('&nD%s attacks &nd%s with &v%s %s, %s!' % (self.id, enemy, self.id, self.weapon_wielding.name(), message), ignore=[self, enemy])
+            self.perceive('You attack &nd%s with your %s, %s!' % (enemy, self.weapon_wielding.name(), message))
+            enemy.perceive('&nD%s attacks you with &v%s %s, %s!' % (self.id, self.id, self.weapon_wielding.name(), message))
             enemy.take_damage(self, damage_done)
         else:
-            self.emit('&nD%s attacks &nd%s with &v%s %s, but misses.' % (self.id, enemy, self.id, self.weapon_wielding), ignore=[self, enemy])
-            self.perceive('You attack &nd%s with your %s, but miss.' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nD%s attacks you with &v%s %s, but misses.' % (self.id, self.id, self.weapon_wielding))
+            self.emit('&nD%s attacks &nd%s with &v%s %s, but misses.' % (self.id, enemy, self.id, self.weapon_wielding.name()), ignore=[self, enemy])
+            self.perceive('You attack &nd%s with your %s, but miss.' % (enemy, self.weapon_wielding.name()))
+            enemy.perceive('&nD%s attacks you with &v%s %s, but misses.' % (self.id, self.id, self.weapon_wielding.name()))
         if self not in enemy.enemies:
             enemy.enemies.append(self)
 
@@ -327,12 +327,11 @@ class NPC(Creature):
             if not acting:           # otherwise pick a random action
                 choice = random.choice(self.choices)
                 try:
-                    try:
-                        choice()
-                    except TypeError:
-                        choice(self)
+                    choice()
                 except NameError:
                     self.log.warning("Object "+str(self.id)+" heartbeat tried to run non-existant action choice "+str(choice)+"!")
+                except Exception as e:
+                    self.log.exception('An unexpected error occured in the %s! Printing below:' % self.id)
             
     def move_around(self, exit_list=None, direction=None):
         """The NPC leaves the room, taking a random exit"""
