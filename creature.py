@@ -204,9 +204,10 @@ class Creature(Container):
         corpse.names += self.names
         corpse.adjectives = set(list(corpse.adjectives) + list(self.adjectives) + self.names)
         self.location.insert(corpse)
-        while self.contents:
-            i = self.contents[0]
-            i.move_to(corpse)
+        get_rid_of = [x for x in self.contents if not x.fixed]
+        while get_rid_of:
+            i = get_rid_of[0]
+            i.move_to(corpse, True)
         if hasattr(self, 'cons'):
             self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))
         else:
