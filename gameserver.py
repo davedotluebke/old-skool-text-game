@@ -30,15 +30,13 @@ class Game():
         a list of objects that have a heartbeat (a function that runs 
         periodically), and the IP address of the server. 
     """
-    def __init__(self, server=None, mode=False, duration=86400, port=9124, retry=5, silent=False):
+    def __init__(self, server=None, duration=86400, port=9124, retry=5, silent=False):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.server_ip = server  # IP address of server, if specified
         # print gameserver log messages to stderr only on localhost
         self.log = gametools.get_game_logger("_gameserver", printing=(self.server_ip == '127.0.0.1'))
         self.acl = miracle.Acl()
         self.set_up_groups_and_acl()
-        self.is_ssl = ('ssl' in mode) or ('https' in mode)
-        self.encryption_setting = not ('nocrypt' in mode or 'no' in mode or 'noencrypt' in mode)
         if connections_websock.encryption_installed:
             connections_websock.encryption_enabled = self.encryption_setting
         self.keep_going = True  # game ends when set to False
@@ -71,6 +69,10 @@ class Game():
         self.total_times = {}
         self.numrun_times = {}
         self.maximum_times = {}
+    
+    #
+    # Permissions and File Manipulation section
+    #
     
     def get_file_privileges(self, player_name, path, check_type='read'):
         """Return True if the given player belongs to any groups that have 
@@ -193,6 +195,10 @@ class Game():
             msg += "```game.wizards[] = %s```\n" % pprint.pformat(self.wizards, width=40, indent=4)
             msg += "```game.roles[] = %s```\n" % pprint.pformat(self.roles, width=40, indent=4)
         return msg
+    
+    #
+    # Saving and loading section
+    #
 
     def save_game(self, filename):
         raise NotImplementedError("Saving games no longer works.")
@@ -513,6 +519,10 @@ class Game():
         cons.write("Please enter your username: ")
         user.login_state = "AWAITING_USERNAME"
     
+    #
+    # Event Management Functions
+    #
+    
     def get_profiling_report(self):
         report_str = ''
         all_time_spent = sum([self.total_times[x] for x in self.total_times])
@@ -544,6 +554,7 @@ class Game():
         self.events.call_later(delay, functools.partial(self.catch_func_errs, func, *params))
     
     def catch_func_errs(self, func, *params):
+        """Helper function to catch all errors in asyncio events and collect profiling information."""
         profile_st = time.time()
         try:
             func(*params)
@@ -585,19 +596,13 @@ class Game():
             self.events.call_later(1,self.beat)
         else:
             # quit the game
-            self.events.stop()   
+            self.events.stop()
+    
+    async def prepare_commands(self, reader, writer):
+        pass # XXX ADD THIS FUNCTION
 
     def open_socket(self):
-        if self.is_ssl:
-            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            ssl_context.load_default_certs()
-            ssl_context.load_cert_chain("certificate.pem", "private_key.pem")
-            ssl_context.set_ciphers("ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-CHACHA20-POLY1305-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:RSA-AES128-GCM-SHA256:RSA-AES256-GCM-SHA384:RSA-AES128-SHA:RSA-AES256-SHA:RSA-3DES-EDE-SHA")
-            self.events.run_until_complete(
-                websockets.serve(connections_websock.ws_handler, self.server_ip, self.port, ssl=ssl_context))
-        else:
-            self.events.run_until_complete(websockets.serve(connections_websock.ws_handler, self.server_ip, self.port))
-
+        self.events.run_until_complete(asyncio.start_server(self.prepare_commands, self.server_ip, self.port))
 
     def start_loop(self):
         # Keep track of game start time to support periodic reboots 

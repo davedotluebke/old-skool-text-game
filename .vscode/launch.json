@@ -21,7 +21,7 @@
             "stopOnEntry": false,
             "pythonPath": "${config:python.interpreterPath}",
             "program": "${workspaceRoot}/startup.py",
-            "args": ["--server", "127.0.0.1", "--mode", "nocrypt"],
+            "args": ["--server", "127.0.0.1"],
             //"cwd": "",
             "console": "integratedTerminal",
             "env": {},
