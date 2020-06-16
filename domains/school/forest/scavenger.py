@@ -2,6 +2,7 @@ import creature
 import gametools
 import thing
 
+# XXX need class with function instead of this
 def take_stuff(horster):
     if not horster.location:
         return
