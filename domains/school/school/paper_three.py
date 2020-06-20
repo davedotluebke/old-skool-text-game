@@ -5,7 +5,7 @@ import action
 # ACTION METHODS 
 # 
 def read(obj, p, cons, oDO, oIDO):
-    cons.write('You read: Notice: I shall be out this week. Everything shall continue as normal.')
+    cons.user.perceive('You read: Notice: I shall be out this week. Everything shall continue as normal.')
     return True
 
 #

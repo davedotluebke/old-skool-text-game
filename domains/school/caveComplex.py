@@ -16,7 +16,7 @@ class Lair(Room):
         if self.monster in self.contents:
             if p.words[1] == 'northwest':
                 if cons.user.invisible != True:
-                    cons.write('You try to enter the crawlway, but the monster blocks your path.')
+                    cons.user.perceive('You try to enter the crawlway, but the monster blocks your path.')
                     return True
                 else:
                     cons.user.complete_quest("Create a potion to hide thyself and use it to sneak past a terrible monster")
@@ -103,7 +103,7 @@ class CaveRoom(Room):
         if self.monster in self.contents:
             if p.words[1] == 'west':
                 if cons.user.invisible != True:
-                    cons.write('You try to go to the west, but the monster blocks your path.')
+                    cons.user.perceive('You try to go to the west, but the monster blocks your path.')
                     return True
         return Room.go_to(self, p, cons, oDO, oIDO)
 

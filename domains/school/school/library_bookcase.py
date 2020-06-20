@@ -48,7 +48,7 @@ class Bookcase(Container):
         if result != True:
             return result
         preamble = "%s the %s there is:" % (self.insert_prepositions[0], self.names[0])
-        cons.write(preamble.capitalize())
+        cons.user.perceive(preamble.capitalize())
 
         book_selection = []
         while len(book_selection) < 5:
@@ -59,7 +59,7 @@ class Bookcase(Container):
                 break
         
         for item in book_selection:
-            cons.write(item.get_short_desc(indefinite=True))
+            cons.user.perceive(item.get_short_desc(indefinite=True))
         return True
     
     def close_action(self, p, cons, oDO, oIDO):

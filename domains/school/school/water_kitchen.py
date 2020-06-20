@@ -23,9 +23,9 @@ class WaterJet(scenery.Scenery):
         
         filling = oDO
         if not getattr(filling, 'liquid'):
-            cons.write('The water leaves the %s and flows into the pool.' % filling)
+            cons.user.perceive('The water leaves the %s and flows into the pool.' % filling)
             return True
-        cons.write('The water fills your %s' % filling)
+        cons.user.perceive('The water fills your %s' % filling)
         self.emit('&nD%s fills a %s with water from the jet.' % (cons.user.id, filling))
         water = gametools.clone('domains.school.school.water')
         oDO.insert(water)

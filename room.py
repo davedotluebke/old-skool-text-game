@@ -68,18 +68,18 @@ class Room(Container):
         if not silent: 
             user.emit("&nI%s arrives." % user.id, [user])
         if loc.is_dark():
-            cons.write("It's too dark to see anything here.")
+            cons.user.perceive("It's too dark to see anything here.", force=True)
             return True
         if user.terse:
-            cons.write("You enter a %s." % loc._short_desc)
+            cons.user.perceive("You enter a %s." % loc._short_desc)
         else:
-            cons.write(loc._long_desc)
+            cons.user.perceive(loc._long_desc)
         if (len(loc.exits) > 0):
-            cons.write("Exits are:")
+            cons.user.perceive("Exits are:")
             for w in loc.exits:
-                cons.write('\t' + w)
+                cons.user.perceive('\t' + w)
         else:
-            cons.write("There are no obvious exits.")
+            cons.user.perceive("There are no obvious exits.")
         local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.unlisted]
         if local_objects:
             cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))         
@@ -118,20 +118,20 @@ class Room(Container):
         sExit = words[1]  
         if sExit in list(self.exits):
             if self.caution_taped_exits[sExit]:
-                cons.write(self.caution_taped_exits[sExit])
+                cons.user.perceive(self.caution_taped_exits[sExit])
                 return True
             try:
                 destPath = self.exits[sExit]  # filename of the destination room module
                 dest = gametools.load_room(destPath)
             except KeyError:
                 self.log.error("KeyError: exit '%s' maps to '%s' which is not an object in the game!" % (sExit, self.exits[sExit]))
-                cons.write("There was an internal error with the exit. ")
+                cons.user.perceive("There was an internal error with the exit. ")
                 return True
             if cons.user.move_to(dest):
                 loc = user.location
                 verb = words[0]
                 conjugated = "goes" if verb == "go" else verb + 's'
-                cons.write("You %s to the %s." % (verb, sExit))
+                cons.user.perceive("You %s to the %s." % (verb, sExit), force=True)
                 self.emit("&nD%s %s to the %s." % (user.id, conjugated, sExit))
                 loc.report_arrival(user)
                 return True

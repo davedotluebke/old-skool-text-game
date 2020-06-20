@@ -10,7 +10,7 @@ class sinkholeLake(scenery.Scenery):
         self.actions['dive'] = action.Action(sinkholeLake.enter, True, True)
     
     def enter(self, p, cons, oDO, oIDO):
-        cons.write('''You enter the lake, feeling much cooler than you were before.
+        cons.user.perceive('''You enter the lake, feeling much cooler than you were before.
                     All of the sudden you feel yourself getting pulled into
                     the centre of the lake and into a sinkhole! Somehow, however, you 
                     seem to find yourself in a new place...''')

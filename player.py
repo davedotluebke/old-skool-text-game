@@ -12,17 +12,17 @@ from thing import Thing
 from room import Room
 from creature import Creature
 from action import Action
-from conshandler import ConsHandler
+from access_point_handler import AccessPointHandler
 
 
 def clone(params=None):
     if params:
         ID = params[0]
-        console = params[1]
+        access_point = params[1]
     else:
         ID = ""
-        console = None
-    player = Player(ID, __file__, console)
+        access_point = None
+    player = Player(ID, __file__, access_point)
     return player
 
 # convention: tuple of (intransitive_self, intransitive_others, transitive_self, transitive_others, transitive_target)
@@ -57,10 +57,11 @@ class Player(Creature):
     #
     # SPECIAL METHODS (i.e __method__() format)
     #
-    def __init__(self, ID, path, console):
-        """Initialize the Player object and attach a console"""
+    def __init__(self, ID, path, access_point):
+        """Initialize the Player object and attach a console (through an access point)"""
         Creature.__init__(self, ID, path)
-        self.cons = console
+        self.access_point = access_point
+        self.cons = self.access_point # to maintain backwards compatability
         self.login_state = None
         self.password = None
         self.start_loc_id = None
@@ -70,7 +71,6 @@ class Player(Creature):
         self.set_volume(66)
         self.set_max_weight_carried(750000)
         self.set_max_volume_carried(2000)
-        self.saved_cons_attributes = []
         self.aggressive = 1         #TODO: Specialized individual stats
         self.armor_class = 10
         self.combat_skill = 40
@@ -121,10 +121,11 @@ class Player(Creature):
             del saveable['enemies']
         except KeyError: 
             pass
+        del saveable['access_point']
         del saveable['cons']
         return saveable
 
-    def update_cons_attributes(self):
+    """def update_cons_attributes(self):
         try:
             self.cons.alias_map = self.saved_cons_attributes[0]
             self.cons.measurement_system = self.saved_cons_attributes[1]
@@ -132,7 +133,7 @@ class Player(Creature):
             pass
 
     def save_cons_attributes(self):
-        self.saved_cons_attributes = [self.cons.alias_map, self.cons.measurement_system]
+        self.saved_cons_attributes = [self.cons.alias_map, self.cons.measurement_system]"""
     
     def update_version(self):
         if hasattr(self, 'version_number'):
@@ -157,6 +158,7 @@ class Player(Creature):
         if isinstance(self.adjectives, list):
             self.adjectives = set(self.adjectives)
 
+    """XXX this code is no longer in use
     def _handle_login(self, cmd):
         state = self.login_state
         if state == 'AWAITING_USERNAME':
@@ -254,6 +256,7 @@ class Player(Creature):
             else:
                 self.cons.write("Please answer yes or no: ")
                 return
+        """
     
     def _schedule_interactive_tutorial(self, act):
         if self.prev_location_id != self.location.id:
@@ -265,10 +268,10 @@ class Player(Creature):
     
     def provide_interactive_tutorial(self, rid_act):
         if rid_act in self.tutorial_messages:
-            self.cons.write(self.tutorial_messages[rid_act])
+            self.access_point.send_message(self.tutorial_messages[rid_act])
         
         if rid_act in self.tutorial_act_messages:
-            self.cons.write(self.tutorial_act_messages[rid_act])
+            self.access_point.send_message(self.tutorial_act_messages[rid_act])
             self.tutorial_act_messages_complete[rid_act] = True
     
     def restore_mana(self):
@@ -288,6 +291,7 @@ class Player(Creature):
         except KeyError: 
             pass
         del saveable['cons']
+        del saveable['access_point']
         return saveable
     def get_mana(self):
         return self.mana
@@ -352,38 +356,37 @@ class Player(Creature):
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
-    def detach(self, nocons=False):
+    def detach(self):
         # TODO: Deal with logs in player
-        if not nocons:
-            self.cons.detach(self)
+        self.access_point = None
         self.cons = None
         self.destroy()
         
     def heartbeat(self):
-        if self.cons == None:
-            self.detach(nocons=True)
-        
+        """This function is called once every second to complete important
+        tasks for the player: healing, updating mana, parsing commands, and 
+        automatically attacking enemies (if set)."""
+        # heal the player
         if self.health < self.hitpoints:
             self.heal()
         
+        # restore the player's mana
         if self.mana < self.max_mana:
             self.restore_mana()
-        
-        cmd = self.cons.take_input()
-        if self.login_state != None:
-            if cmd != None and cmd != '__noparse__' and cmd != '__quit__':
-                self._handle_login(cmd)
-            return
-        sV = None
-        if cmd:
-            if cmd != '__noparse__' and cmd != '__quit__':
-                sV = Thing.game.parser.parse(self, self.cons, cmd)
-            elif cmd == '__quit__':
-                self.detach()
-        
-        if sV:
-            self._schedule_interactive_tutorial(sV)
 
+        # parse the next command sent from the console
+        # this code is put here to enforce a maximum of
+        # one command per second executed
+        if len(self.access_point.pending_messages) > 0:
+            cmd = self.access_point.pending_messages[0]
+            del self.access_point.pending_messages[0]
+            sV = Thing.game.parser.parse(self, self.access_point, cmd)
+        
+            # some tutorial actions are activated by the verb
+            if sV: # TODO: enhance interactive tutorial
+                self._schedule_interactive_tutorial(sV)
+
+        # if attacking an enemy, or an enemy is in the room, attack
         if self.auto_attack:            # TODO: Player Preferences
             if self.attacking:
                 if self.attacking == 'quit':
@@ -392,11 +395,12 @@ class Player(Creature):
                     self.attack_enemy(self.attacking)
                     return
             try:
-                for i in self.location.contents:
-                    if i in self.enemies:
-                        self.cons.write('You attack your enemy %s.' % i._short_desc)
-                        self.attacking = i
-                        self.attack_enemy(i)
+                if not self.location.is_dark():
+                    for i in self.location.contents:
+                        if i in self.enemies:
+                            self.perceive('You attack your enemy &nd%s.' % i._short_desc)
+                            self.attacking = i
+                            self.attack_enemy(i)
             except AttributeError:
                 self.log.error('Error! Location is a string!')
         elif self.engaged:
@@ -409,14 +413,21 @@ class Player(Creature):
 
     def die(self, message):
         Creature.die(self, message)
-        self.cons.write("You have died!\n\nFortunately you are reincarnated immediately...")
+        self.perceive("You have died!\n\nFortunately you are reincarnated immediately...", force=True)
         self.health = self.hitpoints
         if (self.start_loc_id):
-            room = Thing.ID_dict[self.start_loc_id]
-            self.move_to(room)
-            room.report_arrival(self)
+            try:
+                room = gametools.load_room(self.start_loc_id)
+                self.move_to(room)
+                room.report_arrival(self)
+                return
+            except AttributeError:
+                self.perceive("Something prevents you from being reincarnated in your start location. Instead you find yourself somewhere else...")
         else:
-            self.cons.write("Uh-oh! You don't have a starting location. You are in a great void...")
+            self.perceive("Uh-oh! You don't have a starting location. You are sent to a strange location...")
+        room = gametools.load_room(gametools.DEFAULT_START_LOC) # NOTE: we are expecting the default_start_loc to ALWAYS LOAD CORRECTLY
+        self.move_to(room)
+        room.report_arrival(self)
 
     def perceive(self, message, silent=False, force=False):
         '''Parse a string passed to `emit()` and customize it for this
@@ -461,10 +472,10 @@ class Player(Creature):
         one of the creatures named using the &n semantics above, effectively 
         ignoring any creatures named in the `emit()` message.
 
-        If the <silent> flag is set, do not actually write the constructed message
+        If the <silent> flag is set, do not actually send the constructed message
         to the player's console, but instead return it as a string.
 
-        If the [force] flag is set, make the player print the message even if the 
+        If the <force> flag is set, make the player print the message even if the 
         room is dark.
         '''
         if not self.location.is_dark() or force:
@@ -529,7 +540,7 @@ class Player(Creature):
             if silent:
                 return message
             else:
-                self.cons.write(message) 
+                self.access_point.send_message(message)
                    
     def attack_enemy(self, enemy):
         if self.attacking in self.location.contents:
@@ -548,12 +559,12 @@ class Player(Creature):
         if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         cmd = ' '.join(p.words[1:])
-        cons.write("Executing command: `'%s'`" % cmd)
+        cons.user.perceive("Executing command: `'%s'`" % cmd, force=True)
         try: 
             exec(cmd)
         except Exception as inst:
-            cons.write("Unexpected error: `" + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1])+"`")
-            # cons.write(type(inst)+"\n"+inst)    # the exception instance
+            cons.user.perceive("Unexpected error: `" + str(sys.exc_info()[0]) + "\n\t" + str(sys.exc_info()[1])+"`", force=True)
+            # cons.user.perceive(type(inst)+"\n"+inst)    # the exception instance
         return True
 
     def fetch(self, p, cons, oDO, oIDO):
@@ -563,18 +574,18 @@ class Player(Creature):
         if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
-            cons.write("Usage: 'fetch <id>', where id is an entry in `Thing.ID_dict[]`")
+            cons.user.perceive("Usage: 'fetch <id>', where id is an entry in `Thing.ID_dict[]`", force=True)
             return True
         id = " ".join(p.words[1:])
         try:
             obj = Thing.ID_dict[id]
             if isinstance(obj, Creature) or obj.move_to(self) == False:
                 if obj.move_to(self.location) == False:
-                    cons.write("You attempt to fetch the %s but somehow cannot bring it to this place." % obj.names[0])
+                    cons.user.perceive("You attempt to fetch the %s but somehow cannot bring it to this place." % obj.names[0], force=True)
                 else:
-                    cons.write("You perform a magical incantation and bring the %s to this place!" % obj.names[0])
+                    cons.user.perceive("You perform a magical incantation and bring the %s to this place!" % obj.names[0], force=True)
             else:
-                cons.write("You perform a magical incantation and the %s appears in your hands!" % obj.names[0])
+                cons.user.perceive("You perform a magical incantation and the %s appears in your hands!" % obj.names[0], force=True)
             self.emit("&nD%s performs a magical incantation, and you sense something has changed." % self.id, [self])
         except KeyError: 
             return "There seems to be no object with true name '%s'!" % id
@@ -588,10 +599,10 @@ class Player(Creature):
         if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
-            cons.write("```"
+            cons.user.perceive("```"
                        "Usage:\n\t'clone <id>', where id is an entry in Thing.ID_dict[]"
                        "\n\t'clone <path>', where path is of the form 'domains.school.test_object'"
-                       "```")
+                       "```", force=True)
             return True
         id = " ".join(p.words[1:])
         try:
@@ -604,11 +615,11 @@ class Player(Creature):
             return "There seems to be no object with true name `'%s'`!" % id
         if isinstance(obj, Creature) or obj.move_to(self) == False:
             if obj.move_to(self.location) == False:
-                cons.write("You attempt to clone the %s but somehow cannot bring it to this place." % obj.names[0])
+                cons.user.perceive("You attempt to clone the %s but somehow cannot bring it to this place." % obj.names[0], force=True)
             else:
-                cons.write("You perform a magical incantation and bring the %s to this place!" % obj.names[0])
+                cons.user.perceive("You perform a magical incantation and bring the %s to this place!" % obj.names[0], force=True)
         else:
-            cons.write("You perform a magical incantation and the %s appears in your hands!" % obj.names[0])
+            cons.user.perceive("You perform a magical incantation and the %s appears in your hands!" % obj.names[0], force=True)
         self.emit("&nD%s performs a magical incantation. You sense something has changed." % self.id, [self])
         
         return True                    
@@ -672,7 +683,7 @@ class Player(Creature):
             self.remove_dbg_handler(obj)
             return True
         self.perceive(f"Now debugging object `{obj.id}` at level `{dbg_level}` for the next {sec} seconds!")
-        dbg_handler = ConsHandler(cons, dbg_level)
+        dbg_handler = AccessPointHandler(cons, dbg_level)
         obj.log.addHandler(dbg_handler)
         self.handlers[obj.id] = dbg_handler
         # Add an event to remove & destroy dbg_handler in <duration> seconds
@@ -746,7 +757,7 @@ class Player(Creature):
                     if c.location:
                         new_c.move_to(c.location, merge_pluralities=False)
                     c.destroy()
-        cons.write('You make a magical gesture and scene around you suddenly changes.')
+        cons.user.perceive('You make a magical gesture and scene around you suddenly changes.', force=True)
         self.emit('&nD%s makes a magical gesture, and you sense something has changed.' % self.id)
         obj.destroy()
         return True
@@ -758,7 +769,7 @@ class Player(Creature):
         if not self.game.is_wizard(self.name()):
             return "You cannot yet perform this magical incantation correctly."
         if len(p.words) < 2: 
-            cons.write("Usage: 'apparate <id>', where id is the entry of a Room in `Thing.ID_dict[]` or a path to its module")
+            cons.user.perceive("Usage: 'apparate <id>', where id is the entry of a Room in `Thing.ID_dict[]` or a path to its module", force=True)
             return True
         id = " ".join(p.words[1:])
         try:
@@ -768,7 +779,7 @@ class Player(Creature):
         if room == None:
             return "There seems to be no place with id (or path) '%s'!" % id
         if isinstance(room, Room) == False:
-                cons.write("You cannot apparate to %s; that is not a place!" % room.names[0])
+                cons.user.perceive("You cannot apparate to %s; that is not a place!" % room.names[0], force=True)
                 return True
         self.emit("&nD%s performs a magical incantation, and vanishes!" % self.id, [self])
         self.move_to(room)
@@ -794,43 +805,43 @@ class Player(Creature):
             return "You cannot yet perform this magical incantation correctly."  
         words = p.words    
         if len(words) < 2:
-            cons.write(usage + '\n' + cons.game.list_wizard_roles())
+            cons.user.perceive(usage + '\n' + cons.game.list_wizard_roles(), force=True)
             return True
         if words[1] == 'add' or words[1] == 'remove' or words[1] == 'create':
             # next arguments should be <player> <group>
             if len(words) != 4:
-                cons.write(usage)
+                cons.user.perceive(usage, force=True)
                 return True
             action, player, group = words[1], words[2], words[3]
         else:  # arguments might be <player>, or <group>, or <player> <group>
             if len(words) == 2:  # one argument, either <player> or <group>
                 role_exists = words[1] in cons.game.roles
                 if role_exists:  # argument is <group>
-                    cons.write(cons.game.list_wizard_roles(role=words[1]))
+                    cons.user.perceive(cons.game.list_wizard_roles(role=words[1]), force=True)
                 player = self.name() if words[1] == 'me' else words[1]
                 player_exists = gametools.check_player_exists(player)
                 if player_exists:  # argument is <player> 
-                    cons.write(cons.game.list_wizard_roles(wiz=player))
+                    cons.user.perceive(cons.game.list_wizard_roles(wiz=player), force=True)
                 if not player_exists and not role_exists:
-                    cons.write("Error: %s does not appear to be the name of a player or a group!" % words[1])
+                    cons.user.perceive("Error: %s does not appear to be the name of a player or a group!" % words[1], force=True)
                 return True
             if len(words) == 3:
                 action, player, group = "toggle", words[1], words[2]
         player = self.name() if player == 'me' else player
         if not gametools.check_player_exists(player):
-            cons.write("Error: no player named %s appears to exist!" % player)
+            cons.user.perceive("Error: no player named %s appears to exist!" % player, force=True)
             return True
         if not group in cons.game.roles and action != "create":
-            cons.write("Error: no group named %s appears to exist!" % group)
+            cons.user.perceive("Error: no group named %s appears to exist!" % group, force=True)
             return True
         if action == "add" or action == "create" or (action == "toggle" and player not in cons.game.roles[group]): 
             cons.game.add_wizard_role(player, group)
-            cons.write("Added %s to group %s" %(player, group))
+            cons.user.perceive("Added %s to group %s" %(player, group), force=True)
         elif action == "remove" or (action == "toggle" and player in cons.game.roles[group]):
             cons.game.remove_wizard_role(player, group)
-            cons.write("Removed %s from group %s" % (player, group))
+            cons.user.perceive("Removed %s from group %s" % (player, group), force=True)
         else:
-            cons.write("Error: couldn't apply action %s to player %s and group %s!" % (action, player, group))
+            cons.user.perceive("Error: couldn't apply action %s to player %s and group %s!" % (action, player, group), force=True)
         return True        
         
             
@@ -869,9 +880,9 @@ class Player(Creature):
                 With no specifier, 'terse' toggles between on and off."""
         except IndexError:
             self.terse = not self.terse
-        cons.write("Terse mode %s. %s" % ("on" if self.terse else "off",
+        cons.user.perceive("Terse mode %s. %s" % ("on" if self.terse else "off",
             "Short descriptions will be used when entering a place; type 'look' for full description" if self.terse else
-            "Full descriptions will be used entering a place."))
+            "Full descriptions will be used entering a place."), force=True)
         # TODO: a mode that prints long description only when first entering a room
         return True
   
@@ -881,7 +892,7 @@ class Player(Creature):
         if len(p.words) < 2:
             return "What do you want to say?"
         self.emit("&nD%s %ss: %s" % (self.id, p.words[0], " ".join(p.words[1:])), ignore = [self])
-        cons.write("You %s: %s" % (p.words[0], " ".join(p.words[1:])))
+        cons.user.perceive("You %s: %s" % (p.words[0], " ".join(p.words[1:])), force=True)
         return True
     
     def emote_action(self, p, cons, oDO, oIDO):

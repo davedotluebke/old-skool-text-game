@@ -120,7 +120,7 @@ class Parser:
                 possible_objects += obj.contents
         return possible_objects
 
-    def find_matching_objects(self, sObj, objs, cons):
+    def find_matching_objects(self, sObj, objs, access_point):
         """Find object(s) in the list <objs> matching the given string <sObj>.
         Tests the name(s) and any adjectives for each object in <objs> against the words in sObj.
         The special adjective "my" indicates that only objects in the player's inventory match. 
@@ -137,7 +137,7 @@ class Parser:
           - the matching object, if 1 object (which may be a plurality) matches sObj.
           - all matching objects, if <sObj> unambiguously specifies multiple objects.
         Returns [] (empty list) if 0 objects match sObj (or any of the specifiers).
-        Returns False after writing an error message to <cons> if any specifier ambiguously matches multiple objects."""
+        Returns False after writing an error message to <access_point> if any specifier ambiguously matches multiple objects."""
         matched_objects = []
         # Build list of object 'specifier' strings, separated by commas and/or 'and'
         # split on regexp for commas, "and"s, &s. Should be cached, no need to compile
@@ -161,7 +161,7 @@ class Parser:
             ord_str = ""    # actual string used to specify ordinal ('first', '3rd', etc)
             for obj in objs:
                 match = True
-                if possessive and obj.location != cons.user:
+                if possessive and obj.location != access_point.user:
                     continue
                 noun_match = sNoun in obj.names
                 plural_noun_match = sNoun in obj.plural_names
@@ -169,7 +169,7 @@ class Parser:
                     for adj in sAdjectives_list:
                         if adj in Parser.ordinals:  # dict mapping ordinals->ints
                             if ord_str and ord_str != adj:  # more than one ordinal? 
-                                cons.write("I'm confused: you specified both %s and %s!" % (ord_str, adj))
+                                access_point.send_message("I'm confused: you specified both %s and %s!" % (ord_str, adj))
                                 return False
                             ord_number = Parser.ordinals[adj]
                             ord_str = adj
@@ -182,14 +182,14 @@ class Parser:
                 if match: # if name & all adjectives match, add to list of matching objects
                     # first sanity-check some things with plurals
                     if number > 1 and not plural_noun_match:
-                        cons.write("You specified %d '%s' but '%s' is not plural - assuming you meant '%s'..." % (number, sNoun, sNoun, obj.plural_names[0]))
+                        access_point.send_message("You specified %d '%s' but '%s' is not plural - assuming you meant '%s'..." % (number, sNoun, sNoun, obj.plural_names[0]))
                     if number == 1 and plural_noun_match and not noun_match:
                         number = obj.plurality  # they specified plural form of noun but no number, assume they meant 'all'
                     local_matches.append(obj)
             # if they specified an ordinal (1st, 2nd, etc), figure out which object they meant
             if ord_number:  
                 if number > 1:
-                    cons.write("You specified %d %s but also %s; mixing ordinals (first, second, etc) with numbers is not supported." % (number, obj.names[0], ord_str))
+                    access_point.send_message("You specified %d %s but also %s; mixing ordinals (first, second, etc) with numbers is not supported." % (number, obj.names[0], ord_str))
                     return False
                 # count through all matched objects, some of which might be plural
                 i = 1                   # ordinals start at "first" meaning element 0
@@ -199,7 +199,7 @@ class Parser:
                         local_matches = [o]  # ordinal specifies an object in this plurality
                         break
                 else:  # for-else section, runs if no break called in loop
-                    cons.write("You specified '%s' but I only see %d %s matching '%s %s'!" % (
+                    access_point.send_message("You specified '%s' but I only see %d %s matching '%s %s'!" % (
                         ord_str, 
                         i-1, 
                         'objects' if i-1 > 1 else 'object', 
@@ -210,7 +210,7 @@ class Parser:
             self.log.debug("local_matches in '%s' are: %s" % (s, ' '.join(obj.id for obj in local_matches)))        
             if len(local_matches) > 1:
                 candidates = ", or the ".join(o._short_desc for o in local_matches)
-                cons.write("By '%s', do you mean the %s? Please provide more adjectives, use 'my' to specify "
+                access_point.send_message("By '%s', do you mean the %s? Please provide more adjectives, use 'my' to specify "
                            "something you are carrying, or indicate 'first', 'second', 'third', etc. " % (s, candidates))
                 return False
             elif len(local_matches) == 0:
@@ -222,7 +222,7 @@ class Parser:
                 # If object is plural, split off 1 (or the specified number) from the plurality
                 if number > obj.plurality:
                     pl = obj.plural_names
-                    cons.write("You specified %d %s, but I don't see that many %s!" % (number, pl, pl))
+                    access_point.send_message("You specified %d %s, but I don't see that many %s!" % (number, pl, pl))
                     return False
                 if number < obj.plurality:  # if no plural specified, number == 1
                     obj_copy = obj.replicate()
@@ -234,10 +234,10 @@ class Parser:
         self.log.debug("matched_objects in '%s' are: %s" % (sObj, ' '.join(obj.id for obj in matched_objects)))
         return matched_objects
 
-    def _try_verb_from_obj(self, sV, obj, oDO, oIDO, cons):
+    def _try_verb_from_obj(self, sV, obj, oDO, oIDO, access_point):
         """Try the action function matching the verb `sV` for an object `obj`. 
         Passes on the direct object `oDO` and indirect object `oIDO` as well as
-        the parser and console. The action function returns True to indicate 
+        the parser and access_point. The action function returns True to indicate 
         this is a valid usage of the verb function and the appropriate action
         has been performed; otherwise it returns an error message string.
         """
@@ -247,9 +247,9 @@ class Parser:
             self.log.error('%s had no action %s!' % (obj, sV))
             return False
         try:  ### ENACT THE VERB ###
-            result = act.func(obj, self, cons, oDO, oIDO) 
+            result = act.func(obj, self, access_point, oDO, oIDO) 
         except Exception as e:  # error, roll back any plurality changes and return True
-            cons.write('An error has occurred. Please try a different action until the problem is resolved.')
+            access_point.send_message('An error has occurred. Please try a different action until the problem is resolved.')
             self.log.exception("Error occurred in parser:")
             result = True   # upon error, don't go do a different action - user probably intended this one
         return result
@@ -280,7 +280,7 @@ class Parser:
                 break
                 
 
-    def parse(self, user, console, command):
+    def parse(self, user, access_point, command):
         """Parse and enact the user's command. Valid commands have the form:
             <verb> [direct object(s)] [preposition   indirect object(s)]
         If multiple different direct objects are specified (as opposed to 
@@ -289,7 +289,7 @@ class Parser:
         objects (if any) each time. 
         """
 
-        self.log.debug("parser called (user='%s', command='%s', console=%s)" % (user, command, console))
+        self.log.debug("parser called (user='%s', command='%s', access_point=%s)" % (user, command, access_point))
         
         # Split command into words, remove articles, convert to lowercase--but
         # don't modify "strings" of text between quotes; treat these as 1 word
@@ -313,9 +313,9 @@ class Parser:
 
         # THEN, check for objects matching the direct & indirect object strings
         if sDO:   # set oDO to object(s) matching direct object strings
-            oDO_list = self.find_matching_objects(sDO, possible_objects, console)
+            oDO_list = self.find_matching_objects(sDO, possible_objects, access_point)
         if sIDO:  # set oIDO to object(s) matching indirect object strings
-            oIDO_list = self.find_matching_objects(sIDO, possible_objects, console)
+            oIDO_list = self.find_matching_objects(sIDO, possible_objects, access_point)
         if oDO_list == False or oIDO_list == False:
             return True     # ambiguous user input; >1 object matched or multiple DOs _and_ IDOs matched
         
@@ -326,7 +326,7 @@ class Parser:
             if act and ((act.intrans and not sDO) or (act.trans)): 
                 possible_verb_objects.append(obj)
         if (not possible_verb_objects): 
-            console.write("Parse error: can't find any object supporting "
+            access_point.send_message("Parse error: can't find any object supporting "
                             + ('intransitive' if sDO == None else 'transitive')
                              + " verb %s!" % sV)
             # TODO: more useful error messages, e.g. 'verb what?' for transitive verbs 
@@ -357,17 +357,17 @@ class Parser:
         # returns an error message instead, keep trying other actions. If no
         # object's action returns True, print the first object's error message.
         for obj in p:
-            result = self._try_verb_from_obj(sV, obj, oDO, oIDO, console)
+            result = self._try_verb_from_obj(sV, obj, oDO, oIDO, access_point)
             
             if result == True:  # verb from obj successfully enacted! 
                 if obj in oDO_list:  # was it a direct object? 
                     for d in oDO_list[1:] : # if so, enact the verb from all the other DOs on themselves
-                        result = self._try_verb_from_obj(sV, d, d, oIDO, console)
+                        result = self._try_verb_from_obj(sV, d, d, oIDO, access_point)
                         if result != True:
                             break  # this direct object failed even though others succeeded, abort here
                 else:  # verb supported by an indirect object or unnamed object
                     for d in oDO_list[1:] :  # enact the SAME verb on every direct object
-                        result = self._try_verb_from_obj(sV, obj, d, oIDO, console)
+                        result = self._try_verb_from_obj(sV, obj, d, oIDO, access_point)
                         if result != True:
                             break  # this direct object failed even though others succeeded, abort here
                 break  # verb has been enacted by at least one object, all done!
@@ -376,7 +376,7 @@ class Parser:
 
         if result != True:
             # no objects handled the verb; print the first error message 
-            console.write(err_msg if err_msg else "No objects handled verb, but no error message defined!")
+            access_point.send_message(err_msg if err_msg else "No objects handled verb, but no error message defined!")
 
         # Find and merge any identical duplicate objects created while handling pluralities
         possible_objects = self._collect_possible_objects(user)

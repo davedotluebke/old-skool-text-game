@@ -9,7 +9,7 @@ class AccessPoint(asyncio.Protocol):
         self.transport = transport
         self.game = Thing.game
         self.user = None
-        self.log = gametools.get_game_logger("_accesspoint", printing=(self.server_ip == '127.0.0.1'))
+        self.log = gametools.get_game_logger("_accesspoint")
         self.pending_commands = []
     
     def connection_lost(self, exc):
@@ -64,13 +64,13 @@ class AccessPoint(asyncio.Protocol):
                 self.log.error("There is no user loaded! Please send a `disconnect` request to diconnect.")
                 return
             try:
-                self.user.detatch() # prints exit messages and destroys player
+                self.user.detach() # prints exit messages and destroys player
             except Exception as e:
-                self.log.exception("An error occured detatching self.user! Printing below: ")
+                self.log.exception("An error occured detaching self.user! Printing below: ")
                 return
         elif message_type == "disconnect":
             if self.user:
-                self.log.error("Please call `unload` to detatch self.user before disconnecting.")
+                self.log.error("Please call `unload` to detach self.user before disconnecting.")
                 return
             self.transport.close()
         else:

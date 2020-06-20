@@ -20,7 +20,7 @@ class Pedistal(container.Container):
         if sPrep not in self.insert_prepositions:
             return "You can't put the %s %s the %s, but you can put it %s the %s." % (oDO, sPrep, self, self.insert_prepositions[0], self)
         if self.closed:
-            cons.write(self.closed_err if self.closed_err else "The %s is closed; you can't put anything %s it." % (self._short_desc, self.insert_prepositions[0]))
+            cons.user.perceive(self.closed_err if self.closed_err else "The %s is closed; you can't put anything %s it." % (self._short_desc, self.insert_prepositions[0]))
             return True
         if 'prism' in oDO.names:
             cons.user.perceive('You put the prism onto the pedistal. It slides into the space and is suddenly illuminated by the sun, '

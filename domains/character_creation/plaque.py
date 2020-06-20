@@ -88,7 +88,7 @@ class Plaque(thing.Thing):
                 return True
             self.mirror.adj2 = sDO
             self.number = 1
-        cons.write('You see the reflection in the mirror change slightly.')
+        cons.user.perceive('You see the reflection in the mirror change slightly.')
         return True
 
     actions = dict(thing.Thing.actions)  # make a copy, don't change Thing's dict!

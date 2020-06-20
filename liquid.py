@@ -33,17 +33,17 @@ class Liquid(Scenery):
         if sPrep == "out":
             if (oDO, oIDO) == (self, None) or (oDO, oIDO) == (None, self):
                 # e.g. "pour out potion" or "pour potion out"
-                cons.write("You pour out the %s on the ground." % self.name())
+                cons.user.perceive("You pour out the %s on the ground." % self.name())
                 cons.user.emit("&nD%s pours something on the ground." % cons.user.id)
                 self.destroy()
                 # TODO: actually delete the object
                 return True
         if oDO == self and sPrep in ("in", 'into') and isinstance(oIDO, Container) and oIDO.liquid:
             if loc.extract(self) == True:
-                cons.write("You can't get the %s out of the %s!" % (self.name(), loc.name()))
+                cons.user.perceive("You can't get the %s out of the %s!" % (self.name(), loc.name()))
                 return True
             if oIDO.insert(self):
-                cons.write("You can't get the %s into the %s!" % (self.name(), loc.name()))
+                cons.user.perceive("You can't get the %s into the %s!" % (self.name(), loc.name()))
                 loc.insert(self)  # put this object back into original Container
                 return True
             cons.user.perceive('You pour the %s from the %s into the %s.' % (self.name(), loc.name(), oIDO.name()))

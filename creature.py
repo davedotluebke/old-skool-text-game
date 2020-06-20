@@ -101,11 +101,11 @@ class Creature(Container):
         '''Print out the long description of the creature, as well as any 
         Weapons it is wielding and any armor it is wearing.'''
         if self == oDO or self == oIDO:
-            cons.write(self._long_desc)
+            cons.user.perceive(self._long_desc)
             if self.weapon_wielding and (self.weapon_wielding != self.default_weapon):
-                cons.write("It is wielding a %s." % (self.weapon_wielding._short_desc))        #if we use "bare hands" we will have to change this XXX not true anymore
+                cons.user.perceive("It is wielding a %s." % (self.weapon_wielding._short_desc))        #if we use "bare hands" we will have to change this XXX not true anymore
             if self.armor_worn and (self.armor_worn != self.default_armor):
-                cons.write("It is wearing %s." % (self.armor_worn._short_desc))
+                cons.user.perceive("It is wearing %s." % (self.armor_worn._short_desc))
             return True
         else:
             return "Not sure what you are trying to look at!"
@@ -197,7 +197,7 @@ class Creature(Container):
         except AttributeError:
             return (20.0/self.dexterity)
     
-    def die(self, message=None):
+    def die(self, message=None, restart=False):
         #What to do when 0 health
         self.emit("&nD%s dies!" % self.id, [self])
         corpse = gametools.clone('corpse', self)
@@ -208,7 +208,7 @@ class Creature(Container):
         while get_rid_of:
             i = get_rid_of[0]
             i.move_to(corpse, True)
-        if hasattr(self, 'cons'):
+        if restart: # for players, etc
             self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))
         else:
             self.dead = True

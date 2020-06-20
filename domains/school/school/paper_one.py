@@ -5,7 +5,7 @@ import action
 # ACTION METHODS 
 # 
 def read(obj, p, cons, oDO, oIDO):
-    cons.write('You read:\nsometime in the next century. As has become clear, a more efficient, more logical system to organizing and structuring classes would be of great use to us. '
+    cons.user.perceive('You read:\nsometime in the next century. As has become clear, a more efficient, more logical system to organizing and structuring classes would be of great use to us. '
     'As for the purpose itself, we shall see what the future holds and where things are going next. Therefore, I advise waiting before making the planned changes and hope to end the '
     'discussion on a good note with you.\n\nSincerely,\nJavier Mons')
     return True

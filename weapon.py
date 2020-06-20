@@ -41,12 +41,12 @@ class Weapon(Thing):
     def wield(self, p, cons, oDO, oIDO):
         if self == oDO:
             if self == cons.user.weapon_wielding:
-                cons.write("You are already wielding the %s!" % self)
+                cons.user.perceive("You are already wielding the %s!" % self, force=True)
                 return True
             if self.location != cons.user: 
                 return "You need to be holding the %s to wield it." % self
             cons.user.weapon_wielding = self
-            cons.write("You wield the %s." % self)
+            cons.user.perceive("You wield the %s." % self, force=True)
             cons.user.emit('&nD%s wields the %s.' % (cons.user, self), ignore=[cons.user])
             return True
         else:
@@ -58,7 +58,7 @@ class Weapon(Thing):
         if self != cons.user.weapon_wielding:
             return "But you aren't currently wielding the %s!" % self
         cons.user.weapon_wielding = cons.user.default_weapon
-        cons.write("You cease wielding the %s." % self)
+        cons.user.perceive("You cease wielding the %s." % self, force=True)
         cons.user.emit("&nD%s puts away the %s." % (cons.user, self), ignore=[cons.user])
         return True
 

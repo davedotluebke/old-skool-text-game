@@ -19,7 +19,7 @@ class Firepit(scenery.Scenery):
     # ACTION METHODS & DICTIONARY (dictionary must come last)
     #
     def when_lit(self, p, cons, oDO, oIDO):
-        cons.write('You light the firepit, sending it into flames.')
+        cons.user.perceive('You light the firepit, sending it into flames.')
         self.emit('&nD%s lights the firepit, sending it into flames.' % cons.user.id)
         (head, sep, tail) = self._long_desc.partition('It is unlit.')
         self._long_desc = head + 'It is lit.'
@@ -35,12 +35,12 @@ class Firepit(scenery.Scenery):
             return errmsg
         for i in cons.user.contents:
             if i.path == 'domains.school.elementQuest.branch':
-                cons.write('You already have a branch. Perhaps you should leave the rest for others.')
+                cons.user.perceive('You already have a branch. Perhaps you should leave the rest for others.')
                 return True
         branch = gametools.clone('domains.school.elementQuest.branch')
         branch.burning = self.lit
         cons.user.insert(branch)
-        cons.write("You take a sturdy oak branch from the firepit.")
+        cons.user.perceive("You take a sturdy oak branch from the firepit.")
         cons.user.emit("&nD%s takes a sturdy oak branch from the firepit." % cons.user.id, [cons.user])
         return True
 

@@ -32,13 +32,13 @@ class QuestDoor(thing.Thing):
     def open(self, p, cons, oDO, oIDO):
         # This door won't open for one who has already walked a different path (completed another door quest)
         if self.opened:
-            cons.write('The door is already open!')
+            cons.user.perceive('The door is already open!')
             return True
         if cons.user.wizardry_element not in [None, self.names[0]]:
-            cons.write('Try as you might, you cannot open the door to the path of %s.' % self.names[0])
+            cons.user.perceive('Try as you might, you cannot open the door to the path of %s.' % self.names[0])
             return True
         self.opened = True
-        cons.write('You open the door, and see %s.' % self.view_through_door)
+        cons.user.perceive('You open the door, and see %s.' % self.view_through_door)
         self.emit("&nD%s opens the door to the path of %s." % (cons.user.id, self.names[0]))
         self._long_desc += self.view_through_door
         for i in self.location.contents:
@@ -49,10 +49,10 @@ class QuestDoor(thing.Thing):
     
     def close(self, p, cons, oDO, oIDO):
         if not self.opened:
-            cons.write('The door is already closed!')
+            cons.user.perceive('The door is already closed!')
             return True
         self.opened = False
-        cons.write('You close the door.')
+        cons.user.perceive('You close the door.')
         self.emit("&nD%s closes the door to the path of %s." % (cons.user.id, self.names[0]))
         (head, sep, tail) = self._long_desc.partition(self.view_through_door)
         self._long_desc = head
@@ -63,7 +63,7 @@ class QuestDoor(thing.Thing):
             return "You must open the door before you can pass through it."
         dest = gametools.load_room(self.destination)
         if cons.user.move_to(dest):
-            cons.write('With a sense of making a momentous decision, you step through the doorway.')
+            cons.user.perceive('With a sense of making a momentous decision, you step through the doorway.')
             dest.report_arrival(cons.user)
             self.emit('&nD%s walks through the doorway to the path of %s.' % (cons.user.id, self.names[0]))
         return True

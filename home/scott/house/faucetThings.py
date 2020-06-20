@@ -37,15 +37,15 @@ class FaucetThing(Thing):
                 if sPrep == "on":
                     if self.running == 0:
                         self.running = 1
-                        cons.write("You turn on the water.")
+                        cons.user.perceive("You turn on the water.")
                     else: 
-                        cons.write("The water is already on!")
+                        cons.user.perceive("The water is already on!")
                 elif sPrep == "off":
                     if self.running == 0:
-                        cons.write("The water is already off!")
+                        cons.user.perceive("The water is already off!")
                     else:
                         self.running = 0
-                        cons.write("You turn off the water.")
+                        cons.user.perceive("You turn off the water.")
                 else: # sPrep is some other preposition
                     return "I'm not sure what you mean."
                 self._adjust_descriptions()
@@ -58,9 +58,9 @@ class FaucetThing(Thing):
         
         filling = oDO
         if not getattr(filling, 'liquid'):
-            cons.write('The water leaves the %s and goes down the drain in the %s.' % (filling.name(), self.type))
+            cons.user.perceive('The water leaves the %s and goes down the drain in the %s.' % (filling.name(), self.type))
             return True
-        cons.write('Water comes out of the faucet and fills your %s.' % filling.name())
+        cons.user.perceive('Water comes out of the faucet and fills your %s.' % filling.name())
         self.emit('&nD%s fills a %s with water at the %s.' % (cons.user.id, filling, self.type))
         water = gametools.clone('domains.school.school.water')
         oDO.insert(water)
@@ -73,7 +73,7 @@ class FaucetThing(Thing):
             obj = oIDO
         if obj == self or obj == None:
             return "Imposible to pour out a %s in a %s." % (self.type, self.type)
-        cons.write('You pour the %s into the %s, and it goes down the drain.' % (obj, self.type))
+        cons.user.perceive('You pour the %s into the %s, and it goes down the drain.' % (obj, self.type))
         self.emit('&nD%s pours the %s into the %s, and it goes down the drain.' % (cons.user.id, obj, self.type))
         obj.destroy()
         return True

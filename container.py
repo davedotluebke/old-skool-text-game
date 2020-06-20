@@ -154,13 +154,13 @@ class Container(Thing):
         if self.see_inside:
             if self.contents:
                 preamble = "%s the %s there is:" % (self.insert_prepositions[0], self)
-                cons.write(preamble.capitalize())
+                cons.user.perceive(preamble.capitalize())
                 for item in self.contents:
-                    cons.write(item.get_short_desc(indefinite=True))
+                    cons.user.perceive(item.get_short_desc(indefinite=True))
             else:
-                cons.write("It is empty. ")
+                cons.user.perceive("It is empty. ")
         if self.closed:
-            cons.write("It is closed. ")
+            cons.user.perceive("It is closed. ")
         return True
     
     def close_action(self, p, cons, oDO, oIDO):
@@ -170,9 +170,9 @@ class Container(Thing):
         if not self.closable:
             return "The %s can't be closed!" % self._short_desc
         if self.closed:
-            cons.write("The %s is already closed!" % self._short_desc)
+            cons.user.perceive("The %s is already closed!" % self._short_desc)
         else:
-            cons.write("You close the %s." % self._short_desc)
+            cons.user.perceive("You close the %s." % self._short_desc)
             self.emit("&nD%s closes the %s." % (cons.user.id, self._short_desc), [cons.user])
             self.close()
         return True
@@ -187,12 +187,12 @@ class Container(Thing):
             if "closed" in self._short_desc:
                 (head, sep, tail) = self._short_desc.partition("closed ")
                 self._short_desc = head + tail
-            cons.write("You open the %s." % self._short_desc)
+            cons.user.perceive("You open the %s." % self._short_desc)
             self.emit("&nD%s opens the %s." % (cons.user.id, self._short_desc), [cons.user])
             self.closed = False
             self.see_inside = True
         else: 
-            cons.write("The %s is already open!" % self._short_desc)
+            cons.user.perceive("The %s is already open!" % self._short_desc)
         return True
 
     def put(self, p, cons, oDO, oIDO):
@@ -207,13 +207,13 @@ class Container(Thing):
         if sPrep not in self.insert_prepositions:
             return "You can't put the %s %s the %s, but you can put it %s the %s." % (oDO, sPrep, self, self.insert_prepositions[0], self)
         if self.closed:
-            cons.write(self.closed_err if self.closed_err else "The %s is closed; you can't put anything %s it." % (self._short_desc, self.insert_prepositions[0]))
+            cons.user.perceive(self.closed_err if self.closed_err else "The %s is closed; you can't put anything %s it." % (self._short_desc, self.insert_prepositions[0]))
             return True
         if oDO.move_to(self): 
-            cons.write("You put the %s %s the %s." % (oDO._short_desc, sPrep, self._short_desc))
+            cons.user.perceive("You put the %s %s the %s." % (oDO._short_desc, sPrep, self._short_desc))
             cons.user.emit("&nD%s puts a %s %s a %s." % (cons.user.id, oDO._short_desc, sPrep, self._short_desc))
         else:
-            cons.write("You cannot put the %s %s the %s." % (oDO._short_desc, sPrep, self._short_desc))
+            cons.user.perceive("You cannot put the %s %s the %s." % (oDO._short_desc, sPrep, self._short_desc))
         return True            
 
     def remove(self, p, cons, oDO, oIDO):
@@ -230,7 +230,7 @@ class Container(Thing):
             # user specified a direct object, and it's not in this container
             if oIDO == self:
                 # user clearly specified remove the DO from THIS container 
-                cons.write("The %s is not %s the %s!" % (oDO._short_desc, self.insert_prepositions[0], self._short_desc))
+                cons.user.perceive("The %s is not %s the %s!" % (oDO._short_desc, self.insert_prepositions[0], self._short_desc))
                 return True
             else:
                 # user didn't specify an IDO, or specified something else as IDO'
@@ -238,15 +238,15 @@ class Container(Thing):
         if oDO.fixed: 
             return oDO.fixed
         if oDO in cons.user.contents:
-            cons.write("If you want to remove something from your own inventory, drop it.")
+            cons.user.perceive("If you want to remove something from your own inventory, drop it.")
             return True
         if self.closed: 
-            cons.write(self.closed_err if self.closed_err else "The %s is closed; you can't remove the %s." % (self._short_desc, oDO._short_desc))
+            cons.user.perceive(self.closed_err if self.closed_err else "The %s is closed; you can't remove the %s." % (self._short_desc, oDO._short_desc))
         if oDO.move_to(cons.user): 
-            cons.write("You remove the %s from the %s." % (oDO._short_desc, self._short_desc))
+            cons.user.perceive("You remove the %s from the %s." % (oDO._short_desc, self._short_desc))
             cons.user.emit("&nD%s removes a %s from a %s" % (cons.user.id, oDO._short_desc, self._short_desc))
         else:
-            cons.write("You cannot remove the %s from the %s" % (oDO._short_desc, self._short_desc))
+            cons.user.perceive("You cannot remove the %s from the %s" % (oDO._short_desc, self._short_desc))
         return True
 
     actions = dict(Thing.actions)

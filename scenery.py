@@ -30,7 +30,7 @@ class Scenery(Thing):
             verbs, result, transitive, intransitive, emit_message = response
             if verb in verbs:        
                 if (intransitive and not oDO) or (transitive and oDO == self):
-                    cons.write(result)
+                    cons.user.perceive(result)
                     if emit_message:
                         cons.user.emit(emit_message % (cons.user), ignore=[cons.user])
                     return True

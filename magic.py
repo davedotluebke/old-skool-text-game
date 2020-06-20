@@ -23,13 +23,13 @@ def cast(parser, cons, oDO, oIDO, path, spell_info=[], usingstone=False):
     except ModuleNotFoundError:
         return 'That spell does not exist!'
     except ImportError as e:
-        cons.write('Something went wonky with loading your spell.')
+        cons.user.perceive('Something went wonky with loading your spell.', force=True)
         cons.user.log.error(e)
         return True
     try:
         origMana = lib.get_mana(parser, cons, oDO, oIDO, spell_info, None)
     except gametools.BadSpellInfoError as e:
-        cons.write(e.args[0])
+        cons.user.perceive(e.args[0], force=True)
         return True
     mana = origMana
     stone = None
@@ -52,14 +52,14 @@ def cast(parser, cons, oDO, oIDO, path, spell_info=[], usingstone=False):
             if mana <= cons.user.mana:
                 cons.user.mana -= mana
             else:
-                cons.write("You don't have enough mana to cast this spell.")
+                cons.user.perceive("You don't have enough mana to cast this spell.", force=True)
                 return True
             stone.set_mana(new_stone_mana)
     else:    
         if mana <= cons.user.mana:
             cons.user.mana -= mana
         else:
-            cons.write("You don't have enough mana to cast this spell.")
+            cons.user.perceive("You don't have enough mana to cast this spell.", force=True)
             return True
     try:
         messUp = random()
@@ -69,9 +69,9 @@ def cast(parser, cons, oDO, oIDO, path, spell_info=[], usingstone=False):
                 return lib.bad_spell(parser, cons, oDO, oIDO, spell_info, stone, (messUp - cons.user.calc_chance_mess_up(origMana)))
         return lib.spell(parser, cons, oDO, oIDO, spell_info, stone)
     except gametools.BadSpellInfoError as e:
-        cons.write(e.args[0])
+        cons.user.perceive(e.args[0], force=True)
         return True
     except Exception as e:
         cons.user.log.error(e)
-        cons.write('An error occured in casting the spell!')
+        cons.user.perceive('An error occured in casting the spell!', force=True)
         return True

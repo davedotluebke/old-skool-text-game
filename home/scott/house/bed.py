@@ -18,7 +18,7 @@ class Bed(Container):
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
     def wake_up(self, cons):
-        cons.write('You wake up.')
+        cons.user.perceive('You wake up.')
         self.emit('&nD%s wakes up.', cons.user.id)
         cons.user.move_to(self.location)
 
@@ -29,14 +29,14 @@ class Bed(Container):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sV == 'sleep':
             cons.user.move_to(self)
-            cons.write('You lie down on the bed and fall fast asleep.')
+            cons.user.perceive('You lie down on the bed and fall fast asleep.')
             self.emit('&nD%s lies down on the bed and falls asleep.' % cons.user.id)
             cons.user.move_to(gametools.load_room(self.dreamland))
             Thing.game.schedule_event(70, self.wake_up, cons)
             return True
         if sV == 'lay' and sIDO == 'bed':
             cons.user.move_to(self)
-            cons.write('You lay down on the bed and relax.')
+            cons.user.perceive('You lay down on the bed and relax.')
             return True
         return "Did you mean to lay down on the bed?"
     
@@ -44,7 +44,7 @@ class Bed(Container):
         (sV, sDO, sPrep, sIDO) = p.diagram_sentence(p.words)
         if sV == 'stand':
             cons.user.move_to(self.location)
-            cons.write('You stand up.')
+            cons.user.perceive('You stand up.')
             self.emit('&nD%s stands up.', cons.user.id)
             return True
         return 'Did you intend to stand up?'

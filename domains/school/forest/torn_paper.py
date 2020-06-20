@@ -5,7 +5,7 @@ import action
 # ACTION METHODS 
 # 
 def read(obj, p, cons, oDO, oIDO):
-    cons.write('''All you can make out from the paper is a poem that says:
+    cons.user.perceive('''All you can make out from the paper is a poem that says:
     Sometimes
     It is a trick
     That will set you free.''')

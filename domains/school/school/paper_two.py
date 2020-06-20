@@ -5,7 +5,7 @@ import action
 # ACTION METHODS 
 # 
 def read(obj, p, cons, oDO, oIDO):
-    cons.write('You read: Make sure to check in on anouncements. Make clear importance of exploration.')
+    cons.user.perceive('You read: Make sure to check in on anouncements. Make clear importance of exploration.')
     return True
 
 #

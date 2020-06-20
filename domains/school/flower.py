@@ -26,7 +26,7 @@ class Flower(Thing):
             if sDO == 'petal' and sPrep in ['from', 'off']:
                 petal = gametools.clone("domains.school.forest.petal", self.type)
                 petal.move_to(cons.user)
-                cons.write('You pick a petal from the %s.' % self.type)
+                cons.user.perceive('You pick a petal from the %s.' % self.type)
                 cons.user.emit("&nD%s picks a petal from a %s.", (cons.user.id, self.type))
                 return True
             else:
@@ -35,16 +35,16 @@ class Flower(Thing):
     
     def shake(self, p, cons, oDO, oIDO):
         if self not in cons.user.contents:
-            cons.write("You have to pick the flower before you can shake it!")
+            cons.user.perceive("You have to pick the flower before you can shake it!")
             return True
         if self.type in ['poppy']:
-            cons.write('You shake the flower and collect some %s seeds.' % self.names[0])
+            cons.user.perceive('You shake the flower and collect some %s seeds.' % self.names[0])
             cons.user.emit("&nD%s shakes a flower and collects some seeds." % cons.user.id)
             seed = gametools.clone('domains.school.forest.seed')
             seed.move_to(cons.user)
             return True
         else:
-            cons.write('You shake the flower, and nothing happens.')
+            cons.user.perceive('You shake the flower, and nothing happens.')
             return True
 
     actions = dict(Thing.actions)

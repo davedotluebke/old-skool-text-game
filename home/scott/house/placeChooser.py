@@ -22,14 +22,14 @@ class PlaceChooser(Thing):
             self.written_on = " ".join(p.words[1:])
         except IndexError:
             return 'Did you mean to write something on the paper?'
-        cons.write('You write "%s" on the paper and feel a magical shift occur.' % self.written_on)
+        cons.user.perceive('You write "%s" on the paper and feel a magical shift occur.' % self.written_on)
         self.emit("&nD%s writes something on the paper and vanishes before your eyes!" % cons.user.id, [cons.user])
         del self.location.west_door.dest
         try:
             self.location.west_door.dest = self.written_on
             gametools.load_room(self.written_on)
         except KeyError:
-            cons.write('The text on the paper morphs back into the word "water_kitchen".')
+            cons.user.perceive('The text on the paper morphs back into the word "water_kitchen".')
             self.written_on = 'domain.school.school.water_kitchen'
             self.location.west_door.dest = Thing.ID_dict[self.written_on]
         self._long_desc = 'This magical paper says "%s" on it.' % self.written_on

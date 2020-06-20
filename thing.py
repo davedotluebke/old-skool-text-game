@@ -483,7 +483,7 @@ class Thing(object):
             cons.user.perceive("You drop %s." % description)
             cons.user.emit("&nD%s drops %s." % (cons.user.id, description))
         else:
-            cons.write("You cannot drop %s" % description)
+            cons.user.perceive("You cannot drop %s" % description)
         return True
 
     def look_at(self, p, cons, oDO, oIDO):

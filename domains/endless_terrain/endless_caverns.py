@@ -243,7 +243,7 @@ def test_grid(cons=None, exit_probability = 0.25):
         map_str = line1 + "\n" + line2 + '\n' + line3 + '\n' + map_str
     print(map_str)
     if cons:
-        cons.write(map_str.replace(' ','&nbsp'))
+        cons.user.perceive(map_str.replace(' ','&nbsp'))
 
 
         

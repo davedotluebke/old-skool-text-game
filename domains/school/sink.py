@@ -23,9 +23,9 @@ class Sink(Thing):
         
         filling = oDO
         if not getattr(filling, 'liquid'):
-            cons.write('The water leaves the %s and goes down the drain in the sink' % filling)
+            cons.user.perceive('The water leaves the %s and goes down the drain in the sink' % filling)
             return True
-        cons.write('Water comes out of the sink, and fills your %s' % filling)
+        cons.user.perceive('Water comes out of the sink, and fills your %s' % filling)
         self.emit('&nD%s fills a %s with water at the sink.' % (cons.user.id, filling))
         water = gametools.clone('domains.school.school.water')
         oDO.insert(water)
@@ -38,7 +38,7 @@ class Sink(Thing):
             obj = oIDO
         if obj == self or obj == None:
             return "It is impossible to pour out a sink in a sink."
-        cons.write('You pour the %s into the sink, and it goes down the drain.' % obj)
+        cons.user.perceive('You pour the %s into the sink, and it goes down the drain.' % obj)
         self.emit("&nD%s pours something into the sink." % cons.user.id)
         obj.destroy()
         return True

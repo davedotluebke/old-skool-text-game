@@ -227,7 +227,7 @@ class Book(Thing):
         '''
 
         if self not in cons.user.contents:
-            cons.write('You need to take the book before reading it!')
+            cons.user.perceive('You need to take the book before reading it!')
             return True
         
         if oDO != self:
@@ -250,7 +250,7 @@ class Book(Thing):
     def close(self, p, cons, oDO, oIDO):
         # the book is always closed because this verb action is 
         # unavailable while in takeover reading mode
-        cons.write("It's already closed.")
+        cons.user.perceive("It's already closed.")
         return True
 
     actions = dict(Thing.actions)  # make a copy, don't change Thing's dict!
