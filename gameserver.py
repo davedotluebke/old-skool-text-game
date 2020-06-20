@@ -37,8 +37,6 @@ class Game():
         self.log = gametools.get_game_logger("_gameserver", printing=(self.server_ip == '127.0.0.1'))
         self.acl = miracle.Acl()
         self.set_up_groups_and_acl()
-        if connections_websock.encryption_installed:
-            connections_websock.encryption_enabled = self.encryption_setting
         self.keep_going = True  # game ends when set to False
         self.start_time = 0
         try:
@@ -62,7 +60,6 @@ class Game():
         self.events = asyncio.get_event_loop()
 
         self.parser = Parser()
-        self.users = []
 
         self.shutdown_console = None
 
@@ -523,18 +520,6 @@ class Game():
     # Event Management Functions
     #
     
-    def get_profiling_report(self):
-        report_str = ''
-        all_time_spent = sum([self.total_times[x] for x in self.total_times])
-        for i in self.total_times:
-            report_str += '\n%s:\n' % i
-            report_str += 'Total time running: %s\n' % self.total_times[i]
-            if i in self.maximum_times:
-                report_str += 'Average time running: %s\n' % ((self.total_times[i])/(self.numrun_times[i]))
-                report_str += 'Maximum time running: %s\n' % self.maximum_times[i]
-            report_str += 'Percentage of total time: %s\n' % ((self.total_times[i]/all_time_spent)*100)
-        return report_str
-
     def register_heartbeat(self, obj):
         """Add the specified object (obj) to the heartbeat_users list"""
         if obj not in self.heartbeat_users:
@@ -598,11 +583,8 @@ class Game():
             # quit the game
             self.events.stop()
     
-    async def prepare_commands(self, reader, writer):
-        pass # XXX ADD THIS FUNCTION
-
     def open_socket(self):
-        self.events.run_until_complete(asyncio.start_server(self.prepare_commands, self.server_ip, self.port))
+        return self.events.run_until_complete(asyncio.create_server(AccessPoint, self.server_ip, self.port))
 
     def start_loop(self):
         # Keep track of game start time to support periodic reboots 
@@ -620,9 +602,8 @@ class Game():
         
         for i in range(0, self.retry):
             try:
-                self.open_socket()
+                server = self.open_socket()
                 break
-                socket_sucessfully_opened = True
             except:
                 self.log.exception(f"Failed to open socket at {self.server_ip}:{self.port}; retrying in 30 seconds")
                 time.sleep(30)
@@ -631,8 +612,12 @@ class Game():
         self.events.call_later(1,self.beat)
         self.events.run_forever()
 
-        # XXX add callbacks to handle game exit?
-        # Go through and save every player
+        # The following occurs after game exit
+        server.close() # XXX all players should be saved and logged out before this
+        self.events.run_until_complete(server.wait_closed())
+        self.events.close()
+
+        """# Go through and save every player
         players = [Thing.ID_dict[x] for x in Thing.ID_dict if isinstance(Thing.ID_dict[x], Player)]
         consoles = [x.cons for x in players]
         restart_code = 0
@@ -647,8 +632,7 @@ class Game():
         
         for j in consoles:
             if j and j.user: # Make sure to send all messages from consoles before fully quitting game
-                self.events.run_until_complete(connections_websock.ws_send(j))                
+                self.events.run_until_complete(connections_websock.ws_send(j))"""
 
         self.log.critical("Exiting main game loop!")
         self.log_func_profile()
-        sys.exit(restart_code)
