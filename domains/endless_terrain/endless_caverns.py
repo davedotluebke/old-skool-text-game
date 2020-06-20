@@ -1,4 +1,4 @@
-# Room Factory: This module will create multiple rooms, depending on what paramaters are called in the load function
+# Room Factory: This module will create multiple rooms, depending on what parameters are called in the load function
 import numpy as np
 
 import gametools
@@ -248,7 +248,7 @@ def test_grid(cons=None, exit_probability = 0.25):
 
         
 def load(param_list):
-    path = param_list[0] # if paramaters are given, the first one is always the entire string, including parameters
+    path = param_list[0] # if parameters are given, the first one is always the entire string, including parameters
     exists = room.check_loaded(path)
     if exists: return exists
     

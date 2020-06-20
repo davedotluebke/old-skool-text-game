@@ -4,7 +4,7 @@ from random import random
 
 def castChecks(player, parser, cons, oDO, oIDO):
     if len(parser.words) < 2:
-        return "Usage: Cast <spell> [paramaters] [with <stone>]"
+        return "Usage: Cast <spell> [parameters] [with <stone>]"
     specifications = parser.words[2:]
     try:
         path = player.spellsKnown[parser.words[1]]

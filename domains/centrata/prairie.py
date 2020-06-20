@@ -1,4 +1,4 @@
-# Room Factory: This module will create multiple rooms, depending on what paramaters are called in the load function
+# Room Factory: This module will create multiple rooms, depending on what parameters are called in the load function
 import gametools
 import scenery
 import room

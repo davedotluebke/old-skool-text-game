@@ -171,7 +171,7 @@ def clone(obj_module, params=None):
 
 def load_room(modpath, report_import_error=True):
     """Attempt to load a room from its modpath (e.g. 'domains.school.testroom'). 
-    If an ImportEerror occurs, will attempt to create a room if given paramaters.
+    If an ImportEerror occurs, will attempt to create a room if given parameters.
     Returns a reference to the room, or None if the given modpath could not be loaded."""
     try: 
         roomString, params = deconstructObjectPath(modpath)
