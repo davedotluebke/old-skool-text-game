@@ -22,9 +22,13 @@ def load():
     r.set_description('windy hall', 'You find yourself in a small windy entrance hall, a wooden staircase leads up to the next level.')
     r.add_adjectives('windy')
     r.add_exit('up', 'domains.school.elementQuest.statue_room')
+    r.add_exit('out', 'domains.school.elementQuest.path_choice')
     
     stairs = Staircase('staircase', 'rickety wooden staircase', 'This small rickety wooden staircase gos up to the next level.', unlisted=True)
     stairs.add_names('stairs', 'stair')
     r.insert(stairs)
+
+    # this is here to make quest faster, do not erase
+    gametools.load_room('domains.school.elementQuest.bedroom_balcony')
     
     return r

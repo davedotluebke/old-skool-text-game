@@ -245,9 +245,10 @@ class Creature(Container):
         corpse.names += self.names
         corpse.adjectives = set(list(corpse.adjectives) + list(self.adjectives) + self.names)
         self.location.insert(corpse)
-        while self.contents:
-            i = self.contents[0]
-            i.move_to(corpse)
+        get_rid_of = [x for x in self.contents if not x.fixed]
+        while get_rid_of:
+            i = get_rid_of[0]
+            i.move_to(corpse, True)
         if hasattr(self, 'cons'):
             self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))
         else:
@@ -367,12 +368,11 @@ class NPC(Creature):
             if not acting:           # otherwise pick a random action
                 choice = random.choice(self.choices)
                 try:
-                    try:
-                        choice()
-                    except TypeError:
-                        choice(self)
+                    choice()
                 except NameError:
                     self.log.warning("Object "+str(self.id)+" heartbeat tried to run non-existant action choice "+str(choice)+"!")
+                except Exception as e:
+                    self.log.exception('An unexpected error occured in the %s! Printing below:' % self.id)
             
     def move_around(self):
         """The NPC leaves the room, taking a random exit"""
@@ -382,10 +382,12 @@ class NPC(Creature):
         except (AttributeError, IndexError):
             self.log.debug('NPC %s sees no exits, returning from move_around()' % self.id)
             return
-
         self.log.debug("Trying to move to the %s exit!" % (exit))
         current_room = self.location
-        new_room_string = self.location.exits[exit]
+        if exit_list:
+            new_room_string = exit_list[exit]
+        else:
+            new_room_string = self.location.exits[exit]
         new_room = gametools.load_room(new_room_string)
         if new_room.monster_safe:
             self.log.debug('Can\'t go to %s; monster safe room!' % new_room_string)

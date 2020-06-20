@@ -282,7 +282,7 @@
                     sendLine();
                     document.getElementById("inputLine").value = cmd_history[current_cmd];
                 }
-                if (key == 38 || (e.shiftKey && key == 80)) {
+                if (key == 38 || (e.ctrlKey && key == 80)) {
                     if (current_cmd > 0) {
                         cmd_history[current_cmd] = document.getElementById('inputLine').value;
                         current_cmd--;
@@ -290,7 +290,7 @@
                         e.preventDefault()
                     }
                 }
-                if (key == 40 || (e.shiftKey && key == 78)) {
+                if (key == 40 || (e.ctrlKey && key == 78)) {
                     if (current_cmd < cmd_history.length - 1) {
                         cmd_history[current_cmd] = document.getElementById('inputLine').value;
                         current_cmd ++;

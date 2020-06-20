@@ -1,11 +1,10 @@
 // Place your settings in this file to overwrite default and user settings.
 {
     "python.linting.pylintEnabled": false,
-    "python.pythonPath": "C:\\Program Files (x86)\\Python37-32\\python.exe",
+    "python.pythonPath": "/Library/Developer/CommandLineTools/usr/bin/python3",
     "files.associations": {
         "*.OADplayer": "json"
     },
-    "files.eol": "\n",
     "telemetry.enableCrashReporter": false,
     "telemetry.enableTelemetry": false
 }

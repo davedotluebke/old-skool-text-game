@@ -42,6 +42,8 @@ class Mirror(thing.Thing):
             return "Not sure what you are trying to look at!"
 
     def enter(self, p, cons, oDO, oIDO):
+        if oDO != self:
+            return "I'm not sure what you're trying to enter!"
         dest = gametools.load_room(self.dest)
         if self.dest == gametools.DEFAULT_START_LOC:
             scroll = gametools.clone('domains.school.scroll', cons.user)

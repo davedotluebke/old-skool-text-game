@@ -13,6 +13,7 @@ class Portal(thing.Thing):
                              'with arcane runes. A vertical sheet of glowing flame roars between the '
                              'stones, filling the portal with an inferno of powerful magic fire.')
         self.add_adjectives('flaming', 'stone')
+        self.fix_in_place('You can\'t move the portal!')
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
