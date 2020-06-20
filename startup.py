@@ -1,3 +1,4 @@
+
 import sys
 import argparse
 import ipaddress
@@ -8,7 +9,6 @@ import gametools
 from gameserver import Game
 from thing import Thing
 from room import Room  
-from console import Console
 
 argparser = argparse.ArgumentParser(description="Start the game server")
 argparser.add_argument("-s", "--server", help="IP address at which the server will listen for clients")

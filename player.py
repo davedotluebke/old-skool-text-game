@@ -1,8 +1,5 @@
-import pickle
 import sys
 import importlib
-import connections_websock
-import os
 import magic
 import logging
 
@@ -149,6 +146,9 @@ class Player(Creature):
                 self.wprivileges = self.wprivilages
                 del self.wprivilages
             self.versions[gametools.findGamePath(__file__)] = 3
+        if self.versions[gametools.findGamePath(__file__)] == 3:
+            del self.password
+
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
@@ -380,8 +380,16 @@ class Player(Creature):
         if len(self.access_point.pending_messages) > 0:
             cmd = self.access_point.pending_messages[0]
             del self.access_point.pending_messages[0]
-            sV = Thing.game.parser.parse(self, self.access_point, cmd)
-        
+            if cmd == "escape": # special case to reset self.message_target to parser
+                self.message_target = Thing.game.parser
+            if self.mesage_target == Thing.game.parser:
+                sV = self.message_target.parse(self, self.access_point, cmd)
+            else:
+                try:
+                    self.message_target.accept_command(cmd)
+                except Exception as e:
+                    self.log.exception("An error occured in %s.accept_command! Printing below:" % self.message_target)
+                    self.message_target = Thing.game.parser
             # some tutorial actions are activated by the verb
             if sV: # TODO: enhance interactive tutorial
                 self._schedule_interactive_tutorial(sV)

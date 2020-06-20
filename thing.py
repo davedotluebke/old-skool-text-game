@@ -276,6 +276,8 @@ class Thing(object):
         """
         saveable = {}
         state = self.__dict__.copy()
+        if state.get("ID_dict"):
+            del state["ID_dict"]
         if state.get("actions"):
             del state["actions"]
         if state.get("log"):

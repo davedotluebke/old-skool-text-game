@@ -14,7 +14,7 @@ class Book(Thing):
         self.book_pages = dict()
         self.spells = {}
         self.add_names('book')
-        self.cons = None
+        self.current_reader = None
         self.COVER_INDEX = -1
         self.TOC_INDEX = 0
         # books always open on cover the first time and toc or bookmark afterwards
@@ -72,7 +72,7 @@ class Book(Thing):
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
-    def console_recv(self, input_string):
+    def accept_command(self, input_string):
 
         command = input_string.lower().strip()
 
@@ -90,10 +90,10 @@ class Book(Thing):
             self._set_index(self.COVER_INDEX)
 
             if not self.book_pages[self.COVER_INDEX]:
-                self.cons.user.perceive("The cover is blank")
+                self.current_reader.perceive("The cover is blank")
                 return False
 
-            self.cons.user.emit("&nD%s closes the %s and gazes at the cover." %(self.cons.user.id, self._short_desc))
+            self.current_reader.emit("&nD%s closes the %s and gazes at the cover." %(self.current_reader.id, self._short_desc))
 
         elif command in toc_vocab:
             # view table of contents
@@ -101,111 +101,111 @@ class Book(Thing):
             self._set_index(self.TOC_INDEX)
 
             if not self.book_pages[self.TOC_INDEX]:
-                self.cons.user.perceive("This book has no table of contents.")
+                self.current_reader.perceive("This book has no table of contents.")
                 return False
 
             if last_index == self.COVER_INDEX:
-                self.cons.user.emit("&nD%s opens the %s and starts reading." %(self.cons.user.id, self._short_desc))
+                self.current_reader.emit("&nD%s opens the %s and starts reading." %(self.current_reader.id, self._short_desc))
             else:
-                self.cons.user.emit("&nD%s flips through the pages of the %s with a thoughtful expression." %(self.cons.user.id, self._short_desc))
+                self.current_reader.emit("&nD%s flips through the pages of the %s with a thoughtful expression." %(self.current_reader.id, self._short_desc))
 
         elif command in next_vocab:
             # view next page
             if not self._adjust_index(1):
-                self.cons.user.perceive("You've reached the end.")
+                self.current_reader.perceive("You've reached the end.")
                 return False
 
             if self.index == self.TOC_INDEX:
-                self.cons.user.emit("&nD%s opens the %s and starts reading." %(self.cons.user.id, self._short_desc))
+                self.current_reader.emit("&nD%s opens the %s and starts reading." %(self.current_reader.id, self._short_desc))
             else:
-                self.cons.user.emit("&nD%s turns the page." %(self.cons.user.id))
+                self.current_reader.emit("&nD%s turns the page." %(self.current_reader.id))
 
         elif command in prev_vocab:
             # view next page
             if not self._adjust_index(-1):
-                self.cons.user.perceive("You've reached the beginning.")
+                self.current_reader.perceive("You've reached the beginning.")
                 return False
 
             if self.index == self.COVER_INDEX:
-                self.cons.user.emit("&nD%s closes the %s and gazes at the cover." %(self.cons.user.id, self._short_desc))
+                self.current_reader.emit("&nD%s closes the %s and gazes at the cover." %(self.current_reader.id, self._short_desc))
             else:
-                self.cons.user.emit("&nD%s turns back a page." %(self.cons.user.id))
+                self.current_reader.emit("&nD%s turns back a page." %(self.current_reader.id))
         
         elif command in bookmark_vocab:
             # toggle bookmark
             if self.bookmark == self.index:
                 if self.bookmark == self.COVER_INDEX:
-                    self.cons.user.perceive("You decide that the cover isn't so important after all.")
+                    self.current_reader.perceive("You decide that the cover isn't so important after all.")
                 else:
-                    self.cons.user.perceive("You unmark the page.")
-                    self.cons.user.emit("&nD%s smooths out the page." %(self.cons.user.id))
+                    self.current_reader.perceive("You unmark the page.")
+                    self.current_reader.emit("&nD%s smooths out the page." %(self.current_reader.id))
 
                 self.bookmark = None
             else:
                 self.bookmark = self.index
                 
                 if self.bookmark == self.COVER_INDEX:         
-                    self.cons.user.perceive("You make a mental note to examine this cover later.")
-                    self.cons.user.emit("&nD%s stares intently at the cover." %(self.cons.user.id))
+                    self.current_reader.perceive("You make a mental note to examine this cover later.")
+                    self.current_reader.emit("&nD%s stares intently at the cover." %(self.current_reader.id))
                 else:
-                    self.cons.user.perceive("You dog-ear the page for later.")
-                    self.cons.user.emit("&nD%s dog-ears the page they are on." %(self.cons.user.id))
+                    self.current_reader.perceive("You dog-ear the page for later.")
+                    self.current_reader.emit("&nD%s dog-ears the page they are on." %(self.current_reader.id))
         
         elif command.startswith(tuple(learn_vocab)):
             if self.spells[self.index] == {}:
-                self.cons.user.perceive("You don't see any spells on the page that you could learn.")
+                self.current_reader.perceive("You don't see any spells on the page that you could learn.")
             elif command.partition(" ")[2] in self.spells[self.index]:
                 spell_name = command.partition(" ")[2]
                 spell_path = self.spells[self.index][spell_name]
-                if spell_name in self.cons.user.spellsKnown:
-                    if self.cons.user.spellsKnown[spell_name] == spell_path:
-                        self.cons.user.perceive("You already know that spell!")
+                if spell_name in self.current_reader.spellsKnown:
+                    if self.current_reader.spellsKnown[spell_name] == spell_path:
+                        self.current_reader.perceive("You already know that spell!")
                         return False
                     else:
-                        self.cons.user.perceive("You relearn the %s spell from the page." % spell_name)
+                        self.current_reader.perceive("You relearn the %s spell from the page." % spell_name)
                 else:
-                    self.cons.user.perceive("You learn the %s spell from the page." % spell_name)
-                self.cons.user.spellsKnown[spell_name] = spell_path
+                    self.current_reader.perceive("You learn the %s spell from the page." % spell_name)
+                self.current_reader.spellsKnown[spell_name] = spell_path
             else:
-                self.cons.user.perceive("There seems to be a spell on the page, but not one named %s." % command.partition(" ")[2])
+                self.current_reader.perceive("There seems to be a spell on the page, but not one named %s." % command.partition(" ")[2])
             return False
             
         elif command in quit_vocab: 
             # stop input_takeover
             self.index = self.bookmark or self.TOC_INDEX
-            self.cons.input_redirect = None
-            self.cons.user.perceive("You put the %s away." %(self._short_desc))
-            self.cons.user.emit("&nD%s puts the %s away." %(self.cons.user.id, self._short_desc))
+            self.current_reader.message_target = Thing.game.parser
+            self.current_reader.perceive("You put the %s away." %(self._short_desc))
+            self.current_reader.emit("&nD%s puts the %s away." %(self.current_reader.id, self._short_desc))
             self.cons = None
             return False
 
         elif command.isdigit():
             # select page by number
             if not self._set_index(command):
-                self.cons.user.perceive("You can't find that page.")
+                self.current_reader.perceive("You can't find that page.")
                 return False
 
-            self.cons.user.emit("&nD%s flips through the pages of the %s with a thoughtful expression." %(self.cons.user.id, self._short_desc))
+            self.current_reader.emit("&nD%s flips through the pages of the %s with a thoughtful expression." %(self.current_reader.id, self._short_desc))
 
         else:
-            self.cons.user.perceive("Other actions are blocked while reading; type 'quit' to exit reading mode.")
+            self.current_reader.perceive("Other actions are blocked while reading; type 'quit' to exit reading mode.")
 
         # output selected page and available commands
         if self.index == self.COVER_INDEX:
-            self.cons.write("\nThe cover reads:", 4)
+            self.current_reader.perceive("\nThe cover reads:", 4)
         elif self.index == self.TOC_INDEX:
-            self.cons.write("\nTable of Contents:", 4)
+            self.current_reader.perceive("\nTable of Contents:", 4)
         else:
-            self.cons.write("\nPage %s:" %self.index, 4)
+            self.current_reader.perceive("\nPage %s:" %self.index, 4)
 
         command_list = "Commands: (C)over  (TOC)  (N)ext  (P)revious  (B)ookmark  (L)earn \\[spell\\]  (Q)uit"
         if self.index == self.bookmark:
             command_list = command_list.replace("(B)", "[B]")
 
-        self.cons.write("%s" % self.book_pages[self.index], 8)
-        ##self.cons.user.perceive("\nYou are reading the &nd%s...\n\n" %self.id)
-        self.cons.user.perceive("%s" %command_list)
-        self.cons.user.perceive("          [Type a page number to read it.]\n\n")
+        self.current_reader.perceive("%s" % self.book_pages[self.index], 8)
+        ##self.current_reader.perceive("\nYou are reading the &nd%s...\n\n" %self.id)
+        self.current_reader.perceive("%s" %command_list)
+        self.current_reader.perceive("          [Type a page number to read it.]\n\n")
 
         return True
 
@@ -223,7 +223,7 @@ class Book(Thing):
     def read(self, p, cons, oDO, oIDO):
         '''
         This function is only executed when reading starts. All subsequent actions are sent 
-        directly to self.console_recv() via the input takeover system
+        directly to self.accept_command() by changing the user's message target.
         '''
 
         if self not in cons.user.contents:
@@ -234,16 +234,16 @@ class Book(Thing):
             return "Did you mean to read a book?"
 
         # take over user input
-        cons.request_input(self)
-        self.cons = cons
+        self.current_reader = cons.user
+        self.current_reader.message_target = self
         
         if self.index == self.COVER_INDEX:
-            self.cons.user.emit("&nD%s takes out a %s and looks at the cover." %(self.cons.user.id, self._short_desc))
+            self.current_reader.emit("&nD%s takes out a %s and looks at the cover." %(self.current_reader.id, self._short_desc))
         else:
-            self.cons.user.emit("&nD%s opens a %s and starts reading." %(self.cons.user.id, self._short_desc))
+            self.current_reader.emit("&nD%s opens a %s and starts reading." %(self.current_reader.id, self._short_desc))
 
         # show the last page read when book is opened
-        self.console_recv("")
+        self.accept_command("")
 
         return True
 

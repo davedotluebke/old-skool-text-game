@@ -21,7 +21,6 @@ import gametools
 from thing import Thing
 from player import Player
 from parse import Parser
-from console import Console
 from parse import Parser
 
 class Game():
@@ -61,8 +60,6 @@ class Game():
 
         self.parser = Parser()
 
-        self.shutdown_console = None
-
         self.total_times = {}
         self.numrun_times = {}
         self.maximum_times = {}
@@ -73,7 +70,7 @@ class Game():
     
     def get_file_privileges(self, player_name, path, check_type='read'):
         """Return True if the given player belongs to any groups that have 
-        the specified permission ('read' or 'edit') on the specified file. 
+        the specified permission ('read' or 'write') on the specified file. 
         Tests the given filename first, then repeatedly tests the containing
         directory up to & including the root ('/') of the game filesystem."""        
         groups = self.wizards[player_name]
@@ -296,12 +293,10 @@ class Game():
         except (TypeError, OverflowError):
             return False
     
-    def save_player(self, filename, player):
-        try:
-            player.save_cons_attributes()
-        except Exception:
-            self.log.error('Error saving console attributes for player %s!' % player)
-
+    def save_player(self, player, access_point):
+        """Create a saveable dictionary representing the player object and everything they are carrying. 
+        This will be sent to the console for saving. NOTE: This code has several critical sections, and 
+        must be run synchronously."""
         # Keep a list of "broken objects" to destroy
         broken_objs = []
         # Uniquify the ID string of every object carried by the player
@@ -310,9 +305,8 @@ class Game():
         for obj in l:
             # change object ID and corresponding entry in ID_dict
             try:
-                del Thing.ID_dict[obj.id]
                 obj.id = obj.id + tag  
-                obj._add_ID(obj.id)
+                obj._add_ID(obj.id, remove_existing=True)
                 # recursively add associated objects
                 if obj.contents != None:
                     l += obj.contents
@@ -327,41 +321,23 @@ class Game():
         for obj in broken_objs:
             try:
                 obj.destroy()
-            except Exception:
+            except Exception as e:
                 self.log.exception('Error destroying object %s!' % obj)
                 # TODO: figure out what to do here
 
-        if not filename.endswith('.OADplayer'): 
-            filename += '.OADplayer'
-        try:
-            f = open(filename, 'w')
-            # XXX double-check: is this really necessary? 
-            backup_ID_dict = Thing.ID_dict.copy()
-            Thing.ID_dict.clear()
-            # change location & contents etc from obj reference to ID:
-            for obj in l:
-                obj._change_objs_to_IDs()
-            saveables = [x.get_saveable() for x in l]
-            for i in saveables:
-                sub_amt = 0
-                for sidx in range(0, len(i)):
-                    j = list(i.keys())[sidx - sub_amt]
-                    if not self.is_jsonable(i[j]):
-                        del i[j]
-                        sub_amt += 1
-            f.write(json.dumps(saveables, skipkeys=True, sort_keys=True, indent=4))
-            Thing.ID_dict = backup_ID_dict
-            player.cons.write("Saved player data!")
-            player.log.info(f"Saved player data to file {filename}")
-            f.close()
-        except IOError:
-            player.cons.write("Error writing to file %s" % filename)
-            player.log.error(f"Error writing player data! filename = {filename}")
-            Thing.ID_dict = backup_ID_dict # ESSENTIAL THAT WE DO THIS!
-        except TypeError:
-            player.cons.write("Error writing to file %s" % filename)
-            self.log.exception('A TypeError occurred while trying to save player %s. Printing below:' % player)
-            Thing.ID_dict = backup_ID_dict
+        for obj in l:
+            obj._change_objs_to_IDs()
+        saveables = [x.get_saveable() for x in l]
+        for i in saveables:
+            sub_amt = 0
+            for sidx in range(0, len(i)):
+                j = list(i.keys())[sidx - sub_amt]
+                if not self.is_jsonable(i[j]):
+                    del i[j]
+                    sub_amt += 1
+        player_json = json.dumps(saveables, skipkeys=True, sort_keys=True, indent=4)
+        access_point.send_message("Saved player data!")
+        player.log.info("Returning player data to access point")
         # restore location & contents etc to obj references:
         for obj in l:
             try:
@@ -377,74 +353,36 @@ class Game():
             obj.id = head  
             obj._add_ID(obj.id)  # re-create original entry in ID_dict
         
+        return player_json # this will be sent by calling function
+        
 
-    def load_player(self, filename, cons, oldplayer=None, password=None):
-        """Load a single player and his/her inventory from a saved file.
+    def load_player(self, player_json, access_point):
+        """Load a player from the player_json string and add them to the game. 
+        In addition to loading, this function will return the player. 
+        NOTE: This code contains several critical sections and must be run synchronously."""
 
-        Objects in the player's inventory (and their contents, recursively) 
-        are treated as new objects, and will often be duplicates of
-        existing objects already in the game. Thus after unpickling each 
-        object we need to add it to Thing.ID_dict with a new and unique ID.""" 
-
-
-        if not filename.endswith('.OADplayer'): 
-            filename += '.OADplayer'
-        try:
-            f = open(filename, 'r')
-        except FileNotFoundError:
-            cons.write("Error, couldn't find file named %s" % filename)
-            raise gametools.PlayerLoadError
-        try:
-            # l is the list of objects (player + recursive inventory). Note that 
-            # the loading code calls init() which creates new entries in ID_dict for objects in l,
-            # using the uniquified IDs - guaranteed to succeed without further changing ID
-            saveables = json.loads(f.read())
-            f.close()
-            l = []
-            for x in saveables:
-                obj = gametools.clone(x['path'])
-                if not obj:
-                    continue
-                del Thing.ID_dict[obj.id] # Delete the temporary ID created by the `clone` function
-                obj.update_obj(x)
-                l.append(obj)
-        except EOFError:
-            cons.write("The file you are trying to load appears to be corrupt.")
-            raise gametools.PlayerLoadError
+        # l is the list of objects (player + recursive inventory). Note that 
+        # the loading code calls init() which creates new entries in ID_dict for objects in l,
+        # using the uniquified IDs - guaranteed to succeed without further changing ID
+        saveables = json.loads(player_json)
+        l = []
+        for x in saveables:
+            obj = gametools.clone(x['path'])
+            if not obj:
+                continue
+            del Thing.ID_dict[obj.id] # Delete the temporary ID created by the `clone` function
+            obj.update_obj(x)
+            l.append(obj)
         newplayer = l[0]  # first object saved is the player
-        if password:
-            if password != newplayer.password:
-                raise gametools.IncorrectPasswordError
         
         broken_objs = [] # Make sure to remove all of the broken objects from the player's inventory
-
-        if oldplayer:
-            # TODO: move below code for deleting player to Player.__del__()
-            # Unlink player object from room; delete player along with recursive inventory
-            eraselist = [oldplayer]
-            for o in eraselist:
-                if o.contents:
-                    eraselist += o.contents
-                if o.location.extract(o):
-                    self.log.error("Error deleting player or inventory during load_game(): object %s contained in %s " % (o, o.location))
-                if o in self.heartbeat_users:
-                    self.deregister_heartbeat(o)
-                del Thing.ID_dict[o.id]
-                # o.__del__()  # XXX probably doesn't truly delete the object; needs more research
-            cons.user = None
-        
-        newplayer.cons = cons  # custom saving code for Player doesn't save console
-        cons.user = newplayer  # update backref from cons
-        newplayer.update_cons_attributes()
-
-        cons.change_players = True
 
         loc_str = newplayer.location
         newplayer.location = gametools.load_room(loc_str) 
         if newplayer.location == None: 
             self.log.warning("Saved location '%s' for player %s no longer exists; using default location" % (loc_str, newplayer))
-            cons.write("Somehow you can't quite remember where you were, but you now find yourself back in the Great Hall.")
-            newplayer.location = gametools.load_room('domains.school.school.great_hall')
+            access_point.send_message("Somehow you can't quite remember where you were, but you now find yourself somewhere else.")
+            newplayer.location = gametools.load_room(gametools.DEFAULT_START_LOC)
 
         # Add all of the objects to Thing.ID_dict temporarily
         for o in l:
@@ -492,29 +430,16 @@ class Game():
         room = newplayer.location
         try:
             room.insert(newplayer)  # insert() does some necessary bookkeeping
-            cons.write("Restored game state from file %s" % filename)
+            access_point.send_message("Restored player state.")
             room.report_arrival(newplayer, silent=True)
             room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         except Exception:
             self.log.error('Error inserting player into location! Moving player back to default start location')
             room = gametools.load_room(newplayer.start_loc_id)
-            cons.write("Restored game state from file %s" % filename)
+            access_point.send_message("Restored player state")
             room.report_arrival(newplayer, silent=True)
             room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         return newplayer
-    
-    def login_player(self, cons):
-        """Create a new player object and put it in "login state", which
-        doesn't do anything but request the username and password. If the
-        username matches a player file, ask for the password, and if they 
-        match, load that player. If this is a new username, have them create
-        a new password and verify it, then put them in the new character 
-        creation room where they will select gender, species, etc. """
-        tmp_name = "login_player%d" % random.randint(10000, 99999)
-        user = gametools.clone('player', [tmp_name, cons])
-        cons.user = user
-        cons.write("Please enter your username: ")
-        user.login_state = "AWAITING_USERNAME"
     
     #
     # Event Management Functions
