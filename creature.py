@@ -79,10 +79,8 @@ class Creature(Container):
     def _restore_objs_from_IDs(self):
         super()._restore_objs_from_IDs()
         try:
-            for i in self.default_weapons:
-                if isinstance(i, str):
-                    self.default_weapons.remove(i)
-                    self.default_weapons.append(Thing.ID_dict[i])
+            # convert default_weapons list from strings to objects
+            self.default_weapons = [Thing.ID_dict[i] if isinstance(i,str) else i for i in self.default_weapons]
         except:
             self.log.exception("Error converting default_weapons[..] from string to object.")
         try: 
@@ -247,7 +245,7 @@ class Creature(Container):
         self.location.insert(corpse)
         get_rid_of = [x for x in self.contents if not x.fixed]
         while get_rid_of:
-            i = get_rid_of[0]
+            i = get_rid_of.pop(0)
             i.move_to(corpse, True)
         if hasattr(self, 'cons'):
             self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))

@@ -89,7 +89,7 @@ class Player(Creature):
         self.adj2 = None
         self.terse = False  # True -> show short description when entering room
         self.game.register_heartbeat(self)
-        self.versions[gametools.findGamePath(__file__)] = 2
+        self.versions[gametools.findGamePath(__file__)] = 3
         self.prev_location_id = None
         self.tutorial_messages = {
             'domains.character_creation.species': 'Try typing "look north mirror" and then "enter north mirror".',
