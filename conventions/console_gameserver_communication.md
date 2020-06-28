@@ -4,11 +4,11 @@ The communication between the console and the gameserver is done on a socket wit
 ## Console to access point
 Communication dictionaries from the console to the access point have the following parameters:
 - `type`: The type of request: `load`, `parse`, `save`, `unload`, or `disconnect`.
-  - If type is `load`, will load the player json from `player_json` and set `self.user` (where `self` is the `AccessPoint` object). If `self.user` is already set, will fail.
-  - If type is `parse`, will call `Parser.parse()` on the string in `message` on a heartbeat. If `self.user` is not set, will fail.
-  - If type is `save`, will save the player json from `self.user` to `player_json` and send it back. If `self.user` is not set, will fail.
-  - If type is `unload`, will remove `self.user` from the server, including emiting decorative messages and calling `self.user.destroy()`. Sets `self.user` to `None` If `self.user` is not set, will fail. **Note: This does not save `self.user`.**
-  - If type is `disconnect`, will terminate the connection. If `self.user` is set, will fail.
+  - If type is `load`, the AccessPoint will load the player json from `player_json` and set `self.user` (where `self` is the `AccessPoint` object). If `self.user` is already set, will fail.
+  - If type is `parse`, the AccessPoint will call `Parser.parse()` on the string in `message` on a heartbeat. If `self.user` is not set, will fail.
+  - If type is `save`, the AccessPoint will save the player json from `self.user` to `player_json` and send it back. If `self.user` is not set, will fail.
+  - If type is `unload`, the AccessPoint will remove `self.user` from the server, including emiting decorative messages and calling `self.user.destroy()`. Sets `self.user` to `None` If `self.user` is not set, will fail. **Note: This does not save `self.user`.**
+  - If type is `disconnect`, the AccessPoint will terminate the connection. If `self.user` is set, will fail.
 - `message`: The actual message string to be parsed upon heartbeat.
 - `player_json`: The json object string representing the player. Used during save and load calls.
 
@@ -19,7 +19,7 @@ Dictionaries going the other way have the following paramaters:
 - `type`: The type of request: `error`, `response`, or `save_return`.
   - If type is `response`, the `message` attribute contains a message for the client.
   - If type is `save_return`, the `player_json` attribute contains a player json, returned for saving.
-  - If type is `error`, an error has occured in the execution of the console's request This will *NOT* happen if the user tried to do somethig illegal (e.g. `read table`, `attack the nonexistent monster`), but instead if there is an error in the code somewhere that causes the request to be uncompleteable (e.g. `print'hi')`). The error code will be set and the message should be a human-readable description of what went wrong.
+  - If type is `error`, an error has occured in the execution of the console's request This will *NOT* happen if the user tried to do somethig illegal (e.g. `read table`, `attack the nonexistent monster`), but instead if there is an error in the code somewhere that causes the request to be uncompleteable (e.g. `print'hi')`). The error code will be set and the `message` attribute should contain a human-readable description of what went wrong.
 - `message`: The message to be written to the client.
 - `player_json`: The json object string representing the player. Returned from save calls.
 - `error-code`: If 0, success. Otherwise, this is a number readable by the console so it can tell what went wrong. Error codes are defined in `gametools.py`.
