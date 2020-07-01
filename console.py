@@ -1,7 +1,14 @@
 import asyncio
 import functools
 import json
+import sys
+import time
+
 import gametools
+
+# default location of saved console attributes file
+RC_PATH = "home/"  # note this is a relative path
+RC_NAME = ".consolerc"
 
 usernames_open = []
 
@@ -20,10 +27,9 @@ class GameserverCommunicationProtocol(asyncio.Protocol):
         self.transport.write(message.encode('utf-8'))
 
 class BaseConsole:
-    """A base class for all game consoles, containing 
-    the basic code to communicate with the game server
-    and to run shell commands. Subclasses provide more
-    functionality."""
+    """A base class for all game consoles, containing the basic code to
+    communicate with the game server and to run shell commands. Subclasses
+    provide more functionality."""
     saved_attributes = ["current_player_name"] # attributes that the console should save in its config file
     def __init__(self, username, gameserver_host, gameserver_port):
         self.username = username
@@ -49,9 +55,12 @@ class BaseConsole:
     #
 
     def startup_console(self):
+        """Start the asyncio event loop, first loading saved attributes
+        (such as player name, and eventually aliases etc). When the loop
+        exits, save those attributes again."""
         try:
             if self.username:
-                f = open(f"/home/{self.username}/.consolerc")
+                f = open(RC_PATH + f"{self.username}" +"/" + RC_NAME)
                 attrs_json = f.read()
                 f.close()
                 attrs_dict = json.loads(attrs_json)
@@ -59,14 +68,14 @@ class BaseConsole:
                     if i in self.saved_attributes:
                         self.__dict__[i] = attrs_dict[i]
         except Exception as e:
-            print(e)
+            print(e, file=sys.stderr)
 
         self.loop.call_later(1, self.read_input)
         self.loop.run_forever()
 
         try:
             if self.username:
-                f = open(f"/home/{self.username}/.consolerc", "w")
+                f = open(RC_PATH + f"{self.username}" +"/" + RC_NAME, "w")
                 attrs_dict = {}
                 for i in list(self.saved_attributes):
                     if i in self.__dict__:
@@ -75,20 +84,24 @@ class BaseConsole:
                 f.write(attrs_json)
                 f.close()
         except Exception as e:
-            print(e)
+            print(e, file=sys.stderr)
     
     #
     # Functions for connecting to the gameserver
     #
 
-    def connect_to_gameserver(self, address, port, retry_num=10):
-        """Create a connection to the gameserver, setting self.reader and self.writer."""
+    def connect_to_gameserver(self, address, port, retry_num=10, delay=2):
+        """Create a connection to the gameserver, setting `self.protocol`."""
         for i in range(0, retry_num):
             try:
                 transport, protocol = self.loop.run_until_complete(self.loop.create_connection(GameserverCommunicationProtocol, host=address, port=port))
                 self.protocol = protocol
                 self.protocol.cons = self
+                break
             except ConnectionRefusedError:
+                print(f"Connection refused; retrying in {delay} seconds...", file=sys.stderr)
+                time.sleep(delay)
+                delay *= 2
                 continue
     
     def receive_from_gameserver(self, message_json):
@@ -99,7 +112,7 @@ class BaseConsole:
         try:
             message_dict = json.loads(message_json)
         except Exception as e:
-            self.write_output("Error loading json!")
+            self.write_output("Error unpacking JSON message from server!")
             return
         
         try:
@@ -142,7 +155,7 @@ class BaseConsole:
                 return
             
         else:
-            self.write_output(f"The message type was invalid. Message type: {message_type}")
+            self.write_output(f"The message type is not supported. Message type: {message_type}")
 
     def send_to_gameserver(self, type, message=None, player_json=None):
         message_dict = {
@@ -216,34 +229,46 @@ class BaseConsole:
     # Input / Output functions (for subclassing)
     #
 
+    def _load_player_from_file(self, input_words, player_name):
+        """Load a player save file, returning True if an error occurred."""
+        try:
+            f = open(f"saved_players/{player_name}")
+            player_json = f.read()
+            f.close()
+            self.current_player_name = player_name
+            return False
+        except FileNotFoundError:
+            self.write_output(f"No player named {player_name} found. To create a new player, type 'create {player_name}")
+        except PermissionError:
+            self.write_output(f"The player {player_name} is not yours. Please try again.")
+        except Exception as e:
+            self.write_output(e)
+        return True
+        
     def handle_command(self, input_str):
-        """Decide what to do with a command: pass to gameserver, pass to shell, or save and load a player."""
+        """Decide what to do with a user command: 
+        - pass to gameserver,
+        - pass to shell, or
+        - save and load a player."""
         input_words = input_str.split(" ")
         if input_words[0] == "load":
+            usage = "Please type `load <name>` to specify a name for your "
+                    "character, or to load a new character.  Names must be "
+                    "a single word with no spaces."
             if len(input_words) == 1:
                 if self.current_player_name:
                     player_name = self.current_player_name
                 else:
-                    self.write_output("Please enter a name for your character. Names must be a single word with no spaces.")
+                    self.write_output(usage)
                     return
             elif len(input_words) == 2:
                 player_name = input_words[1]
             else:
-                self.write_output("Player names must be a single word with no spaces.")
+                self.write_output(usage)
                 return
-            try:
-                f = open(f"saved_players/{self.current_player_name}")
-                player_json = f.read()
-                f.close()
-            except FileNotFoundError:
-                self.write_output(f"No player named {player_name} found. To create a new player, type 'create {player_name}")
+            if _load_player_from_file(input_words, player_name):
                 return
-            except PermissionError:
-                self.write_output(f"The player {player_name} is not yours. Please try again.")
-                return
-            except Exception as e:
-                self.write_output(e)
-                return
+
         elif input_words[0] == "create":
 
     def write_output(self, *output_strs):
