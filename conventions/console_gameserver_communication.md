@@ -19,7 +19,7 @@ Dictionaries going the other way have the following paramaters:
 - `type`: The type of request: `error`, `response`, or `save_return`.
   - If type is `response`, the `message` attribute contains a message for the client.
   - If type is `save_return`, the `player_json` attribute contains a player json, returned for saving.
-  - If type is `error`, an error has occured in the execution of the console's request This will *NOT* happen if the user tried to do somethig illegal (e.g. `read table`, `attack the nonexistent monster`), but instead if there is an error in the code somewhere that causes the request to be uncompleteable (e.g. `print'hi')`). The error code will be set and the message should be a human-readable description of what went wrong.
+  - If type is `error`, an error has occurred in the execution of the console's request This will *NOT* happen if the user tried to do somethig illegal (e.g. `read table`, `attack the nonexistent monster`), but instead if there is an error in the code somewhere that causes the request to be uncompleteable (e.g. `print'hi')`). The error code will be set and the message should be a human-readable description of what went wrong.
 - `message`: The message to be written to the client.
 - `player_json`: The json object string representing the player. Returned from save calls.
 - `error-code`: If 0, success. Otherwise, this is a number readable by the console so it can tell what went wrong. Error codes are defined in `gametools.py`.
