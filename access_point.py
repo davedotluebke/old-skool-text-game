@@ -67,7 +67,7 @@ class AccessPoint(asyncio.Protocol):
                 message = json.dumps({'type': 'save_return', 'player_json': player_json})
                 self.transport.write(message.encode('utf-8'))
             except Exception as e:
-                self.log.exception('An error occured in save_player! Printing below:')
+                self.log.exception('An error occurred in save_player! Printing below:')
                 self.send_message(traceback.format_exc(), 501)
                 return
         elif message_type == "unload":
@@ -78,7 +78,7 @@ class AccessPoint(asyncio.Protocol):
             try:
                 self.user.detach() # prints exit messages and destroys player
             except Exception as e:
-                self.log.exception("An error occured detaching self.user! Printing below: ")
+                self.log.exception("An error occurred detaching self.user! Printing below: ")
                 self.send_message(traceback.format_exc(), 501)
                 return
         elif message_type == "disconnect":

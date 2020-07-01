@@ -73,5 +73,5 @@ def cast(parser, cons, oDO, oIDO, path, spell_info=[], usingstone=False):
         return True
     except Exception as e:
         cons.user.log.error(e)
-        cons.user.perceive('An error occured in casting the spell!', force=True)
+        cons.user.perceive('An error occurred in casting the spell!', force=True)
         return True

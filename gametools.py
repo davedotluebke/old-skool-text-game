@@ -27,7 +27,7 @@ console_error_codes = {0: {"name": 'success', "description": 'The action succeed
 401: {"name": 'JSON error', "description": 'JSON is unreadable or encoded wrong'},
 406: {"name": 'User definition error', "description": '`AcessPoint.user` is set when it shouldn\'t be or vice versa'},
 500: {"name": 'Generic error', "description": 'used if no other error type fits. Better to create a new error type.'},
-501: {"name": 'Python error', "description": 'Happens when an Python error has occured in the server that causes the request to be unfulfillable. Traceback should be in `response.message`.'}}
+501: {"name": 'Python error', "description": 'Happens when an Python error has occurred in the server that causes the request to be unfulfillable. Traceback should be in `response.message`.'}}
 
 #
 # CUSTOM EXCEPTIONS

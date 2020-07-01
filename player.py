@@ -388,7 +388,7 @@ class Player(Creature):
                 try:
                     self.message_target.accept_command(cmd)
                 except Exception as e:
-                    self.log.exception("An error occured in %s.accept_command! Printing below:" % self.message_target)
+                    self.log.exception("An error occurred in %s.accept_command! Printing below:" % self.message_target)
                     self.message_target = Thing.game.parser
             # some tutorial actions are activated by the verb
             if sV: # TODO: enhance interactive tutorial

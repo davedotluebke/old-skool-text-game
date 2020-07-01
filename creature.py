@@ -331,7 +331,7 @@ class NPC(Creature):
                 except NameError:
                     self.log.warning("Object "+str(self.id)+" heartbeat tried to run non-existant action choice "+str(choice)+"!")
                 except Exception as e:
-                    self.log.exception('An unexpected error occured in the %s! Printing below:' % self.id)
+                    self.log.exception('An unexpected error occurred in the %s! Printing below:' % self.id)
             
     def move_around(self, exit_list=None, direction=None):
         """The NPC leaves the room, taking a random exit"""
