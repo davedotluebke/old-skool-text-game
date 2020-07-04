@@ -49,6 +49,7 @@ class AccessPoint(asyncio.Protocol):
             try:
                 self.user = self.game.load_player(message_dict['player_json'], self)
                 self.user.access_point = self
+                self.user.cons = self.user.access_point # maintain backwards compatibility
             except KeyError as e:
                 self.log.exception('message_dict missing `player_json` parameter!')
                 self.send_message('message_dict missing `player_json` parameter!', 400)
@@ -57,6 +58,13 @@ class AccessPoint(asyncio.Protocol):
                 self.log.exception('An error occcured in load_player! Printing below:')
                 self.send_message(traceback.format_exc(), 501)
                 return
+        elif message_type == "create":
+            if self.user:
+                self.log.error("A user is already loaded. Please send an `unload` request before loading another user.")
+                self.send_message("A user is already loaded. Please send an `unload` request before loading another user.", 406)
+                return
+            try:
+                self.user = self.game.create_player(message_dict['player_name'], self)
         elif message_type == "save":
             if not self.user:
                 self.log.error("There is no user loaded. Please send a `load` request to load a user.")

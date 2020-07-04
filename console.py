@@ -47,6 +47,7 @@ class BaseConsole:
         self.current_string = ''
         # player save/load information
         self.current_player_name = None
+        self.player_loaded = False
         # start the console
         self.startup_console()
     
@@ -244,6 +245,16 @@ class BaseConsole:
         except Exception as e:
             self.write_output(e)
         return True
+    
+    def _create_player(self, input_words, player_name):
+        """Create a player with the given name and save to a file. Return True if an error occurred."""
+        
+        # create new player, setting
+        # ID
+        # name
+        # proper name
+        # move to start_room
+        # welcome message
         
     def handle_command(self, input_str):
         """Decide what to do with a user command: 
@@ -266,10 +277,26 @@ class BaseConsole:
             else:
                 self.write_output(usage)
                 return
-            if _load_player_from_file(input_words, player_name):
+            if self.player_loaded:
+                self._save_player_to_file(input_words, player_name)
+            if self._load_player_from_file(input_words, player_name):
                 return
 
         elif input_words[0] == "create":
+            usage = "Please type `create <name>` to create a player named "
+            "<name>. Names must be a single word with no spaces."
+            if len(input_words) == 1:
+                self.write_output(usage)
+                return
+            elif len(input_words) == 2:
+                player_name = input_words[1]
+            else:
+                self.write_output(usage)
+                return
+            if self.player_loaded:
+                self._save_player_to_file(input_words, player_name)
+            if self._create_player(input_words, player_name):
+                return
 
     def write_output(self, *output_strs):
         """Write the given output. Must be subclassed for additional functionality."""
