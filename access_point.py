@@ -50,6 +50,7 @@ class AccessPoint(asyncio.Protocol):
                 self.user = self.game.load_player(message_dict['player_json'], self)
                 self.user.access_point = self
                 self.user.cons = self.user.access_point # maintain backwards compatibility
+                self.transport.write(b'1') # tell console that player was loaded
             except KeyError as e:
                 self.log.exception('message_dict missing `player_json` parameter!')
                 self.send_message('message_dict missing `player_json` parameter!', 400)
@@ -65,6 +66,17 @@ class AccessPoint(asyncio.Protocol):
                 return
             try:
                 self.user = self.game.create_player(message_dict['player_name'], self)
+                self.user.access_point = self
+                self.user.cons = self.user.access_point # maintain backwards compatability
+                self.transport.write(b'1') # tell console that player was loaded
+            except KeyError as e:
+                self.log.exception('message_dict missing `player_name` paramater!')
+                self.send_message('message_dict missing `player_name` paramater!', 400)
+                return
+            except Exception as e:
+                self.log.exception('An error occured in create_player! Printing below:')
+                self.send_message(traceback.format_exc(), 501)
+                return
         elif message_type == "save":
             if not self.user:
                 self.log.error("There is no user loaded. Please send a `load` request to load a user.")
@@ -85,6 +97,7 @@ class AccessPoint(asyncio.Protocol):
                 return
             try:
                 self.user.detach() # prints exit messages and destroys player
+                self.transport.write(b'1') # tell console that player was unloaded
             except Exception as e:
                 self.log.exception("An error occurred detaching self.user! Printing below: ")
                 self.send_message(traceback.format_exc(), 501)

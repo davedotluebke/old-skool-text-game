@@ -154,11 +154,21 @@ class BaseConsole:
             except Exception as e:
                 self.write_output("An error occurred while saving the player. Printing below: \n"+e)
                 return
+        
+        elif message_type == 'load_status':
+            try:
+                self.player_loaded = bool(int(message_dict['status_code']))
+            except KeyError:
+                self.write_output("Error: `type` set to `load_status` but `status_code` missing")
+                return
+            except Exception as e:
+                self.write_output("An error occured trying to change the load status. Printing below \n"+e)
             
         else:
             self.write_output(f"The message type is not supported. Message type: {message_type}")
 
-    def send_to_gameserver(self, type, message=None, player_json=None):
+    def send_to_gameserver(self, type, message=None, player_json=None, player_name=None):
+        """Send a message to the gameserver with the given attributes."""
         message_dict = {
             "type": type
         }
@@ -166,6 +176,8 @@ class BaseConsole:
             message_dict["message"] = message
         if player_json:
             message_dict["player_json"] = player_json
+        if player_name:
+            message_dict['player_name'] = player_name
         try:
             message_json = json.dumps(message_dict)
         except Exception as e:
@@ -237,6 +249,7 @@ class BaseConsole:
             player_json = f.read()
             f.close()
             self.current_player_name = player_name
+            self.send_to_gameserver('load', player_json=player_json)
             return False
         except FileNotFoundError:
             self.write_output(f"No player named {player_name} found. To create a new player, type 'create {player_name}")
@@ -245,16 +258,6 @@ class BaseConsole:
         except Exception as e:
             self.write_output(e)
         return True
-    
-    def _create_player(self, input_words, player_name):
-        """Create a player with the given name and save to a file. Return True if an error occurred."""
-        
-        # create new player, setting
-        # ID
-        # name
-        # proper name
-        # move to start_room
-        # welcome message
         
     def handle_command(self, input_str):
         """Decide what to do with a user command: 
@@ -295,8 +298,8 @@ class BaseConsole:
                 return
             if self.player_loaded:
                 self._save_player_to_file(input_words, player_name)
-            if self._create_player(input_words, player_name):
-                return
+            self.send_to_gameserver('create', player_name=player_name)
+            self.current_player_name = player_name
 
     def write_output(self, *output_strs):
         """Write the given output. Must be subclassed for additional functionality."""
