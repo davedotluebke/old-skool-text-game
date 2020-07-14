@@ -1,21 +1,6 @@
-import asyncio
 import websockets
-import os.path
 import random
-import time
-try:
-    import sjcl
-    encryption_installed = True
-except ModuleNotFoundError:
-    print("sjcl not installed. Running wihtout...")
-    encryption_installed = False
 import json
-import base64
-import functools
-
-from thing import Thing
-from console import Console
-import gametools
 
 # From the websockets.serve() documentation:
 # Since there's no useful way to propagate exceptions triggered in handlers,

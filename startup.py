@@ -13,7 +13,7 @@ from room import Room
 argparser = argparse.ArgumentParser(description="Start the game server")
 argparser.add_argument("-s", "--server", help="IP address at which the server will listen for clients")
 argparser.add_argument("-d", "--duration", help="How long to run before shutting down")
-argparser.add_argument("-p", "--port", help="The port which to serve the game on; defaults to 9124")
+argparser.add_argument("-p", "--port", help="The port which to serve the game on; defaults to 9123")
 argparser.add_argument("-r", "--retry", help="The number of times to retry (waiting 30s first) if the port is busy; defaults to 5")
 args = argparser.parse_args()
 if args.server:
@@ -27,7 +27,7 @@ else:
     ip = None
 
 duration = args.duration if args.duration else 24*60*60 - 1  # One minute less than a single day
-port = args.port if args.port else 9124
+port = args.port if args.port else 9123
 retry = args.retry if args.retry else 5
 
 ## 

@@ -13,7 +13,6 @@ import json
 import pprint
 
 import websockets
-import connections_websock
 import miracle
 
 import gametools
@@ -22,6 +21,7 @@ from thing import Thing
 from player import Player
 from parse import Parser
 from parse import Parser
+from access_point import AccessPoint
 
 class Game():
     """
@@ -29,7 +29,7 @@ class Game():
         a list of objects that have a heartbeat (a function that runs 
         periodically), and the IP address of the server. 
     """
-    def __init__(self, server=None, duration=86400, port=9124, retry=5, silent=False):
+    def __init__(self, server=None, duration=86400, port=9123, retry=5, silent=False):
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.server_ip = server  # IP address of server, if specified
         # print gameserver log messages to stderr only on localhost
@@ -46,8 +46,8 @@ class Game():
         try:
             self.port = port
         except:
-            self.log.exception("Error setting game.port; defaulting to 9124")
-            self.port = 9124
+            self.log.exception("Error setting game.port; defaulting to 9123")
+            self.port = 9123
         try: 
             self.retry = int(retry)
         except:
@@ -293,6 +293,10 @@ class Game():
         except (TypeError, OverflowError):
             return False
     
+    def create_player(self, player_name, access_point):
+        """Create a player with the given name and return it."""
+        return gametools.clone('player', params=(player_name, access_point))
+    
     def save_player(self, player, access_point):
         """Create a saveable dictionary representing the player object and everything they are carrying. 
         This will be sent to the console for saving. NOTE: This code has several critical sections, and 
@@ -509,7 +513,7 @@ class Game():
             self.events.stop()
     
     def open_socket(self):
-        return self.events.run_until_complete(asyncio.create_server(AccessPoint, self.server_ip, self.port))
+        return self.events.run_until_complete(self.events.create_server(AccessPoint, self.server_ip, self.port))
 
     def start_loop(self):
         # Keep track of game start time to support periodic reboots 

@@ -25,5 +25,5 @@ Dictionaries going the other way have the following paramaters:
   - If type is `load_status`, the `status` attribute contains a value (0 or 1) representing the load status of the player. 0 represents a player not loaded, while 1 represents a player loaded.
 - `message`: The message to be written to the client.
 - `player_json`: The json object string representing the player. Returned from save calls.
-- `error-code`: If 0, success. Otherwise, this is a number readable by the console so it can tell what went wrong. Error codes are defined in `gametools.py`.
-- `status`: A status code representing a state. Seperate from `error-code`. When type is `load_status`, 0 represents the player not being loaded, while 1 represents a player loaded.
+- `error_code`: If 0, success. Otherwise, this is a number readable by the console so it can tell what went wrong. Error codes are defined in `gametools.py`.
+- `status`: A status code representing a state. Seperate from `error_code`. When type is `load_status`, 0 represents the player not being loaded, while 1 represents a player loaded.

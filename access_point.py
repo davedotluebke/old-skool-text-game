@@ -11,15 +11,23 @@ class AccessPoint(asyncio.Protocol):
         self.game = Thing.game
         self.user = None
         self.log = gametools.get_game_logger("_accesspoint")
-        self.pending_commands = []
+        self.pending_messages = []
     
     def connection_lost(self, exc):
         # TODO: Implement code to deal with unexpected closures
         return super().connection_lost(exc)
 
     def data_received(self, data):
+        data = data.decode('utf-8')
+        data_list = data.split('\u0004')
+        for i in data_list:
+            self.handle_data_received(i)
+    
+    def handle_data_received(self, data):
+        if not data:
+            return
         try:
-            message_dict = json.loads(data.decode('utf-8'))
+            message_dict = json.loads(data)
         except Exception as e:
             self.log.exception('Invalid JSON message received! Printing below:')
             self.send_message('Invalid JSON message received!', 401)
@@ -36,7 +44,7 @@ class AccessPoint(asyncio.Protocol):
                 self.send_message("Cannot create a pending command without a user!", 406)
                 return
             try:
-                self.pending_commands.append(message_dict['message'])
+                self.pending_messages.append(message_dict['message'])
             except KeyError as e:
                 self.log.exception('message_dict missing `message` parameter!')
                 self.send_message('message_dict missing `message` parameter!', 400)
@@ -50,7 +58,7 @@ class AccessPoint(asyncio.Protocol):
                 self.user = self.game.load_player(message_dict['player_json'], self)
                 self.user.access_point = self
                 self.user.cons = self.user.access_point # maintain backwards compatibility
-                self.transport.write(b'1') # tell console that player was loaded
+                self.transport.write((json.dumps({'type': 'load_status', 'status': '1'})+'\u0004').encode('utf-8')) # tell console that player was loaded
             except KeyError as e:
                 self.log.exception('message_dict missing `player_json` parameter!')
                 self.send_message('message_dict missing `player_json` parameter!', 400)
@@ -68,7 +76,7 @@ class AccessPoint(asyncio.Protocol):
                 self.user = self.game.create_player(message_dict['player_name'], self)
                 self.user.access_point = self
                 self.user.cons = self.user.access_point # maintain backwards compatability
-                self.transport.write(b'1') # tell console that player was loaded
+                self.transport.write(json.dumps({'type': 'load_status', 'status': '1'}).encode('utf-8')+'\u0004'.encode('utf-8')) # tell console that player was loaded
             except KeyError as e:
                 self.log.exception('message_dict missing `player_name` paramater!')
                 self.send_message('message_dict missing `player_name` paramater!', 400)
@@ -85,7 +93,7 @@ class AccessPoint(asyncio.Protocol):
             try:
                 player_json = self.game.save_player(self.user, self)
                 message = json.dumps({'type': 'save_return', 'player_json': player_json})
-                self.transport.write(message.encode('utf-8'))
+                self.transport.write(message.encode('utf-8')+'\u0004'.encode('utf-8'))
             except Exception as e:
                 self.log.exception('An error occurred in save_player! Printing below:')
                 self.send_message(traceback.format_exc(), 501)
@@ -97,7 +105,8 @@ class AccessPoint(asyncio.Protocol):
                 return
             try:
                 self.user.detach() # prints exit messages and destroys player
-                self.transport.write(b'1') # tell console that player was unloaded
+                self.user = None
+                self.transport.write(json.dumps({'type': 'load_status', 'status': '0'}).encode('utf-8')+'\u0004'.encode('utf-8')) # tell console that player was unloaded
             except Exception as e:
                 self.log.exception("An error occurred detaching self.user! Printing below: ")
                 self.send_message(traceback.format_exc(), 501)
@@ -117,4 +126,4 @@ class AccessPoint(asyncio.Protocol):
         message_type = "response" if not error else "error"
         message_dict = {"type": message_type, "message": message, 'error_code': error}
         message_json = json.dumps(message_dict)
-        self.transport.write(message_json.encode('utf-8'))
+        self.transport.write(message_json.encode('utf-8')+'\u0004'.encode('utf-8'))

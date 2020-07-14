@@ -60,6 +60,7 @@ class Player(Creature):
         self.access_point = access_point
         self.cons = self.access_point # to maintain backwards compatability
         self.login_state = None
+        self.message_target = Thing.game.parser
         self.password = None
         self.start_loc_id = None
         self.handlers = {}  # list of debug handlers for wizards
@@ -382,7 +383,7 @@ class Player(Creature):
             del self.access_point.pending_messages[0]
             if cmd == "escape": # special case to reset self.message_target to parser
                 self.message_target = Thing.game.parser
-            if self.mesage_target == Thing.game.parser:
+            if self.message_target == Thing.game.parser:
                 sV = self.message_target.parse(self, self.access_point, cmd)
             else:
                 try:
