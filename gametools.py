@@ -2,7 +2,10 @@ import os
 import platform
 import importlib
 import logging
+
 from walking_os import findAllPythonFiles
+import conshandler
+
 
 #
 # GLOBAL GAME ATTRIBUTES
@@ -13,6 +16,7 @@ from walking_os import findAllPythonFiles
 gameroot = os.path.dirname(__file__)  # the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
 
 GAME_LOG = "/game_log.txt"
+GAME_LOG_DEFAULT_LEVEL = logging.WARNING
 PLAYER_ROLES_FILE = "/player_roles.json"
 PLAYER_DIR = "/saved_players"
 PLAYER_BACKUP_DIR = "/backup_saved_players"
@@ -122,13 +126,22 @@ def request_all_inputs(player, dest):
 #
 game_log_handler = logging.FileHandler(realDir(GAME_LOG))
 game_log_handler.setLevel(logging.WARNING)
+game_log_cons_handler = conshandler.ConsHandler()
 game_log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+game_log_cons_formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', datefmt="%M:%S")
 game_log_handler.setFormatter(game_log_formatter)
+game_log_cons_handler.setFormatter(game_log_cons_formatter)
 
-def get_game_logger(obj, printing=False):
-    """Returns the logger associated with object `obj`, creating if needed. All
-       objects log messages to the default logfile via game_log_handler; if 
-       <printing> is set to True, messages are also printed to stderr."""
+def get_game_logger(obj):
+    """
+    Returns the logger associated with object `obj`, creating if needed. All
+    objects log messages to at least two handlers: the default logfile via 
+    game_log_handler; and to a list of player consoles maintained by
+    game_log_cons_handler. Wizards add additional handlers to the loggers
+    of individual objects via the `debug` user command. Wizards can also use 
+    the "debug all" command to add their console to the list maintained by 
+    game_log_cons_handler to receive copies of log messages from ALL objects.
+    """
     if isinstance(obj, str):
         logname = obj
     else:
@@ -140,8 +153,7 @@ def get_game_logger(obj, printing=False):
     logger = logging.getLogger(logname)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(game_log_handler)
-    if printing:
-        logger.addHandler(logging.StreamHandler())
+    logger.addHandler(game_log_cons_handler)
     return logger
 
 #

@@ -569,6 +569,8 @@ class Player(Creature):
                 obj = self
             elif w[1] == "here":
                 obj = self.location
+            elif w[1] == "all":
+                obj = "all"
             else: 
                 # re-parse the stripped words[] to find possible objects
                 # TODO: encapsulate this code from parse() rather than cut-and-pasting it
@@ -579,14 +581,27 @@ class Player(Creature):
                 # THEN, check for objects matching the direct & indirect object strings
                 if sIDO:  
                     return usage  # debug command accepts exactly 1 direct object
-                if sDO:   
-                    # set oDO to object(s) matching direct object strings
-                    oDO_list = p.find_matching_objects(sDO, possible_objects, cons)
-                if not sDO or not oDO_list:
-                    return "ERROR: No object specified to debug!\n\n" + usage
-                if len(oDO_list) > 1:
-                    return "ERROR: Multiple objects specified to debug!\n\n" + usage
-                obj = oDO_list[0]
+                if not sDO: 
+                    return "ERROR: No object specified to debug!\n\n" + usage                                    
+                # set oDO to object(s) matching direct object strings
+                oDO_list = p.find_matching_objects(sDO, possible_objects, cons)
+                if not oDO_list:  # No matching object found
+                    if sDO in Thing.ID_dict:  
+                        obj = Thing.ID_dict[sDO]  # user specified an object ID
+                    else:
+                        return f"ERROR: no object matching '{sDO}' found to debug!\n\n" + usage
+                elif len(oDO_list) > 1:
+                    return f"ERROR: Multiple objects matching '{sDO}' found to debug!\n\n" + usage
+                else:
+                    obj = oDO_list[0]
+        if obj == 'all':  
+            # set main log level for entire game, and subscribe to updates
+            gametools.game_log_cons_handler.setLevel(dbg_level)
+            gametools.game_log_cons_handler.addConsole(self.cons)
+            # Add an event to unsubscribe in <sec> seconds
+            self.cons.game.schedule_event(int(sec), self.unsubscribe_handler)
+            self.perceive(f"Now debugging entire game at level `{dbg_level}` for the next {sec} seconds!")
+            return True
         # Check if this player already has a handler for this object
         if obj.id in self.handlers:
             self.remove_dbg_handler(obj)
@@ -613,6 +628,9 @@ class Player(Creature):
         except AttributeError:
             self.log.error(f"AttributeError removing debug handler {handler} from object {obj}")
 
+    def unsubscribe_handler(self):
+        gametools.game_log_cons_handler.removeConsole(self.cons)
+        self.perceive("No longer debugging entire game.")
 
     def reload_room(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.

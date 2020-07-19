@@ -34,7 +34,7 @@ class Game():
         Thing.game = self  # only one game instance ever exists, so no danger of overwriting this
         self.server_ip = server  # IP address of server, if specified
         # print gameserver log messages to stderr only on localhost
-        self.log = gametools.get_game_logger("_gameserver", printing=(self.server_ip == '127.0.0.1'))
+        self.log = gametools.get_game_logger("_gameserver")
         self.acl = miracle.Acl()
         self.set_up_groups_and_acl()
         self.is_ssl = ('ssl' in mode) or ('https' in mode)
