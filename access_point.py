@@ -12,6 +12,7 @@ class AccessPoint(asyncio.Protocol):
         self.user = None
         self.log = gametools.get_game_logger("_accesspoint")
         self.pending_messages = []
+        self.protocolVersion = [0, 1]
     
     def connection_lost(self, exc):
         # TODO: Implement code to deal with unexpected closures
@@ -124,6 +125,6 @@ class AccessPoint(asyncio.Protocol):
     
     def send_message(self, message, error=0):
         message_type = "response" if not error else "error"
-        message_dict = {"type": message_type, "message": message, 'error_code': error}
+        message_dict = {"type": message_type, "message": message, 'error_code': error, "version": self.protocolVersion}
         message_json = json.dumps(message_dict)
         self.transport.write(message_json.encode('utf-8')+'\u0004'.encode('utf-8'))

@@ -6,4 +6,4 @@ def clone():
     leather_suit.add_adjectives('leather')
     leather_suit.add_names('hide','suit')
 
-    return leather_suits
+    return leather_suit

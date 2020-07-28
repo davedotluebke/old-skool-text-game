@@ -26,7 +26,6 @@ class GameserverCommunicationProtocol(asyncio.Protocol):
         return value
     
     def data_received(self, data):
-        #print(data.decode('utf-8'))
         data = data.decode('utf-8')
         splitData = data.split('\u0004')
         for splitDatum in splitData:
@@ -40,8 +39,8 @@ class BaseConsole:
     """A base class for all game consoles, containing the basic code to
     communicate with the game server and to run shell commands. Subclasses
     provide more functionality."""
-    saved_attributes = ["current_player_name"] # attributes that the console should save in its config file
-        measurement_systems = ['IMP', 'SI']
+    saved_attributes = ["current_player_name", "measurement_system", "alias_map"] # attributes that the console should save in its config file
+    measurement_systems = ['IMP', 'SI']
     default_measurement_system = 'IMP'
     help_msg = """Your goal is to explore the world around you, solve puzzles,
                fight monsters, complete quests, and eventually become a
@@ -65,6 +64,7 @@ class BaseConsole:
                Type 'quit' to save your progress and leave the game."""
     def __init__(self, username, gameserver_host, gameserver_port):
         self.username = username
+        self.GameserverProtocolVersion = [0, 1]
         self.loop = asyncio.get_event_loop()
         # items related to connection to gameserver
         self.protocol = None
@@ -78,6 +78,7 @@ class BaseConsole:
         self.loop.run_until_complete(self._setup_bash_console())
         # user input information (subclasses provide more functionality)
         self.current_string = ''
+        self.auto_load_player = True
         # user customizations
         self.measurement_system = BaseConsole.default_measurement_system
         self.alias_map = {
@@ -100,10 +101,9 @@ class BaseConsole:
         self.player_loaded = False
         # start the console
         self.disconnecting_state = False # disconnect on connection close
-        self.startup_console()
     
     def wizard_privilages(self):
-        return 'wizard' in subprocess.run('groups', stdout=subprocess.PIPE).stdout
+        return self.username in subprocess.run(['getent', 'group', 'wizards'], stdout=subprocess.PIPE).stdout.decode('utf-8').split(":")[-1].strip().split(",")
     
     #
     # Functions related to console startup and shutdown
@@ -128,8 +128,7 @@ class BaseConsole:
 
         print('starting loop...')
         self.loop.call_later(30, self.autosave)
-        #self.loop.call_later(2, self._call_await_bash_setup)
-        self.loop.call_later(1, self.call_read_input)
+        self.loop.call_later(2, self._call_await_bash_setup)
         self.loop.run_forever()
 
         # Console has disconnected, clean up
@@ -229,7 +228,8 @@ class BaseConsole:
     def send_to_gameserver(self, type, message=None, player_json=None, player_name=None):
         """Send a message to the gameserver with the given attributes."""
         message_dict = {
-            "type": type
+            "type": type,
+            "version": self.GameserverProtocolVersion
         }
         if message:
             message_dict["message"] = message
@@ -246,7 +246,6 @@ class BaseConsole:
     
     def autosave(self):
         """Send a periodic save request every 30 seconds."""
-        print('autosave called')
         if self.player_loaded:
             self.send_to_gameserver('save')
         self.loop.call_later(30, self.autosave)
@@ -257,7 +256,7 @@ class BaseConsole:
     
     async def _setup_bash_console(self):
         """Create the bash process, and begin reading and writing from it."""
-        self.bash_process = await asyncio.create_subprocess_exec('bash', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        self.bash_process = await asyncio.create_subprocess_exec('/bin/bash', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         
     async def _await_bash_setup(self):
         await asyncio.gather(self._read_bash_stderr(self.bash_process.stderr), self._read_bash_stdout(self.bash_process.stdout), self._write_bash_stdin(self.bash_process.stdin))
@@ -268,22 +267,28 @@ class BaseConsole:
     async def _read_bash_stderr(self, stderr):
         """Read the stderr of the bash process."""
         while True:
-            print('starting bash read')
-            buf = await stderr.read()
-            print('read something')
+            buf = await stderr.read(1)
             if not buf:
                 break
             self.bash_output += buf
+            if buf == b'\n':
+                final_output = self.bash_output.decode('utf-8')
+                self.bash_output = b''
+                self.loop.call_later(0.1, functools.partial(self.write_output, final_output))
+            await asyncio.sleep(0)
 
     async def _read_bash_stdout(self, stdout):
         """Read the stdout of the bash process."""
         while True:
-            print('starting bash read')
-            buf = await stdout.read()
-            print('read something')
+            buf = await stdout.read(1)
             if not buf:
                 break
             self.bash_output += buf
+            if buf == b'\n':
+                final_output = self.bash_output.decode('utf-8')
+                self.bash_output = b''
+                self.loop.call_later(0.1, functools.partial(self.write_output, final_output))
+            await asyncio.sleep(0)
     
     async def _write_bash_stdin(self, stdin):
         """Write the stdin of the bash process."""
@@ -294,24 +299,12 @@ class BaseConsole:
                 await stdin.drain()
                 if self.bash_input == 'exit':
                     break
-    
-    async def _write_bash_output(self):
-        """Collect the bash output and write it to the console."""
-        final_output_str = ""
-        while True:
-            bash_output_str = self.bash_output.decode('utf-8')
-            if '\n' in bash_output_str:
-                output_str, sep, remaining_str = bash_output_str.partition('\n')
-                self.bash_output = remaining_str.encode('utf-8')
-                final_output_str += output_str
-            else:
-                break
-        self.loop.call_later(0.1, functools.partial(self.write_output, final_output_str))
+                self.bash_input = ''
+            await asyncio.sleep(0)
     
     def run_bash_command(self, command):
         """Run a bash command, printing the returned value to the console when ready."""
         self.bash_input = command
-        self.loop.run_until_complete(self._write_bash_output())
     
     #
     # Input / Output functions (for subclassing)
@@ -333,6 +326,22 @@ class BaseConsole:
         except Exception as e:
             self.write_output(e)
         return True
+    
+    def _create_player_from_file(self, player_name):
+        try:
+            playerFile = open(f'saved_players/{player_name}.OADplayer', 'r')
+        except FileNotFoundError:
+            # player does not exist, can create safely
+            playerFile = open(f'saved_players/{player_name}.OADplayer', 'w')
+            self.send_to_gameserver('create', player_name=player_name)
+            self.current_player_name = player_name
+            playerFile.close()
+            self.send_to_gameserver('save')
+            pass
+        else:
+            # player already exists
+            self.write_output("That username already exists!")
+            playerFile.close()
 
     def _save_player_to_file(self, player_json, player_name):
         """Load a player save file, returning True if an error occurred."""
@@ -394,17 +403,55 @@ class BaseConsole:
         if replace_words[0] in self.alias_map:
             replace_words[0] = self.alias_map[replace_words[0]]
         return " ".join(replace_words)
+
+    def sanitizeHTML(self, html):
+        return html.replace('<', '«').replace('>', '»')
+    
+    def choose_measurements(self, text):
+        text = text.replace('[', '||[')
+        text = text.replace(']', ']||')
+        split_text = text.split('||')
+
+        in_measurement = False
+        correct_measurement = False
+        to_continue = False
+
+        new_text = ''
+
+        for i in split_text:
+            for j in BaseConsole.measurement_systems:
+                if i == '['+j+']':
+                    in_measurement = True
+                    to_continue = True
+                    if j == self.measurement_system:
+                        correct_measurement = True
+                    else:
+                        correct_measurement = False
+                elif i == '[/'+j+']':
+                    in_measurement = False
+                    to_continue = True
+                    if j == self.measurement_system:
+                        correct_measurement = True
+                    else:
+                        correct_measurement = False
+            if to_continue:
+                to_continue = False
+                continue
+            if (not in_measurement) or correct_measurement:
+                new_text += i
+        
+        return new_text
+    
   
-    def handle_command(self, input_str, additional_cmds_map={}):
+    def handle_command(self, input_str, additional_cmds_map={}, call_on_quit=None):
         """Decide what to do with a user command: 
         - pass to gameserver,
         - pass to shell, or
         - save and load a player."""
         if len(input_str) == 0: # nothing typed
             return
-        #print("handling", input_str)
         input_words = input_str.lower().split(" ")
-        if input_words[0] == "load":
+        if input_words[0] == "load" and self.wizard_privilages():
             usage = "Please type `load <name>` to specify a name for your "
             "character, or to load a new character.  Names must be "
             "a single word with no spaces."
@@ -424,7 +471,7 @@ class BaseConsole:
             if self._load_player_from_file(input_words, player_name):
                 return
 
-        elif input_words[0] == "create":
+        elif (input_words[0] == "create" and self.wizard_privilages()):
             usage = "Please type `create <name>` to create a player named "
             "<name>. Names must be a single word with no spaces."
             if len(input_words) == 1:
@@ -437,20 +484,7 @@ class BaseConsole:
                 return
             if self.player_loaded:
                 self.send_to_gameserver('save')
-            try:
-                playerFile = open(f'saved_players/{player_name}.OADplayer', 'r')
-            except FileNotFoundError:
-                # player does not exist, can create safely
-                playerFile = open(f'saved_players/{player_name}.OADplayer', 'w')
-                self.send_to_gameserver('create', player_name=player_name)
-                self.current_player_name = player_name
-                playerFile.close()
-                self.send_to_gameserver('save')
-                pass
-            else:
-                # player already exists
-                self.write_output("That username already exists!")
-                playerFile.close()
+            self._create_player_from_file(player_name)
 
         elif input_words[0] == "save":
             usage = "Please type `save` to save your player."
@@ -467,6 +501,9 @@ class BaseConsole:
             if len(input_words) != 1:
                 self.write_output(usage)
                 return
+            if input_words[0] == "unload" and not self.wizard_privilages():
+                self.write_output("You must have wizard privilages to unload. Try `quit` instead.")
+                return
             if self.player_loaded:
                 self.send_to_gameserver('save')
                 self.send_to_gameserver('unload')
@@ -477,6 +514,8 @@ class BaseConsole:
             if input_words[0] == "quit":
                 self.send_to_gameserver('disconnect')
                 self.disconnecting_state = True
+                if call_on_quit:
+                    call_on_quit()
         
         elif input_words[0] in ["shell", "bash"]:
             if self.wizard_privilages():
@@ -506,7 +545,31 @@ class BaseConsole:
         
         elif input_words[0] == "help":
             self.write_output(self.help_msg)
-            
+        
+        elif input_words[0] in ["password"] or (len(input_words) == 2 and input_words[0] == "change" and input_words[1] == "password"):
+            self.write_output("Please enter a new password:", message_type="password_request")
+        
+        elif input_words[0] == "console" and self.wizard_privilages():
+            usage = "Welcome to the advanced console management system! Possible commands are:\n" \
+            "read/get [attr]: read self.[attr], printing its value\n" \
+            "write/set [attr] [value]: write self.[attr], setting its value to [value]\n" \
+            "execute/run [code]: run the code [code]"
+            if len(input_words) == 1:
+                self.write_output(usage)
+                return
+            if input_words[1] in ["read", "get"]:
+                for i in input_words[2:]:
+                    self.write_output(f"{i}: {eval(f'self.{i}')}")
+            elif input_words[1] in ["write", "set"]:
+                if len(input_words) != 4:
+                    self.write_output("Usage: console [set] [attr] [value]")
+                    return
+                else:
+                    exec(f"self.{input_words[3]} = {input_words[4]}")
+                    self.write_output(f"{input_words[3]}: {input_words[4]}")
+            elif input_words[1] in ["execute", "run"]:
+                exec(input_str.split(" ", maxsplit=2)[2])
+                    
         elif input_words[0] in list(additional_cmds_map):
             try:
                 additional_cmds_map[input_words[0]](input_str, input_words)
@@ -514,15 +577,20 @@ class BaseConsole:
                 self.write_output(e)
                 return
         elif self.shell_mode or input_words[0] in ['ls', 'cd', 'cat', 'mkdir', 'rm', 'rmdir', 'mv', 'cp', 'pwd']:
-            if self.wizard_privilages:
+            if self.wizard_privilages():
                 self.run_bash_command(input_str)
             else:
                 self.write_output("You do not have permission to perform this action.")
         else:
             if self.player_loaded:
+                # replace aliases with their full versions
+                input_str = self._replace_aliases(input_str.split(" "))
                 self.send_to_gameserver('parse', message=input_str)
             else:
-                self.write_output("Please load a player before doing any actions.")
+                if not self.current_player_name and len(input_words) == 1 and self.auto_load_player:
+                    self._create_player_from_file(input_words[0])
+                else:
+                    self.write_output("Please load a player before doing any actions.")
     
     def call_read_input(self):
         asyncio.ensure_future(self.read_input())
@@ -546,6 +614,111 @@ class TextConsole(BaseConsole):
             self.loop.call_later(0.01, functools.partial(self.handle_command, inp))
             await asyncio.sleep(1)
 
+class WebclientCommunicationProtocol(asyncio.Protocol):
+    """An interface for communicating with the webclient. 
+    Note that this does not actually communicate directly 
+    with the webclient, but instead with the Console Overseer, 
+    which forwards the messages via its websocket server."""
+    def connection_made(self, transport):
+        self.transport = transport
+    
+    def connection_lost(self, exc):
+        return super().connection_lost()
+    
+    def data_received(self, data):
+        data = data.decode('utf-8')
+        data_list = data.split('\u0004')
+        for data_json in data_list:
+            if not data_json:
+                continue
+            data_dict = json.loads(data_json)
+            try:
+                data_type = data_dict['type']
+                data_str = data_dict['data'].strip()
+                if data_type == "file":
+                    data_filename = data_dict['filename']
+            except KeyError:
+                self.cons.write_output(f'The data_dict is missing a paramater! Paramaters are: {data_dict}')
+                continue
+            if data_type == "command":
+                self.cons.handle_command(data_str)
+            elif data_type == "file":
+                self.cons.upload_file(data_str)
+            elif data_type == "connection_init":
+                self.cons.init_connection(data_str)
+            else:
+                self.cons.write_output(f'The data type is invalid! Data type: {data_type}')
+    
+    def send_message(self, message_json):
+        self.transport.write(message_json.encode('utf-8')+'\u0004'.encode('utf-8'))
+
 class WebclientConsole(BaseConsole):
     """A console that uses the game serving protocol to connect to a user's webclient. This is the main console that is used in the game."""
-    pass
+    def __init__(self, username, gameserver_host, gameserver_port, ws_host, ws_port, connection_code):
+        self.connection_code = connection_code
+        self.WebclientProtocolVersion = [0, 1]
+        super().__init__(username, gameserver_host, gameserver_port)
+        self.connect_to_webclient(ws_host, ws_port)
+
+    def connect_to_webclient(self, address, port, retry_num=10, delay=2):
+        """Create a connection to the console overseer, setting `self.ws_protocol`."""
+        for i in range(0, retry_num):
+            try:
+                transport, protocol = self.loop.run_until_complete(self.loop.create_connection(WebclientCommunicationProtocol, host=address, port=port))
+                self.ws_protocol = protocol
+                self.ws_protocol.cons = self
+                self.ws_protocol.send_message(json.dumps({
+                    'username': self.username,
+                    'connection_code': self.connection_code
+                }))
+                break
+            except ConnectionRefusedError:
+                print(f"Connection refused; retrying in {delay} seconds...", file=sys.stderr)
+                time.sleep(delay)
+                delay *= 2
+                continue
+    
+    def shut_down(self):
+        self.protocol.send_message(json.dumps({
+            'type': 'quit',
+            'data': 'Disconnected from gameserver.'
+        }))
+    
+    def init_connection(self, data_str):
+        if self.auto_load_player:
+            if self.current_player_name:
+                self._load_player_from_file(data_str, self.current_player_name)
+            else:
+                self.write_output("Please name your character, or enter a console command:")
+    
+    def handle_command(self, input_str):
+        return super().handle_command(input_str, additional_cmds_map={}, call_on_quit=self.shut_down)
+    
+    def upload_file(self, file):
+        """Upload a file to the filesystem. This includes loading files that were opened for editing."""
+
+    def write_output(self, *output_strs, sep="", message_type="response"):
+        """Write the given output to the webclient."""
+        message_str = sep.join(output_strs)
+        message_str = self.choose_measurements(message_str)
+        message_str = self.sanitizeHTML(message_str)
+        message_dict = {
+            'type': message_type,
+            'data': message_str,
+            'version': self.WebclientProtocolVersion
+        }
+        message_json = json.dumps(message_dict)
+        self.ws_protocol.send_message(message_json)
+
+    async def read_input(self):
+        """This is a blank implementation of the function, as it is not necessary in this version of the console."""
+
+if __name__ == "__main__":
+    connection_code = sys.argv[1]
+    username = sys.argv[2]
+    gameserver_host = '127.0.0.1'
+    gameserver_port = 9123
+    ws_host = "127.0.0.1"
+    ws_port = 9125
+    console = WebclientConsole(username, gameserver_host, gameserver_port, ws_host, ws_port, connection_code)
+    console.startup_console()
