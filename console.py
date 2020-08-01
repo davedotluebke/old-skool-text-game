@@ -549,6 +549,30 @@ class BaseConsole:
         elif input_words[0] in ["password"] or (len(input_words) == 2 and input_words[0] == "change" and input_words[1] == "password"):
             self.write_output("Please enter a new password:", message_type="password_request")
         
+        elif input_words[0] == "download":
+            if self.wizard_privilages():
+                if len(input_words) > 1:
+                    self.download_file(input_str.partition(" ")[2])
+            else:
+                self.write_output("Wizard privilages are required to upload and download files.")
+
+        elif input_words[0] == "edit":
+            if self.wizard_privilages():
+                if len(input_words) > 1:
+                    self.download_file(input_str.partition(" ")[2], for_edit=True)
+            else:
+                self.write_output("Wizard privilages are required to upload and download files.")
+        
+        elif input_words[0] == "upload":
+            if self.wizard_privilages():
+                if len(input_words) > 1:
+                    self.ws_protocol.send_message(json.dumps({
+                        'type': 'upload_request',
+                        'data': 'Please select a file to upload.'
+                    }))
+            else:
+                self.write_output("Wizard privilages are required to upload and download files.")
+        
         elif input_words[0] == "console" and self.wizard_privilages():
             usage = "Welcome to the advanced console management system! Possible commands are:\n" \
             "read/get [attr]: read self.[attr], printing its value\n" \
@@ -643,7 +667,7 @@ class WebclientCommunicationProtocol(asyncio.Protocol):
             if data_type == "command":
                 self.cons.handle_command(data_str)
             elif data_type == "file":
-                self.cons.upload_file(data_str)
+                self.cons.upload_file(data_str, data_filename)
             elif data_type == "connection_init":
                 self.cons.init_connection(data_str)
             else:
@@ -694,8 +718,37 @@ class WebclientConsole(BaseConsole):
     def handle_command(self, input_str):
         return super().handle_command(input_str, additional_cmds_map={}, call_on_quit=self.shut_down)
     
-    def upload_file(self, file):
+    def upload_file(self, file_contents, filename):
         """Upload a file to the filesystem. This includes loading files that were opened for editing."""
+        if self.wizard_privilages():
+            try:
+                f = open(filename, "w")
+                f.write(file_contents)
+                f.close()
+                self.write_output("Sucessfully uploaded file.")
+            except Exception as e:
+                self.write_output("An error occured when upload the file. The error: "+e)
+        else:
+            self.write_output("Wizard privilages are required to upload and download files.")
+    
+    def download_file(self, filename, for_edit=False):
+        """Download a file to the user. This includes opening files for editing."""
+        if self.wizard_privilages():
+            try:
+                f = open(filename, "r")
+                file_contents = f.read()
+                f.close()
+            except Exception as e:
+                self.write_output("An error occured when trying to download the file. The error: "+e)
+            else:
+                self.ws_protocol.send_message(json.dumps({
+                    'type': 'file',
+                    'data': file_contents,
+                    'filename': filename,
+                    'for_edit': for_edit
+                }))
+        else:
+            self.write_output("Wizard privilages are required to upload and download files.")
 
     def write_output(self, *output_strs, sep="", message_type="response"):
         """Write the given output to the webclient."""
