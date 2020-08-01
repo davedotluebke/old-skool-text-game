@@ -1,0 +1,63 @@
+body {
+    margin: 0px;
+}
+
+.pagecontainer {
+    font-family: 'Ubuntu', 'Open Sans', Geneva, Verdana, sans-serif;
+}
+
+/* Menu bar at the top of the page */
+#menubar {
+    position: absolute;
+    height: 50px;
+    width: 100%;
+    background-color: #93e6ec;
+}
+
+.menu-item {
+    border-color: #a3a2a2;
+    border-width: 1px;
+}
+
+/* Area with panel windows */
+#panel-container {
+    background-color: #a3a2a2;
+    margin: 0px;
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: calc(100% - 50px);
+    top: 50px;
+}
+
+.panel-holder {
+    position: absolute;
+    display: block;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px;
+    width: 30%;
+    height: 30%;
+}
+
+.panel-controls {
+    width: 100%;
+    height: 35px;
+    background-color: #eeeeee;
+    text-align: right;
+}
+
+.remove-panel {
+    margin: 5px;
+    background-color: #d6452b;
+}
+
+.ui-dialog-titlebar-close {
+    display: none;
+}
+
+.panel {
+    width: 100%;
+    height: calc(100% - 35px);
+    background-color: blue;
+}
