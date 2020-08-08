@@ -8,7 +8,7 @@ def load():
     if exists: return exists
     
     school_gates = room.Room('school_gates', roomPath, safe=True)   # TODO: Actual gate functionality: players must "open gate" to pass through, etc.
-    school_gates.set_description('school gates', 'You find yourself at the magnificent gates of Firefile Scorcery School. '
+    school_gates.set_description('school gates', 'You find yourself at the magnificent gates of Firefile sorcery School. '
     'On the north side of the gate, a road leads to the northwest into a prairie. On the south side, a road leads southeast '
     'into a thick forest.')
     school_gates.add_exit('northwest', 'domains.centrata.fields.road_one')

@@ -2,7 +2,7 @@
 A text adventure game written in Python.
 
 ## The World
-Players start their journey in a scorcery school, where they are assigned quests with a magical scroll. As they continue to play, their quests may take them into dangerous forests, pit them against fierce monsters, teach them to brew new types of potions, and more. Players can become wizards who are able to change the very world itself.
+Players start their journey in a sorcery school, where they are assigned quests with a magical scroll. As they continue to play, their quests may take them into dangerous forests, pit them against fierce monsters, teach them to brew new types of potions, and more. Players can become wizards who are able to change the very world itself.
 
 ## Playing the game
 Players play the game by typing commands such as `take the rusty sword` and `go north`. Players can then see the result of their interactions.

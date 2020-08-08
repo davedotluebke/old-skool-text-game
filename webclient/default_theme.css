@@ -7,7 +7,7 @@ body {
 }
 
 /* Menu bar at the top of the page */
-#menubar {
+.menubar {
     position: absolute;
     height: 50px;
     width: 100%;
@@ -17,27 +17,35 @@ body {
 .menu-item {
     border-color: #a3a2a2;
     border-width: 1px;
+    cursor: pointer;
 }
 
 /* Area with panel windows */
-#panel-container {
-    background-color: #a3a2a2;
+.panel-container {
+    background-color: #d6452b;
     margin: 0px;
-    display: block;
+    display: block; 
     position: absolute;
     width: 100%;
     height: calc(100% - 50px);
     top: 50px;
 }
 
+.column {
+    background-color: #a3a2a2;
+    width: 33.333%;
+    height: 100%;
+    float: left;
+    display: grid;
+}
+
 .panel-holder {
-    position: absolute;
     display: block;
     border-style: solid;
     border-color: black;
     border-width: 1px;
-    width: 30%;
-    height: 30%;
+    width: 100%;
+    height: 100%;
 }
 
 .panel-controls {
@@ -52,7 +60,9 @@ body {
     background-color: #d6452b;
 }
 
-.ui-dialog-titlebar-close {
+
+
+.ui-resizable-handle {
     display: none;
 }
 
