@@ -1,6 +1,5 @@
 from logging import Handler
 
-
 class ConsHandler(Handler):
     """
     A handler class which writes logging records, appropriately formatted,
@@ -17,7 +16,7 @@ class ConsHandler(Handler):
         """
         Handler.__init__(self, dbg_level)
         if cons:
-            if isinstance(cons, console.Console): 
+            if hasattr(cons, "user"):  
                 self.cons = [cons]
             else:
                 raise  # specified `cons` is not a Console object!
