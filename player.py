@@ -781,7 +781,7 @@ class Player(Creature):
             return "You can't look at another player's inventory!"
         message = "You are carrying:\n"
         if not self.contents:
-            message += '\tnothing'
+            message += '\tnothing\n'
         for i in self.contents:
             if i == self.weapon_wielding or i == self.armor_worn: 
                 continue
