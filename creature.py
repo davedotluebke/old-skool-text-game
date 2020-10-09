@@ -243,6 +243,9 @@ class Creature(Container):
         corpse.names += self.names
         corpse.adjectives = set(list(corpse.adjectives) + list(self.adjectives) + self.names)
         self.location.insert(corpse)
+        # unwield any weapons and armor before removing all items to corpse
+        self.weapon_wielding = self.default_weapons[0]
+        self.armor_worn = self.default_armor
         get_rid_of = [x for x in self.contents if not x.fixed]
         while get_rid_of:
             i = get_rid_of.pop(0)
