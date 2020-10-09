@@ -20,5 +20,5 @@ def load():
     house = scenery.Scenery('house', 'wooden house', 'This wooden house sits to the east side of the street.')
     house.add_adjectives('wooden', 'east')
     house.add_response(['enter'], 'The door is locked.')
-    house.move_to(south_village, True)
+    house.move_to(street, True)
     return street
