@@ -14,11 +14,11 @@ def load():
     street.add_exit('north', 'domains.centrata.village.armourer')
     street.add_exit('south', 'domains.centrata.village.fletchers_shop')
 
-    armourer = scenery.Scenery('armourer', 'This armourer stands to the north side of the street.')
+    armourer = scenery.Scenery('armourer', 'armourer\'s shop', 'This armourer stands to the north side of the street.')
     armourer.add_adjectives('north')
     armourer.move_to(street, True)
 
-    fletchers = scenery.Scenery('fletcher\'s', 'This fletcher\'s shop stands to the north side of the street.')
+    fletchers = scenery.Scenery('fletcher\'s', 'fletcher\'s shop', 'This fletcher\'s shop stands to the north side of the street.')
     fletchers.add_adjectives('south')
     fletchers.move_to(street, True)
     return street
