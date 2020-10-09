@@ -250,7 +250,7 @@ class Parser:
             result = act.func(obj, self, cons, oDO, oIDO) 
         except Exception as e:  # error, roll back any plurality changes and return True
             cons.write('An error has occurred. Please try a different action until the problem is resolved.')
-            self.log.exception("Error occurred in parser:")
+            self.log.exception("Error occurred in parser:\n")
             result = True   # upon error, don't go do a different action - user probably intended this one
         return result
 

@@ -41,25 +41,25 @@ class Weapon(Thing):
     def wield(self, p, cons, oDO, oIDO):
         if self == oDO:
             if self == cons.user.weapon_wielding:
-                cons.write("You are already wielding the %s!" % self)
+                cons.write("You are already wielding the %s!" % self.name())
                 return True
             if self.location != cons.user: 
-                return "You need to be holding the %s to wield it." % self
+                return "You need to be holding the %s to wield it." % self.name()
             cons.user.weapon_wielding = self
-            cons.write("You wield the %s." % self)
-            cons.user.emit('&nD%s wields the %s.' % (cons.user, self), ignore=[cons.user])
+            cons.write("You wield the %s." % self.name())
+            cons.user.emit('&nD%s wields the %s.' % (cons.user, self.name()), ignore=[cons.user])
             return True
         else:
-            return "Did you mean to wield a specific weapon, such as the %s?" % self
+            return "Did you mean to wield a specific weapon, such as the %s?" % self.name()
 
     def unwield(self, p, cons, oDO, oIDO):
         if self != oDO:
-            return "Did you mean to unwield a specific weapon, such as the %s?" % self
+            return "Did you mean to unwield a specific weapon, such as the %s?" % self.name()
         if self != cons.user.weapon_wielding:
-            return "But you aren't currently wielding the %s!" % self
+            return "But you aren't currently wielding the %s!" % self.name()
         cons.user.weapon_wielding = cons.user.default_weapons[0]
-        cons.write("You cease wielding the %s." % self)
-        cons.user.emit("&nD%s puts away the %s." % (cons.user, self), ignore=[cons.user])
+        cons.write("You cease wielding the %s." % self.name())
+        cons.user.emit("&nD%s puts away the %s." % (cons.user, self.name()), ignore=[cons.user])
         return True
 
     def weapon_drop(self, p, cons, oDO, oIDO): 
@@ -79,7 +79,7 @@ class Weapon(Thing):
             if cons.user.attacking != None:
                 cons.user.perceive('You switch your attack to &nd%s.' % oIDO)
             else:
-                cons.user.perceive('You %s the %s at &nd%s.' % (sV, self, oIDO))
+                cons.user.perceive('You %s the %s at &nd%s.' % (sV, self.name(), oIDO))
             cons.user.attacking = oIDO
             return True
         elif oIDO == self:
@@ -87,7 +87,7 @@ class Weapon(Thing):
                 cons.user.perceive('You switch your attack to &nd%s.' % oIDO)
                 cons.user.attacking = oIDO
             else:
-                cons.user.perceive('You %s &nd%s with the %s.' % (sV, oIDO, self))
+                cons.user.perceive('You %s &nd%s with the %s.' % (sV, oIDO, self.name()))
             return True
 
         return "Did you mean to %s the %s?" % (sV, self.get_short_desc())
