@@ -3,14 +3,15 @@ from thing import Thing
 import gametools
 
 class Armor(Thing):
-    #
-    # SPECIAL METHODS (i.e __method__() format)
-    #
     def __init__(self, default_name, path, bonus, unwieldiness, pref_id=None):
         Thing.__init__(self, default_name, path, pref_id)
         self.bonus = bonus
         self.unwieldiness = unwieldiness
         self.versions[gametools.findGamePath(__file__)] = 1
+    
+    #
+    # SPECIAL METHODS (i.e __method__() format)
+    #
 
     #
     # INTERNAL USE METHODS (i.e. _method(), not imported)
