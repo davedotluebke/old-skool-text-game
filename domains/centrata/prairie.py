@@ -22,6 +22,15 @@ MAX_X = 9
 MIN_Y = -3 # dictates by coordinates in room_remaps
 MAX_Y = 7
 
+# place orc camp in prairie, add to room_remaps
+orc_camp_x = random.randint(int(MAX_X/2), MAX_X-1)
+orc_camp_y = random.randint(int(MAX_Y/3), int((2*MAX_Y)/3))
+
+room_remaps[f'{orc_camp_x},{orc_camp_y}'] = 'domains.centrata.orc_quest.orc_camp'
+
+# place footprints leading towards orc camp
+footprint_routes = {}
+
 def connection_exists(x, y, delta_x, delta_y, threshold):
     """Return a true or false indicating whether a grid cell at 
     (x, y) has a connection in direction (delta_x, delta_y), 
@@ -49,6 +58,69 @@ def connection_exists(x, y, delta_x, delta_y, threshold):
     num = random.random()
     return num < threshold
 
+def place_footprints(start_x, start_y):
+    x = start_x
+    y = start_y
+
+    exit_probability = 0.91 # IMPORTANT must be same as below
+
+    possible_directions = []
+    possible_direction_weights = []
+
+    while x != MIN_X and x != MAX_X and y != MIN_Y and y != MAX_Y:
+        if connection_exists(x, y, 0, 1, exit_probability) and f'{x},{y+1}' not in room_remaps and f'{x},{y+1}' not in footprint_routes:
+            possible_directions.append('north')
+            if y < orc_camp_y:
+                possible_direction_weights.append(0.1)
+            else:
+                possible_direction_weights.append(0.9)
+        
+        if connection_exists(x, y-1, 0, 1, exit_probability) and f'{x},{y-1}' not in room_remaps and f'{x},{y-1}' not in footprint_routes:
+            possible_directions.append('south')
+            if y > orc_camp_y:
+                possible_direction_weights.append(0.1)
+            else:
+                possible_direction_weights.append(0.9)
+        
+        if connection_exists(x, y, 1, 0, exit_probability) and f'{x+1},{y}' not in room_remaps and f'{x+1},{y}' not in footprint_routes:
+            possible_directions.append('east')
+            if x < orc_camp_x:
+                possible_direction_weights.append(0.1)
+            else:
+                possible_direction_weights.append(0.9)
+        
+        if connection_exists(x-1, y, 1, 0, exit_probability) and f'{x-1},{y}' not in room_remaps and f'{x-1},{y}' not in footprint_routes:
+            possible_directions.append('west')
+            if x > orc_camp_x:
+                possible_direction_weights.append(0.1)
+            else:
+                possible_direction_weights.append(0.9)
+
+        if not possible_directions:
+            break
+
+        direction = random.choices(possible_directions, possible_direction_weights)
+
+        if direction == 'north':
+            y += 1
+        
+        if direction == 'south':
+            y -= 1
+        
+        if direction == 'east':
+            x += 1
+
+        if direction == 'west':
+            x -= 1
+
+        footprint_routes[f'{x},{y}'] = direction
+
+
+place_footprints(orc_camp_x, orc_camp_y+1)
+place_footprints(orc_camp_x, orc_camp_y-1)
+place_footprints(orc_camp_x+1, orc_camp_y)
+place_footprints(orc_camp_x-1, orc_camp_y)
+
 def load(param_list):
     path = param_list[0] # if parameters are given, the first one is always the entire string, including parameters
     exists = room.check_loaded(path)
@@ -57,7 +129,7 @@ def load(param_list):
     coords = (int(param_list[1]), int(param_list[2]))
     x = coords[0]
     y = coords[1]
-    exit_probability = 0.91
+    exit_probability = 0.91 # IMPORTANT must be same as above
     
     if '%s,%s' % (x,y) in room_remaps:
         return gametools.load_room(room_remaps['%s,%s' % (x,y)])
@@ -97,6 +169,8 @@ def load(param_list):
     notable_string = '%s, '*(total_num_details - 1) + 'and %s.'
 
     notable_items = []
+    if f'{x},{y}' in footprint_routes:
+        notable_items.append('footprints leading to the %s' % footprint_routes[f'{x}{y}'])
     for i in range(0, num_blocking_details):
         notable_items.append(random.choice(blocking_details) + ' to the ' + no_exit_directions[i])
     for i in range(0, num_non_blocking_details):
