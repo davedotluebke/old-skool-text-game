@@ -25,6 +25,8 @@ class Creature(Container):
         self.default_armor = gametools.clone("default_armor")
         self.armor_worn = self.default_armor
         self.closed_err = "You can't put things in creatures!"
+        self.set_max_weight_carried(50000)
+        self.set_max_volume_carried(100)
         self.invisible = False
         self.introduced = set()
         self.proper_name = default_name.capitalize()

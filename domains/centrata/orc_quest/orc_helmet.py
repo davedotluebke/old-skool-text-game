@@ -7,3 +7,4 @@ def clone():
         'topped with a tall fluted crest.')
     helmet.add_adjectives('crested', 'golden', 'gold', 'golden-hued')
     helmet.orc_quest = True  # unique attribute to verify this for the quest
+    return helmet

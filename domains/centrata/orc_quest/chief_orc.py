@@ -10,11 +10,16 @@ def clone():
     orc.add_names('chief', 'chieftan')
     orc.set_combat_vars(40, 70, 70, 45)
     orc.act_frequency = 2
+    orc.set_max_weight_carried(50000)
+    orc.set_max_volume_carried(100)
    
     sword = gametools.clone("domains.centrata.orc_quest.orc_scimitar")
     sword.move_to(orc)
 
-    hide = gametools.clone("domains.centrata.orc_quest.orc_plate")
-    hide.move_to(orc)
+    plate = gametools.clone("domains.centrata.orc_quest.orc_plate")
+    plate.move_to(orc)
+
+    helmet = gametools.clone("domains.centrata.orc_quest.orc_helmet")
+    helmet.move_to(orc)
 
     return orc

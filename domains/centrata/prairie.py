@@ -22,15 +22,6 @@ MAX_X = 9
 MIN_Y = -3 # dictates by coordinates in room_remaps
 MAX_Y = 7
 
-# place orc camp in prairie, add to room_remaps
-orc_camp_x = random.randint(int(MAX_X/2), MAX_X-1)
-orc_camp_y = random.randint(int(MAX_Y/3), int((2*MAX_Y)/3))
-
-room_remaps[f'{orc_camp_x},{orc_camp_y}'] = 'domains.centrata.orc_quest.orc_camp'
-
-# place footprints leading towards orc camp
-footprint_routes = {}
-
 def connection_exists(x, y, delta_x, delta_y, threshold):
     """Return a true or false indicating whether a grid cell at 
     (x, y) has a connection in direction (delta_x, delta_y), 
@@ -58,16 +49,26 @@ def connection_exists(x, y, delta_x, delta_y, threshold):
     num = random.random()
     return num < threshold
 
+# place orc camp in prairie, add to room_remaps
+orc_camp_x = random.randint(int(MAX_X/2), MAX_X-1)
+orc_camp_y = random.randint(int(MAX_Y/3), int((2*MAX_Y)/3))  #TODO: make sure there are exits from this room
+
+room_remaps[f'{orc_camp_x},{orc_camp_y}'] = 'domains.centrata.orc_quest.orc_camp'
+
+# place footprints leading towards orc camp
+footprint_routes = {}
+
 def place_footprints(start_x, start_y):
     x = start_x
     y = start_y
 
-    exit_probability = 0.91 # IMPORTANT must be same as below
-
-    possible_directions = []
-    possible_direction_weights = []
+    exit_probability = 0.91  # IMPORTANT must be same as below
 
     while x != MIN_X and x != MAX_X and y != MIN_Y and y != MAX_Y:
+
+        possible_directions = []
+        possible_direction_weights = []
+
         if connection_exists(x, y, 0, 1, exit_probability) and f'{x},{y+1}' not in room_remaps and f'{x},{y+1}' not in footprint_routes:
             possible_directions.append('north')
             if y < orc_camp_y:
@@ -99,27 +100,27 @@ def place_footprints(start_x, start_y):
         if not possible_directions:
             break
 
-        direction = random.choices(possible_directions, possible_direction_weights)
+        direction = random.choices(possible_directions, possible_direction_weights)[0]
 
         if direction == 'north':
             y += 1
+            footprint_routes[f'{x},{y}'] = 'south'
         
         if direction == 'south':
             y -= 1
+            footprint_routes[f'{x},{y}'] = 'north'
         
         if direction == 'east':
             x += 1
+            footprint_routes[f'{x},{y}'] = 'west'
 
         if direction == 'west':
             x -= 1
+            footprint_routes[f'{x},{y}'] = 'east'
+        
 
-        footprint_routes[f'{x},{y}'] = direction
-
-
-place_footprints(orc_camp_x, orc_camp_y+1)
-place_footprints(orc_camp_x, orc_camp_y-1)
-place_footprints(orc_camp_x+1, orc_camp_y)
-place_footprints(orc_camp_x-1, orc_camp_y)
+for i in range(0, 4):
+    place_footprints(orc_camp_x, orc_camp_y)
 
 def load(param_list):
     path = param_list[0] # if parameters are given, the first one is always the entire string, including parameters
@@ -165,19 +166,21 @@ def load(param_list):
 
     num_non_blocking_details = random.randint(0, 2)
     num_blocking_details = len(no_exit_directions)
-    total_num_details = num_non_blocking_details + num_blocking_details
-    notable_string = '%s, '*(total_num_details - 1) + 'and %s.'
 
     notable_items = []
     if f'{x},{y}' in footprint_routes:
-        notable_items.append('footprints leading to the %s' % footprint_routes[f'{x}{y}'])
+        notable_items.append('footprints coming from the %s' % footprint_routes[f'{x},{y}'])
+
+    total_num_details = num_non_blocking_details + num_blocking_details + len(notable_items)
+    notable_string = '%s, '*(total_num_details - 1) + 'and %s.'
+
     for i in range(0, num_blocking_details):
         notable_items.append(random.choice(blocking_details) + ' to the ' + no_exit_directions[i])
     for i in range(0, num_non_blocking_details):
         notable_items.append(random.choice(prairie_details))
     random.shuffle(notable_items)
 
-    if len(notable_items): # TODO: "Scenery" objects for notable_items
+    if len(notable_items):  # TODO: "Scenery" objects for notable_items
         notable_string = notable_string % tuple(notable_items)
         prairie.set_description('prairie', 'You find yourself in a tallgrass prairie. You notice %s' % notable_string)
     else:
