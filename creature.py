@@ -334,6 +334,12 @@ class NPC(Creature):
 
     def forbid_room(self, r):
         self.forbidden_rooms.append(r)
+    
+    def is_forbidden(self, r):
+        """Check if a room is forbidden. This can be overloaded for custom behavior."""
+        if r in self.forbidden_rooms:
+            return False
+        return True
 
     def heartbeat(self):
         if self.dead:
@@ -396,7 +402,7 @@ class NPC(Creature):
             self.log.debug('Can\'t go to %s; monster safe room!' % new_room_string)
             return
 
-        if new_room_string in self.forbidden_rooms:
+        if is_forbidden(new_room_string):
             self.log.debug('Can\'t go to %s: forbidden to %s!' % (new_room_string, self))
  
         self.emit("&nD%s goes %s." % (self.id, exit))
