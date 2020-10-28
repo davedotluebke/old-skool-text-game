@@ -80,7 +80,7 @@ class Room(Container):
                 cons.write('\t' + w)
         else:
             cons.write("There are no obvious exits.")
-        local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.unlisted]
+        local_objects = ["&ni" + o.id for o in self.contents if o is not cons.user and not o.is_unlisted()]
         if local_objects:
             cons.user.perceive("Here you see:\n\t" + '\n\t'.join(local_objects))         
 

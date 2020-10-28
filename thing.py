@@ -260,6 +260,9 @@ class Thing(object):
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
+    def is_unlisted(self):
+        return self.unlisted
+        
     def heartbeat(self):
         pass
 
