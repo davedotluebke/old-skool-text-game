@@ -27,8 +27,8 @@ def load():
     lakeside.set_description('shore of a lake', 'You find yourself beside a large lake with a shallow shoreline. The sun shines brightly here. The lakewaters seem as if they might be cooler.')
     lakeside.add_adjectives('hot')
     lakeside.add_exit('west', 'domains.centrata.fields.road_six')
-    lakeside.add_exit('north', 'domains.centrata.prairie?0&3')
-    lakeside.add_exit('south', 'domains.centrata.prairie?0&1')
+    lakeside.add_exit('north', 'domains.centrata.orc_quest.prairie?0&3')
+    lakeside.add_exit('south', 'domains.centrata.orc_quest.prairie?0&1')
 
     lake = sinkholeLake()
     lakeside.insert(lake, True)

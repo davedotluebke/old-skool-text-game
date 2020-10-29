@@ -11,6 +11,6 @@ def load():
     road_one.set_description('streach of road', 'This road continues through the prairie, northwest and the southeast.')
     road_one.add_exit('northwest', 'domains.centrata.fields.road_two')
     road_one.add_exit('southeast', 'domains.centrata.fields.school_gates')
-    road_one.add_exit('north', 'domains.centrata.prairie?1&-2')
-    road_one.add_exit('east', 'domains.centrata.prairie?2&-3')
+    road_one.add_exit('north', 'domains.centrata.orc_quest.prairie?1&-2')
+    road_one.add_exit('east', 'domains.centrata.orc_quest.prairie?2&-3')
     return road_one

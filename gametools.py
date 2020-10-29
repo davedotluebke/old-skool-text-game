@@ -92,7 +92,7 @@ def deconstructObjectPath(path_str):
     """The game refers to object paths using python-style module paths separated by 
     periods, but wizards can add parameters to be passed to the objects by adding 
     a ? character after the object path and then separating multiple parameters by 
-    the & character. See domains.centrata.prairie.py for an example of this usage."""
+    the & character. See domains.centrata.orc_quest.prairie.py for an example of this usage."""
     path, sep, parameters = path_str.partition('?')
     if parameters:
         return path, [path_str]+parameters.split('&')
