@@ -1,16 +1,10 @@
-import creature
 import gametools
 import thing
-
-class Orc(creature.NPC):
-    def is_forbidden(self, r):
-        # Check whether the creature is allowed to enter room `r`.
-        # `r` is string containing the path to the room
-        # return True if the room is forbidden
-        return False
+from domains.centrata.orc_quest.orc import Orc
 
 def clone():
     orc = Orc('orc', __file__, aggressive=2)
+    orc.set_orc_range(2)
     orc = creature.NPC('orc', __file__, aggressive=2)
     orc.set_description('burly orc', "This burly orc looks muscular and threatening.")
     orc.add_adjectives('burly', 'muscular', 'threatening')

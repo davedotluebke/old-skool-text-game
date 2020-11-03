@@ -4,6 +4,8 @@ import scenery
 import room
 import random
 
+exit_probability = 0.91  # IMPORTANT must be same as below
+
 room_remaps = {'-1,-1':'domains.centrata.fields.road_three',
                '-1,0':'domains.centrata.fields.road_four',
                '-1,1':'domains.centrata.fields.road_five',
@@ -61,8 +63,6 @@ footprint_routes = {}
 def place_footprints(start_x, start_y):
     x = start_x
     y = start_y
-
-    exit_probability = 0.91  # IMPORTANT must be same as below
 
     while x != MIN_X and x != MAX_X and y != MIN_Y and y != MAX_Y:
 
@@ -130,7 +130,6 @@ def load(param_list):
     coords = (int(param_list[1]), int(param_list[2]))
     x = coords[0]
     y = coords[1]
-    exit_probability = 0.91 # IMPORTANT must be same as above
     
     if '%s,%s' % (x,y) in room_remaps:
         return gametools.load_room(room_remaps['%s,%s' % (x,y)])
@@ -140,22 +139,22 @@ def load(param_list):
     no_exit_directions = []
     
     if connection_exists(x, y, 0, 1, exit_probability):
-        prairie.add_exit('north', 'domains.centrata.prairie?%s&%s' % (coords[0], coords[1]+1))
+        prairie.add_exit('north', 'domains.centrata.orc_quest.prairie?%s&%s' % (coords[0], coords[1]+1))
     else:
         no_exit_directions.append('north')
     
     if connection_exists(x, y-1, 0, 1, exit_probability):
-        prairie.add_exit('south', 'domains.centrata.prairie?%s&%s' % (coords[0], coords[1]-1))
+        prairie.add_exit('south', 'domains.centrata.orc_quest.prairie?%s&%s' % (coords[0], coords[1]-1))
     else:
         no_exit_directions.append('south')
     
     if connection_exists(x, y, 1, 0, exit_probability):
-        prairie.add_exit('east', 'domains.centrata.prairie?%s&%s' % (coords[0]+1, coords[1]))
+        prairie.add_exit('east', 'domains.centrata.orc_quest.prairie?%s&%s' % (coords[0]+1, coords[1]))
     else:
         no_exit_directions.append('east')
     
     if connection_exists(x-1, y, 1, 0, exit_probability):
-        prairie.add_exit('west', 'domains.centrata.prairie?%s&%s' % (coords[0]-1, coords[1]))
+        prairie.add_exit('west', 'domains.centrata.orc_quest.prairie?%s&%s' % (coords[0]-1, coords[1]))
     else:
         no_exit_directions.append('west')
     
