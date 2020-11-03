@@ -2,6 +2,12 @@ import creature
 import domains.centrata.orc_quest.prairie as prairie
 
 class Orc(creature.NPC):
+    def attack(self, enemy):
+        if not isinstance(enemy, Orc):
+            return super().attack(enemy)
+        else:
+            self.log.warning('Orcs are disabled from attacking other orcs.')
+
     def set_orc_range(self, orc_range):
         """Set the orc range, which defines how far (in rooms) the orc 
         will wander from the orc camp."""

@@ -341,8 +341,8 @@ class NPC(Creature):
     def is_forbidden(self, r):
         """Check if a room is forbidden. This can be overloaded for custom behavior."""
         if r in self.forbidden_rooms:
-            return False
-        return True
+            return True
+        return False
 
     def heartbeat(self):
         if self.dead:
@@ -370,8 +370,9 @@ class NPC(Creature):
             if self.attacking and (self.move_around in self.choices):
                 if (self.attacking not in self.location.contents):
                     for l in self.location.exits:
+                        new_room = gametools.load_room(self.location.exits[l])
                         if gametools.load_room(self.location.exits[l]) == self.attacking.location:
-                            self.move_to(gametools.load_room(self.location.exits[l]))
+                            self.go_to_room(self.location.exits[l])
                             moved = True
                             break
 
@@ -390,29 +391,35 @@ class NPC(Creature):
         """The NPC leaves the room, taking a random exit"""
         try:
             exit_list = list(self.location.exits)
-            exit = random.choice(exit_list)
+            exit_name = random.choice(exit_list)
         except (AttributeError, IndexError):
             self.log.debug('NPC %s sees no exits, returning from move_around()' % self.id)
             return
-        self.log.debug("Trying to move to the %s exit!" % (exit))
+        self.log.debug("Trying to move to the %s exit!" % (exit_name))
         current_room = self.location
-        if exit_list:
-            new_room_string = exit_list[exit]
-        else:
-            new_room_string = self.location.exits[exit]
-        new_room = gametools.load_room(new_room_string)
-        if new_room.monster_safe:
-            self.log.debug('Can\'t go to %s; monster safe room!' % new_room_string)
-            return
+        new_room_string = self.location.exits[exit_name]
+        self.go_to_room(new_room_string)
 
-        if is_forbidden(new_room_string):
-            self.log.debug('Can\'t go to %s: forbidden to %s!' % (new_room_string, self))
+    def go_to_room(self, roompath):
+        """Move the creature to the specified room, checking if 
+        it is the room is monster safe or the creature is forbidden
+        to go there. Returns True if the creature sucessfully moves."""
+        new_room = gametools.load_room(roompath)
+        if new_room.monster_safe:
+            self.log.debug('Can\'t go to %s; monster safe room!' % roompath)
+            return False
+
+        if self.is_forbidden(roompath):
+            self.log.debug('Can\'t go to %s: forbidden to %s!' % (roompath, self))
+            return False
  
-        self.emit("&nD%s goes %s." % (self.id, exit))
-        self.move_to(new_room)
-        self.emit("&nI%s arrives." % self.id)
-        self.log.info("Creature %s moved to new room %s" % (self.names[0], new_room_string))
-        return
+        if self.move_to(new_room):
+            self.emit("&nD%s goes %s." % (self.id, exit_name))
+            self.emit("&nI%s arrives." % self.id)
+            self.log.info("Creature %s moved to new room %s" % (self.names[0], roompath))
+            return True
+        else:
+            return False
 
     def talk(self):
         if self.scripts:
