@@ -56,6 +56,7 @@ orc_camp_x = random.randint(int(MAX_X/2), MAX_X-1)
 orc_camp_y = random.randint(int(MAX_Y/3), int((2*MAX_Y)/3))  #TODO: make sure there are exits from this room
 
 room_remaps[f'{orc_camp_x},{orc_camp_y}'] = 'domains.centrata.orc_quest.orc_camp'
+gametools.load_room('domains.centrata.orc_quest.orc_camp')  # do this so orcs begin wandering
 
 # place footprints leading towards orc camp
 footprint_routes = {}
@@ -160,8 +161,27 @@ def load(param_list):
     
     random.seed(coords)
 
-    prairie_details = ['a flock of birds', 'a small tree', 'a field of bluets', 'a small pond', 'a big bush']
-    blocking_details = ['a group of trees', 'a big herd of bison']
+    prairie_details = [('a flock of birds',
+    'This flock of birds is perched in the corner of the field.',
+    ['birds', 'flock'], ['perched']),
+    ('a small tree',
+    'This small tree has %s.' % random.choice('a jagged bend in the middle of its trunk', 
+    'sparse and withered branches', 'a small patch of shade below it'),
+    ['tree'], ['small']),
+    ('a field of bluets',
+    'This field of bluets poke up from the prairie like raindrops.',
+    ['field', 'bluet', 'bluets'], ['field', 'bluet']),
+    ('a small pond',
+    'This small pond is %s.' % random.choice('muddy and stagnant', 'clear and empty',
+    ['pond'], ['muddy', 'stagnant', 'clear', 'empty']),
+    ('a big bush',
+    'This unusually large bush stands out from the prairie around it. It is dark green and appears to be very sharp.',
+    ['bush'], ['large', 'green', 'dark', 'sharp'])]
+    blocking_details = [('a group of trees',
+    'This large and thick group of trees stands to the %s, making passage all but impossible.',
+    ['trees', 'tree'], ['large', 'thick']),
+    ('a big herd of bison', 'This big herd of bison stands to the %s.',
+    ['bison', 'herd'], ['big', 'herd'])]
 
     num_non_blocking_details = random.randint(0, 2)
     num_blocking_details = len(no_exit_directions)
@@ -174,9 +194,24 @@ def load(param_list):
     notable_string = '%s, '*(total_num_details - 1) + 'and %s.'
 
     for i in range(0, num_blocking_details):
-        notable_items.append(random.choice(blocking_details) + ' to the ' + no_exit_directions[i])
+        blocking_item = random.choice(blocking_details)
+        notable_items.append(blocking_item[0] + ' to the ' + no_exit_directions[i])
+
+        blocking_scenery_item = scenery.Scenery(blocking_item[2][0], blocking_item[0], blocking_item[1] % no_exit_directions[i], unlisted=True)
+        blocking_scenery_item.add_names(*blocking_item[2])
+        blocking_scenery_item.add_adjectives(*blocking_item[3])
+        blocking_scenery_item.add_adjectives(no_exit_directions[i])
+        blocking_scenery_item.move_to(prairie, True)
+
     for i in range(0, num_non_blocking_details):
-        notable_items.append(random.choice(prairie_details))
+        prairie_item = random.choice(prairie_details)
+        notable_items.append(prairie_item[0])
+
+        prairie_scenery_item = scenery.Scenery(prairie_item[2][0], prairie_item[0], prairie_item[1], unlisted=True)
+        prairie_scenery_item.add_names(*prairie_item[2])
+        prairie_scenery_item.add_adjectives(*prairie_item[3])
+        prairie_scenery_item.move_to(prairie, True)
+
     random.shuffle(notable_items)
 
     if len(notable_items):  # TODO: "Scenery" objects for notable_items

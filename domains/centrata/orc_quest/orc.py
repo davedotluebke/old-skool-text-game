@@ -7,6 +7,10 @@ class Orc(creature.NPC):
             return super().attack(enemy)
         else:
             self.log.warning('Orcs are disabled from attacking other orcs.')
+            if self.attacking == enemy:
+                self.attacking = False
+            if enemy in self.enemies:
+                self.enemies.remove(enemy)
 
     def set_orc_range(self, orc_range):
         """Set the orc range, which defines how far (in rooms) the orc 
