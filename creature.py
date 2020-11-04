@@ -42,6 +42,9 @@ class Creature(Container):
             pass
         return saveable
 
+    def is_unlisted(self):
+        return self.invisible or self.unlisted
+        
     def set_default_weapon(self, w, append=False):
         """Set the default weapon to the given object, or add a weapon if append is True"""
         if isinstance(w, Weapon):
