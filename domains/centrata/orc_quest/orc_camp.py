@@ -29,7 +29,23 @@ def load():
     bones.add_names("bone")
     bones.add_adjectives("charred")
     
+    orc_camp.insert(furs)
+    orc_camp.insert(stakes)
+    orc_camp.insert(bones)
 
+    small1 = gametools.clone("domains.centrata.orc_quest.small_orc1")
+    small2 = gametools.clone("domains.centrata.orc_quest.small_orc2")
+    small3 = gametools.clone("domains.centrata.orc_quest.small_orc3")
+    med1 = gametools.clone("domains.centrata.orc_quest.medium_orc1")
+    med2 = gametools.clone("domains.centrata.orc_quest.medium_orc2")
+    chief = gametools.clone("domains.centrata.orc_quest.chief_orc")
+    orc_camp.insert(small1)
+    orc_camp.insert(small2)
+    orc_camp.insert(small3)
+    orc_camp.insert(med1)
+    orc_camp.insert(med2)
+    orc_camp.insert(chief)
+    
     if prairie.connection_exists(prairie.orc_camp_x-1, prairie.orc_camp_y, 1, 0, prairie.exit_probability):
         orc_camp.add_exit('west', f'domains.centrata.orc_quest.prairie?{prairie.orc_camp_x-1}&{prairie.orc_camp_y}')
     if prairie.connection_exists(prairie.orc_camp_x, prairie.orc_camp_y, 1, 0, prairie.exit_probability):
@@ -39,4 +55,5 @@ def load():
     if prairie.connection_exists(prairie.orc_camp_x, prairie.orc_camp_y-1, 0, 1, prairie.exit_probability):
         orc_camp.add_exit('south', f'domains.centrata.orc_quest.prairie?{prairie.orc_camp_x}&{prairie.orc_camp_y-1}')
     
+
     return orc_camp
