@@ -876,6 +876,32 @@ class Player(Creature):
         self.attacking = 'quit'
         self.engaged = False
         return True
+    
+    def give(self, p, cons, oDO, oIDO):
+        """Offer an object to a player or other creature, allowing them to accept or deny it. 
+        If accepted, it will enter their inventory."""
+        if cons.user != self:
+            return "I don't quite get what you mean."
+        if not oDO:
+            return "Please specify what you would like to give."
+        if not oIDO:
+            return "Please specify who you would like to give %s to." % oDO.get_short_desc(self, definite=True)
+        if not hasattr(oIDO, "consider_given_item"):
+            self.perceive("You can't give things to a %s!" % oIDO.name())
+            return True
+        self.perceive(f"You offer {oDO.get_short_desc(self, definite=True)} to {oIDO.get_short_desc(self, definite=True)}.")
+        allowed, message = oIDO.consider_given_item(oDO, self)
+        if allowed:
+            #do transfer
+            if oDO.move_to(oIDO):
+                #failed to move oDO
+                self.perceive(f"You fail to give {oIDO.get_short_desc(self, definite=True)} {oDO.get_short_desc(self, definite=True)}")
+                return True
+        elif allowed == None:
+            #still deciding
+            self.offering_item = oDO
+        self.perceive(message)
+        return True
 
     actions = dict(Creature.actions)  # make a copy
     # Wizard-specific actions
@@ -896,6 +922,8 @@ class Player(Creature):
     for verb in emotes:
         actions[verb] =     Action(emote_action, True, True)
     actions['introduce'] =  Action(introduce, True, True)
-    actions['engage'] =  Action(engage, True, False)
-    actions['attack'] =  Action(engage, True, False)
+    actions['engage'] =     Action(engage, True, False)
+    actions['attack'] =     Action(engage, True, False)
     actions['disengage'] =  Action(disengage, False, True)
+    actions['give'] =       Action(give, True, False)
+    actions['offer'] =      Action(give, True, False)
