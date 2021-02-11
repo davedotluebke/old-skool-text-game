@@ -7,7 +7,7 @@ try:
     import sjcl
     encryption_installed = True
 except ModuleNotFoundError:
-    print("sjcl not installed. Running wihtout...")
+    print("sjcl not installed. Running without...")
     encryption_installed = False
 import json
 import base64
