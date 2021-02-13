@@ -384,7 +384,7 @@ class Player(Creature):
             if cmd == "escape": # special case to reset self.message_target to parser
                 self.message_target = Thing.game.parser
             if self.message_target == Thing.game.parser:
-                sV = self.message_target.parse(self, self.access_point, cmd)
+                    sV = self.message_target.parse(self, self.access_point, cmd)
             else:
                 try:
                     self.message_target.accept_command(cmd)

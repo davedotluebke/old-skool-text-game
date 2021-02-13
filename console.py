@@ -448,9 +448,12 @@ class BaseConsole:
         - pass to gameserver,
         - pass to shell, or
         - save and load a player."""
+        print("handle command called")
         if len(input_str) == 0: # nothing typed
             return
         input_words = input_str.lower().split(" ")
+        print("input_words = ", input_words)
+        print("self.wizard_privilages() = ", self.wizard_privilages())
         if input_words[0] == "load" and self.wizard_privilages():
             usage = "Please type `load <name>` to specify a name for your "
             "character, or to load a new character.  Names must be "
@@ -487,6 +490,7 @@ class BaseConsole:
             self._create_player_from_file(player_name)
 
         elif input_words[0] == "save":
+            print("User typed save")
             usage = "Please type `save` to save your player."
             if not self.player_loaded and input_words != ['save', 'force']:
                 self.write_output('No player is loaded. Type `load <name>` to load a player.')
@@ -497,6 +501,7 @@ class BaseConsole:
             self.send_to_gameserver('save')
         
         elif input_words[0] in ["unload", "quit"]:
+            print("unload/quit called")
             usage = "Type `unload` to save and unload your player, or `quit` to save and quit."
             if len(input_words) != 1:
                 self.write_output(usage)
@@ -544,6 +549,7 @@ class BaseConsole:
             self._change_units(input_str)
         
         elif input_words[0] == "help":
+            print("help called")
             self.write_output(self.help_msg)
         
         elif input_words[0] in ["password"] or (len(input_words) == 2 and input_words[0] == "change" and input_words[1] == "password"):
@@ -607,11 +613,13 @@ class BaseConsole:
                 self.write_output("You do not have permission to perform this action.")
         else:
             if self.player_loaded:
+                print("sending message to gameserver: %s" % input_str)
                 # replace aliases with their full versions
                 input_str = self._replace_aliases(input_str.split(" "))
                 self.send_to_gameserver('parse', message=input_str)
             else:
                 if not self.current_player_name and len(input_words) == 1 and self.auto_load_player:
+                    print("creating player, name %s" % input_str)
                     self._create_player_from_file(input_words[0])
                 else:
                     self.write_output("Please load a player before doing any actions.")

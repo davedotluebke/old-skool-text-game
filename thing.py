@@ -444,7 +444,9 @@ class Thing(object):
         # (dest.insert returns True if insertion fails)
         if dest == None or dest.insert(self, force_insert=force_move, merge_pluralities=merge_pluralities):
             if (origin):
-                origin.insert(self, force_insert=True, merge_pluralities=True)
+                self.log.warning("move_to extracted object %s, failed to insert in destination" % self)
+                if origin.insert(self, force_insert=True, merge_pluralities=True):
+                    self.log.error("also failed to re-insert into origin")
             return False
         else:
             return True
