@@ -75,8 +75,6 @@ class AccessPoint(asyncio.Protocol):
                 return
             try:
                 self.user = self.game.create_player(message_dict['player_name'], self)
-                self.user.access_point = self
-                self.user.cons = self.user.access_point # maintain backwards compatability
                 self.transport.write(json.dumps({'type': 'load_status', 'status': '1'}).encode('utf-8')+'\u0004'.encode('utf-8')) # tell console that player was loaded
             except KeyError as e:
                 self.log.exception('message_dict missing `player_name` paramater!')

@@ -584,21 +584,24 @@ class BaseConsole:
             "read/get [attr]: read self.[attr], printing its value\n" \
             "write/set [attr] [value]: write self.[attr], setting its value to [value]\n" \
             "execute/run [code]: run the code [code]"
-            if len(input_words) == 1:
-                self.write_output(usage)
-                return
-            if input_words[1] in ["read", "get"]:
-                for i in input_words[2:]:
-                    self.write_output(f"{i}: {eval(f'self.{i}')}")
-            elif input_words[1] in ["write", "set"]:
-                if len(input_words) != 4:
-                    self.write_output("Usage: console [set] [attr] [value]")
+            try:
+                if len(input_words) == 1:
+                    self.write_output(usage)
                     return
-                else:
-                    exec(f"self.{input_words[3]} = {input_words[4]}")
-                    self.write_output(f"{input_words[3]}: {input_words[4]}")
-            elif input_words[1] in ["execute", "run"]:
-                exec(input_str.split(" ", maxsplit=2)[2])
+                if input_words[1] in ["read", "get"]:
+                    for i in input_words[2:]:
+                        self.write_output(f"{i}: {eval(f'self.{i}')}")
+                elif input_words[1] in ["write", "set"]:
+                    if len(input_words) != 4:
+                        self.write_output("Usage: console [set] [attr] [value]")
+                        return
+                    else:
+                        exec(f"self.{input_words[3]} = {input_words[4]}")
+                        self.write_output(f"{input_words[3]}: {input_words[4]}")
+                elif input_words[1] in ["execute", "run"]:
+                    exec(input_str.split(" ", maxsplit=2)[2])
+            except Exception as e:
+                self.write_output(f"An exception occurred in the console management system: {e}")
                     
         elif input_words[0] in list(additional_cmds_map):
             try:

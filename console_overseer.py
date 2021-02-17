@@ -245,9 +245,12 @@ class ConsoleConnectionProtocol(asyncio.Protocol):
             if self.mode == "CONNECTED":
                 try:
                     data_type = data_dict['type']
+                    print(data)
                     if data_type == "quit":
                         self.transport.close()
-                        if ws_connection_modes[[i for i in list(ws_usernames) if ws_usernames[i][1] == self.connection_code][0]] == "legacy":
+                        legacy_mode = ws_connection_modes[[i for i in list(ws_usernames) if ws_usernames[i][1] == self.connection_code][0]] == "legacy"
+                        # TODO: Clean up ws_usernames, ws_connection_modes, etc
+                        if legacy_mode:
                             print("legacy mode, sending --#quit")
                             asyncio.ensure_future(game_ws_server.jsonify_and_send(self.username, self.connection_code, "--#quit"))
                             continue

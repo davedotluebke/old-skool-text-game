@@ -294,8 +294,12 @@ class Game():
             return False
     
     def create_player(self, player_name, access_point):
-        """Create a player with the given name and return it."""
-        return gametools.clone('player', params=(player_name, access_point))
+        """Create a player with the given name, move it to the player start location, and return it."""
+        player = gametools.clone('player', params=(player_name, access_point))
+        dest = gametools.load_room('domains.character_creation.start_loc')
+        player.move_to(dest)
+        dest.report_arrival(player)
+        return player
     
     def save_player(self, player, access_point):
         """Create a saveable dictionary representing the player object and everything they are carrying. 

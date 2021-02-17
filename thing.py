@@ -291,7 +291,8 @@ class Thing(object):
                or attr == 'versions':
                 saveable[attr] = state[attr]
         default_obj.destroy()
-        for i in saveable:
+        saveable_copy = saveable.copy()
+        for i in saveable_copy:
             if isinstance(saveable[i], set):
                 saveable["__set__" + i] = list(saveable[i])
                 del saveable[i]
