@@ -19,10 +19,13 @@ class GameserverCommunicationProtocol(asyncio.Protocol):
     
     def connection_lost(self, exc):
         # TODO: Deal with unexpected closures
+        print("connection_lost called!")
         value = super().connection_lost(exc)
         if self.cons.disconnecting_state:
+            print("disconnecting_state set")
             self.cons.write_output("Disconnected from gameserver.")
             self.cons.loop.stop()
+        print("returning "+value)
         return value
     
     def data_received(self, data):
@@ -80,6 +83,7 @@ class BaseConsole:
         self.current_string = ''
         self.auto_load_player = True
         # user customizations
+        self.autosave_frequency = 30
         self.measurement_system = BaseConsole.default_measurement_system
         self.alias_map = {
             'n':       'go north',
@@ -248,7 +252,7 @@ class BaseConsole:
         """Send a periodic save request every 30 seconds."""
         if self.player_loaded:
             self.send_to_gameserver('save')
-        self.loop.call_later(30, self.autosave)
+        self.loop.call_later(self.autosave_frequency, self.autosave)
     
     #
     # Functions for running commands in the bash subprocess
@@ -714,7 +718,8 @@ class WebclientConsole(BaseConsole):
                 continue
     
     def shut_down(self):
-        self.protocol.send_message(json.dumps({
+        print("shut_down called")
+        self.ws_protocol.send_message(json.dumps({
             'type': 'quit',
             'data': 'Disconnected from gameserver.'
         }))

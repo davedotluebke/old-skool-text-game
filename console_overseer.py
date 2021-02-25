@@ -174,7 +174,7 @@ class GameWebsocketServer:
                         # TODO: Hash the password again here
                         try:
                             f = open(PASSWORDS_FILE, 'r')
-                            password_correct = message_data == json.loads(f.read())[username]
+                            password_correct = (message_data == json.loads(f.read())[username])
                             f.close()
                         except Exception as e:
                             self.jsonify_and_send(username, connection_code, f'An error occured! The error: {e}')
@@ -193,6 +193,7 @@ class GameWebsocketServer:
                         else:
                             self.jsonify_and_send(username, connection_code, 'Your username or password was incorrect. Please enter your username:')
                             connection_state = 'AWAITING_LOGIN'
+                            ws_usernames[websocket][0] = None
                     elif connection_state == 'AWAITING_CONSOLE_CONNECTION':
                         self.jsonify_and_send(username, connection_code, 'You are being connected to the console. Please wait.')
                     else:
@@ -248,8 +249,12 @@ class ConsoleConnectionProtocol(asyncio.Protocol):
                     print(data)
                     if data_type == "quit":
                         self.transport.close()
-                        legacy_mode = ws_connection_modes[[i for i in list(ws_usernames) if ws_usernames[i][1] == self.connection_code][0]] == "legacy"
-                        # TODO: Clean up ws_usernames, ws_connection_modes, etc
+                        username = [i for i in list(ws_usernames) if ws_usernames[i][1] == self.connection_code][0]
+                        legacy_mode = ws_connection_modes[username] == "legacy"
+                        print("deleting ws_usernames entry of connection that will be closed")
+                        del ws_usernames[username]
+                        del ws_connection_modes[username]
+                        del ws_connection_state[username]
                         if legacy_mode:
                             print("legacy mode, sending --#quit")
                             asyncio.ensure_future(game_ws_server.jsonify_and_send(self.username, self.connection_code, "--#quit"))
