@@ -165,14 +165,14 @@ def load(param_list):
     'This flock of birds is perched in the corner of the field.',
     ['birds', 'flock'], ['perched']),
     ('a small tree',
-    'This small tree has %s.' % random.choice('a jagged bend in the middle of its trunk', 
-    'sparse and withered branches', 'a small patch of shade below it'),
+    'This small tree has %s.' % random.choice(['a jagged bend in the middle of its trunk', 
+    'sparse and withered branches', 'a small patch of shade below it']),
     ['tree'], ['small']),
     ('a field of bluets',
     'This field of bluets poke up from the prairie like raindrops.',
     ['field', 'bluet', 'bluets'], ['field', 'bluet']),
     ('a small pond',
-    'This small pond is %s.' % random.choice('muddy and stagnant', 'clear and empty',
+    'This small pond is %s.' % random.choice(['muddy and stagnant', 'clear and empty']),
     ['pond'], ['muddy', 'stagnant', 'clear', 'empty']),
     ('a big bush',
     'This unusually large bush stands out from the prairie around it. It is dark green and appears to be very sharp.',
@@ -188,7 +188,20 @@ def load(param_list):
 
     notable_items = []
     if f'{x},{y}' in footprint_routes:
-        notable_items.append('footprints coming from the %s' % footprint_routes[f'{x},{y}'])
+        notable_items.append('a trail of footprints')
+
+        footprint_scenery_item = scenery.Scenery('footprints', 'footprints', 
+            random.choice(['You spot a trail of large booted footprints where the prairie has been '
+                           'trampled by the passage of some large creatures.  The footprints appear '
+                           'to come from the %s.', 
+                           'Here the dry ground has the faint but distinct trace of footprints, '
+                           'clearly of some large creature. They appear to be comming from the %s.',
+                           'The soft ground shows the unmistakable trace of booted footprints '
+                           'originating from the %s.',
+                           'Matted grass and broken twigs show a clear trail leading from the %s.']) % footprint_routes[f'{x},{y}'], unlisted=True)
+        footprint_scenery_item.add_adjectives('orc', 'booted', 'large', 'trampled', 'footprint')
+        footprint_scenery_item.add_names('footprint', 'trail')
+        footprint_scenery_item.move_to(prairie, True)
 
     total_num_details = num_non_blocking_details + num_blocking_details + len(notable_items)
     notable_string = '%s, '*(total_num_details - 1) + 'and %s.'
