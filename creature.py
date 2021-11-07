@@ -156,6 +156,12 @@ class Creature(Container):
 
     def take(self, p, cons, oDO, oIDO):
         return "You can't take creatures (or players, for that matter!)"
+    
+    def consider_given_item(self, item, giving_creature):
+        """Consider the item given to the creature, returning a tuple containing 
+        True for accept, None for considering, and False for rejection, followed by a message."""
+        output_message = f'{self.get_short_desc(giving_creature, True)} does not want {item.get_short_desc(giving_creature, True)}!'
+        return False, output_message
 
     def get_armor_class(self):
         return self.armor_class + (0 if not self.armor_worn else self.armor_worn.bonus)
