@@ -1,6 +1,7 @@
 import shop
 import gametools
 
+# This blacksmith is part of the the orc quest
 def clone():
     smith = shop.Shopkeeper('blacksmith', __file__, None)
     smith.set_description('grizzled blacksmith', 'This grizzled old blacksmith looks as if he has worked '

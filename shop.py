@@ -17,6 +17,7 @@ class Shopkeeper(NPC):
         self.default_items = []
         self.welcome_message = 'Welcome to my shop!'
         self.welcomed_customers = []
+        self.auto_introduce = False  # shopkeeper introduces themself upon first meeting players
         self.change_currencies = [gametools.clone('currencies.gold'), gametools.clone('currencies.silver'), gametools.clone('currencies.copper')]
         Thing.game.schedule_event(120, self.restock, None)
         self.obj_classes_accepted = []
@@ -66,6 +67,9 @@ class Shopkeeper(NPC):
     def set_welcome_message(self, msg):
         self.welcome_message = msg
 
+    def set_auto_introduce(self, flag):
+        self.auto_introduce = flag
+
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
     #
@@ -76,12 +80,20 @@ class Shopkeeper(NPC):
         if not self.location:
             return
         for i in self.location.contents:
-            if hasattr(i, 'cons') and i not in self.welcomed_customers:
-                self.say(self.welcome_message)
-                self.welcomed_customers.append(i)
+            try:
+                if isinstance(i, Player) and i not in self.welcomed_customers:
+                    self.say(self.welcome_message)
+                    if self.auto_introduce:
+                        i.introduced.add(self.id)
+                    self.welcomed_customers.append(i)
+            except:
+                self.log.exception(f"Error adding {i} to shopkeeper welcomed_customers set: {e}")
         for j in self.welcomed_customers:
             if j not in self.location.contents:
-                del self.welcomed_customers[self.welcomed_customers.index(j)]
+                try:
+                    self.welcomed_customers.remove(j)
+                except:
+                    self.log.exception(f"Error adding {i} to shopkeeper welcomed_customers set: {e}")
         # Recite scripts
         super().heartbeat()
 
