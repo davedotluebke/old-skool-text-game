@@ -169,7 +169,7 @@ class Creature(Container):
     def take_damage(self, enemy, damage):
         self.health -= damage
         if self.health <= 0:
-            enemy.gain_combat_skill(self)
+            if enemy: enemy.gain_combat_skill(self)
             self.die('&nD%s dies!' % self.id)
             return True       # return True if dead, otherwise return False
         return False
