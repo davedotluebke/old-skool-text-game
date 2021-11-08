@@ -4,6 +4,7 @@ from creature import NPC
 from action import Action
 from money import Money
 from money import get_change
+from player import Player
 import gametools
 
 class Shopkeeper(NPC):
@@ -86,13 +87,13 @@ class Shopkeeper(NPC):
                     if self.auto_introduce:
                         i.introduced.add(self.id)
                     self.welcomed_customers.append(i)
-            except:
+            except Exception as e:
                 self.log.exception(f"Error adding {i} to shopkeeper welcomed_customers set: {e}")
         for j in self.welcomed_customers:
             if j not in self.location.contents:
                 try:
                     self.welcomed_customers.remove(j)
-                except:
+                except Exception as e:
                     self.log.exception(f"Error adding {i} to shopkeeper welcomed_customers set: {e}")
         # Recite scripts
         super().heartbeat()

@@ -92,7 +92,7 @@ class Door(scenery.Scenery):
             return True
         
         cons.user.perceive("You open the door.")
-        cons.user.emit("&nD%s opens the door.")
+        cons.user.emit("&nD%s opens the door." % cons.user)
         self.open_door_fc()
         return True
 

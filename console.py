@@ -7,6 +7,7 @@ import os
 import re
 import platform
 import traceback
+import shlex
 
 from parse import Parser
 from player import Player
@@ -271,7 +272,7 @@ class Console:
                 try:
                     if cmd == 'ls' and  platform.system() == "Linux":
                             self.words = ['ls', '--hide', '"__pycache__"'] + self.words[1:]
-                    process = subprocess.run(self.words, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=gametools.realDir(self.current_directory), shell=True)
+                    process = subprocess.run(shlex.split(" ".join(self.words)), stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=0.5, cwd=gametools.realDir(self.current_directory), shell=False)
                     syntax_hilite = '```python\n' if cmd == 'cat' else '```\n'
                     self.write(syntax_hilite + str(process.stdout, "utf-8") + '\n```\n')
                     self.write(str(process.stderr, "utf-8"))

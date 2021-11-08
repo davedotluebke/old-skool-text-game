@@ -404,9 +404,9 @@ class NPC(Creature):
         self.log.debug("Trying to move to the %s exit!" % (exit_name))
         current_room = self.location
         new_room_string = self.location.exits[exit_name]
-        self.go_to_room(new_room_string)
+        self.go_to_room(new_room_string, exit_name)
 
-    def go_to_room(self, roompath):
+    def go_to_room(self, roompath, exit_name=None):
         """Move the creature to the specified room, checking if 
         it is the room is monster safe or the creature is forbidden
         to go there. Returns True if the creature sucessfully moves."""
@@ -420,7 +420,8 @@ class NPC(Creature):
             return False
  
         if self.move_to(new_room):
-            self.emit("&nD%s goes %s." % (self.id, exit_name))
+            if exit_name:
+                self.emit("&nD%s goes %s." % (self.id, exit_name))
             self.emit("&nI%s arrives." % self.id)
             self.log.info("Creature %s moved to new room %s" % (self.names[0], roompath))
             return True
