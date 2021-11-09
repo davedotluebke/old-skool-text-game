@@ -19,7 +19,8 @@ class Bookcase(Container):
             gametools.clone('domains.school.school.potion_book'),
             gametools.clone('domains.school.school.blue_book'),
             gametools.clone('domains.school.school.secret_passage_book'),
-            gametools.clone('domains.school.school.romeo_and_juliet')
+            gametools.clone('domains.school.school.romeo_and_juliet'),
+            gametools.clone('domains.school.school.spellbook')
         ]
         for i in range(0, len(self.books)):
             self.books.append(gametools.clone('domains.school.school.random_book'))
