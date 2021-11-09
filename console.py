@@ -278,7 +278,7 @@ class Console:
                     self.write(str(process.stderr, "utf-8"))
                     return True
                 except Exception:
-                    print(traceback.format_exc())
+                    self.write(traceback.format_exc())
             
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
