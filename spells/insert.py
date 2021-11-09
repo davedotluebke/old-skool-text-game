@@ -9,7 +9,7 @@ def spell(parser, cons, oDO, oIDO, spell_info, stone):
         try:
             mana = int(spell_info[0])
         except:
-            raise gametools.BadSpellInfoError('You nned to specify how much mana to insert!')
+            raise gametools.BadSpellInfoError('You need to specify how much mana to insert!')
         if cons.user.mana >= mana:
             if not stone.set_mana(stone.get_mana()+mana):
                 cons.write('You are trying to put more mana into the stone than its max.')

@@ -30,5 +30,5 @@ class Scroll(thing.Thing):
         cons.user.perceive('You read: %s' % self.message)
         return True
 
-    actions = dict(Thing.actions)  # make a copy, don't change Thing's dict!
-    actions['read'] = Action(read, True, False)
+    actions = dict(thing.Thing.actions)  # make a copy, don't change Thing's dict!
+    actions['read'] = thing.Action(read, True, False)
