@@ -13,12 +13,12 @@ def load():
     street.add_exit('west', 'domains.centrata.village.west_village')
     street.add_exit('north', 'domains.centrata.village.inn')
 
-    inn = scenery.Scenery('inn', 'This inn stands to the north side of the street.')
+    inn = scenery.Scenery('inn', 'inn', 'This inn stands to the north side of the street.')
     inn.add_adjectives('north')
     inn.move_to(street, True)
 
     house = scenery.Scenery('house', 'wooden house', 'This wooden house sits to the south side of the street.')
     house.add_adjectives('wooden', 'south')
     house.add_response(['enter'], 'The door is locked.')
-    house.move_to(south_village, True)
+    house.move_to(street, True)
     return street

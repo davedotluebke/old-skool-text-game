@@ -9,8 +9,8 @@ class Bat(creature.NPC):
         self.add_adjectives('vicious', 'vampire', 'red-eyed')
         self.choices = [self.attack_enemy]
         self.set_combat_vars(30, 40, 3, 87)
-        self.default_weapon = gametools.clone('domains.centrata.key_quest.bat_bite')
-        self.weapon_wielding = self.default_weapon
+        self.set_default_weapon(gametools.clone('domains.centrata.key_quest.bat_bite'))
+        self.weapon_wielding = self.default_weapons[0]
         self.introduction_complete = False
         self.new_bat_counter = 0
     
@@ -28,14 +28,15 @@ class Bat(creature.NPC):
                     self.emit('The vampire bat flies up through the gap in the ceiling, and dives back down at you.')
                     self.introduction_complete = True
                 self.attack_enemy()
-        self.new_bat_counter += 1
+        # duplicating bats have been temporarily disabled due to memory leak
+        """self.new_bat_counter += 1
         if self.new_bat_counter == 5:
             self.emit('A new bat arrives!')
             new_bat = gametools.clone(gametools.findGamePath(__file__))
             new_bat.move_to(self.location, True)
-            new_bat_counter = 0
+            self.new_bat_counter = 0
         else:
-            self.introduction_complete = False
+            self.introduction_complete = False"""
 
 def clone():
     return Bat()

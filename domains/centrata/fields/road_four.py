@@ -12,5 +12,5 @@ def load():
     road_four.add_exit('south', 'domains.centrata.fields.road_three')
     road_four.add_exit('north', 'domains.centrata.fields.road_five')
     road_four.add_exit('down', 'domains.centrata.cave.carved_staircase')
-    road_four.add_exit('east', 'domains.centrata.prairie?0&0')
+    road_four.add_exit('east', 'domains.centrata.orc_quest.prairie?0&0')
     return road_four

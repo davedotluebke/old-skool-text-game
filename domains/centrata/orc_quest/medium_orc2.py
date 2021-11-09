@@ -1,9 +1,10 @@
-import creature
 import gametools
 import thing
+from domains.centrata.orc_quest.orc import Orc
 
 def clone():
-    orc = creature.NPC('orc', __file__, aggressive=2)
+    orc = Orc('orc', __file__, aggressive=2)
+    orc.set_orc_range(2)
     orc.set_description('orc guard', 'This tough-looking orc appears big, strong, and well-trained.')
     orc.add_adjectives('orc', 'tough', 'tough-looking', 'big', 'strong', 'well-trained')
     orc.add_names('guard')

@@ -67,7 +67,7 @@ def load():
 
     west_door = doors_and_windows.Door('door', 'wooden door', 'This antique wooden door leads to the west.', 'domains.school.elementQuest.bedroom','west')
     west_door.add_adjectives('wooden', 'antique')
-    west_door.open_door_fc()
     r.insert(west_door)
+    west_door.open_door_fc(toggle=False)
 
     return r

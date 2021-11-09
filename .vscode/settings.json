@@ -5,7 +5,6 @@
     "files.associations": {
         "*.OADplayer": "json"
     },
-    "files.eol": "\n",
     "telemetry.enableCrashReporter": false,
     "telemetry.enableTelemetry": false
 }

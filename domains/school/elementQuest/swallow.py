@@ -3,7 +3,7 @@ import random
 
 class Swallow(creature.NPC):
     def __init__(self):
-        super().__init__("swallow", __file__, aggressive=1, movement=1)
+        super().__init__("swallow", __file__, aggressive=0, movement=1)
         self.act_frequency = 1
         self.set_description("barn swallow", "This is a blue and orange barn swallow. It seems completely average.")
         self.add_adjectives("barn", "blue", "orange", "average")

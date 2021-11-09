@@ -153,7 +153,7 @@ class Container(Thing):
             return result
         if self.see_inside:
             if self.contents:
-                preamble = "%s the %s there is:" % (self.insert_prepositions[0], self)
+                preamble = "%s the %s there is:" % (self.insert_prepositions[0], self.name())
                 cons.write(preamble.capitalize())
                 for item in self.contents:
                     cons.write(item.get_short_desc(indefinite=True))

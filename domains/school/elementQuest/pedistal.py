@@ -1,5 +1,6 @@
 import container
 import creature
+import action
 
 class Pedistal(container.Container):
     def __init__(self):
@@ -32,10 +33,14 @@ class Pedistal(container.Container):
             oDO.unlisted = True
             self.location.add_exit('west','domains.school.elementQuest.bridge')
             self.location.set_description('walkway', 'This walkway leads west from the tower and onto a bridge to the west.')
+            return True
         else:
             cons.user.perceive(f'Despite your best attempts to put the {oDO.name()} on the pedistal, it will not stay there for some reason.')
             self.emit(f'&nD{cons.user.id} tries to put the {oDO.name()} on the pedistal, but eventually gives up.')
             return True
+    
+    actions = dict(container.Container.actions)
+    actions['put'] = action.Action(put, True, False)
 
 def clone():
     return Pedistal()

@@ -9,6 +9,6 @@ def clone():
     cracker_box.set_weight(30)
     cracker_box.set_volume(1)
     cracker_box.add_adjectives('cracker', 'cardboard', 'ordinairy', 'Nabisco®', 'Nabisco', 'cracker')
-    cracker_box('container')
+    cracker_box.add_names('container')
 
     return cracker_box

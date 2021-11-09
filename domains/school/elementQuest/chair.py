@@ -6,6 +6,5 @@ def clone():
     chair.add_adjectives('wooden', 'desk')
     chair.add_response(['sit'], 'You sit in the chair and it creaks as you do.')
     chair.add_response(['stand'], 'You stand up and it creacks agian.', False, True)
-    chair.move_to(study, True)
 
     return chair

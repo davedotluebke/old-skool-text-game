@@ -8,6 +8,7 @@ class Lever(scenery.Scenery):
     def __init__(self):
         super().__init__('lever', 'hidden lever', 'This lever is hidden in a large crack in the wall', unlisted = True)
         self.door = None
+        self.actions['pull'] = scenery.Action(Lever.pull, True, False)
 
     def pull(self, p, cons, oDO, oIDO):
         if oDO != self:
@@ -15,13 +16,13 @@ class Lever(scenery.Scenery):
         if self.door:
             cons.user.perceive('The door is already open!')
         cons.user.perceive('As you pull on the lever the room trembles and the painting of a tree swallow slides aside revealing a secret door carved into the west wall.')
-        self.emit('&nD%s pulls on a hidden lever releaving a secret door to the west.')
+        self.emit('&nD%s pulls on a hidden lever releaving a secret door to the west.' % cons.user.id)
         hidden_door = doors_and_windows.Door('door', 'hidden door', 'This is a hidden door carved into the west wall. A gentle breeze passes through the cracks in it.', 'domains.school.elementQuest.secret_room', 'west', [])
         hidden_door.add_adjectives('hidden', 'carved', 'cracked')
         cons.user.location.insert(hidden_door)
         self.door = hidden_door
         return True
-
+    
 def load():
     roomPath = gametools.findGamePath(__file__)
     exists = room.check_loaded(roomPath)
@@ -77,7 +78,7 @@ def load():
     plaque = scenery.Scenery ('plaque', 'metal plaque on wall', 'This is a normal metal plaque on the wall, you can try "read" it.', unlisted=False)
     plaque.add_names('plaque')
     plaque.add_adjectives('metal', 'normal')
-    plaque.add_response(['read'], 'The plaque reads: Please do not touch any of the paintings. \n No flash photography \n No food or drink in the gallery')
+    plaque.add_response(['read'], 'The plaque reads: \n Please do not touch any of the paintings. \n No flash photography \n No food or drink in the gallery')
     r.insert(plaque)
 
     wall = scenery.Scenery('wall', 'wall', 'This stone wall raps around the room, there is a door to the east and a large crack in the west wall.', unlisted=True)

@@ -88,6 +88,10 @@ class Player(Creature):
         self.gender = None
         self.adj1 = None
         self.adj2 = None
+        self.terse = False  # True -> show short description when entering room
+        self.game.register_heartbeat(self)
+        self.versions[gametools.findGamePath(__file__)] = 3
+        self.prev_location_id = None
         # Convention: Each spell is a key-value pair where the key is the name
         # of the spell (for the player, e.g. 'apparate') and the value is a 
         # python-style path to the spell (e.g. 'spells.apparate')
@@ -193,7 +197,7 @@ class Player(Creature):
             # XXX temporary fix for now
             self.password = passwd
             # TODO secure password authentication goes here
-            self.id = self._add_ID(self.names[0], remove_existing=True)
+            self.id = self._add_ID(self.names[0])            
             self.proper_name = self.names[0].capitalize()
             self.log.info("Creating player id %s with default name %s" % (self.id, self.names[0]))
             start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
@@ -222,7 +226,6 @@ class Player(Creature):
                     self.login_state = None
                     self.game.deregister_heartbeat(self)
                     del Thing.ID_dict[self.id]
-                    self.destroy()
                 except gametools.IncorrectPasswordError:
                     self.cons.write("Your username or password is incorrect. Please try again.")
                     self.login_state = "AWAITING_USERNAME"
@@ -274,7 +277,7 @@ class Player(Creature):
     def restore_mana(self):
         if self.mana < self.max_mana:
             self.mana += 1
-        
+
     #
     # SET/GET METHODS (methods to set or query attributes)
     #
@@ -289,6 +292,7 @@ class Player(Creature):
             pass
         del saveable['cons']
         return saveable
+    
     def get_mana(self):
         return self.mana
     
@@ -649,6 +653,8 @@ class Player(Creature):
                 obj = self
             elif w[1] == "here":
                 obj = self.location
+            elif w[1] == "all":
+                obj = "all"
             else: 
                 # re-parse the stripped words[] to find possible objects
                 # TODO: encapsulate this code from parse() rather than cut-and-pasting it
@@ -659,14 +665,27 @@ class Player(Creature):
                 # THEN, check for objects matching the direct & indirect object strings
                 if sIDO:  
                     return usage  # debug command accepts exactly 1 direct object
-                if sDO:   
-                    # set oDO to object(s) matching direct object strings
-                    oDO_list = p.find_matching_objects(sDO, possible_objects, cons)
-                if not sDO or not oDO_list:
-                    return "ERROR: No object specified to debug!\n\n" + usage
-                if len(oDO_list) > 1:
-                    return "ERROR: Multiple objects specified to debug!\n\n" + usage
-                obj = oDO_list[0]
+                if not sDO: 
+                    return "ERROR: No object specified to debug!\n\n" + usage                                    
+                # set oDO to object(s) matching direct object strings
+                oDO_list = p.find_matching_objects(sDO, possible_objects, cons)
+                if not oDO_list:  # No matching object found
+                    if sDO in Thing.ID_dict:  
+                        obj = Thing.ID_dict[sDO]  # user specified an object ID
+                    else:
+                        return f"ERROR: no object matching '{sDO}' found to debug!\n\n" + usage
+                elif len(oDO_list) > 1:
+                    return f"ERROR: Multiple objects matching '{sDO}' found to debug!\n\n" + usage
+                else:
+                    obj = oDO_list[0]
+        if obj == 'all':  
+            # set main log level for entire game, and subscribe to updates
+            gametools.game_log_cons_handler.setLevel(dbg_level)
+            gametools.game_log_cons_handler.addConsole(self.cons)
+            # Add an event to unsubscribe in <sec> seconds
+            self.cons.game.schedule_event(int(sec), self.unsubscribe_handler)
+            self.perceive(f"Now debugging entire game at level `{dbg_level}` for the next {sec} seconds!")
+            return True
         # Check if this player already has a handler for this object
         if obj.id in self.handlers:
             self.remove_dbg_handler(obj)
@@ -693,6 +712,9 @@ class Player(Creature):
         except AttributeError:
             self.log.error(f"AttributeError removing debug handler {handler} from object {obj}")
 
+    def unsubscribe_handler(self):
+        gametools.game_log_cons_handler.removeConsole(self.cons)
+        self.perceive("No longer debugging entire game.")
 
     def reload_room(self, p, cons, oDO, oIDO):
         '''Reloads the specified object, or the room containing the player if none is given.
@@ -843,12 +865,12 @@ class Player(Creature):
             return "You can't look at another player's inventory!"
         message = "You are carrying:\n"
         if not self.contents:
-            message += '\tnothing'
+            message += '\tnothing\n'
         for i in self.contents:
             if i == self.weapon_wielding or i == self.armor_worn: 
                 continue
             message += "\t&ni%s\n" % i.id
-        if self.weapon_wielding != self.default_weapon: 
+        if self.weapon_wielding not in self.default_weapons: 
             message += 'You are wielding &nd%s.\n' % self.weapon_wielding.id
         if self.armor_worn != self.default_armor:
             message += 'You are wearing &nd%s.\n' % self.armor_worn.id
@@ -938,6 +960,32 @@ class Player(Creature):
         self.attacking = 'quit'
         self.engaged = False
         return True
+    
+    def give(self, p, cons, oDO, oIDO):
+        """Offer an object to a player or other creature, allowing them to accept or deny it. 
+        If accepted, it will enter their inventory."""
+        if cons.user != self:
+            return "I don't quite get what you mean."
+        if not oDO:
+            return "Please specify what you would like to give."
+        if not oIDO:
+            return "Please specify who you would like to give %s to." % oDO.get_short_desc(self, definite=True)
+        if not hasattr(oIDO, "consider_given_item"):
+            self.perceive("You can't give things to a %s!" % oIDO.name())
+            return True
+        self.perceive(f"You offer {oDO.get_short_desc(self, definite=True)} to {oIDO.get_short_desc(self, definite=True)}.")
+        allowed, message = oIDO.consider_given_item(oDO, self)
+        if allowed:
+            #do transfer
+            if oDO.move_to(oIDO):
+                #failed to move oDO
+                self.perceive(f"You fail to give {oIDO.get_short_desc(self, definite=True)} {oDO.get_short_desc(self, definite=True)}")
+                return True
+        elif allowed == None:
+            #still deciding
+            self.offering_item = oDO
+        self.perceive(message)
+        return True
 
     actions = dict(Creature.actions)  # make a copy
     # Wizard-specific actions
@@ -962,3 +1010,6 @@ class Player(Creature):
     actions['attack'] =     Action(engage, True, False)
     actions['disengage'] =  Action(disengage, False, True)
     actions['cast'] =       Action(magic.castChecks, True, False)
+    actions['give'] =       Action(give, True, False)
+    actions['offer'] =      Action(give, True, False)
+

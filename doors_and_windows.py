@@ -66,13 +66,15 @@ class Door(scenery.Scenery):
             cons.user.perceive("The door is closed.")
         return True
     
-    def open_door_fc(self):
-        self.toggle_matching(self.locked, True)
+    def open_door_fc(self, toggle=True):
+        if toggle:
+            self.toggle_matching(self.locked, True)
         self.open_state = True
         self.location.add_exit(self.direction, self.dest)
     
-    def close_door_fc(self):
-        self.toggle_matching(self.locked, False)
+    def close_door_fc(self, toggle=True):
+        if toggle:
+            self.toggle_matching(self.locked, False)
         self.open_state = False
         try:
             del self.location.exits[self.direction]
@@ -90,7 +92,7 @@ class Door(scenery.Scenery):
             return True
         
         cons.user.perceive("You open the door.")
-        cons.user.emit("&nD%s opens the door.")
+        cons.user.emit("&nD%s opens the door." % cons.user)
         self.open_door_fc()
         return True
 

@@ -1,6 +1,5 @@
 import random
 import gametools
-import random
 from thing import Thing
 from container import Container
 from weapon import Weapon
@@ -10,6 +9,7 @@ from action import Action
 class Creature(Container):
     def __init__(self, default_name, path, pref_id=None):
         Container.__init__(self, default_name, path, pref_id)
+        self.versions[gametools.findGamePath(__file__)] = 3
         self.closed = True
         self.closable = False
         self.see_inside = False
@@ -20,18 +20,19 @@ class Creature(Container):
         self.combat_skill = 0
         self.strength = 0
         self.dexterity = 1
-        self.default_weapon = gametools.clone("default_weapon")
+        self.default_weapons = [ gametools.clone("default_weapon_1"), gametools.clone("default_weapon_2") ]
+        self.weapon_wielding = self.default_weapons[0]
         self.default_armor = gametools.clone("default_armor")
-        self.weapon_wielding = self.default_weapon
         self.armor_worn = self.default_armor
         self.closed_err = "You can't put things in creatures!"
+        self.set_max_weight_carried(50000)
+        self.set_max_volume_carried(100)
         self.invisible = False
         self.introduced = set()
         self.proper_name = default_name.capitalize()
         self.dead = False
         self.wizardry_element = None
         self.healing = 0
-        self.versions[gametools.findGamePath(__file__)] = 1
 
     def get_saveable(self):
         saveable = super().get_saveable()
@@ -41,9 +42,27 @@ class Creature(Container):
             pass
         return saveable
 
-    def set_default_weapon(self, name, damage, accuracy, unwieldiness, attack_verbs=["hit"]):
-        self.default_weapon = Weapon(name, None, damage, accuracy, unwieldiness, attack_verbs)
-        self.weapon_wielding = self.default_weapon
+    def is_unlisted(self):
+        return self.invisible or self.unlisted
+        
+    def set_default_weapon(self, w, append=False):
+        """Set the default weapon to the given object, or add a weapon if append is True"""
+        if isinstance(w, Weapon):
+            if append:
+                self.default_weapons += [w]
+            else:
+                self.default_weapons = [w]            
+        else:
+            self.log.error("set_default_weapon() given an object that is not a Weapon")
+    
+    def create_default_weapon(self, name, damage, accuracy, unwieldiness, attack_verbs=["hit"], append=False):
+        """Replace the default weapons with a single new weapon, or add a new weapon if append is True"""
+        w = Weapon(name, None, damage, accuracy, unwieldiness, attack_verbs)
+        if append:
+            self.default_weapons += [w]
+        else:
+            self.default_weapons = [w]
+        self.weapon_wielding = self.default_weapons[-1]  # wield the just-added weapon
 
     def set_default_armor(self, name, bonus, unwieldiness):
         self.default_armor = Armor(name, None, bonus, unwieldiness)
@@ -60,19 +79,33 @@ class Creature(Container):
         self.armor_worn = self.armor_worn.id
         self.weapon_wielding = self.weapon_wielding.id
         self.default_armor = self.default_armor.id
-        self.default_weapon = self.default_weapon.id
+        self.default_weapons = [x.id for x in self.default_weapons]
 
     def _restore_objs_from_IDs(self):
         super()._restore_objs_from_IDs()
-        if isinstance(self.default_weapon, str):
-            self.default_weapon = Thing.ID_dict[self.default_weapon]
-        if isinstance(self.default_armor, str):
-            self.default_armor = Thing.ID_dict[self.default_armor]
-        if isinstance(self.weapon_wielding, str):
-            self.weapon_wielding = Thing.ID_dict[self.weapon_wielding]
-        if isinstance(self.armor_worn, str):
-            self.armor_worn = Thing.ID_dict[self.armor_worn]
-    
+        try:
+            # convert default_weapons list from strings to objects
+            self.default_weapons = [Thing.ID_dict[i] if isinstance(i,str) else i for i in self.default_weapons]
+        except:
+            self.log.exception("Error converting default_weapons[..] from string to object.")
+        try: 
+            if isinstance(self.weapon_wielding, str):
+                self.weapon_wielding = Thing.ID_dict[self.weapon_wielding]
+        except:
+            self.log.exception("Error converting weapon_wielding from string to object.  Using default weapon")
+            self.weapon_wielding = self.default_weapons[0]
+        try:
+            if isinstance(self.default_armor, str):
+                self.default_armor = Thing.ID_dict[self.default_armor]
+        except: 
+            self.log.exception("Error converting default_armor from string to object.")
+        try:
+            if isinstance(self.armor_worn, str):
+                self.armor_worn = Thing.ID_dict[self.armor_worn]
+        except: 
+            self.log.exception("Error converting armor_worn from string to object. Wearing default armor")
+            self.armor_worn = self.default_armor
+
     def update_version(self):
         if hasattr(self, 'version_number'):
             self.versions[gametools.findGamePath(__file__)] = 1
@@ -82,6 +115,9 @@ class Creature(Container):
         if self.versions[gametools.findGamePath(__file__)] == 1:
             self.introduced = set(self.introduced)
             self.versions[gametools.findGamePath(__file__)] = 2
+        if self.versions[gametools.findGamePath(__file__)] < 3:
+            del self.default_weapon
+            self.versions[gametools.findGamePath(__file__)] = 3
 
     def get_short_desc(self, perceiver=None, definite=False, indefinite=False):
         '''Overloads `Thing.get_short_desc()` to return short description of
@@ -102,8 +138,8 @@ class Creature(Container):
         Weapons it is wielding and any armor it is wearing.'''
         if self == oDO or self == oIDO:
             cons.write(self._long_desc)
-            if self.weapon_wielding and (self.weapon_wielding != self.default_weapon):
-                cons.write("It is wielding a %s." % (self.weapon_wielding._short_desc))        #if we use "bare hands" we will have to change this XXX not true anymore
+            if self.weapon_wielding and (self.weapon_wielding not in self.default_weapons):
+                cons.write("It is wielding a %s." % (self.weapon_wielding._short_desc))
             if self.armor_worn and (self.armor_worn != self.default_armor):
                 cons.write("It is wearing %s." % (self.armor_worn._short_desc))
             return True
@@ -120,6 +156,12 @@ class Creature(Container):
 
     def take(self, p, cons, oDO, oIDO):
         return "You can't take creatures (or players, for that matter!)"
+    
+    def consider_given_item(self, item, giving_creature):
+        """Consider the item given to the creature, returning a tuple containing 
+        True for accept, None for considering, and False for rejection, followed by a message."""
+        output_message = f'{self.get_short_desc(giving_creature, True)} does not want {item.get_short_desc(giving_creature, True)}!'
+        return False, output_message
 
     def get_armor_class(self):
         return self.armor_class + (0 if not self.armor_worn else self.armor_worn.bonus)
@@ -127,19 +169,22 @@ class Creature(Container):
     def take_damage(self, enemy, damage):
         self.health -= damage
         if self.health <= 0:
-            if enemy:
+            if enemy: 
                 enemy.gain_combat_skill(self)
             self.die('&nD%s dies!' % self.id)
             return True       # return True if dead, otherwise return False
         return False
 
     def weapon_and_armor_grab(self):
-        if not self.weapon_wielding or self.weapon_wielding == self.default_weapon:
+        """If not already wielding a weapon, or wielding a default weapon, check
+        to see if the creature has a better weapon in its inventory and wield that.
+        Similarly, wear any armor carried if better than the creature's default armor"""
+        if not self.weapon_wielding or self.weapon_wielding in self.default_weapons:
             for w in self.contents:
-                if isinstance(w, Weapon) and w.damage > self.default_weapon.damage:
+                if isinstance(w, Weapon) and w.damage > self.default_weapons[-1].damage:
                     self.weapon_wielding = w
                     self.log.info("weapon chosen: %s" % self.weapon_wielding)
-                    self.perceive('You wield the %s, rather than using your %s.' % (self.weapon_wielding._short_desc, self.default_weapon._short_desc))
+                    self.perceive('You wield the %s, rather than using your %s.' % (w._short_desc, self.default_weapons[-1]._short_desc))
                     break
         if not self.armor_worn or self.armor_worn == self.default_armor:
             for a in self.contents:
@@ -156,12 +201,12 @@ class Creature(Container):
             message = 'making a small cut'
         elif percent_damage <= 0.2:
             message = 'doing minor damage'
+        elif percent_damage <= 0.3: 
+            message = 'doing major damage'
         elif percent_damage <= 0.4:
             message = 'inflicting a terrible wound'
-        elif percent_damage <= 0.6:
-            message = 'landing a devastating blow'
         else:
-            message = 'with unimaginable force'
+            message = 'landing a devastating blow'
         return message
 
     def gain_combat_skill(self, enemy):
@@ -174,20 +219,26 @@ class Creature(Container):
         if (self == enemy):
             self.log.warning('Creature tried to attack self!')
             return
-        chance_of_hitting = self.combat_skill + self.weapon_wielding.accuracy - enemy.get_armor_class()
+        w = self.weapon_wielding
+        if not w or w in self.default_weapons:
+            # choose a random default weapon each time
+            w = random.choice(self.default_weapons)
+            self.weapon_wielding = w
+            self.log.debug(f"Wielded new default weapon {w.name()}")
+        chance_of_hitting = self.combat_skill + w.accuracy - enemy.get_armor_class()
         if random.randint(1, 100) <= chance_of_hitting:
-            d = self.weapon_wielding.damage
+            d = w.damage
             damage_done = random.randint(int(d/2), d) + self.strength / 10.0
             percent_damage = damage_done/enemy.hitpoints
             message = self.get_damage_message(percent_damage)
-            self.emit('&nD%s attacks &nd%s with &v%s %s, %s!' % (self.id, enemy, self.id, self.weapon_wielding, message), ignore=[self, enemy])
-            self.perceive('You attack &nd%s with your %s, %s!' % (enemy, self.weapon_wielding, message))
-            enemy.perceive('&nD%s attacks you with &v%s %s, %s!' % (self.id, self.id, self.weapon_wielding, message))
+            self.emit(f'&nD{self.id} attacks &nd{enemy} with &v{self.id} {w.name()}, {message}!', ignore=[self, enemy])
+            self.perceive(f'You attack &nd{enemy} with your {w.name()}, {message}!')
+            enemy.perceive(f'&nD{self.id} attacks you with &v{self.id} {w.name()}, {message}!')
             enemy.take_damage(self, damage_done)
         else:
-            self.emit('&nD%s attacks &nd%s with &v%s %s, but misses.' % (self.id, enemy, self.id, self.weapon_wielding), ignore=[self, enemy])
-            self.perceive('You attack &nd%s with your %s, but miss.' % (enemy, self.weapon_wielding))
-            enemy.perceive('&nD%s attacks you with &v%s %s, but misses.' % (self.id, self.id, self.weapon_wielding))
+            self.emit(f'&nD{self.id} attacks &nd{enemy} with &v{self.id} {w.name()}, but misses.', ignore=[self, enemy])
+            self.perceive(f'You attack &nd{enemy} with your {w.name()}, but miss.')
+            enemy.perceive(f'&nD{self.id} attacks you with &v{self.id} {w.name()}, but misses.')
         if self not in enemy.enemies:
             enemy.enemies.append(self)
 
@@ -200,16 +251,31 @@ class Creature(Container):
     def die(self, message=None):
         #What to do when 0 health
         self.emit("&nD%s dies!" % self.id, [self])
+        # remove myself from the enemies list of all my enemies
+        for enemy in self.enemies:
+            try: 
+                if enemy.attacking == self:
+                    enemy.attacking = None
+                enemy.enemies.remove(self)
+            except ValueError: pass
+        self.enemies = []  # stop fighting everybody
+        self.attacking = None
         corpse = gametools.clone('corpse', self)
         corpse.names += self.names
         corpse.adjectives = set(list(corpse.adjectives) + list(self.adjectives) + self.names)
         self.location.insert(corpse)
-        while self.contents:
-            i = self.contents[0]
-            i.move_to(corpse)
-        if hasattr(self, 'cons'):
+        # unwield any weapons and armor before removing all items to corpse
+        self.weapon_wielding = self.default_weapons[0]
+        self.armor_worn = self.default_armor
+        get_rid_of = [x for x in self.contents if not x.fixed]
+        while get_rid_of:
+            i = get_rid_of.pop(0)
+            i.move_to(corpse, True)
+        if hasattr(self, 'cons'):  
+            # this Creature is a Player; reincarnate them
             self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))
         else:
+            # not a Player; detroy the Creature leaving only the corpse object
             self.dead = True
             self.destroy()
         if message:
@@ -289,6 +355,12 @@ class NPC(Creature):
 
     def forbid_room(self, r):
         self.forbidden_rooms.append(r)
+    
+    def is_forbidden(self, r):
+        """Check if a room is forbidden. This can be overloaded for custom behavior."""
+        if r in self.forbidden_rooms:
+            return True
+        return False
 
     def heartbeat(self):
         if self.dead:
@@ -316,8 +388,9 @@ class NPC(Creature):
             if self.attacking and (self.move_around in self.choices):
                 if (self.attacking not in self.location.contents):
                     for l in self.location.exits:
+                        new_room = gametools.load_room(self.location.exits[l])
                         if gametools.load_room(self.location.exits[l]) == self.attacking.location:
-                            self.move_to(gametools.load_room(self.location.exits[l]))
+                            self.go_to_room(self.location.exits[l])
                             moved = True
                             break
 
@@ -326,50 +399,46 @@ class NPC(Creature):
             if not acting:           # otherwise pick a random action
                 choice = random.choice(self.choices)
                 try:
-                    try:
-                        choice()
-                    except TypeError:
-                        choice(self)
+                    choice()
                 except NameError:
                     self.log.warning("Object "+str(self.id)+" heartbeat tried to run non-existant action choice "+str(choice)+"!")
+                except Exception as e:
+                    self.log.exception('An unexpected error occured in the %s! Printing below:' % self.id)
             
-    def move_around(self, exit_list=None, direction=None):
+    def move_around(self):
         """The NPC leaves the room, taking a random exit"""
-        if not exit_list:
-            try:
-                exit_list = list(self.location.exits)
-                if not direction:
-                    exit = random.choice(exit_list)
-                else:
-                    exit = direction
-            except (AttributeError, IndexError):
-                self.log.debug('NPC %s sees no exits, returning from move_around()' % self.id)
-                return
-        else:
-            if not direction:
-                exit = random.choice(list(exit_list))
-            else:
-                exit = direction
-
-        self.log.debug("Trying to move to the %s exit!" % (exit))
-        current_room = self.location
-        if exit_list:
-            new_room_string = exit_list[exit]
-        else:
-            new_room_string = self.location.exits[exit]
-        new_room = gametools.load_room(new_room_string)
-        if new_room.monster_safe:
-            self.log.debug('Can\'t go to %s; monster safe room!' % new_room_string)
+        try:
+            exit_list = list(self.location.exits)
+            exit_name = random.choice(exit_list)
+        except (AttributeError, IndexError):
+            self.log.debug('NPC %s sees no exits, returning from move_around()' % self.id)
             return
+        self.log.debug("Trying to move to the %s exit!" % (exit_name))
+        current_room = self.location
+        new_room_string = self.location.exits[exit_name]
+        self.go_to_room(new_room_string, exit_name)
 
-        if new_room_string in self.forbidden_rooms:
-            self.log.debug('Can\'t go to %s: forbidden to %s!' % (new_room_string, self))
+    def go_to_room(self, roompath, exit_name=None):
+        """Move the creature to the specified room, checking if 
+        it is the room is monster safe or the creature is forbidden
+        to go there. Returns True if the creature sucessfully moves."""
+        new_room = gametools.load_room(roompath)
+        if new_room.monster_safe:
+            self.log.debug('Can\'t go to %s; monster safe room!' % roompath)
+            return False
+
+        if self.is_forbidden(roompath):
+            self.log.debug('Can\'t go to %s: forbidden to %s!' % (roompath, self))
+            return False
  
-        self.emit("&nD%s goes %s." % (self.id, exit))
-        self.move_to(new_room)
-        self.emit("&nI%s arrives." % self.id)
-        self.log.info("Creature %s moved to new room %s" % (self.names[0], new_room_string))
-        return
+        if self.move_to(new_room):
+            if exit_name:
+                self.emit("&nD%s goes %s." % (self.id, exit_name))
+            self.emit("&nI%s arrives." % self.id)
+            self.log.info("Creature %s moved to new room %s" % (self.names[0], roompath))
+            return True
+        else:
+            return False
 
     def talk(self):
         if self.scripts:
@@ -396,3 +465,4 @@ class NPC(Creature):
                     self.current_act_script_idx = 0
             else:
                 self.current_act_script = random.choice(self.act_scripts)
+    

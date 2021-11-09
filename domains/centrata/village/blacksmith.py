@@ -1,6 +1,7 @@
 import shop
 import gametools
 
+# This blacksmith is part of the the orc quest
 def clone():
     smith = shop.Shopkeeper('blacksmith', __file__, None)
     smith.set_description('grizzled blacksmith', 'This grizzled old blacksmith looks as if he has worked '
@@ -17,7 +18,7 @@ def clone():
     Decent people can't go out their own doors at night.""")
     smith.add_script("""I heard the orcs are camped somewhere out to the east.""")
     smith.add_script("""We could probably fight off those dang orcs ourselves if it wasn't for their big chief.
-    The mayor's offering a reward of ten gold pieces who brings back proof that he's dead.""")
+    The mayor's offering a reward of ten gold pieces to whoever brings back proof that he's dead.""")
     smith.add_script("""I'm making this piece for our mayor - that's the innkeeper, you know. His carriage needs fixin.""")
 
     return smith

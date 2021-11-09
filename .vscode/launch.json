@@ -1,13 +1,13 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
+               
         {
             "name": "Webserving Game",
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
-            "python": "${config:python.defaultInterpreterPath}",
+            "python": "${command:python.interpreterPath}",
             "program": "${workspaceRoot}/startup.py",
             //"cwd": "",
             "console": "integratedTerminal",
@@ -19,7 +19,7 @@
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
-            "python": "${config:python.defaultInterpreterPath}",
+            "python": "${command:python.interpreterPath}",
             "program": "${workspaceRoot}/startup.py",
             "args": ["--server", "127.0.0.1", "--mode", "nocrypt"],
             //"cwd": "",
