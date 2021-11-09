@@ -169,7 +169,8 @@ class Creature(Container):
     def take_damage(self, enemy, damage):
         self.health -= damage
         if self.health <= 0:
-            if enemy: enemy.gain_combat_skill(self)
+            if enemy: 
+                enemy.gain_combat_skill(self)
             self.die('&nD%s dies!' % self.id)
             return True       # return True if dead, otherwise return False
         return False
@@ -250,6 +251,15 @@ class Creature(Container):
     def die(self, message=None):
         #What to do when 0 health
         self.emit("&nD%s dies!" % self.id, [self])
+        # remove myself from the enemies list of all my enemies
+        for enemy in self.enemies:
+            try: 
+                if enemy.attacking == self:
+                    enemy.attacking = None
+                enemy.enemies.remove(self)
+            except ValueError: pass
+        self.enemies = []  # stop fighting everybody
+        self.attacking = None
         corpse = gametools.clone('corpse', self)
         corpse.names += self.names
         corpse.adjectives = set(list(corpse.adjectives) + list(self.adjectives) + self.names)
@@ -261,9 +271,11 @@ class Creature(Container):
         while get_rid_of:
             i = get_rid_of.pop(0)
             i.move_to(corpse, True)
-        if hasattr(self, 'cons'):
+        if hasattr(self, 'cons'):  
+            # this Creature is a Player; reincarnate them
             self.move_to(gametools.load_room(self.start_loc_id) if self.start_loc_id else gametools.load_room(gametools.DEFAULT_START_LOC))
         else:
+            # not a Player; detroy the Creature leaving only the corpse object
             self.dead = True
             self.destroy()
         if message:

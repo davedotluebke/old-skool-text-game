@@ -101,7 +101,7 @@ class Shopkeeper(NPC):
     def restock(self, unnecesary_parameter):
         for i in self.default_items:
             self.inventory.append(gametools.clone(i.path))
-        Thing.game.events.schedule(Thing.game.time+120, self.restock, None)
+        Thing.game.schedule_event(Thing.game.time+120, self.restock, None)
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)

@@ -13,7 +13,7 @@ def load():
         "the large room.  Several tables with benches fill the room, and the innkeeper himself stands "
         "behind the bar that runs along the north side of the room."
         "To your south you can exit to the street. ")
-    inn.add_exit('west', 'domains.centrata.village.south_village')
+    inn.add_exit('west', 'domains.centrata.village.street4')
 
     tables = scenery.Scenery('table', 'sturdy wooden table', 'Several sturdy wooden tables provide '
         'a place for patrons to eat, drink, and swap tales.', unlisted=True)

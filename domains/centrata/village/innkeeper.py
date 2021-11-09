@@ -2,8 +2,9 @@ import shop
 import gametools
 
 def clone():
-    innkeeper = shop.Shopkeeper('innkeeper', __file__, None)
-    innkeeper.set_description('cheerful innkeeper', 'Behind the bar stands the innkeeper, a rotund, bewhiskered "
+    innkeeper = shop.Shopkeeper('barnabas', __file__, None)
+    innkeeper.add_names('innkeeper')
+    innkeeper.set_description('cheerful innkeeper', 'Behind the bar stands the innkeeper, a rotund, bewhiskered '
         'human with a cheerful face and shrewd eyes.')
     innkeeper.set_welcome_message('Greetings, my good &s&u!  I am Barnabas, keeper of this bar and sometime mayor '
         'of the village. Welcome to my humble inn.  What can I get you?')
