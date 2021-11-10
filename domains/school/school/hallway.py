@@ -79,7 +79,7 @@ def load():
     hallway.insert(goblins_door, True)
 
     dragonflys_door = StaffDoorway('door', 'door with a carving of a dragonfly on it',
-    'This is a strong birch door with a copper carving of a dragonfly on it.', 'home.scott.house.lr31795', ['scott', 'fastar', 'tate', 'john', 'cedric', 'rivques', 'isla', 'johanna'])
+    'This is a strong birch door with a copper carving of a dragonfly on it.', 'home.scott.house.lr31795', ['scott', 'fastar', 'tate', 'john', 'cedric', 'rivques', 'isla', 'johanna', 'Podzol'])
     dragonflys_door.add_adjectives('dragonfly', 'dragonflys', 'dragonfly\'s', 'copper', 'birch')
     hallway.insert(dragonflys_door, True)
 
