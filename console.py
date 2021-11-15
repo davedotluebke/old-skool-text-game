@@ -14,7 +14,6 @@ from player import Player
 import gametools
 
 class Console:
-    default_width = 80
     autosave_interval = 30
     measurement_systems = ['IMP', 'SI']
     default_measurement_system = 'IMP'
@@ -57,7 +56,6 @@ class Console:
         self.connection = net_conn
         self.input_redirect = None
         self.upload_confirm = True
-        self.width = Console.default_width
         self.measurement_system = Console.default_measurement_system
         self.encode_str = str(encode_str)
         self.changing_passwords = False
@@ -82,12 +80,6 @@ class Console:
     def detach(self, user):
         if self.user == user:
             self.user = None
-
-    def set_width(self, w):
-        self.width = w
-    
-    def get_width(self):
-        return self.width
     
     def _add_alias(self, cmd):
         instructions = 'To create a new alias, type:\n    alias [a] [text]\n' \
@@ -135,45 +127,6 @@ class Console:
         if replace_words[0] in self.alias_map:
             replace_words[0] = self.alias_map[replace_words[0]]
         return " ".join(replace_words)
-    
-    def _set_verbosity(self, level=-1):
-        if level != -1:
-            dbg.set_verbosity(level, self.user.id)
-            return "Verbose debug output now %s, verbosity level %s." % ('on' if level else 'off', dbg.verbosity[self.user.id])
-        if self.user.id not in dbg.verbosity or dbg.verbosity[self.user.id] == 0:
-            dbg.set_verbosity(1, self.user.id)
-            return "Verbose debug output now on, verbosity level %s." % dbg.verbosity[self.user.id]
-        else:
-            dbg.set_verbosity(0, self.user.id)
-            return "Verbose debug output now off."
-
-    def _handle_verbose(self):
-        try:
-            level = int(self.words[1])
-        except IndexError:
-            self.write(self._set_verbosity())
-            return
-        except ValueError:
-            if self.words[1] == 'filter':
-                try:
-                    s = self.words[2:]
-                    dbg.set_filter_strings(s, self.user.id)
-                    self.write("Set verbose filter to '%s', debug strings containing '%s' will now be printed." % (s, s))                      
-                except IndexError:
-                    dbg.set_filter_strings(['&&&'], self.user.id)
-                    self.write("Turned off verbose filter; debug messages will only print if they are below level %d." % dbg.verbosity)
-                return
-            self.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided [level]")
-            return
-        self.write(self._set_verbosity(level))
-
-    def save_and_backup(self, quit_behavior=False):
-        """Save the console's player and create backups of previous versions in case the save fails at a later time. Will create an event to call this function again unless
-        quit_behavior flag is set to True."""
-        self.game.save_player(gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]), self.user)
-        self.game.create_backups(gametools.realDir(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]))
-        if not quit_behavior:
-            self.game.schedule_event(self.autosave_interval, self.save_and_backup)
     
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
