@@ -421,6 +421,7 @@ class Player(Creature):
             room.report_arrival(self)
         else:
             self.cons.write("Uh-oh! You don't have a starting location. You are in a great void...")
+            self.log.error(f"Player {self.name} died but did not have a start_loc_id set!")
 
     def perceive(self, message, silent=False, force=False):
         '''Parse a string passed to `emit()` and customize it for this
