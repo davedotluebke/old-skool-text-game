@@ -14,7 +14,6 @@ from player import Player
 import gametools
 
 class Console:
-    default_width = 80
     measurement_systems = ['IMP', 'SI']
     default_measurement_system = 'IMP'
     prompt = "--> "
@@ -56,7 +55,6 @@ class Console:
         self.connection = net_conn
         self.input_redirect = None
         self.upload_confirm = True
-        self.width = Console.default_width
         self.measurement_system = Console.default_measurement_system
         self.encode_str = str(encode_str)
         self.changing_passwords = False
@@ -80,12 +78,6 @@ class Console:
     def detach(self, user):
         if self.user == user:
             self.user = None
-
-    def set_width(self, w):
-        self.width = w
-    
-    def get_width(self):
-        return self.width
     
     def _add_alias(self, cmd):
         instructions = 'To create a new alias, type:\n    alias [a] [text]\n' \
