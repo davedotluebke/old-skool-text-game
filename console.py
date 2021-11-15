@@ -15,6 +15,7 @@ import gametools
 
 class Console:
     default_width = 80
+    autosave_interval = 30
     measurement_systems = ['IMP', 'SI']
     default_measurement_system = 'IMP'
     prompt = "--> "
@@ -61,6 +62,7 @@ class Console:
         self.encode_str = str(encode_str)
         self.changing_passwords = False
         self.confirming_replace = False
+        self.game.schedule_event(self.autosave_interval, self.save_and_backup)
         self.alias_map = {
             'n':       'go north',
             's':       'go south',
@@ -164,6 +166,14 @@ class Console:
             self.write("Usage: verbose [level]\n    Toggles debug message verbosity on and off (level 1 or 0), or sets it to the optionally provided [level]")
             return
         self.write(self._set_verbosity(level))
+
+    def save_and_backup(self, quit_behavior=False):
+        """Save the console's player and create backups of previous versions in case the save fails at a later time. Will create an event to call this function again unless
+        quit_behavior flag is set to True."""
+        self.game.save_player(gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]), self.user)
+        self.game.create_backups(gametools.realDir(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]))
+        if not quit_behavior:
+            self.game.schedule_event(self.autosave_interval, self.save_and_backup)
     
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
@@ -308,8 +318,7 @@ class Console:
                 return True
             if cmd == 'quit':
                 self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user.id, self.user.id))
-                self.game.save_player(gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]), self.user)
-                self.game.create_backups(gametools.realDir(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]))
+                self.save_and_backup(quit_behavior=True)
                 self.write("--#quit")
                 if len(self.words) > 1 and self.words[1] == 'game' and self.game.is_wizard(self.user.name()):
                     self.game.shutdown_console = self
