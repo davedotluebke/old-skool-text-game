@@ -56,4 +56,4 @@ def clone():
     
     # At the end of the clone function we need to return the object. If we fail to
     # return the object, we will never be able to access it. Don't forget this step!
-    return example
+    return feather
