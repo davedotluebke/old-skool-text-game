@@ -38,6 +38,8 @@ class Sink(Thing):
             obj = oIDO
         if obj == self or obj == None:
             return "It is impossible to pour out a sink in a sink."
+        if not isinstance(obj, Liquid):
+            return "Only liquids may be poured out in the sink."
         cons.write('You pour the %s into the sink, and it goes down the drain.' % obj)
         self.emit("&nD%s pours something into the sink." % cons.user.id)
         obj.destroy()
