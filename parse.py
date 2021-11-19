@@ -245,7 +245,7 @@ class Parser:
             act = obj.actions[sV]
         except KeyError:
             self.log.error('%s had no action %s!' % (obj, sV))
-            return False
+            return None
         try:  ### ENACT THE VERB ###
             result = act.func(obj, self, cons, oDO, oIDO) 
         except Exception as e:  # error, roll back any plurality changes and return True
