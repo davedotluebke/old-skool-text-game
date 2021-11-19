@@ -128,6 +128,14 @@ class Console:
             replace_words[0] = self.alias_map[replace_words[0]]
         return " ".join(replace_words)
     
+    def save_and_backup(self, quit_behavior=False):
+        """Save the console's player and create backups of previous versions in case the save fails at a later time. Will create an event to call this function again unless
+        quit_behavior flag is set to True."""
+        self.game.save_player(gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]), self.user)
+        self.game.create_backups(gametools.realDir(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]))
+        if not quit_behavior:
+            self.game.schedule_event(self.autosave_interval, self.save_and_backup)
+    
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
         if len(self.words) > 0:
