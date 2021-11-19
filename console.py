@@ -271,6 +271,7 @@ class Console:
                 return True
             if cmd == 'quit':
                 self.user.emit("&nD%s fades from view, as if by sorcery...you sense that &p%s is no longer of this world." % (self.user.id, self.user.id))
+                self.user.perceive("Saving...")
                 self.save_and_backup(quit_behavior=True)
                 self.write("--#quit")
                 if len(self.words) > 1 and self.words[1] == 'game' and self.game.is_wizard(self.user.name()):

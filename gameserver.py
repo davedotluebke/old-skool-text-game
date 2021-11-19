@@ -348,7 +348,7 @@ class Game():
                         sub_amt += 1
             f.write(json.dumps(saveables, skipkeys=True, sort_keys=True, indent=4))
             Thing.ID_dict = backup_ID_dict
-            player.cons.write("Saved player data!")
+            # player.cons.write("Auto-saving player data!")
             player.log.info(f"Saved player data to file {filename}")
             f.close()
         except IOError:
