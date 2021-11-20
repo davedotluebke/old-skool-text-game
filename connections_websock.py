@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.events import Handle
 import websockets
 import os.path
 import random
@@ -60,12 +61,11 @@ async def ws_handler(websocket, path):
             except KeyError:
                 cons = Console(websocket, Thing.game, encrypted_message)
                 conn_to_client[websocket] = cons
-                try:
-                    Thing.game.login_player(cons)
-                except gametools.PlayerLoadError:
-                    Thing.game.create_new_player(name, cons)
+#               the console now handles login
+                Thing.game.schedule_event(0, cons.print_welcome_message)
+                Thing.game.schedule_event(0, cons.handle_input)
             except IndexError:
-                self.user.log.error('IndexError in connections_websock!')
+                logger.error('IndexError in connections_websock!')
     except websockets.exceptions.ConnectionClosed:
         websocket.close()
 

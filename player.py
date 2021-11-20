@@ -36,11 +36,26 @@ emotes = {'bow':    ('You take a sweeping bow.',
                     'You giggle at &nd%s.', 
                     '&nD%s giggles at &nd%s.',
                     '&nD%s giggles at you.'),
+          'laugh': ('You laugh.', 
+                    '&nD%s laugh.', 
+                    'You laugh at &nd%s.', 
+                    '&nD%s laughs at &nd%s.',
+                    '&nD%s laughs at you.'),
+          'cry': ('You cry.', 
+                    '&nD%s cry.', 
+                    'You cry at &nd%s.', 
+                    '&nD%s cries at &nd%s.',
+                    '&nD%s cries at you.'),
           'smile': ('You smile.', 
                     '&nD%s smiles.', 
                     'You smile at &nd%s.', 
                     '&nD%s smiles at &nd%s.',
                     '&nD%s smiles at you.'),
+          'frown': ('You frown.', 
+                    '&nD%s frown.', 
+                    'You frown at &nd%s.', 
+                    '&nD%s frowns at &nd%s.',
+                    '&nD%s frowns at you.'),                    
           'sneer': ('You sneer.', 
                     '&nD%s sneers.', 
                     'You sneer at &nd%s.', 
@@ -61,7 +76,6 @@ class Player(Creature):
         """Initialize the Player object and attach a console"""
         Creature.__init__(self, ID, path)
         self.cons = console
-        self.login_state = None
         self.password = None
         self.start_loc_id = None
         self.handlers = {}  # list of debug handlers for wizards
@@ -160,103 +174,6 @@ class Player(Creature):
         super()._restore_objs_from_IDs()
         if isinstance(self.adjectives, list):
             self.adjectives = set(self.adjectives)
-
-    def _handle_login(self, cmd):
-        state = self.login_state
-        if state == 'AWAITING_USERNAME':
-            if  len(cmd.split()) != 1:
-                self.cons.write("Usernames must be a single word with no spaces.\n"
-                                "Please enter your username:")
-                return
-            self.names[0] = cmd.split()[0]  # strips any trailing whitespace
-            filename = gametools.realDir(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
-            try:
-                f = open(filename, 'r+b')
-                f.close()  # success, player exists, so close file for now & check password
-                self.cons.write("Welcome back, %s!\nPlease enter your --#password: " % self.names[0])
-                self.login_state = 'AWAITING_PASSWORD'
-            except FileNotFoundError:
-                self.cons.write("No player named "+self.names[0]+" found. "
-                            "Would you like to create a new player? (yes/no)\n")
-                self.login_state = 'AWAITING_CREATE_CONFIRM'
-            return
-        elif state == 'AWAITING_CREATE_CONFIRM':
-            if cmd == "yes": 
-                self.cons.write("Welcome, %s!\nPlease create a --#password:" % self.names[0])
-                self.login_state = 'AWAITING_NEW_PASSWORD'
-                return
-            elif cmd == "no":
-                self.cons.write("Okay, please enter your username: ")
-                self.login_state = 'AWAITING_USERNAME'
-                return
-            else:
-                self.cons.write("Please answer yes or no: ")
-                return
-        elif state == 'AWAITING_NEW_PASSWORD':
-            passwd = cmd
-            # XXX temporary fix for now
-            self.password = passwd
-            # TODO secure password authentication goes here
-            self.id = self._add_ID(self.names[0])            
-            self.proper_name = self.names[0].capitalize()
-            self.log.info("Creating player id %s with default name %s" % (self.id, self.names[0]))
-            start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
-            start_room.insert(self)
-            self.perceive("\nWelcome to Firefile Sorcery School!\n\n"
-            "Type 'look' to examine your surroundings or an object, "
-            "'inventory' to see what you are carrying, " 
-            "'quit' to end the game, and 'help' for more information.")
-            self.login_state = None
-            return
-        elif state == 'AWAITING_PASSWORD':
-            passwd = cmd
-            # XXX temporary fix, need more security
-            # TODO more secure password authentication goes here
-            for oid in Thing.ID_dict:
-                if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0] and passwd == Thing.ID_dict[oid].password:
-                    self.cons.write("A copy of %s is already in the game. Would you like to take over %s? (yes/no)" % (self.names[0], self.names[0]))
-                    self.login_state = 'AWAITING_RECONNECT_CONFIRM'
-                    return
-            filename = gametools.realDir(gametools.PLAYER_DIR, self.names[0]) + '.OADplayer'
-            try:
-                try:
-                    newuser = self.game.load_player(filename, self.cons, password=passwd)
-                    self.log.info("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]))
-                    newuser.login_state = None
-                    self.login_state = None
-                    self.game.deregister_heartbeat(self)
-                    del Thing.ID_dict[self.id]
-                except gametools.IncorrectPasswordError:
-                    self.cons.write("Your username or password is incorrect. Please try again.")
-                    self.login_state = "AWAITING_USERNAME"
-            except gametools.PlayerLoadError:
-                self.cons.write("Error loading data for player %s from file %s. \n"
-                                "Please try again.\nPlease enter your username: " % (self.names[0], filename))
-                self.login_state = "AWAITING_USERNAME"
-        elif state == 'AWAITING_RECONNECT_CONFIRM':
-            if cmd == 'yes':
-                for oid in Thing.ID_dict:
-                    if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0]:
-                        break
-                for websocket in connections_websock.conn_to_client:
-                    if connections_websock.conn_to_client[websocket] == self.cons:
-                        connections_websock.conn_to_client[websocket] = Thing.ID_dict[oid].cons
-                        Thing.ID_dict[oid].cons.connection = websocket
-            elif cmd == 'no':
-                self.cons.write("Okay, please enter your username: ")
-                self.login_state = "AWAITING_USERNAME"
-                return
-            elif cmd == 'restart':
-                self.cons.write("Erasing existing character and restarting from last save. Please enter your --#password again.")
-                for oid in Thing.ID_dict:
-                    if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == self.names[0]:
-                        break
-                self.game.deregister_heartbeat(Thing.ID_dict[oid])
-                del Thing.ID_dict[oid]
-                self.login_state = "AWAITING_PASSWORD"
-            else:
-                self.cons.write("Please answer yes or no: ")
-                return
     
     def _schedule_interactive_tutorial(self, act):
         if self.prev_location_id != self.location.id:
@@ -364,29 +281,28 @@ class Player(Creature):
         self.destroy()
         
     def heartbeat(self):
+        """This function, called once every second by the event loop, heals and refills mana for
+        the player, handles parsing input, and automatically attacks if the player is engaged
+        in combat."""
+        # if the console has been disconnected, shut down the player
         if self.cons == None:
             self.detach(nocons=True)
         
+        # heal the player
         if self.health < self.hitpoints:
             self.heal()
         
+        # refill the player's mana
         if self.mana < self.max_mana:
             self.restore_mana()
         
-        cmd = self.cons.take_input()
-        if self.login_state != None:
-            if cmd != None and cmd != '__noparse__' and cmd != '__quit__':
-                self._handle_login(cmd)
-            return
-        sV = None
+        # check if there is any input for the player. If there is, parse it and check 
+        # the tutorial to see if a message should be printed.
+        cmd = self.cons.get_next_input()
         if cmd:
-            if cmd != '__noparse__' and cmd != '__quit__':
-                sV = Thing.game.parser.parse(self, self.cons, cmd)
-            elif cmd == '__quit__':
-                self.detach()
-        
-        if sV:
-            self._schedule_interactive_tutorial(sV)
+            sV = Thing.game.parser.parse(self, self.cons, cmd)
+            if sV:
+                self._schedule_interactive_tutorial(sV)
 
         if self.auto_attack:            # TODO: Player Preferences
             if self.attacking:
