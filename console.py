@@ -14,10 +14,11 @@ from player import Player
 import gametools
 
 class Console:
-    autosave_interval = 30
+    autosave_interval = 60
     measurement_systems = ['IMP', 'SI']
     default_measurement_system = 'IMP'
     prompt = "--> "
+    welcome_message = "Please enter your username: "
     help_msg = """Your goal is to explore the world around you, solve puzzles,
                fight monsters, complete quests, and eventually become a
                Sorcerer capable of changing and adding to the very fabric 
@@ -43,6 +44,7 @@ class Console:
         self.game = game
         self.user = None
         self.username = None
+        self.login_state = "AWAITING_USERNAME"
         self.raw_input = ''
         self.raw_output = ''
         self.file_input = bytes()
@@ -52,6 +54,7 @@ class Console:
         self.uploading_filename = ''
         self.current_directory = '/domains'  # always in 'game directory space'
         self.change_players = False
+        self.player_commands = []
         self.try_all_console_commands = False
         self.connection = net_conn
         self.input_redirect = None
@@ -80,6 +83,7 @@ class Console:
     def detach(self, user):
         if self.user == user:
             self.user = None
+        self.login_state = "EXIT"
     
     def _add_alias(self, cmd):
         instructions = 'To create a new alias, type:\n    alias [a] [text]\n' \
@@ -135,6 +139,97 @@ class Console:
         self.game.create_backups(gametools.realDir(gametools.PLAYER_BACKUP_DIR, self.user.names[0]), self.user, gametools.realDir(gametools.PLAYER_DIR, self.user.names[0]))
         if not quit_behavior:
             self.game.schedule_event(self.autosave_interval, self.save_and_backup)
+
+    def _handle_login(self, cmd):
+        """Handle input for logging in the console."""
+        state = self.login_state
+        if state == 'AWAITING_USERNAME':
+            if  len(cmd.split()) != 1:
+                self.write("Usernames must be a single lowercase word with no spaces.\n"
+                                "Please enter your username:")
+                return
+            self.username = cmd.split()[0].lower()  # strips any trailing whitespace
+            filename = gametools.realDir(gametools.PLAYER_DIR, self.username) + '.OADplayer'
+            try:
+                f = open(filename, 'r+b')
+                f.close()  # success, player exists, so close file for now & check password
+                self.write("Welcome back, %s!\nPlease enter your --#password: " % self.username)
+                self.login_state = 'AWAITING_PASSWORD'
+            except FileNotFoundError:
+                self.write("No player named "+self.username+" found. "
+                            "Would you like to create a new player? (yes/no)\n")
+                self.login_state = 'AWAITING_CREATE_CONFIRM'
+            return
+        elif state == 'AWAITING_CREATE_CONFIRM':
+            if cmd == "yes": 
+                self.write("Welcome, %s!\nPlease create a --#password:" % self.username)
+                self.login_state = 'AWAITING_NEW_PASSWORD'
+                return
+            elif cmd == "no":
+                self.write("Okay, please enter your username: ")
+                self.login_state = 'AWAITING_USERNAME'
+                return
+            else:
+                self.write("Please answer yes or no: ")
+                return
+        elif state == 'AWAITING_NEW_PASSWORD':
+            passwd = cmd
+            # TODO secure password authentication goes here
+            self.user = self.game.create_new_player(self, self.username, passwd)
+            self.user.log.info("Creating player id %s with default name %s" % (self.user.id, self.user.name()))
+            start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
+            start_room.insert(self.user, force=True)
+            self.user.perceive("\nWelcome to Firefile Sorcery School!\n\n"
+            "Type 'look' to examine your surroundings or an object, "
+            "'inventory' to see what you are carrying, " 
+            "'quit' to end the game, and 'help' for more information.")
+            self.login_state = None
+            return
+        elif state == 'AWAITING_PASSWORD':
+            passwd = cmd
+            # XXX temporary fix, need more security
+            # TODO more secure password authentication goes here
+            if self.game.get_existing_player(self.username, passwd):
+                self.write("A copy of %s is already in the game. Would you like to take over %s? (yes/no)" % (self.username, self.username))
+                self.login_state = 'AWAITING_RECONNECT_CONFIRM'
+                return
+            filename = gametools.realDir(gametools.PLAYER_DIR, self.username) + '.OADplayer'
+            try:
+                newuser = self.game.load_player(filename, self, password=passwd)
+                newuser.log.info("Loaded player id %s with default name %s" % (newuser.id, newuser.names[0]))
+                self.login_state = None
+            except gametools.IncorrectPasswordError:
+                self.write("Your username or password is incorrect. Please try again.")
+                self.login_state = "AWAITING_USERNAME"
+            except gametools.PlayerLoadError:
+                self.write("Error loading data for player %s from file %s. \n"
+                                "Please try again.\nPlease enter your username: " % (self.username, filename))
+                self.login_state = "AWAITING_USERNAME"
+        elif state == 'AWAITING_RECONNECT_CONFIRM':
+            if cmd == 'yes':
+                user = self.game.get_existing_player(self.username)
+                for websocket in connections_websock.conn_to_client:
+                    if connections_websock.conn_to_client[websocket] == self:
+                        connections_websock.conn_to_client[websocket] = user.cons
+                        user.cons.connection = websocket
+                        user.cons.write("Reconnected to player %s" % self.username)
+                self.detach()
+            elif cmd == 'no':
+                self.write("Okay, please enter your username: ")
+                self.login_state = "AWAITING_USERNAME"
+                return
+            elif cmd == 'restart':
+                self.write("Erasing existing character and restarting from last save. Please enter your --#password again.")
+                user = self.game.get_existing_player(self.username)
+                user.destroy()
+                self.login_state = "AWAITING_PASSWORD"
+            else:
+                self.write("Please answer yes or no: ")
+                return
+    
+    def print_welcome_message(self):
+        """Print the welcome message in the console, when players first connect."""
+        self.write(self.welcome_message)
     
     def _handle_console_commands(self):
         """Handle any commands internal to the console, returning True if the command string was handled."""
@@ -285,7 +380,8 @@ class Console:
                 if len(self.words) > 1 and self.words[1] == 'game' and self.game.is_wizard(self.user.name()):
                     self.game.shutdown_console = self
                     self.game.keep_going = False
-                return "__quit__"
+                self.user.detach()
+                return True
 
         return False
     
@@ -423,28 +519,53 @@ class Console:
                 self.input_redirect = None
                 self.confirming_replace = False
                 self.file_input = bytes()
+    
+    def get_next_input(self):
+        """Get the next input from self.player_commands, removing it 
+        from the list. Return None if self.player_commands is empty."""
+        if not len(self.player_commands):
+            return None
+        next_input = self.player_commands[0]
+        del self.player_commands[0]
+        return next_input
+    
+    def handle_input(self):
+        """Handle all input to the console. If the console is in a login state, 
+        then call the _handle_login function with the given input. Otherwise, 
+        check if the console can handle the command internally and add all remaining
+        commands to the player_commands for the player to read from."""
+        # if the login state is set to exit, the console is being deactivated, so we return without rescheduling
+        if self.login_state == "EXIT":
+            return
 
-    def take_input(self):
+        # schedule the next occurance of handle_input
+        self.game.schedule_event(0.2, self.handle_input)
+
+        # check for uploaded files
         if self.file_input:
             self.upload_file(self.file_input, self.upload_confirm)
+
+        # check to see if the user has sent any text 
         if (self.raw_input == ''):
-            return None
+            return
         (self.command, sep, self.raw_input) = self.raw_input.partition('\n')
         self.words = self.command.split()
+
+        # if a user is in the login state, handle login until they have sucessfully connected
+        if self.login_state:
+            self._handle_login(self.command)
+            return
+
         # if user types a console command, handle it and start over unless the player that called this is deactive
         internal = self._handle_console_commands()
-        if internal == "__quit__":
-            return "__quit__"
-        if internal:
-            return "__noparse__"
-        if self.input_redirect != None:
-            try:
-                self.input_redirect.console_recv(self.command)
-                return "__noparse__"
-            except AttributeError:
-                self.user.log.error('Error! Input redirect is not valid!')
-                self.input_redirect = None
-        # replace any aliases with their completed version
-        self.final_command = self._replace_aliases()
-        return self.final_command
-
+        if not internal:
+            if self.input_redirect != None:
+                try:
+                    self.input_redirect.console_recv(self.command)
+                except AttributeError:
+                    self.user.log.error('Error! Input redirect is not valid!')
+                    self.input_redirect = None
+            else:
+                self.player_commands.append(self._replace_aliases())
+        
+ 

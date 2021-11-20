@@ -499,20 +499,26 @@ class Game():
             room.emit("&nI%s suddenly appears, as if by sorcery!" % newplayer.id, [newplayer])
         return newplayer
     
-    def login_player(self, cons):
-        """Create a new player object and put it in "login state", which
-        doesn't do anything but request the username and password. If the
-        username matches a player file, ask for the password, and if they 
-        match, load that player. If this is a new username, have them create
-        a new password and verify it, then put them in the new character 
-        creation room where they will select gender, species, etc. """
-        tmp_name = "login_player%d" % random.randint(10000, 99999)
-        user = gametools.clone('player', [tmp_name, cons])
-        cons.user = user
-        cons.write("Please enter your username: ")
-        user.login_state = "AWAITING_USERNAME"
+    def create_new_player(self, cons, username, password):
+        """Create a new player with the given username and password. Return the
+        created player object."""
+        new_player = gametools.clone('player', [username, cons])
+        new_player.password = password
+        cons.user = new_player
+        return new_player
+    
+    def get_existing_player(self, username, password=None):
+        """Check if a player with the given username (and password if specified)
+        exists in the game. If so, return the player object."""
+        for oid in Thing.ID_dict:
+            # check to see if a player sharing the same name and password (if provided) exits. We perform the check this 
+            # way to account for the random variation of ID strings
+            if isinstance(Thing.ID_dict[oid], Player) and Thing.ID_dict[oid].names[0] == username and (not password or password == Thing.ID_dict[oid].password):
+                return Thing.ID_dict[oid]
     
     def get_profiling_report(self):
+        """Get a constructed string of the profiling report of the game. Shows which functions are taking
+        the longest to run."""
         report_str = ''
         all_time_spent = sum([self.total_times[x] for x in self.total_times])
         for i in self.total_times:
