@@ -20,7 +20,7 @@ def load():
     if exists: return exists
     
     air_bridge = AirBridgeRoom('rooftop', roomPath, safe=True)
-    air_bridge.set_description('You find yourself on the open top of a tower overlooking the school building. A taller tower rises above you to the west. To the north a crumbling stone archway bridge leads to the top of another tower.')
+    air_bridge.set_description('tall tower', 'You find yourself on the open top of a tower overlooking the school building. A taller tower rises above you to the west. To the north a crumbling stone archway bridge leads to the top of another tower.')
     air_bridge.add_exit('down', 'domains.school.school.tower2')
     air_bridge.add_exit('north', 'domains.school.school.air_lounge')
     return air_bridge
