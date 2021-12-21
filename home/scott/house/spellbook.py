@@ -11,9 +11,10 @@ def clone():
     #*
     Spells: pg 1-end
     #*
-    \0{"mana": "spells.mana", "illuminate": "spells.illuminate", "insert": "spells.insert"}
+    \0{"mana": "spells.mana", "illuminate": "spells.illuminate", "insert": "spells.insert", "soigna": "spells.soigna"}
     Mana: self.mana, self.max_mana
     Illuminate: self.light
     Insert: add stuff to emerald
+    Soigna: heal others
     ''')
     return spellbook
