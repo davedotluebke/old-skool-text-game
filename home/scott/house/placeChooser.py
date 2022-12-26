@@ -30,7 +30,7 @@ class PlaceChooser(Thing):
             gametools.load_room(self.written_on)
         except KeyError:
             cons.write('The text on the paper morphs back into the word "water_kitchen".')
-            self.written_on = 'domain.school.school.water_kitchen'
+            self.written_on = 'domains.school.school.water_kitchen'
             self.location.west_door.dest = Thing.ID_dict[self.written_on]
         self._long_desc = 'This magical paper says "%s" on it.' % self.written_on
         return True
