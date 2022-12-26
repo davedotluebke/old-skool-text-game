@@ -36,7 +36,7 @@ class Swallow(creature.NPC):
         direction = random.choices(list(possible_exits), weights=weights, k=1)[0]
         if possible_exits[direction] in list(self.route):
             self.route[possible_exits[direction]] = True
-        return super().move_around(exit_list=possible_exits, direction=direction)
+        return self.go_to_room(possible_exits[direction], direction)
 
 def clone():
     return Swallow()

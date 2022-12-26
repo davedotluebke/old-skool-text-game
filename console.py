@@ -178,7 +178,7 @@ class Console:
             self.user = self.game.create_new_player(self, self.username, passwd)
             self.user.log.info("Creating player id %s with default name %s" % (self.user.id, self.user.name()))
             start_room = gametools.load_room(gametools.NEW_PLAYER_START_LOC)
-            start_room.insert(self.user, force=True)
+            start_room.insert(self.user, force_insert=True)
             self.user.perceive("\nWelcome to Firefile Sorcery School!\n\n"
             "Type 'look' to examine your surroundings or an object, "
             "'inventory' to see what you are carrying, " 
@@ -344,7 +344,7 @@ class Console:
                     self.write(str(process.stderr, "utf-8"))
                     return True
                 except Exception:
-                    print(traceback.format_exc())
+                    self.write(traceback.format_exc())
             
             game_file_cmds = {'savegame':self.game.save_game,
                          'loadgame':self.game.load_game}
