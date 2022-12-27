@@ -8,3 +8,4 @@ game_log.txt
 *.sec
 *.pem
 .vscode/settings.json
+api_keys.py

@@ -1,8 +1,11 @@
 import random
 import domains.school.school.library_book as library_book
+from action import Action
+
 try:
     import openai
-    openai.api_key = "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"
+    import api_keys
+    openai.api_key = api_keys.OPENAI_API_KEY
     ai_installed = True
 except ImportError:
     ai_installed = False
@@ -46,52 +49,61 @@ class RandomBook(library_book.LibraryBook):
         for l in range(0, num_numbers):
             arg_dict['number%s' % str(l+1)] = random.choice(numbers)
 
-        book_title = t_format.format(**arg_dict).title()
+        self.book_title = t_format.format(**arg_dict).title()
 
         book_adjectives = [random.choice(book_description_adjectives), random.choice(book_description_adjectives)]
         book_s_desc = '%s %s book' % tuple(book_adjectives)
-        book_l_desc = 'This is a ' + book_s_desc + ' titled ' + book_title + '.'
+        book_l_desc = 'This is a ' + book_s_desc + ' titled ' + self.book_title + '.'
 
-        if not ai_installed:
-            number_pages = round(random.normalvariate(30, 15))
-            page_msg = random.choices(book_messages, book_message_weights)[0]
-
-        book_msg = """
+        self.book_msg = """
     \=============================================
     %s
-    \=============================================""" % book_title
-    
-        if not ai_installed:
-            for i in range(0, number_pages):
-                book_msg += "\n#*\n" + page_msg
-        else:
-            if styling:
-                book_style = random.choices(book_styles, book_style_weights)[0]
-                ai_body = self.openai_completion(("write a book titled %s in the style of %s" % (book_title, book_style)))
-            else:
-                ai_body = self.openai_completion(("write a book titled %s" % book_title))
-            book_msg += "\n#*\n#*\n" + ai_body
-        
-        random_book = super().__init__('book', __file__, book_s_desc, book_l_desc)
-        random_book.add_adjectives(*book_adjectives)
-        random_book.set_message(book_msg)
+    \=============================================""" % self.book_title
+        self.book_generated = False  # whether the book contents have been auto-generated yet
 
-    def openai_completion(prompt):
+        super().__init__('book', __file__, book_s_desc, book_l_desc)
+        self.add_adjectives(*book_adjectives)
+        self.set_message(self.book_msg)
+
+    def read(self, p, cons, oDO, oIDO):
+        if not self.book_generated:  # generate random book contents upon first read
+            global ai_installed
+            if ai_installed: 
+                try:
+                    if styling:
+                        book_style = random.choices(book_styles, book_style_weights)[0]
+                        ai_body = self.openai_completion(("write a book titled %s in the style of %s" % (self.book_title, book_style)))
+                    else:
+                        ai_body = self.openai_completion(("write a book titled %s" % self.book_title))
+                    self.book_msg += "\n#*\n#*\n" + ai_body
+                except Exception as e:
+                    self.log.error(f"Exception when calling OpenAI text completion: {e}")
+                    ai_installed = False
+            if not ai_installed:
+                number_pages = round(random.normalvariate(30, 15))
+                page_msg = random.choices(book_messages, book_message_weights)[0]
+                for i in range(0, number_pages):
+                    self.book_msg += "\n#*\n" + page_msg 
+            self.set_message(self.book_msg)
+            self.book_generated = True
+        return super().read(p, cons, oDO, oIDO)
+            
+    def openai_completion(self, prompt):
         if not ai_installed:
             raise ImportError("openAI was not installed")
-        try:
-            response = openai.Completion.create(
-                model="text-davinci-003",
-                prompt=prompt,
-                max_tokens=1000,
-                temperature=0.5
-            )
-        except Exception as e:
-            print(e)
-            return ""
+        
+        response = openai.Completion.create(
+            model="text-davinci-003",
+            prompt=prompt,
+            max_tokens=1000,
+            temperature=0.5
+        )
         return response['choices'][0]['text']
+
+    actions = dict(library_book.LibraryBook.actions)  # make a copy, don't change Thing's dict!
+    actions['read'] =  Action(read, True, False)
+    actions['open'] =  Action(read, True, False)
 
 def clone():
     return RandomBook()
 
-#print(openai_completion("write a book titled Dragons and Coffee: A Retrospective"))
