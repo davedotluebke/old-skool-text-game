@@ -4,8 +4,7 @@ from action import Action
 
 try:
     import openai
-    import api_keys
-    openai.api_key = api_keys.OPENAI_API_KEY
+    import game_openai
     ai_installed = True
 except ImportError:
     ai_installed = False
@@ -72,9 +71,9 @@ class RandomBook(library_book.LibraryBook):
                 try:
                     if styling:
                         book_style = random.choices(book_styles, book_style_weights)[0]
-                        ai_body = self.openai_completion(("write a book titled %s in the style of %s" % (self.book_title, book_style)))
+                        ai_body = game_openai.openai_completion(("write a book titled %s in the style of %s" % (self.book_title, book_style)))
                     else:
-                        ai_body = self.openai_completion(("write a book titled %s" % self.book_title))
+                        ai_body = game_openai.openai_completion(("write a book titled %s" % self.book_title))
                     self.book_msg += "\n#*\n#*\n" + ai_body
                 except Exception as e:
                     self.log.error(f"Exception when calling OpenAI text completion: {e}")
@@ -87,18 +86,6 @@ class RandomBook(library_book.LibraryBook):
             self.set_message(self.book_msg)
             self.book_generated = True
         return super().read(p, cons, oDO, oIDO)
-            
-    def openai_completion(self, prompt):
-        if not ai_installed:
-            raise ImportError("openAI was not installed")
-        
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=prompt,
-            max_tokens=1000,
-            temperature=0.5
-        )
-        return response['choices'][0]['text']
 
     actions = dict(library_book.LibraryBook.actions)  # make a copy, don't change Thing's dict!
     actions['read'] =  Action(read, True, False)
