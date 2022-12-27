@@ -46,7 +46,7 @@ def end_light(cons):
 
 def end_light_bad(cons):
     cons.user.emit('&nD%s stops drawing light into themself.' % cons.user)
-    cons.user.perceive('You stop draeing light into yourself.')
+    cons.user.perceive('You stop drawing light into yourself.')
     cons.user.light = 0
 
 def spell(parser, cons, oDO, oIDO, spell_info, stone, duration=None):

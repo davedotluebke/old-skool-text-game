@@ -11,12 +11,13 @@ class Book(Thing):
     def __init__(self, default_name, path, s_desc, l_desc, pref_id=None):
         super().__init__(default_name, path, pref_id)
         self.set_description(s_desc, l_desc)
-        self.book_pages = dict()
-        self.spells = {}
+        self.book_pages = list()
+        self.spells = list()
         self.add_names('book')
         self.cons = None
-        self.COVER_INDEX = -1
-        self.TOC_INDEX = 0
+        self.COVER_INDEX = 0
+        self.TOC_INDEX = 1
+        self.CONTENT_START_INDEX = 2
         # books always open on cover the first time and toc or bookmark afterwards
         self.index = self.COVER_INDEX 
         self.bookmark = None
@@ -26,8 +27,8 @@ class Book(Thing):
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
     def _set_index(self, new_index):
-        if int(new_index) in self.book_pages:
-            self.index = int(new_index)
+        if 0 < new_index < len(self.book_pages):
+            self.index = new_index
             return True
 
         return False
@@ -39,19 +40,21 @@ class Book(Thing):
     # SET/GET METHODS (methods to set or query attributes)
     #
     def set_message(self, message):
-        self.book_pages = {self.COVER_INDEX:"", self.TOC_INDEX:""}
+        self.book_pages = ["", ""]
+        self.spells = []
+        self.book_pages[self.COVER_INDEX] = ""
+        self.book_pages[self.TOC_INDEX] = ""
         page_text = '\n'
         index = self.COVER_INDEX
-        self.spells[index] = {}
 
         for line_text in message.splitlines(True):
             if line_text.strip(' \t\r\n') == "#*": 
                 ## page break ##
                 page_text += '\n\n'
-                self.book_pages[int(index)] = page_text
+                self.book_pages.append(page_text)
                 page_text = '\n'
                 index += 1
-                self.spells[index] = {}
+                self.spells.append({})
                 continue
             if line_text.lstrip().startswith('\0'):
                 ## spell on page ##
@@ -61,7 +64,7 @@ class Book(Thing):
                 except Exception as e:
                     self.log.error(e)
                 else:
-                    self.spells[index] = spells_on_page
+                    self.spells.append(spells_on_page)
                 continue
             else:
                 page_text += line_text 
