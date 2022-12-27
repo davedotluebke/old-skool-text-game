@@ -14,9 +14,18 @@ def get_mana(parser, cons, oDO, oIDO, spell_info, stone):
 
 def spell(parser, cons, oDO, oIDO, spell_info, stone, duration=None):
     '''Actually execute the spell.'''
+    (sV, sDO, sPrep, sIDO) = parser.diagram_sentence(parser.words)
+
     target = oIDO if oIDO else oDO
     if not target and len(parser.words) > 2 and parser.words[2] == 'myself':
         target = cons.user
+
+    if not target:
+        if sIDO:
+            target_text = ' '.join(sIDO.split(" ")[0:-1])
+            matches = parser.find_matching_objects(target_text, parser._collect_possible_objects(cons.user, not sV in parser.environment_verbs, not sV in parser.inventory_verbs), cons)
+            if matches:
+                target = matches[0]
     
     if not isinstance(target, creature.Creature):
         return "I'm not sure who you're trying to heal!"
