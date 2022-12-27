@@ -2,7 +2,7 @@ import openai
 import api_keys
 openai.api_key = api_keys.OPENAI_API_KEY
 
-def openai_completion(self, prompt):
+def openai_completion(prompt):
     response = openai.Completion.create(
         model="text-davinci-003",
         prompt=prompt,
