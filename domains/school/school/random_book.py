@@ -67,9 +67,9 @@ class RandomBook(library_book.LibraryBook):
         else:
             if styling:
                 book_style = random.choices(book_styles, book_style_weights)[0]
-                ai_body = openai_completion(("write a book titled %s in the style of %s" % (book_title, book_style)))
+                ai_body = self.openai_completion(("write a book titled %s in the style of %s" % (book_title, book_style)))
             else:
-                ai_body = openai_completion(("write a book titled %s" % book_title))
+                ai_body = self.openai_completion(("write a book titled %s" % book_title))
             book_msg += "\n#*\n#*\n" + ai_body
         
         random_book = super().__init__('book', __file__, book_s_desc, book_l_desc)
