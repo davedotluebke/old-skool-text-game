@@ -1,6 +1,7 @@
 import gametools
 import scenery
 import room
+import doors_and_windows
 
 def load():
     roomPath =  gametools.findGamePath(__file__)
@@ -13,6 +14,13 @@ def load():
     
     rug = gametools.clone('domains.centrata.mountain.rug')
     hut.insert(rug, True)
+
+    hole = scenery.Scenery("hole", "hole in roof", "This hole in the roof looks as if it was placed intentionally, to vent a fire.")
+    hut.insert(hole, True)
+
+    hut_doorway = doors_and_windows.Door("doorway", "doorway", "This stone doorway leads out of the hut.", "domains.centrata.moutain.peak", "south", [])
+    hut_doorway.add_adjectives("stone")
+    hut.insert(hut_doorway, True)
 
     hut.passage_revealed = False
 

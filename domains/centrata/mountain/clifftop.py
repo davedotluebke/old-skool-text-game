@@ -15,5 +15,10 @@ def load():
     cliff = scenery.Scenery("cliff", "large cliff", "This granite cliff is covered in loose rocks. You can hardly make out the trees at the bottom.")
     cliff.add_response(['climb', 'descend', 'ascend'], 'The rocks are too lose for your to be able to climb.')
     trail.insert(cliff, True)
+
+    rock = scenery.Scenery("rock", "loose rock", "This small loose rock stands on the cliff, teetering as if ready to fall.")
+    rock.add_adjectives("loose", "teterring", "small")
+    rock.add_response(["kick", "hit"], "You kick the rock and it careens down the hill out of sight.")
+    trail.insert(rock, True)
     
     return trail

@@ -6,7 +6,7 @@ import action
 class LargeTree(scenery.Scenery):
     def __init__(self):
         super().__init__("tree", "large tree", "This large pine tree towers above the others. At the top you can barely make out what appears to be a bird's nest.", unlisted=True)
-        self.add_adjectives("large", "pine")
+        self.add_adjectives("large", "pine", "tall")
         self.add_names("pine")
         self.rope_attached = False
         self.actions['climb'] = action.Action(LargeTree.climb, True, False)
@@ -67,7 +67,7 @@ def load():
     trail.add_exit('west', 'domains.centrata.mountain.mountain_laurel')
 
     small_tree = scenery.Scenery("tree", "small tree", "This small pine tree is growing in the shadow of the larger tree.", unlisted=True)
-    small_tree.add_adjectives("small", "pine")
+    small_tree.add_adjectives("small", "pine", "short")
     small_tree.add_names("pine")
     small_tree.add_response(['climb', 'ascend'], 'The tree bends over and you fall off. It then springs back up.')
     trail.insert(small_tree, True)

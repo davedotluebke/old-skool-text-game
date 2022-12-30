@@ -5,7 +5,7 @@ class  Acleð(creature.NPC):
         super().__init__('human', __file__, aggressive=1, movement=0)
         self.set_description('short human', 'A short human, with short green hair.')
         self.add_adjectives('short')
-        self.add_names('acleð')
+        self.add_names('acleð', 'acled')
         self.set_combat_vars(40, 40, 20, 60)
         self.gender = 'non-binary'
         self.proper_name = "Acleð"  
