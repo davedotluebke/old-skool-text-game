@@ -894,7 +894,7 @@ class Player(Creature):
         allowed, message = oIDO.consider_given_item(oDO, self)
         if allowed:
             #do transfer
-            if oDO.move_to(oIDO):
+            if not oDO.move_to(oIDO):
                 #failed to move oDO
                 self.perceive(f"You fail to give {oIDO.get_short_desc(self, definite=True)} {oDO.get_short_desc(self, definite=True)}")
                 return True
