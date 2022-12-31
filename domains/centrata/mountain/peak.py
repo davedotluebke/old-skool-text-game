@@ -15,9 +15,10 @@ def load():
     hut = scenery.Scenery("hut", "stone hut", "This small stone hut stands alone atop the peak of the mountain. It looks weathered, as if it has not seen use in many years. A small open doorway leads inside.", unlisted=True)
     peak.insert(hut, True)
 
-    hut_doorway = doors_and_windows.Door("doorway", "doorway", "This stone doorway leads into the hut.", "domains.centrata.moutain.hut", "north", [])
+    hut_doorway = doors_and_windows.Door("doorway", "doorway", "This stone doorway leads into the hut.", "domains.centrata.mountain.hut", "north", [])
     hut_doorway.add_adjectives("stone")
-    hut_doorway.open_door_fc()
     peak.insert(hut_doorway, True)
+
+    hut_doorway.open_door_fc()
     
     return peak

@@ -7,8 +7,8 @@ class  Acleð(creature.NPC):
         self.add_adjectives('short')
         self.add_names('acleð', 'acled')
         self.set_combat_vars(40, 40, 20, 60)
+        self.proper_name = "Acleð" 
         self.gender = 'non-binary'
-        self.proper_name = "Acleð"  
 
         self.add_script("Please, will you help me?")
         self.affirmative_responses = ['yes', 'ok', 'okay', 'of course']
