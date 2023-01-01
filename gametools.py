@@ -16,7 +16,7 @@ import conshandler
 gameroot = os.path.dirname(__file__)  # the top-level or 'root' directory of the game. Note, assumes this file (gametools.py) is at the root
 
 GAME_LOG = "/game_log.txt"
-GAME_LOG_DEFAULT_LEVEL = logging.WARNING
+GAME_LOG_DEFAULT_LEVEL = logging.INFO
 PLAYER_ROLES_FILE = "/player_roles.json"
 PLAYER_DIR = "/saved_players"
 PLAYER_BACKUP_DIR = "/backup_saved_players"

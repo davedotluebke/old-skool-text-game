@@ -446,7 +446,7 @@ class Player(Creature):
                 m2 = subject + idstr_punc + m2.partition(tag)[2]
                 message = m1 + m2
 
-            super().perceive(message)
+            Creature.perceive(self, message)
             if silent:
                 return message
             else:
