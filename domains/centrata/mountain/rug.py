@@ -1,5 +1,6 @@
 import thing
 import action
+import doors_and_windows
 
 class Rug(thing.Thing):
     def __init__(self):
@@ -13,7 +14,8 @@ class Rug(thing.Thing):
         if self.location.id == 'domains.centrata.mountain.hut' and not self.location.passage_revealed:
             cons.user.perceive("You move the rug, revealing a trapdoor in the floor!")
             self.location.emit("&nD%s moves the rug, revealing a trapdoor in the floor!" % cons.user.name(), ignore=[cons.user])
-            self.location.add_exit('down', 'domains.centrata.mountain.cellar')
+            trapdoor = doors_and_windows.Door("trapdoor", "trapdoor in the floor", "This heavy wooden trapdoor lies in the floor of the hut", "domains.centrata.mountain.cellar", "down", [])
+            self.location.insert(trapdoor, True)
             self.location.set_description('stone hut', 'Between the solid stone walls this small hut is dim and dark. A shaft of light enters the hut from a small hole in the thatched roof. A trapdoor in the floor leads down.')
             self.location.passage_revealed = True
             return True
