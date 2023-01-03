@@ -78,14 +78,14 @@
     {
         "id": "ruby40-saveplayer420976",
         "location": "testplayer10-saveplayer420976",
-        "path": "home.scott.house.ruby",
+        "path": "home.johanna.house.ruby",
         "version_number": 1
     },
     {
         "id": "emerald4-saveplayer420976",
         "location": "testplayer10-saveplayer420976",
         "long_desc": "This is a delicately cut emerald. It is about 90 millimeters in all dimensions.",
-        "path": "home.scott.house.emerald",
+        "path": "home.johanna.house.emerald",
         "power_num": 90,
         "version_number": 1
     },

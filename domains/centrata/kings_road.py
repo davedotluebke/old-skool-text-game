@@ -33,7 +33,7 @@ def load(param_list):
     west_side = 'some %s %s' % (random.choice(description_map[noun1]), noun1)
     east_side = 'some %s %s' % (random.choice(description_map[noun2]), noun2)
 
-    this_road.set_description('streach of road', 'This stretch of road (section %s) continues north and south. On the east side of the road, you see %s. On the west side of the road, you see %s.' % (road_section, west_side, east_side))
+    this_road.set_description('stretch of road', 'This stretch of road (section %s) continues north and south. On the east side of the road, you see %s. On the west side of the road, you see %s.' % (road_section, west_side, east_side))
 
     if road_section == 0:
         this_road.add_exit('south', road_start)

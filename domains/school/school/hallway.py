@@ -64,7 +64,7 @@ def load():
     hallway.insert(serpents_door, True)
 
     parrots_door = StaffDoorway('door', 'door with a carving of a parrot on it', 
-    'This is a strong cherry wood door with a silver carving of parrot on it.', 'home.fastar.entryway', ['fastar', 'scott', 'tate', 'john', 'odshinstar', 'fredd', 'cedric'])
+    'This is a strong cherry wood door with a silver carving of parrot on it.', 'home.fastar.entryway', ['fastar', 'johanna', 'tate', 'john', 'odshinstar', 'fredd', 'cedric'])
     parrots_door.add_adjectives('parrot', 'parrots', 'parrot\'s', 'beutiful', 'cherry', 'silver')
     hallway.insert(parrots_door, True)
 
@@ -79,17 +79,17 @@ def load():
     hallway.insert(goblins_door, True)
 
     dragonflys_door = StaffDoorway('door', 'door with a carving of a dragonfly on it',
-    'This is a strong birch door with a copper carving of a dragonfly on it.', 'home.scott.house.lr31795', ['scott', 'fastar', 'tate', 'john', 'cedric', 'rivques', 'isla', 'johanna', 'Podzol'])
+    'This is a strong birch door with a copper carving of a dragonfly on it.', 'home.johanna.house.lr31795', ['johanna', 'fastar', 'tate', 'john', 'cedric', 'rivques', 'isla', 'johanna', 'Podzol'])
     dragonflys_door.add_adjectives('dragonfly', 'dragonflys', 'dragonfly\'s', 'copper', 'birch')
     hallway.insert(dragonflys_door, True)
 
     dolphins_door = StaffDoorway('door', 'door with a carving of a dolphin on it',
-    'This is a strong teak wood door with a brass carving of a dolphin on it.', 'home.cedric.blank_room', ['cedric','scott','fastar','tate'])
+    'This is a strong teak wood door with a brass carving of a dolphin on it.', 'home.cedric.blank_room', ['cedric','johanna','fastar','tate'])
     dolphins_door.add_adjectives('dolphin', 'dolphins', 'dolphin\'s', 'teak', 'brass', 'wood')
     hallway.insert(dolphins_door, True)
 
     otters_door = StaffDoorway('door','door with a carving of two otters on it',
-    'THis is a strong palm wood door with a platnum carving of two sea otters playing on it.', 'home.tate.entryway', ['tate', 'scott', 'fastar', 'cedric'])
+    'THis is a strong palm wood door with a platnum carving of two sea otters playing on it.', 'home.tate.entryway', ['tate', 'johanna', 'fastar', 'cedric'])
     otters_door.add_adjectives('otter', 'otters', 'otter\'s', 'platnum', 'palm')
     hallway.insert(otters_door, True)
 

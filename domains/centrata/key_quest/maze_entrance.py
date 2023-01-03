@@ -12,9 +12,9 @@ def load():
     maze_entrance.add_exit('east', 'domains.centrata.key_quest.maze28')
     maze_entrance.add_exit('west', 'domains.centrata.key_quest.maze41')
 
-    ruby = gametools.clone('home.scott.house.ruby')
+    ruby = gametools.clone('home.johanna.house.ruby')
     maze_entrance.insert(ruby)
 
-    emerald = gametools.clone('home.scott.house.emerald')
+    emerald = gametools.clone('home.johanna.house.emerald')
     maze_entrance.insert(emerald)
     return maze_entrance
