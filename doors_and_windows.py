@@ -16,7 +16,7 @@ class Door(scenery.Scenery):
         'southeast': 'northwest',
         'southwest': 'northeast'
     }
-    def __init__(self, default_name, short_desc, long_desc, dest, direction, allowed_to_lock=['scott', 'cedric']):
+    def __init__(self, default_name, short_desc, long_desc, dest, direction, allowed_to_lock=['johanna', 'cedric']):
         super().__init__(default_name, short_desc, long_desc)
         self.dest = dest
         self.direction = direction

@@ -10,7 +10,7 @@ def load():
     r = room.Room('shop', roomPath, safe=True, indoor=True)
     r.set_description('shop', 'You enter a shop full of various items, all for sale.')
 
-    shopkeeper = gametools.clone('home.scott.examples.shopkeeper')
+    shopkeeper = gametools.clone('home.johanna.examples.shopkeeper')
     shopkeeper.move_to(r)
 
     return r

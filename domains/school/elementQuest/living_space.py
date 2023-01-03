@@ -25,7 +25,7 @@ def load():
     east_door.add_adjectives('wooden')
     r.insert(east_door)
 
-    couch = gametools.clone('home.scott.house.couch')
+    couch = gametools.clone('home.johanna.house.couch')
     r.insert(couch)
 
     painting = scenery.Scenery('painting', 'painting of a bird', 'This is a painting of a bird. It is in an impressionistic style. You cannot tell what type of bird it is.')
