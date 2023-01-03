@@ -418,12 +418,12 @@ class NPC(Creature):
         new_room_string = self.location.exits[exit_name]
         self.go_to_room(new_room_string, exit_name)
 
-    def go_to_room(self, roompath, exit_name=None):
+    def go_to_room(self, roompath, exit_name=None, ignore_monster_safe=False):
         """Move the creature to the specified room, checking if 
         it is the room is monster safe or the creature is forbidden
         to go there. Returns True if the creature sucessfully moves."""
         new_room = gametools.load_room(roompath)
-        if new_room.monster_safe:
+        if new_room.monster_safe and not ignore_monster_safe:
             self.log.debug('Can\'t go to %s; monster safe room!' % roompath)
             return False
 
@@ -431,9 +431,10 @@ class NPC(Creature):
             self.log.debug('Can\'t go to %s: forbidden to %s!' % (roompath, self))
             return False
  
+        if exit_name:
+            self.emit("&nD%s goes %s." % (self.id, exit_name))
+        
         if self.move_to(new_room):
-            if exit_name:
-                self.emit("&nD%s goes %s." % (self.id, exit_name))
             self.emit("&nI%s arrives." % self.id)
             self.log.info("Creature %s moved to new room %s" % (self.names[0], roompath))
             return True
