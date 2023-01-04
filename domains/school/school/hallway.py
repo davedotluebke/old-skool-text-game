@@ -56,7 +56,7 @@ def load():
     'Seven doors lead off of this hallway, each decorated with a metal carving of a different animal:'
     'a serpent, a parrot, a dragon, a goblin, a dolphin, a dragonfly, and an otter.')
     hallway.add_adjectives('staff', 'office')
-    hallway.add_exit('south', 'domains.school.school.gallery')
+    hallway.add_exit('southwest', 'domains.school.school.gallery')
 
     serpents_door = StaffDoorway('door', 'door with a carving of a serpent on it', 
     'This is a strong oak door with a bronze carving of a serpent on it.', 'domains.school.school.empty_office')
