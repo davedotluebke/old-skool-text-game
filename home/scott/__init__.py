@@ -1,1 +1,0 @@
-# This code initializes the scott directory. Having this file makes python treat this directory as a submodule. We might add code later.

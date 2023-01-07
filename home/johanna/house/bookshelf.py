@@ -9,12 +9,12 @@ def clone():
     bookshelf.add_names('shelf')
     bookshelf.set_prepositions('on', 'onto')
 
-    blue_book = gametools.clone('home.scott.house.blue_book')
+    blue_book = gametools.clone('home.johanna.house.blue_book')
     blue_book.move_to(bookshelf, True)
 
-    dusty_book = gametools.clone('home.scott.house.dusty_book')
+    dusty_book = gametools.clone('home.johanna.house.dusty_book')
     dusty_book.move_to(bookshelf, True)
 
-    spellbook = gametools.clone('home.scott.house.spellbook')
+    spellbook = gametools.clone('home.johanna.house.spellbook')
     spellbook.move_to(bookshelf, True)
     return bookshelf

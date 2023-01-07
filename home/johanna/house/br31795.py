@@ -11,7 +11,7 @@ def load():
     bedroom.set_description('circular bedroom', 'This small circular bedroom is built in the top of a tower. '
     'It has four large windows: one to the north, one to the south, one to the east, and one to the west.'
     'Strangely, each of the windows appears to look out on extremely different locations.')
-    bedroom.add_exit('down', 'home.scott.house.lr31795')
+    bedroom.add_exit('down', 'home.johanna.house.lr31795')
     bedroom.add_adjectives('circular', 'windowed')
 
     north_window = doors_and_windows.Window('window', 'northern window', 'This large window on the north side of the room has an almost invisible frame.', 'domains.evergreen.mountaintop.cliff')
@@ -22,6 +22,6 @@ def load():
     south_window.add_adjectives('large', 'south')
     bedroom.insert(south_window, True)
 
-    bed = gametools.clone('home.scott.house.bed')
+    bed = gametools.clone('home.johanna.house.bed')
     bed.move_to(bedroom, True)
     return bedroom

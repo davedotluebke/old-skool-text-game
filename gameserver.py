@@ -111,8 +111,8 @@ class Game():
 
     def set_up_groups_and_acl(self):
         # default list of administrators and wizards, will be overwritten if PLAYER_ROLES_FILES exists 
-        self.roles = {"admin": ["scott", "cedric"], "wizard": ["scott", "cedric"], "apprentice": [], "scott": ["scott"], "cedric": ["cedric"]}
-        self.wizards = {"scott":["scott", "wizard", "admin"], "cedric":["cedric", "wizard", "admin"]}
+        self.roles = {"admin": ["johanna", "cedric"], "wizard": ["johanna", "cedric"], "apprentice": [], "johanna": ["johanna"], "cedric": ["cedric"]}
+        self.wizards = {"johanna":["johanna", "wizard", "admin"], "cedric":["cedric", "wizard", "admin"]}
         try:
             f = open(gametools.realDir(gametools.PLAYER_ROLES_FILE))
             player_roles = json.loads(f.read())

@@ -1,16 +1,15 @@
 {
     "roles": {
-        "admin": ["scott", "cedric"],
-        "wizard": ["scott", "cedric", "rivques", "tate", "johanna", "podzol"],
-        "scott": ["scott"], 
+        "admin": ["johanna", "cedric"],
+        "wizard": ["johanna", "cedric", "rivques", "tate", "podzol"],
+        "johanna": ["johanna"], 
         "cedric": ["cedric"], 
         "rivques": ["rivques"],
         "tate": ["tate"],
-	"johanna": ["johanna"],
 	"podzol": ["podzol"]
     },
     "wizards": {
-        "scott": ["scott", "wizard", "admin"],
+        "johanna": ["johanna", "wizard", "admin"],
         "cedric": ["cedric", "wizard", "admin"],
         "rivques": ["rivques", "wizard"],
         "tate": ["tate", "wizard"],
