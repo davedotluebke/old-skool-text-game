@@ -69,7 +69,7 @@ def load():
     encaustic_portrait.add_response(['take','steal','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
     r.insert(encaustic_portrait)
 
-    acrylic_portrait = scenery.Scenery ('portrait', 'acrylic portrait', 'This is an large acrylic portrait of a tree swallow swooping low over a lake, an ant held firmly in its beak. It is so realistic you almost feel like it is real.')
+    acrylic_portrait = scenery.Scenery ('portrait', 'acrylic portrait', 'This is an large acrylic portrait of a tree swallow swooping low over a lake, an ant held firmly in its beak. It is so realistic you almost feel like it is real. You notice a crack in the wall behind this portrait.')
     acrylic_portrait.add_names('portrait', 'painting')
     acrylic_portrait.add_adjectives('realistic', 'lake', 'swallow', 'acrylic')
     acrylic_portrait.add_response(['take','steal','touch'], 'As you start to reach out you notice the plaque which reminds you not to touch any of the paintings.')
