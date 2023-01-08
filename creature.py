@@ -323,7 +323,7 @@ class Creature(Container):
     actions['examine'] = Action(look_at, True, False)
 
 class NPC(Creature):
-    def __init__(self, ID, path, aggressive=0, movement=1, pref_id=None):
+    def __init__(self, ID, path, aggressive=0, movement=1, movement_path=None, pref_id=None):
         Creature.__init__(self, ID, path)
         self.aggressive = aggressive
         self.movement_on = movement
@@ -334,6 +334,8 @@ class NPC(Creature):
             self.choices.insert(0, self.move_around)
         if self.aggressive:     # aggressive: 0 = will never attack anyone, even if attacked by them. Will flee. 1 = only attacks enemies. 2 = attacks anyone. highly aggressive.
             self.choices.append(self.attack_enemy)
+        if movement_path:
+            self.choices.append(self.follow_path)
         # list of strings that the NPC might say
         self.scripts = []
         self.current_script = None
@@ -341,6 +343,9 @@ class NPC(Creature):
         self.act_scripts = []
         self.current_act_script = None
         self.current_act_script_idx = 0
+        self.movement_path = movement_path
+        self.movement_path_idx = 0
+        self.final_movement_callback = None
         self.attack_now = 0
         self.attacking = False
         self.forbidden_rooms = []
@@ -412,6 +417,25 @@ class NPC(Creature):
             exit_name = random.choice(exit_list)
         except (AttributeError, IndexError):
             self.log.debug('NPC %s sees no exits, returning from move_around()' % self.id)
+            return
+        self.log.debug("Trying to move to the %s exit!" % (exit_name))
+        current_room = self.location
+        new_room_string = self.location.exits[exit_name]
+        self.go_to_room(new_room_string, exit_name)
+    
+    def follow_path(self):
+        """The NPC attempts to follow a path that was passed in at creation"""
+        try:
+            exit_list = list(self.location.exits)
+            if self.movement_path_idx == len(self.movement_path):
+                if self.final_movement_callback:
+                    self.final_movement_callback()
+                self.log.debug("Reached the end of the path")
+                return
+            exit_name = self.movement_path[self.movement_path_idx]
+            self.movement_path_idx += 1
+        except (AttributeError, IndexError):
+            self.log.debug('NPC %s sees no exits, returning from follow_path()' % self.id)
             return
         self.log.debug("Trying to move to the %s exit!" % (exit_name))
         current_room = self.location
