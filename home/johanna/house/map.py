@@ -36,34 +36,40 @@ class Map(thing.Thing):
 
         self.coordinates = (0, 0, 0)
         self.map = {}
+        self.map_room_chars = {}
+        self.visited_rooms = {}
         self.prev_player_location = None
 
     def heartbeat(self):
         if type(self.location) != player.Player:
             return
         
+        # find if the player has moved and update the coordinates
         if self.location.location != self.prev_player_location: # if the player has moved
             if self.prev_player_location: # when starting out, just initialise the current location
-                for i in self.prev_player_location.exits:
-                    if self.prev_player_location.exits[i] == self.location.location.id:
-                        self.map[self.coordinates].append(i) # update the map with the direction to the new room
-                        self.coordinates = (self.coordinates[0] + directions[i][0], self.coordinates[1] + directions[i][1], self.coordinates[2] + directions[i][2]) # update the coordinates to the new room
-                        if self.coordinates not in list(self.map):
-                            self.map[self.coordinates] = []
-                        self.map[self.coordinates].append(opposite_directions[i])
-            else:
-                self.map[self.coordinates] = []
-
+                if self.location.location.id not in self.visited_rooms:
+                    for i in self.prev_player_location.exits:
+                        if self.prev_player_location.exits[i] == self.location.location.id:
+                            self.coordinates = (self.coordinates[0] + directions[i][0], self.coordinates[1] + directions[i][1], self.coordinates[2] + directions[i][2]) # update the coordinates to the new room
+                            self.visited_rooms[self.location.location.id] = self.coordinates
+                else:
+                    self.coordinates = self.visited_rooms[self.location.location.id]
+            
             # TODO: something here if the player teleported, etc and there's no direct connection
 
             self.prev_player_location = self.location.location
+
+        # update the exits at the current coordinates
+        self.map[self.coordinates] = list(self.location.location.exits)
+        # update the name of the current room (based on the first letter last item in the room's id)
+        self.map_room_chars[self.coordinates] = self.location.location.id.rpartition(".")[2][0]
     
     def read(self, p, cons, oDO, oIDO):
         cons.write(self.print_map())
         return True
     
     def print_map(self):
-        coordinate_paris = list(self.map.keys())
+        coordinate_pairs = list(self.map.keys())
         # find the lowest and highest numbered x, y, z
         lowest_x = 0
         lowest_y = 0
@@ -71,7 +77,7 @@ class Map(thing.Thing):
         highest_x = 0
         highest_y = 0
         highest_z = 0
-        for i in coordinate_paris:
+        for i in coordinate_pairs:
             if i[0] < lowest_x:
                 lowest_x = i[0]
             if i[1] < lowest_y:
@@ -104,7 +110,7 @@ class Map(thing.Thing):
                     line1 += "|" if "north" in self.map[(x, y, z)] else " "
                     line1 += "/" if "northeast" in self.map[(x, y, z)] else " "
                     line2 += "-" if "west" in self.map[(x, y, z)] else " "
-                    line2 += "x"    
+                    line2 += self.map_room_chars[(x, y, z)]
                     line2 += "-" if "east" in self.map[(x, y, z)] else " "
                     line3 += "/" if "southwest" in self.map[(x, y, z)] else " "
                     line3 += "|" if "south" in self.map[(x, y, z)] else " "
@@ -113,7 +119,7 @@ class Map(thing.Thing):
             level += "\n\n"
             final_map += level
         print(final_map)
-        return final_map.replace(" ", " ") # non breaking space
+        return '```\n' + final_map + '\n```'
 
     actions = dict(thing.Thing.actions)
     actions['read'] = action.Action(read, True, True)
