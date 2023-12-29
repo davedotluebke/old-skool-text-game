@@ -136,6 +136,7 @@ class Door(scenery.Scenery):
                 return value
         if self.allowed_to_lock != 'everyone' and cons.user.names[0] not in self.allowed_to_lock:
             cons.user.perceive('You don\'t have the key.')
+            return True
         self.locked = True
         self.toggle_matching(True, self.open_state)
         cons.user.perceive('You lock the door.')
@@ -147,6 +148,7 @@ class Door(scenery.Scenery):
             return "The door is already unlocked!"
         if self.allowed_to_lock != 'everyone' and cons.user.names[0] not in self.allowed_to_lock:
             cons.user.perceive('You don\'t have the key.')
+            return True
         self.locked = False
         self.toggle_matching(False, self.open_state)
         cons.user.perceive('You unlock the door.')
