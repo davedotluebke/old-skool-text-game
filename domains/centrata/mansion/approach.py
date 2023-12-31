@@ -8,7 +8,7 @@ def load():
     if exists: return exists
     
     r = room.Room('driveway', roomPath)
-    r.set_description('driveway', 'You find yourself on a driveway through the forest, leading up a hill towards a grandiose sandstone mansion.')
+    r.set_description('driveway', 'You find yourself on a driveway through the forest, leading south up a hill towards a grandiose sandstone mansion.')
     r.add_exit('north', 'domains.school.forest.waterfall')
     r.add_exit('south', 'domains.centrata.mansion.gate_outside')
     return r

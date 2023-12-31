@@ -16,6 +16,8 @@ def load():
     mansion_scenery_south.add_adjectives('sandstone', 'massive')
     r.insert(mansion_scenery_south, True)
 
-    
+    carriage_house_scenery = scenery.Scenery('house', 'carriage house', 'This sandstone carriage house matches the house in material, almost like a minature version. It has a large door for carriages in the front.', unlisted=True)
+    carriage_house_scenery.add_adjectives('carriage', 'sandstone')
+    r.insert(carriage_house_scenery, True)
 
     return r

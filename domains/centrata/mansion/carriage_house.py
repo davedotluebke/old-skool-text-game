@@ -10,6 +10,7 @@ def load():
     
     r = room.Room('house', roomPath, indoor=True)
     r.set_description('carriage house', 'You stand inside a large carriage house. The floor is tiled with stone tiles, and the walls are made of sandstone. There is a door to the west.')
+    r.add_exit('west', 'domains.centrata.mansion.carriage_house_closet')
 
     tile_floor = scenery.Scenery('floor', 'tile floor', 'This floor is tiled with stone tiles. They seem to form an irregular pattern.', unlisted=True)
     tile_floor.add_adjectives('tile', 'irregular')
