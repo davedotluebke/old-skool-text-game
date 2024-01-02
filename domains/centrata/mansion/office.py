@@ -18,7 +18,7 @@ def load():
     r.insert(office_desk, True)
 
     # scenery of office_desk
-    desk_fruit_carving_scenery = scenery.Scenery('carving', 'desk fruit carvings', 'These carvings of fruits appear to depict a bountiful supply, with a special focus on pomegranates.')
+    desk_fruit_carving_scenery = scenery.Scenery('carving', 'desk fruit carvings', 'These carvings of fruits appear to depict a bountiful supply, with a special focus on pomegranates.', unlisted=True)
     desk_fruit_carving_scenery.add_adjectives('desk', 'fruit', 'pomegranates')
     desk_fruit_carving_scenery.add_names('fruit')
     r.insert(desk_fruit_carving_scenery, True)

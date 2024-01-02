@@ -10,4 +10,11 @@ def clone():
     desk.set_max_weight_carried(4e9)
     desk.set_max_volume_carried(80)
 
+    paper = gametools.clone('domains.centrata.mansion.office_paper')
+    paper.plurality = 60
+    desk.insert(paper, True)
+
+    pen = gametools.clone('domains.centrata.mansion.office_pen')
+    desk.insert(pen, True)
+
     return desk
