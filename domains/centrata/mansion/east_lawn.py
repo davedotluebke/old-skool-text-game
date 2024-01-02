@@ -25,7 +25,7 @@ class ClimbableBayWindow(scenery.Scenery):
 
         cons.user.perceive("You climb up the ladder and through the window.")
         self.emit("&nD%s climbs the ladder and through the window." % cons.user, ignore=[cons.user])
-        cons.user.move_to(gametools.load_room('domains.centrata.mansion.parlour'))
+        cons.user.move_to(gametools.load_room('domains.centrata.mansion.office'))
         return True
 
 def load():
