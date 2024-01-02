@@ -1,6 +1,18 @@
+button {
+    font-size: inherit;
+    font-family: inherit;
+    background-color: inherit;
+    color: inherit;
+}
+
 .background {
     font-size: larger;
     font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.blue {
+    color: blue;
+    background-color: aqua;
 }
 
 .body {
@@ -24,4 +36,8 @@
 .plain {
     color: black;
     background-color: white;    
+}
+
+.urgent {
+    color: red;
 }
