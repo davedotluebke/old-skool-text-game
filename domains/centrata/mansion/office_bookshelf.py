@@ -14,7 +14,7 @@ class Bookshelf(Container):
     def __init__(self, ID, path):
         super().__init__(ID, path)
         self.set_description('bookshelf full of books', 'This beautiful mahogany bookshelf is filled to the brim with books. ' \
-        'Every time you look at it you notice another book.')
+        'Every time you look at it you notice another book.', unlisted=True)
         self.fix_in_place("The bookshelf appears to be fixed to the wall.")
         self.books = [
             gametools.clone('domains.centrata.mansion.legal_advice_book')
