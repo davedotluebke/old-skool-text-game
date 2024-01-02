@@ -1,0 +1,27 @@
+.background {
+    font-size: larger;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.body {
+    margin-top: 40px;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.old-school {
+    color: #00ff00;
+    background-color: black;
+}
+
+.plain {
+    color: black;
+    background-color: white;    
+}
