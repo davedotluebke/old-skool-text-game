@@ -33,6 +33,10 @@ input:focus {
     margin-top: 40px;
 }
 
+.fileInput {
+    display: none;
+}
+
 .header {
     position: fixed;
     top: 0;

@@ -3,6 +3,10 @@
     <head>
         <title>Firefile Sorcery School - A multiplayer online text adventure</title>
         <link rel="stylesheet" href="style.css">
+        <!--For usage in the editor only-->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/codemirror.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/theme/solarized.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/theme/the-matrix.css">
     </head>
     <body class="background plain">
         <noscript>
@@ -54,14 +58,23 @@
                     <div class="messageOutput"></div>
                     <div class="messageInput">
                         <span class="inputPrompt">> </span><input type="text" class="inputLine" autocomplete="off" autofocus="autofocus" autocorrect="off" autocapitalize="off" spellcheck="false">
-                        <!--TODO: Add file input here-->
+                        <input type="file" class="fileInput" accept=".py">
                     </div>
+                </div>
+                <button class="editorToggleButton" onclick="toggleSection('editor')">Hide Editor</button>
+                <div class="editor">
+                    <textarea class="codeEditorTextArea"></textarea>
+                    <label>Filename:</label><input type="text" name="filename" class="filename">
+                    <button onclick="saveCode()">Save</button>
+                    <button onclick="closeFile()">Close</button>
                 </div>
             </div>
         </div>
         <!--This goes last so that everything had been defined first-->
         <script src="https://bitwiseshiftleft.github.io/sjcl/sjcl.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/codemirror.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/mode/python/python.js"></script>
         <script src="script.js"></script>
     </body>
 </html>

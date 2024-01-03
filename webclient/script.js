@@ -235,3 +235,79 @@ function sendLine () {
     window.scrollTo(0,document.body.scrollHeight);
 }
 
+// handling file editing
+
+var codeMirrorSettingsObj = {
+    mode: "python",
+    theme: "solarized dark",
+    lineNumbers: true,
+    autofocus: true
+};
+var codeEditor;
+
+function displayEditor() {
+    codeEditor = CodeMirror.fromTextArea(document.getElementsByClassName("codeEditorTextArea")[0], codeMirrorSettingsObj);
+    codeEditor.setSize("100%", "100%");
+    codeEditor.refresh();
+}
+
+displayEditor();
+
+function fillEditor(fileContents, filename) {
+    codeEditor.getDoc().setValue(fileContents);
+    document.getElementsByClassName('filename')[0].value = filename;
+    if (document.getElementsByClassName('editor')[0].classList.contains('hidden')) {
+        toggleSection('editor');
+    }
+    codeEditor.focus();
+
+}
+
+function saveCode() {
+    encryptAndSend(codeEditor.getValue(), 'file', document.getElementsByClassName("filename")[0].value);
+}
+
+function receiveFile(file_contents, behaviour, filename) {
+    if (filename === undefined) {
+        filename = 'gamefile.py'
+    }
+    if (behaviour) {
+        fillEditor(file_contents, filename);
+        return;
+    }
+    var binaryData = [];
+    binaryData.push(file_contents);
+    const url = window.URL.createObjectURL(new Blob(binaryData, {type: "application/zip"}));
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    // TODO: the filename you want
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function uploadFiles() {
+    document.getElementsByClassName('fileInput').onchange = sendFile;
+    document.getElementsByClassName('fileInput').click();
+}
+
+function sendFile() {
+    var file = document.getElementsByClassName('fileInput')[0].files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.fileName = file.name;
+        reader.onload = function(e) {
+            fileText = e.target.result;
+            encryptAndSend(fileText, "file", e.target.fileName);
+        }
+        reader.readAsText(file);
+    }
+}
+
+// final prep work
+
+document.getElementsByClassName('inputLine')[0].focus();
+toggleSection('editor');
+window.scrollTo(0,0);
