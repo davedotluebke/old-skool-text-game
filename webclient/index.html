@@ -2,11 +2,11 @@
 <html>
     <head>
         <title>Firefile Sorcery School - A multiplayer online text adventure</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="style.css">
         <!--For usage in the editor only-->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/codemirror.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/theme/solarized.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.54.0/theme/the-matrix.css">
     </head>
     <body class="background plain">
         <noscript>
@@ -22,6 +22,8 @@
             </div>
             <div class="body">
                 <button class="infoToggleButton" onclick="toggleSection('info')">Hide Info</button>
+                <button class="consoleToggleButton" onclick="toggleSection('console')">Hide Console</button>
+                <button class="editorToggleButton" onclick="toggleSection('editor')">Hide Editor</button>
                 <div class="info">
                     <p>Firefile Sorcery School is an online text adventure game written in Python.</p>
             
@@ -53,15 +55,14 @@
                     <p>You can create shortcuts to reduce typing; type 'alias' for more details. 
                     Type 'quit' to save your progress and leave the game.</p>
                 </div>
-                <button class="consoleToggleButton" onclick="toggleSection('console')">Hide Console</button>
                 <div class="console">
+                    <button class="defaultGameButton" onclick="startDefaultGame()">Start Playing!</button>
                     <div class="messageOutput"></div>
                     <div class="messageInput">
                         <span class="inputPrompt">> </span><input type="text" class="inputLine" autocomplete="off" autofocus="autofocus" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <input type="file" class="fileInput" accept=".py">
                     </div>
                 </div>
-                <button class="editorToggleButton" onclick="toggleSection('editor')">Hide Editor</button>
                 <div class="editor">
                     <textarea class="codeEditorTextArea"></textarea>
                     <label>Filename:</label><input type="text" name="filename" class="filename">

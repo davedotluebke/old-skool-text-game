@@ -306,6 +306,14 @@ function sendFile() {
     }
 }
 
+function startDefaultGame() {
+    document.getElementsByClassName("inputLine")[0].value = "server.firefile.us";
+    sendLine();
+    document.getElementsByClassName("inputLine")[0].value = cmd_history[current_cmd];
+    document.getElementsByClassName("defaultGameButton")[0].classList.add("hidden");
+    document.getElementsByClassName("inputLine")[0].focus();
+}
+
 // final prep work
 
 document.getElementsByClassName('inputLine')[0].focus();
