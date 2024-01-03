@@ -4,13 +4,13 @@
         <title>Firefile Sorcery School - A multiplayer online text adventure</title>
         <link rel="stylesheet" href="style.css">
     </head>
-    <body class="background">
+    <body class="background plain">
         <noscript>
             <p class="urgent">Javascript has been disabled in your browser. Please enable Javascript
             to play the game.</p>
         </noscript>
         <div class="content hidden">
-            <div class="header">
+            <div class="header plain">
                 <span>Colour themes:</span>
                 <button class="changeButton plain" onclick="setMode('plain')">Plain</button>
                 <button class="changeButton old-school" onclick="setMode('old-school')">Old School</button>
@@ -49,9 +49,19 @@
                     <p>You can create shortcuts to reduce typing; type 'alias' for more details. 
                     Type 'quit' to save your progress and leave the game.</p>
                 </div>
+                <button class="consoleToggleButton" onclick="toggleSection('console')">Hide Console</button>
+                <div class="console">
+                    <div class="messageOutput"></div>
+                    <div class="messageInput">
+                        <span class="inputPrompt">> </span><input type="text" class="inputLine" autocomplete="off" autofocus="autofocus" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <!--TODO: Add file input here-->
+                    </div>
+                </div>
             </div>
         </div>
         <!--This goes last so that everything had been defined first-->
+        <script src="https://bitwiseshiftleft.github.io/sjcl/sjcl.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
         <script src="script.js"></script>
     </body>
 </html>

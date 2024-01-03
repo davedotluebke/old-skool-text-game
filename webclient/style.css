@@ -5,6 +5,20 @@ button {
     color: inherit;
 }
 
+input {
+    background-color: inherit;
+    font-size: inherit;
+    font-family: inherit;
+    margin: 0px;
+    padding: 0px;
+    border: none;
+    color: inherit;
+}
+
+input:focus {
+    outline-width: 0px;
+}
+
 .background {
     font-size: larger;
     font-family: 'Monaco', 'Consolas', monospace;
@@ -26,6 +40,10 @@ button {
 
 .hidden {
     display: none;
+}
+
+.inputLine {
+    width: calc(100% - 30px);
 }
 
 .old-school {
