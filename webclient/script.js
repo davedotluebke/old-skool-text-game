@@ -75,10 +75,14 @@ var ws = undefined;
 
 window.onkeydown = function(e) {
     var key = e.key;
-    if (key == 'Tab') {
+    if (document.activeElement != document.getElementsByClassName('inputLine')[0]) {
+        // to not mess around with the file editing software
+        return;
+    }
+    /*if (key == 'Tab') {
         document.getElementsByClassName('inputLine')[0].focus();
         e.preventDefault();
-    } else if (key == 'Enter') {
+    } else */ if (key == 'Enter') {
         if (state != 'SEND_PASSWORD') {
             cmd_history[cmd_history.length-1] = document.getElementsByClassName('inputLine')[0].value;
             cmd_history.push('')
@@ -254,6 +258,10 @@ function displayEditor() {
 displayEditor();
 
 function fillEditor(fileContents, filename) {
+    // first, check if something is already open, and if so, save it
+    if (codeEditor.getDoc().getValue() != '') {
+        saveCode();
+    }
     codeEditor.getDoc().setValue(fileContents);
     document.getElementsByClassName('filename')[0].value = filename;
     if (document.getElementsByClassName('editor')[0].classList.contains('hidden')) {
