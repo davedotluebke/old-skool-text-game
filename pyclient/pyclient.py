@@ -1,20 +1,33 @@
-# this module is intended for connecting to the game when a web browser or internet is not available
-# it does not support encryption and assumes a secure connection
-
 import asyncio
-import websockets
+import json
+from websockets import connect
 
-async def ws_handler(websocket, path):
-    try: 
-        async for message in websocket:
-            print(message)
-    except websockets.exceptions.ConnectionClosed:
-        websocket.close()
+import non_blocking_input
 
-async def ws_send(text):
-    await connection.send(text)
+raw_input = "Initiating connection"
 
-ip_address = input('IP Address: ')
-port = input('Port: ')
+def add_raw_input(inp):
+    global raw_input
+    raw_input += inp + "\n"
 
-connection = asyncio.get_event_loop().run_until_complete(websockets.connect("ws://" + ip_address + ":" + port))
+async def send_input():
+    async with connect("ws://localhost:9124") as websocket:
+        asyncio.ensure_future(await_output(websocket))
+        global raw_input
+        while True:
+            if raw_input:
+                json_s = {
+                    "type": "command",
+                    "data": raw_input.partition("\n")[0]
+                }
+                raw_input = raw_input.partition("\n")[2]
+                await websocket.send(json.dumps(json_s))
+            await asyncio.sleep(0.1)
+
+async def await_output(websocket):
+    while True:
+        message = await websocket.recv()
+        print(json.loads(message)['data'])
+
+kbthread = non_blocking_input.KeyboardThread(add_raw_input)
+asyncio.get_event_loop().run_until_complete(send_input())
