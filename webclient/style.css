@@ -33,6 +33,24 @@ input:focus {
     margin-top: 40px;
 }
 
+.cookieMessage {
+    position: fixed;
+    top: 40%;
+    left: 30%;
+    right: 30%;
+    background-color: white;
+}
+
+.cookieBackground {
+    position: fixed;
+    top: 0%;
+    bottom: 0%;
+    left: 0%;
+    right: 0%;
+    background-color: #aaaaaaaa;
+    backdrop-filter: blur(5px);
+}
+
 .fileInput {
     display: none;
 }

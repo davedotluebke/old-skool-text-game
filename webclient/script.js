@@ -63,7 +63,18 @@ function setMode(newMode) {
     }
 }
 
-setMode(currentMode);
+function hideCookiePopup() {
+    document.getElementsByClassName('cookiePopup')[0].classList.add('hidden');
+    if (currentMode == undefined) {
+        currentMode = 'plain';
+    }
+    setMode(currentMode);
+    document.getElementsByClassName('inputLine')[0].focus();
+}
+
+if (currentMode != undefined) {
+    hideCookiePopup(); // the cookie has already been accepted
+}
 
 // console section
 var converter = new showdown.Converter({simpleLineBreaks: true});
@@ -324,6 +335,5 @@ function startDefaultGame() {
 
 // final prep work
 
-document.getElementsByClassName('inputLine')[0].focus();
 toggleSection('editor');
 window.scrollTo(0,0);
