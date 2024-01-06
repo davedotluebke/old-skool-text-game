@@ -45,7 +45,8 @@ class Map(thing.Thing):
                                 # if exit is to the west, we need to decrement r_x of all rooms with r_x <= p_x
                                 if i in ["west", "northwest", "southwest"]:
                                     for room_id in self.visited_rooms.keys():
-                                        if self.visited_rooms[]
+                                        if self.visited_rooms[room_id][0]
+
                                 # if exit is to the north, we need to increment r_y of all rooms with r_y >= p_y [and so on]
                                 for room_id in self.visited_rooms.keys():
                                         

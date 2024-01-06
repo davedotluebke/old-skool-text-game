@@ -8,7 +8,7 @@ directions = {'north': (0, -1,  0 ),
             'west':  (-1, 0,  0 ),
             'northwest': (-1, -1, 0),
             'southeast': (1, 1, 0),
-            'northeast:': (1, -1, 0),
+            'northeast': (1, -1, 0),
             'southwest': (-1, 1, 0),
             'up':    (0,  0,  1 ), 
             'down':  (0,  0, -1 )}
@@ -29,7 +29,7 @@ opposite_directions = {
 class Map(thing.Thing):
     def __init__(self):
         super().__init__("map", __file__)
-        self.set_description("old map", "This is an old and worn-looking map.")
+        self.set_description("old map", "This is an old and worn-looking map. (Hint: Try \"Read Map\" to get more information.)")
         self.add_adjectives("old", "worn")
         
         self.game.register_heartbeat(self)
@@ -120,9 +120,20 @@ class Map(thing.Thing):
             final_map += level
         print(final_map)
         return '```\n' + final_map + '\n```'
+    
+    def save_ouput(self, filename):
+        f = open(filename, 'w')
+        f.write(self.print_map())
+        f.close()
+
+    def inscribe(self, p, cons, oDO, oIDO):
+        self.save_ouput('map.txt')
+        cons.user.perceive('You inscribe the map, etching it into permanance.')
+        return True
 
     actions = dict(thing.Thing.actions)
     actions['read'] = action.Action(read, True, True)
+    actions['inscribe'] = action.Action(inscribe, True, False)
 
 def clone():
     return Map()

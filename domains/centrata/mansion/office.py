@@ -9,7 +9,8 @@ def load():
     if exists: return exists
     
     r = room.Room('office', roomPath, indoor=True)
-    r.set_description('mahogany-panelled office', 'You find yourself in a mahogany-panelled office with books surrounding you on every side. A small desk with fancy carvings stands in the centre of the room. To the east, a large bay window looks out over the lawn. To the west there is a sturdy door to a safe.')
+    r.set_description('mahogany-panelled office', 'You find yourself in a mahogany-panelled office with books surrounding you on every side. A small desk with fancy carvings stands in the centre of the room. To the east, a large bay window looks out over the lawn. To the west there is a sturdy door to a safe. There is a doorway to the north.')
+    r.add_exit('north', 'domains.centrata.mansion.parlour')
     
     safe_door = SafeDoorOutside()
     r.insert(safe_door)
