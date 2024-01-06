@@ -49,6 +49,7 @@ def load():
     'To the south a small stream trickles away.')
     r.add_adjectives('waterfall')
     r.add_exit('northwest', 'domains.school.forest.field')
+    r.add_exit('south', 'domains.centrata.mansion.approach')
 
     w = Waterfall()
     w.actions = dict(scenery.Scenery.actions)

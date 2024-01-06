@@ -1,0 +1,83 @@
+button {
+    font-size: inherit;
+    font-family: inherit;
+    background-color: inherit;
+    color: inherit;
+}
+
+input {
+    background-color: inherit;
+    font-size: inherit;
+    font-family: inherit;
+    margin: 0px;
+    padding: 0px;
+    border: none;
+    color: inherit;
+}
+
+input:focus {
+    outline-width: 0px;
+}
+
+.background {
+    font-size: larger;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.blue {
+    color: blue;
+    background-color: aqua;
+}
+
+.body {
+    margin-top: 40px;
+}
+
+.cookieMessage {
+    position: fixed;
+    top: 40%;
+    left: 30%;
+    right: 30%;
+    background-color: white;
+}
+
+.cookieBackground {
+    position: fixed;
+    top: 0%;
+    bottom: 0%;
+    left: 0%;
+    right: 0%;
+    background-color: #aaaaaaaa;
+    backdrop-filter: blur(5px);
+}
+
+.fileInput {
+    display: none;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.inputLine {
+    width: calc(100% - 30px);
+}
+
+.old-school {
+    color: #00ff00;
+    background-color: black;
+}
+
+.plain {
+    color: black;
+    background-color: white;    
+}
+
+.urgent {
+    color: red;
+}

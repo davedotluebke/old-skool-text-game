@@ -12,7 +12,7 @@ def load():
     'The ceiling forms itself into a turret, with no more floors above this one. In the centre of the room '
     'you see a large table with four spaces in it.')
     four_worlds_room.add_adjectives('tall', 'circular')
-    four_worlds_room.add_exit('southeast', 'domains.school.school.arena')
+    four_worlds_room.add_exit('east', 'domains.school.school.arena')
     four_worlds_room.add_exit('west', 'domains.school.school.water_kitchen', caution_tape_msg="This door is locked.")
     
     table = scenery.Scenery('table', 'large table', 'This large table stands in the centre of the room. '

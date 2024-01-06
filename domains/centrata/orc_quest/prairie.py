@@ -16,7 +16,7 @@ room_remaps = {'-1,-1':'domains.centrata.fields.road_three',
                '0,2':'domains.centrata.fields.questentry',
                '1,-3':'domains.centrata.fields.road_one',
                '0,4':'domains.centrata.fields.small_wooded_patch',
-               '1,5':'domains.centrata.fields.behind_blacksmith_shop',
+               '1,5':'domains.centrata.fields.behind_blacksmiths_shop',
                '1,6':'domains.centrata.fields.behind_tailors_shop'}
 
 MIN_X = -1 # dictated by coordinates in room_remaps

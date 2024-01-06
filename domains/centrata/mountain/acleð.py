@@ -20,7 +20,8 @@ class  Acleð(creature.NPC):
         I was descending the mountain to purchase some bread when this giant flying creature dove at me.
         I ran to take shelter and thought I had fended it off, but when I returned to my hut I realised that my small golden key was gone.
         I believe the flying creature stole it and I need help retrieving it."""
-        self.forbid_room('domains.centrata.fields.road_five')
+
+        self.future_movement_path = ["west", "west", "west", "west", "north"]
 
     def perceive(self, message):
         super().perceive(message)
@@ -70,10 +71,14 @@ class  Acleð(creature.NPC):
     
     def consider_given_item(self, item, giving_creature):
         if item.path == 'domains.centrata.mountain.key':
-            self.choices.append(self.move_around)
+            #self.choices.append(self.move_around)
             self.scripts = []
-            return True, "Thank you so much!"
-        return False, f"I'm looking for my key, not {item.get_short_desc(giving_creature, True)}."
+            self.say("Thank you so much!")
+            self.movement_path = self.future_movement_path
+            self.choices.append(self.follow_path)
+            return True, "Acleð gratefully accepts the key."
+        self.say(f"I'm looking for my key, not {item.get_short_desc(giving_creature, True)}.")
+        return False, f"Acleð declines the {item.get_short_desc(giving_creature, True)}."
 
 def clone():
     return Acleð()

@@ -59,21 +59,22 @@ class RandomBook(library_book.LibraryBook):
     %s
     \=============================================""" % self.book_title
         self.book_generated = False  # whether the book contents have been auto-generated yet
+        self.game.events.call_later(1, self.generate_contents) # generate the book asynchronously
 
         super().__init__('book', __file__, book_s_desc, book_l_desc)
         self.add_adjectives(*book_adjectives)
         self.set_message(self.book_msg)
-
-    def read(self, p, cons, oDO, oIDO):
-        if not self.book_generated:  # generate random book contents upon first read
+    
+    async def generate_contents(self):
+        if not self.book_generated:  # generate random book contents when called
             global ai_installed
             if ai_installed: 
                 try:
                     if styling:
                         book_style = random.choices(book_styles, book_style_weights)[0]
-                        ai_body = game_openai.openai_completion(("write a book titled %s in the style of %s" % (self.book_title, book_style)))
+                        ai_body = await game_openai.openai_completion_prompt("You are an author of ancient books found in the library of a text adventure game. Write a book titled %s in the style of %s." % (self.book_title, book_style))
                     else:
-                        ai_body = game_openai.openai_completion(("write a book titled %s" % self.book_title))
+                        ai_body = await game_openai.openai_completion_prompt(("You are an author of ancient books found in the library of a text adventure game. Write a book titled %s." % self.book_title))
                     self.book_msg += "\n#*\n#*\n" + ai_body
                 except Exception as e:
                     self.log.error(f"Exception when calling OpenAI text completion: {e}")
@@ -85,11 +86,6 @@ class RandomBook(library_book.LibraryBook):
                     self.book_msg += "\n#*\n" + page_msg 
             self.set_message(self.book_msg)
             self.book_generated = True
-        return super().read(p, cons, oDO, oIDO)
-
-    actions = dict(library_book.LibraryBook.actions)  # make a copy, don't change Thing's dict!
-    actions['read'] =  Action(read, True, False)
-    actions['open'] =  Action(read, True, False)
 
 def clone():
     return RandomBook()

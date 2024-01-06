@@ -27,7 +27,7 @@ class Book(Thing):
     # INTERNAL USE METHODS (i.e. _method(), not imported)
     #
     def _set_index(self, new_index):
-        if 0 < new_index < len(self.book_pages):
+        if 0 <= new_index < len(self.book_pages):
             self.index = new_index
             return True
 
@@ -40,10 +40,10 @@ class Book(Thing):
     # SET/GET METHODS (methods to set or query attributes)
     #
     def set_message(self, message):
-        self.book_pages = ["", ""]
+        self.book_pages = []
         self.spells = []
-        self.book_pages[self.COVER_INDEX] = ""
-        self.book_pages[self.TOC_INDEX] = ""
+        # self.book_pages[self.COVER_INDEX] = ""
+        # self.book_pages[self.TOC_INDEX] = ""
         page_text = '\n'
         index = self.COVER_INDEX
 
@@ -67,10 +67,14 @@ class Book(Thing):
                     self.spells.append(spells_on_page)
                 continue
             else:
-                page_text += line_text 
+                page_text += line_text
+
+        if len(self.book_pages) < 2:
+            # need to add at least three pages
+            self.book_pages += ["", "", ""]
         
         page_text += '\n\n'
-        self.book_pages[index] = page_text
+        self.book_pages.append(page_text)
 
     #
     # OTHER EXTERNAL METHODS (misc externally visible methods)
@@ -184,7 +188,7 @@ class Book(Thing):
 
         elif command.isdigit():
             # select page by number
-            if not self._set_index(command):
+            if not self._set_index(int(command)):
                 self.cons.user.perceive("You can't find that page.")
                 return False
 

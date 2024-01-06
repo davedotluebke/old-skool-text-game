@@ -118,8 +118,8 @@ def walklevel(some_dir, level=1):
         if num_sep + level <= num_sep_this:
             del dirs[:]
 
-def request_all_inputs(player, dest):
-    Thing.ID_dict[player].cons.request_input(dest)
+# def request_all_inputs(player, dest):
+#     Thing.ID_dict[player].cons.request_input(dest)
 
 #
 # LOGGING 
