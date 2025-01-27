@@ -52,14 +52,18 @@ class CommunicationScroll(Thing):
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
 #
-def clone(match_location=None):
+def clone(matching_scroll_id=None, matching_location_path=None):
     scroll_id_number = f'communication_scroll{random.randint(0,100)}'
     scroll = CommunicationScroll(pref_id=scroll_id_number)
     
-    if match_location:
-        other_scroll_id_number = f'communication_scroll{random.randint(0,100)}'
-        other_scroll = CommunicationScroll(pref_id=other_scroll_id_number, other_scroll_id=scroll.id)
-        scroll.other_scroll_id = other_scroll.id
-        
-        
+    if matching_scroll_id:
+        scroll.other_scroll_id = matching_scroll_id
+    
+    elif matching_location_path:        
+        matching_location = gametools.load_room(matching_location_path)
+        for i in matching_location.contents:
+            if isinstance(i, CommunicationScroll):
+                scroll.other_scroll_id = i.id
+                i.other_scroll_id = scroll.id
+
     return scroll
