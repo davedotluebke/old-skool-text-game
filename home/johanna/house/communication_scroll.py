@@ -61,7 +61,7 @@ def clone(params):
         matching_location_path=params[1]
     else:
         matching_scroll_id = None
- 		matching_location_path = None
+        matching_location_path = None
     
     scroll_id_number = f'communication_scroll{random.randint(0,100)}'
     scroll = CommunicationScroll(pref_id=scroll_id_number)
