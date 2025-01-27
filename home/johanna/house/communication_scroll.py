@@ -2,17 +2,19 @@ from thing import Thing
 from action import Action
 import gametools
 
+import random
+
 class CommunicationScroll(Thing):
     #
     # SPECIAL METHODS (i.e __method__() format)
     #
-    def __init__(self):
-        super().__init__('scroll', __file__)
-        self.written_on = 'This scroll is magical'
+    def __init__(self, pref_id=None, other_scroll_id=None):
+        super().__init__('scroll', __file__, pref_id=pref_id)
+        self.written_on = 'This scroll is magical. Try writing on it.'
         self.set_description('tattered scroll', 'This scroll is tattered, but you can still make out the following: ' + self.written_on)
         self.add_adjectives('tattered')
         
-        self.other_scroll_id = None
+        self.other_scroll_id = other_scroll_id
     
     #
     # GET/SET METHODS
@@ -51,5 +53,6 @@ class CommunicationScroll(Thing):
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
 #
 def clone():
-    scroll = CommunicationScroll()
+    scroll_id_number = f'communication_scroll{random.randint(0,100)}'
+    scroll = CommunicationScroll(pref_id=scroll_id_number)
     return scroll
