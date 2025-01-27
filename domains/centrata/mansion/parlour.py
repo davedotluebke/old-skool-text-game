@@ -13,14 +13,23 @@ def load():
 
     large_sofa = scenery.Scenery('sofa', 'large green sofa', 'This large dark green sofa is covered in a soft felt material.', unlisted=True)
     large_sofa.add_adjectives('large', 'green', 'soft', 'felt')
+    large_sofa.set_prepositions('on', 'onto')
     large_sofa.add_response(['sit', 'lie', 'relax'], 'You relax on the sofa. The felt covering feels soft.')
     large_sofa.add_response(['move', 'take', 'get'], 'The large sofa is far too heavy to move.')
     r.insert(large_sofa, True)
     
     small_sofa = scenery.Scenery('sofa', 'small green sofa', 'This small dark green sofa is covered in a soft felt material.', unlisted=True)
     small_sofa.add_adjectives('small', 'dark', 'green', 'soft', 'felt')
+    small_sofa.set_prepositions('on', 'onto')
     small_sofa.add_response(['sit', 'lie', 'relax'], 'You relax on the sofa. The felt covering feels soft.')
     small_sofa.add_response(['move', 'take', 'get'], 'Despite being the smaller of the sofas, the small green sofa is still far too heavy to move.')
     r.insert(small_sofa, True)
+    
+    armchair = scenery.Scenery('armchair', 'large green armchair', 'This large dark green armchair is covered in a soft felt material.', unlisted=True)
+    armchair.add_adjectives('large', 'green', 'soft', 'felt')
+    armchair.add_response(['sit', 'lie', 'relax'], 'You relax in the armchair. The felt covering feels soft.')
+    armchair.add_response(['move', 'take', 'get'], 'Despite being smaller than the two sofas, the armchair is far too heavy to move.')
+    armchair.plurality = 2
+    r.insert(armchair, True)
 
     return r
