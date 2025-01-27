@@ -52,7 +52,10 @@ class CommunicationScroll(Thing):
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
 #
-def clone(matching_scroll_id=None, matching_location_path=None):
+def clone(params):
+    if len(params) == 2:
+    	matching_scroll_id=params[0], matching_location_path=params[1]
+    
     scroll_id_number = f'communication_scroll{random.randint(0,100)}'
     scroll = CommunicationScroll(pref_id=scroll_id_number)
     
