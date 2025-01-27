@@ -18,7 +18,15 @@ class CommunicationScroll(Thing):
     # GET/SET METHODS
     #
     def update_other_scroll(self):
+        try:
+	        other_scroll = Thing.ID_dict[self.other_scroll_id]
+        except KeyError:
+            self.log.debug("Error! Couldn't find matching scroll.")
+         	return
         
+        other_scroll.written_on = self.written_on
+        other_scroll._long_desc = 'This scroll is tattered, but you can still make out the following: ' + self.written_on
+        other_scroll.emit('The ink on the scroll suddenly shifts, forming new words!')
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
@@ -32,6 +40,7 @@ class CommunicationScroll(Thing):
         cons.user.perceive(f'You write {self.written_on} on the scroll.')
         self.emit(f'&nD{cons.user.id} writes something on the scroll.')
         self._long_desc = 'This scroll is tattered, but you can still make out the following: ' + self.written_on
+        self.update_other_scroll()
         return True
 
     actions = dict(Thing.actions)  # make a copy
