@@ -27,7 +27,7 @@ class CommunicationScroll(Thing):
 	        other_scroll = Thing.ID_dict[self.other_scroll_id]
         except KeyError:
             self.log.debug("Error! Couldn't find matching scroll.")
-         	return
+            return
         
         other_scroll.written_on = self.written_on
         other_scroll._long_desc = 'This scroll is tattered, but you can still make out the following: ' + self.written_on
