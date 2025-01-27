@@ -8,8 +8,8 @@ class CommunicationScroll(Thing):
     #
     def __init__(self):
         super().__init__('scroll', __file__)
-        self.written_on = ''
-        self.set_description('tattered scroll', 'This scroll is tattered, but you can still make out the following: ')
+        self.written_on = 'This scroll is magical'
+        self.set_description('tattered scroll', 'This scroll is tattered, but you can still make out the following: ' + self.written_on)
         self.add_adjectives('tattered')
         
         self.other_scroll_id = None
@@ -25,23 +25,16 @@ class CommunicationScroll(Thing):
         
         cons.user.perceive(f'You write {self.written_on} on the scroll.')
         self.emit(f'&nD{cons.user.id} writes something on the scroll.')
-        del self.location.west_door.dest
-        try:
-            self.location.west_door.dest = self.written_on
-            gametools.load_room(self.written_on)
-        except KeyError:
-            cons.write('The text on the paper morphs back into the word "water_kitchen".')
-            self.written_on = 'domains.school.school.water_kitchen'
-            self.location.west_door.dest = Thing.ID_dict[self.written_on]
-        self._long_desc = 'This magical paper says "%s" on it.' % self.written_on
+        self._long_desc = 'This scroll is tattered, but you can still make out the following: ' + self.written_on
         return True
 
     actions = dict(Thing.actions)  # make a copy
     actions['write'] = Action(write, True, False)
+    actions['read']  = Action(Thing.look_at, True, False)
 
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
 #
 def clone():
-    paper = PlaceChooser('paper', __file__)
-    return paper
+    scroll = CommunicationScroll()
+    return scroll
