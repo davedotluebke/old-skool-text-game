@@ -26,11 +26,14 @@ class CommunicationScroll(Thing):
     # GET/SET METHODS
     #
     def heartbeat(self):
-        with open(os.path.dirname(__file__) + '/' + self.text_storage) as f:
-            new_text = f.read()
-            if new_text != self.written_on:
-                self.emit('The ink on the scroll suddenly shifts, forming new words!')
-                self.written_on = new_text
+        try:
+            with open(os.path.dirname(__file__) + '/' + self.text_storage) as f:
+                new_text = f.read()
+                if new_text != self.written_on:
+                    self.emit('The ink on the scroll suddenly shifts, forming new words!')
+                    self.written_on = new_text
+        except FileNotFoundError:
+            self.log.error("Couldn't find file at " + os.path.dirname(__file__) + '/' + self.text_storage)
 
     def update_other_scrolls(self):
         with open(os.path.dirname(__file__) + '/' + self.text_storage, 'w') as f:
