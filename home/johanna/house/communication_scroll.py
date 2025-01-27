@@ -3,6 +3,7 @@ from action import Action
 import gametools
 
 import random
+import os
 
 class CommunicationScroll(Thing):
     #
@@ -15,23 +16,25 @@ class CommunicationScroll(Thing):
         self.set_description('tattered scroll', 'This scroll is tattered, but you can still make out the following: ' + self.written_on)
         self.add_adjectives('tattered')
         
-        self.other_scroll_id = other_scroll_id
+        self.text_storage = 'communication_scroll_text.txt'
+        
+        self.game.register_heartbeat(self)
         
         self.log.debug('Finished the __init__ function of communication_scroll!')
 
     #
     # GET/SET METHODS
     #
-    def update_other_scroll(self):
-        try:
-	        other_scroll = Thing.ID_dict[self.other_scroll_id]
-        except KeyError:
-            self.log.debug("Error! Couldn't find matching scroll.")
-            return
-        
-        other_scroll.written_on = self.written_on
-        other_scroll._long_desc = 'This scroll is tattered, but you can still make out the following: ' + self.written_on
-        other_scroll.emit('The ink on the scroll suddenly shifts, forming new words!')
+    def heartbeat(self):
+        with open(os.path.dirname(__file__) + self.text_storage) as f:
+            new_text = f.read()
+            if new_text != self.written_on:
+                self.emit('The ink on the scroll suddenly shifts, forming new words!')
+                self.written_on = new_text
+
+    def update_other_scrolls(self):
+        with open(os.path.dirname(__file__) + self.text_storage, 'w') as f:
+            f.write(self.written_on)
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
@@ -45,7 +48,7 @@ class CommunicationScroll(Thing):
         cons.user.perceive(f'You write {self.written_on} on the scroll.')
         self.emit(f'&nD{cons.user.id} writes something on the scroll.')
         self._long_desc = 'This scroll is tattered, but you can still make out the following: ' + self.written_on
-        self.update_other_scroll()
+        self.update_other_scrolls()
         return True
 
     actions = dict(Thing.actions)  # make a copy
@@ -55,29 +58,6 @@ class CommunicationScroll(Thing):
 #
 # MODULE-LEVEL FUNCTIONS (e.g., clone() or load())
 #
-def clone(params=[]):
-    if len(params) == 2:
-        matching_scroll_id=params[0]
-        matching_location_path=params[1]
-    else:
-        matching_scroll_id = None
-        matching_location_path = None
-    
-    scroll_id_number = f'communication_scroll{random.randint(0,100)}'
-    scroll = CommunicationScroll(pref_id=scroll_id_number)
-    
-    if matching_scroll_id:
-        scroll.other_scroll_id = matching_scroll_id
-        scroll.debug('communication_scroll added other_scroll_id!')
-    
-    elif matching_location_path:
-        scroll.debug('Decided to follow location path!')
-        matching_location = gametools.load_room(matching_location_path)
-        scroll.debug('Loaded location!')
-        for i in matching_location.contents:
-            if isinstance(i, CommunicationScroll):
-                scroll.other_scroll_id = i.id
-                i.other_scroll_id = scroll.id
-                scroll.debug('Found and updated matching scroll!')
-
+def clone():
+    scroll = CommunicationScroll()
     return scroll
