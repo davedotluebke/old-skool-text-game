@@ -28,5 +28,9 @@ def load():
     armchair.add_response(['sit', 'lie', 'relax'], 'You relax in the armchair. The felt covering feels soft.')
     armchair.add_response(['move', 'take', 'get'], 'Despite being smaller than the two sofas, the armchair is far too heavy to move.')
     r.insert(armchair, True)
+    
+    wallpaper = scenery.Scenery('wallpaper', 'red pattered wallpaper', 'This red pattered wallpaper is a dark red, with a slightly brighter red patterning showing long serpents.', unlisted=True)
+    wallpaper.add_adjectives('red', 'pattered', 'serpent')
+    r.insert(wallpaper, True)
 
     return r
