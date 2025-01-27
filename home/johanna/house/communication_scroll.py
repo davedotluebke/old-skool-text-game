@@ -57,7 +57,7 @@ class CommunicationScroll(Thing):
 #
 def clone(params):
     if len(params) == 2:
-    	matching_scroll_id=params[0]
+        matching_scroll_id=params[0]
         matching_location_path=params[1]
     else:
         matching_scroll_id = None
