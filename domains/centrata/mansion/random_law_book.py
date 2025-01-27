@@ -20,11 +20,11 @@ class RandomLawBook(book.Book):
     #*
     """ % self.book_title
         
-        self.book_msg += random.randint(1, 200) * "This page is extremely boring and technical."
+        self.book_msg += random.randint(1, 200) * "This page is extremely boring and technical.\n#*"
 
         book_adjectives = random.choice(["heavy", "light"])
         super().__init__('book', __file__, f'{book_adjectives} brown book', f'This is a {book_adjectives} brown book titled {self.book_title}')
-        self.add_adjectives(*book_adjectives)
+        self.add_adjectives(book_adjectives)
         self.add_adjectives('brown')
         self.set_message(self.book_msg)
 
