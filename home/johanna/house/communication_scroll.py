@@ -13,6 +13,12 @@ class CommunicationScroll(Thing):
         self.add_adjectives('tattered')
         
         self.other_scroll_id = None
+    
+    #
+    # GET/SET METHODS
+    #
+    def update_other_scroll(self):
+        
 
     #
     # ACTION METHODS & DICTIONARY (dictionary must come last)
