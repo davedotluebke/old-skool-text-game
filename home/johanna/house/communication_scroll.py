@@ -17,8 +17,8 @@ class CommunicationScroll(Thing):
         
         self.other_scroll_id = other_scroll_id
         
-		self.log.debug('Finished the __init__ function of communication_scroll!')
-    
+        self.log.debug('Finished the __init__ function of communication_scroll!')
+
     #
     # GET/SET METHODS
     #
