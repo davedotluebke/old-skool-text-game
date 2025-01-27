@@ -36,4 +36,7 @@ def load():
     cauldron = gametools.clone('domains.school.school.cauldron')
     magic_room.insert(cauldron, True)
     
+    comm_scroll = gametools.clone('home.johanna.house.communication_scroll', params=[None, 'home.johanna.house.br31795'])
+    magic_room.insert(comm_scroll, True)
+    
     return magic_room
