@@ -21,6 +21,9 @@ def load():
     south_window = doors_and_windows.Window('window', 'southern window', 'This large window on the south side of the room has an almost invisible frame.', 'domains.school.forest.waterfall')
     south_window.add_adjectives('large', 'south')
     bedroom.insert(south_window, True)
+    
+    comm_scroll = gametools.clone('home.johanna.house.communication_scroll', params=[None, 'home.johanna.house.mr31795'])
+    bedroom.insert(comm_scroll, True)
 
     bed = gametools.clone('home.johanna.house.bed')
     bed.move_to(bedroom, True)
