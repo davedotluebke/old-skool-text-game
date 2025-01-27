@@ -68,16 +68,16 @@ def clone(params=[]):
     
     if matching_scroll_id:
         scroll.other_scroll_id = matching_scroll_id
-        scroll.debug('communication_scroll added other_scroll_id!')
+        scroll.log.debug('communication_scroll added other_scroll_id!')
     
     elif matching_location_path:
-        scroll.debug('Decided to follow location path!')
+        scroll.log.debug('Decided to follow location path!')
         matching_location = gametools.load_room(matching_location_path)
-        scroll.debug('Loaded location!')
+        scroll.log.debug('Loaded location!')
         for i in matching_location.contents:
             if isinstance(i, CommunicationScroll):
                 scroll.other_scroll_id = i.id
                 i.other_scroll_id = scroll.id
-                scroll.debug('Found and updated matching scroll!')
+                scroll.log.debug('Found and updated matching scroll!')
 
     return scroll
