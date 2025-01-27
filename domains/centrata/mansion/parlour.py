@@ -29,7 +29,6 @@ def load():
     armchair.add_adjectives('large', 'green', 'soft', 'felt')
     armchair.add_response(['sit', 'lie', 'relax'], 'You relax in the armchair. The felt covering feels soft.')
     armchair.add_response(['move', 'take', 'get'], 'Despite being smaller than the two sofas, the armchair is far too heavy to move.')
-    armchair.plurality = 2
     r.insert(armchair, True)
 
     return r
