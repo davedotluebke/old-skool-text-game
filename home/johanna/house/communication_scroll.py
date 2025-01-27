@@ -10,7 +10,6 @@ class CommunicationScroll(Thing):
     # SPECIAL METHODS (i.e __method__() format)
     #
     def __init__(self, pref_id=None, other_scroll_id=None):
-        self.log.debug('In the __init__ function of communication_scroll!')
         super().__init__('scroll', __file__, pref_id=pref_id)
         self.written_on = 'This scroll is magical. Try writing on it.'
         self.set_description('tattered scroll', 'This scroll is tattered, but you can still make out the following: ' + self.written_on)
