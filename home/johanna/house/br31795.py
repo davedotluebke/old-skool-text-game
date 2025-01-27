@@ -22,7 +22,7 @@ def load():
     south_window.add_adjectives('large', 'south')
     bedroom.insert(south_window, True)
     
-    comm_scroll = gametools.clone('home.johanna.house.communication_scroll0', params=[None, 'home.johanna.house.mr31795'])
+    comm_scroll = gametools.clone('home.johanna.house.communication_scroll')
     bedroom.insert(comm_scroll, True)
 
     bed = gametools.clone('home.johanna.house.bed')
