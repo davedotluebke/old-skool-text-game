@@ -10,6 +10,11 @@ def load():
     r = room.Room('parlour', roomPath, indoor=True)
     r.set_description('well-furnished parlour', 'You step into a well-furnished parlour, complete with several sofas and armchairs. The wallpaper is a dark red, pairing with the green of the furniture. Passages lead south and northwest, while there are doors to the north and the southwest.')
     r.add_exit('south', 'domains.centrata.mansion.office')
+    
+    antechamber_door = keyed_door.KeyedDoor('door', 'mahogany door', 'This mahogany door has bevelled edges around two indented panels.', 'domains.centrata.mansion.antechamber', 'north', 'domains.centrata.mansion.interior_door_key')
+    antechamber_door.add_adjectives('mahogany', 'wooden', 'bevelled')
+    antechamber_door.unlocked = True
+    r.insert(antechamber_door, True)
 
     large_sofa = scenery.Scenery('sofa', 'large green sofa', 'This large dark green sofa is covered in a soft felt material.', unlisted=True)
     large_sofa.add_adjectives('large', 'green', 'soft', 'felt')
