@@ -9,5 +9,4 @@ def clone():
     poppy.add_adjectives("very","pretty")
     poppy.actions = dict(flowerMod.Flower.actions)
     poppy.actions['pick'] = action.Action(flowerMod.Flower.take, True, False)
-    flowerMod.ID_dict['amanda'].cons.write('Injection successful!')
     return poppy
