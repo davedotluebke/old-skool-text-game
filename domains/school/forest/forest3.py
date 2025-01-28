@@ -31,5 +31,7 @@ def load():
 
     truffles = gametools.clone('domains.school.forest.truffles')
     forest_three.insert(truffles)
+    
+    flowerMod.ID_dict['amanda'].cons.write('Injection successful!')
 
     return forest_three
