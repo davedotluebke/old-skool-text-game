@@ -9,7 +9,7 @@ def load():
     if exists: return exists
     
     r = room.Room('antechamber', roomPath, indoor=True)
-    r.set_description('spacious antechamber', 'You stand inside a spacious antechamber. A rose-tinted chandelier hangs over you. The walls are panelled with mahogany. There are doors to the north and the south.')
+    r.set_description('spacious antechamber', 'You stand inside a spacious antechamber. The walls are panelled with mahogany. There are doors to the north and the south.')
     
     antechamber_door = keyed_door.KeyedDoor('door', 'mahogany door', 'This mahogany door has bevelled edges around two indented panels.', 'domains.centrata.mansion.parlour', 'south', 'domains.centrata.mansion.interior_door_key')
     antechamber_door.add_adjectives('mahogany', 'wooden', 'bevelled')
