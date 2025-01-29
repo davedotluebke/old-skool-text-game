@@ -5,12 +5,16 @@ class Chandelier(container.Container):
         result = super().insert(obj, force_insert, merge_pluralities)
         if result: # reminder, insert() returns True if insert failed
             # chandelier comes crashing down
-            pass
+            self.emit('The chandelier crashes down to the ground!')
+            self.set_description('shattered rose-tinted chandelier', 'This chandelier sits on the floor, shattered rose-tinted glass across everywhere.')
+            self.add_adjectives('shattered')
+            self.fix_in_place('The shattered chandelier is far too heavy - and sharp - to move.')
+            self.set_max_weight_carried(4e9)
         return result
 
 def clone():
     chandelier = Chandelier('chandelier', __file__)
-    chandelier.set_description('rose-tinted chandelier', 'This low-hanging chandelier is shimmering in brilliant rose colours that reflect throughout the entire room.', unlisted=True)
+    chandelier.set_description('rose-tinted chandelier', 'This low-hanging chandelier is shimmering in brilliant rose colours that reflect throughout the entire room.')
     chandelier.closable = False
     chandelier.add_adjectives('rose', 'tinted', 'rose-tinted', 'low', 'hanging', 'low-hanging', 'shimmering')
     chandelier.set_prepositions('on', 'onto')
