@@ -20,5 +20,8 @@ def load():
     front_door.add_adjectives('large', 'grandiose', 'front')
     front_door.locked = True
     r.insert(front_door, True)
+    
+    chandelier = gametools.clone('domains.centrata.mansion.chandelier')
+    r.insert(chandelier, True)
 
     return r
