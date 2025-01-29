@@ -1,6 +1,7 @@
 import gametools
 import scenery
 import room
+import keyed_door
 
 def load():
     roomPath = gametools.findGamePath(__file__)
