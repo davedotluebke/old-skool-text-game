@@ -19,5 +19,6 @@ def load():
     front_door = keyed_door.KeyedDoor('door', 'front door', 'This grandiose front door is made of mahogany. It has elaborate carvings of dragons on it.', 'domains.centrata.mansion.porch', 'north', 'domains.centrata.mansion.house_key')
     front_door.add_adjectives('large', 'grandiose', 'front')
     front_door.locked = True
+    r.insert(front_door, True)
 
     return r
