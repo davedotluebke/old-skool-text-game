@@ -14,6 +14,6 @@ def clone():
     chandelier.closable = False
     chandelier.add_adjectives('rose', 'tinted', 'rose-tinted', 'low', 'hanging', 'low-hanging', 'shimmering')
     chandelier.set_prepositions('on', 'onto')
-    chandelier.fix_in_place('The chandelier is attached to the ceiling')
+    chandelier.fix_in_place('The chandelier is attached to the ceiling.')
     
     return chandelier
