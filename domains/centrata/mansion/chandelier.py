@@ -16,4 +16,7 @@ def clone():
     chandelier.set_prepositions('on', 'onto')
     chandelier.fix_in_place('The chandelier is attached to the ceiling.')
     
+    chandelier.set_max_volume_carried(100)
+    chandelier.set_max_weight_carried(5000)
+    
     return chandelier
