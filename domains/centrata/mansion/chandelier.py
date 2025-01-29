@@ -13,8 +13,7 @@ class Chandelier(container.Container):
         return result
 
 def clone():
-    # chandelier = Chandelier('chandelier', __file__)
-    chandelier = container.Container('chandelier', __file__)
+    chandelier = Chandelier('chandelier', __file__)
     chandelier.set_description('rose-tinted chandelier', 'This low-hanging chandelier is shimmering in brilliant rose colours that reflect throughout the entire room.')
     chandelier.closable = False
     chandelier.add_adjectives('rose', 'tinted', 'rose-tinted', 'low', 'hanging', 'low-hanging', 'shimmering')
