@@ -21,7 +21,7 @@ def load():
     front_door.locked = True
     r.insert(front_door, True)
     
-    chandelier = gametools.clone('domains.centrata.mansion.chandelier')
+    chandelier = gametools.clone('domains.centrata.mansion.chandelier1')
     r.insert(chandelier, True)
 
     return r
