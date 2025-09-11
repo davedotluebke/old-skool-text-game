@@ -13,15 +13,11 @@ def clone():
 
     innkeeper.act_frequency = 7
     innkeeper.set_default_items(gametools.clone('domains.centrata.village.hook'))
-    innkeeper.add_act_script("""The blacksmith pumps the bellows, and the coals glow white-hot.""")
-    innkeeper.add_act_script("""The blacksmith hammers a piece of iron on the anvil.""")
-    innkeeper.add_act_script("""The blacksmith dunks a piece of iron in water to cool it down, causing steam to fly up.""")
-    innkeeper.add_act_script("""The blacksmith hammers a piece of iron into a hook shape.""")
-    innkeeper.add_script("""The orc raiding parties have been getting worse as of late.
-    Decent people can't go out their own doors at night.""")
-    innkeeper.add_script("""I heard the orcs are camped somewhere out to the east.""")
-    innkeeper.add_script("""We could probably fight off those dang orcs ourselves if it wasn't for their big chief.
-    The mayor's offering a reward of ten gold pieces to whoever brings back proof that he's dead.""")
-    innkeeper.add_script("""I'm making this piece for our mayor - that's the innkeeper, you know. His carriage needs fixin.""")
+    innkeeper.add_act_script("""The innkeeper pours a glass of ale.""")
+    innkeeper.add_act_script("""The innkeeper polishes the bar.""")
+    innkeeper.add_script("""You're a newcomer to our town, I see.  Adventurer, by the look of you.""")
+    innkeeper.add_script("""We have a wee orc problem.  I'll give a prize to anyone who brings me proof the orc chief is dead.""")
+    innkeeper.add_script("""Not saying it won't be dangerous -- some of the orcs are pushovers, but their chief is a different story.""")
+    innkeeper.add_script("""Ten gold pieces, that's my prize.  Show me the helmet of the orc chief, and I'll give you the gold.""")
 
     return innkeeper
