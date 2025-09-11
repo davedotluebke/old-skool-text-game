@@ -1,5 +1,25 @@
 import shop
 import gametools
+import player
+
+class Innkeeper(shop.Shopkeeper):
+    def __init__(self):
+        super().__init__('barnabas', __file__, None)
+        self.orc_quest_completed = False
+
+    def heartbeat(self):
+        if not self.orc_quest_completed:
+            for i in self.location.contents:
+                if isinstance(i, player.Player):
+                    for j in i.contents:
+                        if hasattr(j, 'orc_quest') and j.orc_quest:
+                            self.orc_quest_completed = True
+                            self.scripts = []
+
+                            # offer the reward
+
+                            # add the new quest completed scripts
+        return super().heartbeat()
 
 def clone():
     innkeeper = shop.Shopkeeper('barnabas', __file__, None)
