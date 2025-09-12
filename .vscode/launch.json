@@ -1,6 +1,7 @@
 {
     "version": "0.2.0",
     "configurations": [
+
                
         {
             "name": "Webserving Game",
@@ -27,6 +28,19 @@
             "env": {},
             "envFile": "${workspaceRoot}/.env"
         },
+        {
+            "name": "Webserving Game: all addresses",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "python": "${command:python.interpreterPath}",
+            "program": "${workspaceRoot}/startup.py",
+            "args": ["--server", "0.0.0.0", "--mode", "nocrypt"],
+            //"cwd": "",
+            "console": "integratedTerminal",
+            "env": {},
+            "envFile": "${workspaceRoot}/.env"
+        },        
         {
             "name": "Python",
             "type": "python",
