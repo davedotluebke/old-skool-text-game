@@ -270,7 +270,14 @@ class Player(Creature):
         for i in l:
             del self.quest_list[i]
 
-    def test_quest(self, quest_message):
+    def test_quest_exists(self, quest_message):
+        """Test a quest, returning True if the quest exists for this player, False otherwise."""
+        l = [self.quest_list.index(x) for x in self.quest_list if x[0] == quest_message]
+        for i in l:
+            return True
+        return False
+
+    def test_quest_complete(self, quest_message):
         """Test a quest, returning True if the quest is complete, False otherwise."""
         l = [self.quest_list.index(x) for x in self.quest_list if x[0] == quest_message]
         for i in l:
