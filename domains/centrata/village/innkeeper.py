@@ -15,14 +15,14 @@ class Innkeeper(shop.Shopkeeper):
                         if hasattr(j, 'orc_quest') and j.orc_quest:
 
                             # offer the reward if they haven't already completed the quest
-                            if not i.test_quest("Bring the orc chief's helmet to the innkeeper"):
+                            if not i.test_quest_complete("Bring the orc chief's helmet to the innkeeper"):
+                                i.complete_quest("Bring the orc chief's helmet to the innkeeper")
                                 self.orc_quest_completed = True
                                 self.say("""Congratulations again on your victory! The whole village is grateful to you.""")
                                 self.say("""Here's your reward, adventurer.  I'm sure you'll find a use for it.""")
-                                reward = gametools.clone('domains.centrata.village.gold_piece')
+                                reward = gametools.clone('currencies.gold')
                                 reward.plurality = 10
                                 reward.move_to(i)
-                                i.complete_quest("Bring the orc chief's helmet to the innkeeper")
                                 j.orc_quest = False  # this helmet object has now been used to satisfy the quest
                                 # add the new quest-completed scripts
                                 self.scripts = []
@@ -30,13 +30,13 @@ class Innkeeper(shop.Shopkeeper):
                                 self.add_script("""Our tourist industry is sure to take off. Tourists like prairies, right?""")
                                 break
                     else:
-                        if not i.test_quest("Bring the orc chief's helmet to the innkeeper"):
+                        if not i.test_quest_exists("Bring the orc chief's helmet to the innkeeper"):
                             i.add_quest("Bring the orc chief's helmet to the innkeeper")
 
         return super().heartbeat()
 
 def clone():
-    innkeeper = shop.Shopkeeper('barnabas', __file__, None)
+    innkeeper = Innkeeper()
     innkeeper.add_names('innkeeper')
     innkeeper.set_description('cheerful innkeeper', 'Behind the bar stands the innkeeper, a rotund, bewhiskered '
         'human with a cheerful face and shrewd eyes.')
