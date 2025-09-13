@@ -159,7 +159,7 @@ def load(param_list):
     else:
         no_exit_directions.append('west')
     
-    random.seed(coords)
+    random.seed(x*10000 + y)
 
     prairie_details = [('a flock of birds',
     'This flock of birds is perched in the corner of the field.',
