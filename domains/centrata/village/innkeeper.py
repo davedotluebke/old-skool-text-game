@@ -36,7 +36,7 @@ class Innkeeper(shop.Shopkeeper):
         return super().heartbeat()
 
 def clone():
-    innkeeper = shop.Shopkeeper('barnabas', __file__, None)
+    innkeeper = Innkeeper('barnabas', __file__, None)
     innkeeper.add_names('innkeeper')
     innkeeper.set_description('cheerful innkeeper', 'Behind the bar stands the innkeeper, a rotund, bewhiskered '
         'human with a cheerful face and shrewd eyes.')
