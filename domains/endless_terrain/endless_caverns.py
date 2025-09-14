@@ -262,7 +262,7 @@ def load(param_list):
     if specially_defined_room:
         return specially_defined_room
 
-    this_room = room.Room('cave', path)
+    this_room = room.Room('cave', path, indoor=True)
 
     exit_probability = 0.25
 

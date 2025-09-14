@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    cellar = room.Room('cellar', roomPath, light=0)
+    cellar = room.Room('cellar', roomPath, light=0, indoor=True)
     cellar.set_description('cold cellar', 'This cold cellar has an uneven floor. Several wooden shelves are fastened to the walls.')
     
     trapdoor = doors_and_windows.Door("trapdoor", "trapdoor in the floor", "This heavy wooden trapdoor is in the ceiling of the cellar", "domains.centrata.mountain.hut", "up", [])

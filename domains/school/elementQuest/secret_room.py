@@ -8,7 +8,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    r = room.Room('balcony', roomPath)
+    r = room.Room('balcony', roomPath, indoor=False)
     r.set_description('balcony', 'This is a crumbling balcony halfway up the tower. In front of you there is a giant drop down from the tower. '
     'A large pedistal stands in the centre of the balcony, with a peculiarly-shaped space on it.')
     r.add_adjectives('crumbling')

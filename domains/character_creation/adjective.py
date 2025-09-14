@@ -8,7 +8,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    r = room.Room('adjective_room', roomPath)
+    r = room.Room('adjective_room', roomPath, indoor=True)
     r.set_description('boundless room', 'You find yourself in a room with a glass floor and walls. '
         'You see one mirror, with a plaque above it.')
 

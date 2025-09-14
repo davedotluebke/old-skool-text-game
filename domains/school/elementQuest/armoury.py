@@ -8,7 +8,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    r = room.Room('armoury', roomPath)
+    r = room.Room('armoury', roomPath, indoor=True)
     r.set_description('armoury', 'This is a very small armoury with three armour stands in it.')
     r.add_exit('west', 'domains.school.elementQuest.armor_museum')
 

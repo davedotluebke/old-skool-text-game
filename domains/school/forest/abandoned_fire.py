@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    r = room.Room('lonelyfire', roomPath)
+    r = room.Room('lonelyfire', roomPath, indoor=True)
     r.set_description('abandoned fire', 'You find yourself in a small chamber. On the the floor are several pieces of burnt wood arranged in a rough circle, as well as \
     a series of charcoal paintings on the walls. One of the pieces of wood looks sturdy enough to take. The cave continues to the northwest.')
     r.add_adjectives('dark')

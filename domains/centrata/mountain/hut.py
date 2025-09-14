@@ -8,7 +8,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    hut = room.Room('hut', roomPath)
+    hut = room.Room('hut', roomPath, indoor=True)
     hut.set_description('stone hut', 'Between the solid stone walls this small hut is dim and dark. A shaft of light enters the hut from a small hole in the thatched roof.')
     #hut.add_exit('south', 'domains.centrata.mountain.peak')
     

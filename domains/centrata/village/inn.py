@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    inn = room.Room('inn', roomPath)
+    inn = room.Room('inn', roomPath, indoor=True)
     inn.set_description("inn", 
         "You are in the tavern of the village inn.  A cheery fire crackles in the hearth at one end of "
         "the large room.  Several tables with benches fill the room, and the innkeeper himself stands "

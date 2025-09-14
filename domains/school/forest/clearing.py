@@ -6,7 +6,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    clearing = room.Room('clearing', pref_id=roomPath)
+    clearing = room.Room('clearing', pref_id=roomPath, indoor=False)
     clearing.set_description('bright clearing', 'This clearing is bright and has an absolutely enormous pile of random stuff in the centre of it.')
     clearing.add_adjectives('bright')
     clearing.add_exit('north', 'domains.school.forest.woods')

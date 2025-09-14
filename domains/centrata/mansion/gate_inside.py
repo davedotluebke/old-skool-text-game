@@ -8,7 +8,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    r = room.Room('gateway', roomPath)
+    r = room.Room('gateway', roomPath, indoor=False)
     r.set_description('inside of the gate', 'You stand inside the gate of the massive standstone mansion to the south.')
     r.add_exit('south', 'domains.centrata.mansion.porch')
     r.add_exit('southeast', 'domains.centrata.mansion.east_lawn')

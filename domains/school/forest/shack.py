@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    shack = room.Room('shack', roomPath)
+    shack = room.Room('shack', roomPath, indoor=True)
     shack.set_description('empty shack', 'This shack appears to be abandoned and has nothing but cobwebs and walls.')
     shack.add_exit('southeast', 'domains.school.forest.field')
     shack.jumping_destination = gametools.load_room('domains.centrata.key_quest.wooden_plank')
