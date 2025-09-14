@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    blacksmith_shop = room.Room('blacksmith', roomPath)
+    blacksmith_shop = room.Room('blacksmith', roomPath, indoor=True)
     blacksmith_shop.set_description("blacksmith's shop", 
         "You are in a low, dark room lit by a few small windows and the occasional bright orange glow "
         "of coals when the smith works the bellows. Many examples of the blacksmith's art adorn the "
