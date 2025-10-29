@@ -19,4 +19,8 @@ def load():
     stone_door.add_adjectives('stone')
     stone_door.move_to(entryway, True)
 
+    gilded_door = doors_and_windows.Door('door', 'gilded door', 'This is a gilded door with golden trim around an otherwise plain door.', 'domains.covtle.mangátle.west_railway_platform', 'northeast', ['johanna'])
+    gilded_door.add_adjectives('gilded')
+    gilded_door.move_to(entryway, True)
+
     return entryway
