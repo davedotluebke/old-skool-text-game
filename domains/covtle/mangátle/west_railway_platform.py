@@ -11,7 +11,7 @@ def load():
     west_railway_platform.set_description('railway station platform', 'You stand on the platform of a railway station. To the west there is a stone wall, signed along the platform with signs reading "Mangátle", while to the east there is a track, labelled above as track 1.')
     west_railway_platform.add_adjectives('railway', 'station', 'west')
     
-    west_railway_platform.add_exit('south', 'domains.covlte.mangátle.railway_station_great_hall')
+    west_railway_platform.add_exit('southeast', 'domains.covtle.mangátle.railway_station_great_hall')
 
     gilded_door = doors_and_windows.Door('door', 'gilded door', 'This is a gilded door with golden trim around an otherwise plain door.', 'home.johanna.house.er31795', 'west', ['johanna'])
     gilded_door.add_adjectives('gilded')

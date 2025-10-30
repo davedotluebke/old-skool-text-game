@@ -14,7 +14,7 @@ Tjanle (EM) – Tjanle residents enthusiastically support the Mangátle-Voanter 
 	Another resident, tailor Levla Adjaþmanda, had more questions. "The proposal is exciting but vague," she said. "My shop is a personal gem, but they might tear it down to make room for the tracks." She also voiced concern about the frequency of stopping trains. "If most of [the trains] don't stop here," she said, "it's not going to bring the promised benefits."
 	Farmer Noþa Adtjalu said that the rail line would benefit all of Covtle. "We [Covtle] don't grow enough of our own food," he said. "We've gotten complacent on large imports from Grèsent. This rail line will help with that." (Roughly 72 percent of food in Covtle is from Covtle, while roughly 23 percent is from Grèsent.)
 	The Mangátle-Voanter rail line was announced by the Queen on 11 glimeri, and will include Tjanle on its route.
-''Ad: Introducing the Orasleda ad lorbo. From the makers of the groundbreaking Orasleda heating plate, a new device takes the cooling power of your icebox to your table. Keep butter and ice cream cold, even in the Mangátle heat. Enjoy a Mjarec salad any day throughout the year. Available now from Adjalmu, and other authorised merchants. Orasleda: Savour the flavour.''
+_Ad: Introducing the Orasleda ad lorbo. From the makers of the groundbreaking Orasleda heating plate, a new device takes the cooling power of your icebox to your table. Keep butter and ice cream cold, even in the Mangátle heat. Enjoy a Mjarec salad any day throughout the year. Available now from Adjalmu, and other authorised merchants. Orasleda: Savour the flavour._
 #*
 ## Opinion
 ### We mustn't lose what makes us unique

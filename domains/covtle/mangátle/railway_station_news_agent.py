@@ -8,6 +8,9 @@ def clone():
     news_agent.add_adjectives('smiling', 'young')
     news_agent.act_frequency = 5
     news_agent.set_default_items(gametools.clone('domains.covtle.mangátle.lelvlai_ad_mangátle'))
+    paper = gametools.clone('domains.covtle.mangátle.lelvlai_ad_mangátle')
+    paper.plurality = 10
+    news_agent.add_items(paper)
     news_agent.add_act_script("""The news agent sorts through some papers behind her desk.""")
     news_agent.add_script("""It's always so fun when new students come to town!""")
     news_agent.add_script("""Let me know if you'd like to buy anything! I have a copy of Lelvlai ad Mangátle!""")
