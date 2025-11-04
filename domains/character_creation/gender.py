@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    r = room.Room('gender_room', roomPath)
+    r = room.Room('gender_room', roomPath, indoor=True)
     r.set_description('boundless room', 'You find yourself in a room with a glass floor and walls. '
         'You see three mirrors, one north, one south, and one east.')
 

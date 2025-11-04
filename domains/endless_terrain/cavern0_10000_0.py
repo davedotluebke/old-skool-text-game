@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
     
-    cavern = room.Room('cavern', roomPath)
+    cavern = room.Room('cavern', roomPath, indoor=True)
     cavern.set_description('rough-walled cavern', 'This cavern has rough walls. You also notice a ladder carved into the walls.')
     cavern.add_exit('east', 'domains.endless_terrain.endless_caverns?1&10000&0')
     cavern.add_exit('west', 'domains.endless_terrain.endless_caverns?-1&10000&0')

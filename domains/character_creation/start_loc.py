@@ -7,7 +7,7 @@ def load():
     exists = room.check_loaded(roomPath)
     if exists: return exists
 
-    r = room.Room('empty_room', roomPath)
+    r = room.Room('empty_room', roomPath, indoor=True)
     r.set_description('empty void', 'You find yourself in an empty void with a translucent floor. '
         'You see four mirrors, one north, one south, one east, and one west.')
 

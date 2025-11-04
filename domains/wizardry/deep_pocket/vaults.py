@@ -8,5 +8,6 @@ def load():
     if exists: return exists
     
     vaults = classes.VaultRoom("Vaults", pref_id=roomPath)
+    vaults.indoor = True
     vaults.set_description("vault entrance", "This small room serves as the entrance to all of the vaults.")
     return vaults
